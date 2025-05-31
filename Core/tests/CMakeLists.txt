@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(QtNoidCommonTests)
+
+project(QtNoidCoreTests)
 
 # =============================================================================
 # Find Required Packages
@@ -15,7 +16,7 @@ add_executable(test_core
 
 target_link_libraries(test_core
     Qt6::Test
-    Qt6::Core
+    Qt6::Core    
     QtNoidCore  # Target diretto dalla libreria principale
 )
 

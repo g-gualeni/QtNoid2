@@ -1,4 +1,4 @@
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtNoidCore/QtNoidCore>
 #include <QSignalSpy>
 

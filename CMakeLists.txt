@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(QtNoid
-    VERSION 1.0.0 
-    DESCRIPTION "QtNoid - Modular Qt Library"
+    VERSION 2.0.0
+    DESCRIPTION "${PROJECT_NAME} - Modular Qt Library version 2"
     LANGUAGES CXX
 )
 
@@ -61,6 +61,6 @@ include(CMakePackageConfigHelpers)
 # =============================================================================
 set(PROJECT_DOCS
     README.md
+    LICENSE
 )
-
 add_custom_target(docs SOURCES ${PROJECT_DOCS})

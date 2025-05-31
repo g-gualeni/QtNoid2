@@ -1,7 +1,22 @@
 cmake_minimum_required(VERSION 3.20)
 
+# =============================================================================
+# Get parent project name and version if available
+# =============================================================================
+if(DEFINED CMAKE_PROJECT_NAME)
+   set(PARENT_PROJECT_NAME ${CMAKE_PROJECT_NAME})
+   set(PARENT_PROJECT_VERSION ${CMAKE_PROJECT_VERSION})
+else()
+   set(PARENT_PROJECT_NAME "QtNoid")  # Fallback name
+   set(PARENT_PROJECT_VERSION "1.0.0")  # Fallback version
+endif()
+
+
+# =============================================================================
+# Set the target project
+# =============================================================================
 project(QtNoidCore
-    VERSION 1.0.0
+    VERSION ${PARENT_PROJECT_VERSION}
     DESCRIPTION "QtNoidCore - Library Life Cycle"
     LANGUAGES CXX
 )
@@ -21,27 +36,28 @@ set(SOURCES
 
 # File header
 set(HEADERS
-    ${HEADERS_DIR}/QtNoidCore/QtNoidCore  # Header convenienza
-    ${HEADERS_DIR}/QtNoidCore/core.h
-    ${HEADERS_DIR}/QtNoidCore/global.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
+    ${HEADERS_DIR}/${PROJECT_NAME}/core.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/global.h
 )
 
 
 # =============================================================================
 # Library Target
 # =============================================================================
-add_library(QtNoidCore SHARED
+add_library(${PROJECT_NAME} SHARED
     ${SOURCES}
     ${HEADERS}
 )
 
 # Define l'export control symbol
-target_compile_definitions(QtNoidCore PRIVATE
-    QTNOIDCORE_LIBRARY
+string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    ${PROJECT_NAME_UPPER}_LIBRARY
 )
 
 # Include directories
-target_include_directories(QtNoidCore
+target_include_directories(${PROJECT_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -50,58 +66,58 @@ target_include_directories(QtNoidCore
 )
 
 # Qt Linking
-target_link_libraries(QtNoidCore
+target_link_libraries(${PROJECT_NAME}
     PUBLIC
         Qt6::Core
 )
 
-# Proprietà della libreria
-set_target_properties(QtNoidCore PROPERTIES
+# Set library properties
+set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
     PUBLIC_HEADER "${HEADERS}"
-    OUTPUT_NAME "QtNoidCore"
+    OUTPUT_NAME "${PROJECT_NAME}"
 )
 
 
 # =============================================================================
 # Installation
 # =============================================================================
-install(TARGETS QtNoidCore
-    EXPORT QtNoidCoreTargets
+install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}Targets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
-    PUBLIC_HEADER DESTINATION include/QtNoidCore
+    PUBLIC_HEADER DESTINATION include/${PROJECT_NAME}
     COMPONENT Runtime
 )
 
 # Export dei target per standalone
-install(EXPORT QtNoidCoreTargets
-    FILE QtNoidCoreTargets.cmake
-    NAMESPACE QtNoid::
-    DESTINATION lib/cmake/QtNoidCore
+install(EXPORT ${PROJECT_NAME}Targets
+    FILE ${PROJECT_NAME}Targets.cmake
+    NAMESPACE ${PARENT_PROJECT_NAME}::
+    DESTINATION lib/cmake/${PROJECT_NAME}
     COMPONENT Development
 )
 
 # Config file per standalone
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-    "QtNoidCoreConfigVersion.cmake"
+    "${PROJECT_NAME}ConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
 
 configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtNoidCoreConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/QtNoidCoreConfig.cmake"
-    INSTALL_DESTINATION lib/cmake/QtNoidCore
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
 )
 
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/QtNoidCoreConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/QtNoidCoreConfigVersion.cmake"
-    DESTINATION lib/cmake/QtNoidCore
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    DESTINATION lib/cmake/${PROJECT_NAME}
     COMPONENT Development
 )
 
