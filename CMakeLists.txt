@@ -20,7 +20,11 @@ option(BUILD_EXAMPLES "Build examples" ON)
 # =============================================================================
 # Permette di sovrascrivere dalla command line
 if(NOT DEFINED CMAKE_INSTALL_PREFIX OR CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "C:/GitHub/Libs/QtNoid2" CACHE PATH "Installation directory" FORCE)
+    if(WIN32)
+           set(CMAKE_INSTALL_PREFIX "C:/GitHub/Libs/QtNoid2" CACHE PATH "Installation directory" FORCE)
+       elseif(APPLE)
+           set(CMAKE_INSTALL_PREFIX "/Users/QtQb/GitHub/Libs/QtNoid2" CACHE PATH "Installation directory" FORCE)
+       endif()
 endif()
 
 

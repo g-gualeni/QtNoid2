@@ -9,16 +9,19 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# find_package(QtNoidCore REQUIRED HINTS "C:/GitHub/Libs")
-# - - OK find_package(QtNoidCore REQUIRED HINTS "C:/GitHub/Libs/QtNoid2/lib/cmake/QtNoidCore")
-find_package(QtNoidCore REQUIRED HINTS "C:/GitHub/Libs/QtNoid2")
 
+# =============================================================================
+# Search for QtNoid Installed library
+# =============================================================================
+if(WIN32)
+  find_package(QtNoidCore REQUIRED HINTS "C:/GitHub/Libs/QtNoid2")
+elseif(APPLE)
+  find_package(QtNoidCore REQUIRED HINTS "/Users/QtQb/GitHub/Libs/QtNoid2")
+endif()
 
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-
-
 
 set(PROJECT_SOURCES
         main.cpp
