@@ -12,7 +12,7 @@ set(LEGAL_COPYRIGHT "(C) 2025 Gianbattista Gualeni")
 # =============================================================================
 option(BUILD_CORE "Build QtNoidCore library" ON)
 option(BUILD_TESTS "Build tests" ON)
-option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_EXAMPLES "Build examples" ON)
 
 
 # =============================================================================
@@ -66,3 +66,4 @@ set(PROJECT_DOCS
     LICENSE
 )
 add_custom_target(docs SOURCES ${PROJECT_DOCS})
+
