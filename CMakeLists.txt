@@ -5,6 +5,7 @@ project(QtNoid
     DESCRIPTION "${PROJECT_NAME} - Modular Qt Library version 2"
     LANGUAGES CXX
 )
+set(LEGAL_COPYRIGHT "(C) 2025 Gianbattista Gualeni")
 
 # =============================================================================
 # Build Options
@@ -37,6 +38,7 @@ find_package(Qt6 REQUIRED COMPONENTS
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # =============================================================================
 # Add Subdirectories

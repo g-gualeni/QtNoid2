@@ -1,4 +1,5 @@
 #include "QtNoidCore/core.h"
+#include "QtNoidCore/QtNoidCoreVersion.h"
 #include <QCoreApplication>
 #include <QDebug>
 
@@ -15,12 +16,12 @@ Core::~Core()
 
 QString Core::version()
 {
-    return QStringLiteral("1.0.0");
+    return QStringLiteral(PROJECT_VERSION);
 }
 
 QString Core::buildInfo()
 {
-    return QString("QtNoid::Core %1 - Built with Qt %2 on %3 %4")
+    return QString(PROJECT_NAME " %1 - Built with Qt %2 on %3 %4 - " PROJECT_COPYRIGHT)
            .arg(version())
            .arg(QT_VERSION_STR)
            .arg(__DATE__)

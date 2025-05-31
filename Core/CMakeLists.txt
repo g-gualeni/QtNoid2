@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
+
+
 # =============================================================================
 # Get parent project name and version if available
 # =============================================================================
@@ -27,6 +29,22 @@ project(QtNoidCore
 set(SOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+
+# =============================================================================
+# Version Header Generation
+# =============================================================================
+# Create uppercase project name for macros
+string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
+
+
+# Configure version header
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}Version.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Version.h"
+    @ONLY
+)
+
+
 # =============================================================================
 # Source Files
 # =============================================================================
@@ -39,6 +57,7 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
     ${HEADERS_DIR}/${PROJECT_NAME}/core.h
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Version.h  # Generated version header
 )
 
 

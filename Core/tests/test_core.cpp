@@ -49,7 +49,7 @@ void TestCore::testVersion()
 {
     QString version = QtNoid::Core::version();
     QVERIFY(!version.isEmpty());
-    QCOMPARE(version, QString("1.0.0"));
+    QCOMPARE(version, QString("2.0.0"));
 }
 
 void TestCore::testBuildInfo()
@@ -57,9 +57,10 @@ void TestCore::testBuildInfo()
     QString buildInfo = QtNoid::Core::buildInfo();
     qDebug() << buildInfo;
     QVERIFY(!buildInfo.isEmpty());
-    QVERIFY(buildInfo.contains("QtNoid::Core"));
-    QVERIFY(buildInfo.contains("1.0.0"));
+    QVERIFY(buildInfo.contains("QtNoidCore"));
+    QVERIFY(buildInfo.contains("2.0.0"));
     QVERIFY(buildInfo.contains("Qt"));
+    QVERIFY(buildInfo.contains("Gianbattista Gualeni"));
 }
 
 
