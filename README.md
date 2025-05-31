@@ -24,6 +24,29 @@ More modules are in coming soon.
 
 ## Quick Start
 
+### CMakeLists.txt
+If the library is not installed in a system path but
+on a project library folder, add the HINTS parameter
+to the find_package() command:
+
+```cmake
+if(WIN32)
+  find_package(QtNoidCore REQUIRED HINTS "<LIB Path>QtNoid2")
+elseif(APPLE)
+  find_package(QtNoidCore REQUIRED HINTS "/Users/QtQb/GitHub/Libs/QtNoid2")
+endif()
+
+target_link_libraries(BasicUsage PRIVATE
+  Qt${QT_VERSION_MAJOR}::Widgets
+  QtNoid::QtNoidCore
+)
+```
+
+### Integrating the library in the code
+
+In the code we can include the convenient header
+of the library and that's it.
+
 ```cpp
 #include <QtNoidCore/QtNoidCore>
 
@@ -33,6 +56,9 @@ int main(int argc, char *argv[])
     
     return app.exec();
 }
+```
+
+
 
 
 
