@@ -27,5 +27,5 @@ namespace QtNoid
   - Project copyright information
 
 
-[← Back to QtNoid Main Page](./../README.md)
+[← Back to Main Page](./../README.md)
 
