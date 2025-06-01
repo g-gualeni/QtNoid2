@@ -17,9 +17,9 @@ endif()
 # =============================================================================
 # Set the target project
 # =============================================================================
-project(QtNoidCore
+project(QtNoidCommon
     VERSION ${PARENT_PROJECT_VERSION}
-    DESCRIPTION "QtNoidCore - Library Life Cycle"
+    DESCRIPTION "QtNoidCommon - Text and File helping API"
     LANGUAGES CXX
 )
 
@@ -30,34 +30,19 @@ set(SOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 
-# =============================================================================
-# Version Header Generation
-# =============================================================================
-# Create uppercase project name for macros
-string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
-
-
-# Configure version header
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}Version.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Version.h"
-    @ONLY
-)
-
 
 # =============================================================================
 # Source Files
 # =============================================================================
 set(SOURCES
-    ${SOURCES_DIR}/core.cpp
+    ${SOURCES_DIR}/text.cpp
 )
 
 # File header
 set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
-    ${HEADERS_DIR}/${PROJECT_NAME}/core.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/text.h
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Version.h  # Generated version header
 )
 
 
@@ -150,12 +135,10 @@ if(BUILD_TESTS)
 endif()
 
 
-
-
 # =============================================================================
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    QtNoidCore.md
+    QtNoidCommon.md
 )
-add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})
+add_custom_target(CommonDocs SOURCES ${PROJECT_DOCS})

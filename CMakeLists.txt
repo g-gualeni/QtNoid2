@@ -11,6 +11,8 @@ set(LEGAL_COPYRIGHT "(C) 2025 Gianbattista Gualeni")
 # Build Options
 # =============================================================================
 option(BUILD_CORE "Build QtNoidCore library" ON)
+option(BUILD_COMMON "Build QtNoidCommon library" ON)
+
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 
@@ -49,6 +51,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # =============================================================================
 if(BUILD_CORE)
     add_subdirectory(Core)
+endif()
+
+if(BUILD_COMMON)
+    add_subdirectory(Common)
 endif()
 
 if(BUILD_EXAMPLES)
