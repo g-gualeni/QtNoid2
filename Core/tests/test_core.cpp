@@ -1,6 +1,5 @@
 #include <QTest>
 #include <QtNoidCore/QtNoidCore>
-#include <QSignalSpy>
 
 class TestCore : public QObject
 {
@@ -12,7 +11,6 @@ private slots:
     void init();
     void cleanup();
     
-    // Test di base
     void testVersion();
     void testBuildInfo();
 
@@ -22,27 +20,18 @@ private:
 
 void TestCore::initTestCase()
 {
-    // Setup globale per tutti i test
-    qDebug() << "Starting QtNoid::Core tests";
 }
 
 void TestCore::cleanupTestCase()
 {
-    // Cleanup globale
-    qDebug() << "Finished QtNoid::Core tests";
 }
 
 void TestCore::init()
 {
-    // Setup per ogni singolo test
-    m_core = new QtNoid::Core(this);
 }
 
 void TestCore::cleanup()
 {
-    // Cleanup per ogni singolo test
-    delete m_core;
-    m_core = nullptr;
 }
 
 void TestCore::testVersion()
