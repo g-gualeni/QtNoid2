@@ -5,15 +5,6 @@
 
 namespace QtNoid {
 
-Core::Core(QObject *parent)
-    : QObject(parent)
-{
-}
-
-Core::~Core()
-{
-}
-
 QString Core::version()
 {
     return QStringLiteral(PROJECT_VERSION);

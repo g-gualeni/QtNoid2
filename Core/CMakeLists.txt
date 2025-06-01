@@ -149,3 +149,13 @@ if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
+
+
+
+# =============================================================================
+# Project Docs
+# =============================================================================
+set(PROJECT_DOCS
+    QtNoidCore.md
+)
+add_custom_target(docs SOURCES ${PROJECT_DOCS})

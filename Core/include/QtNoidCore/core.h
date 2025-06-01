@@ -7,14 +7,9 @@
 
 namespace QtNoid {
 
-class QTNOIDCORE_EXPORT Core : public QObject
+class QTNOIDCORE_EXPORT Core
 {
-    Q_OBJECT
-
 public:
-    explicit Core(QObject *parent = nullptr);
-    ~Core();
-
     static QString version();
     static QString buildInfo();
 };

@@ -69,5 +69,5 @@ set(PROJECT_DOCS
     README.md
     LICENSE
 )
-add_custom_target(docs SOURCES ${PROJECT_DOCS})
+add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})
 

@@ -16,10 +16,10 @@ and the first public version.
 
 
 ## Modules in the library
-* **QtNoidCore**
+* **[QtNoidCore](./Core/QtNoidCore.md)**
   This is a simple class to control the library life cycle.
 
-More modules are in coming soon.
+* ***More modules are in coming soon.***
 
 
 ## Quick Start
