@@ -1,30 +1,23 @@
-# QtNoidCore
-This is a simple class to control the library life cycle.
-It provides static methods to access project version and build information.
+# QtNoidCommon
 
 
 ### Header
 
 ```cpp
-#include "QtNoidCore/core.h"
+#include "QtNoidCommon/QtNoidCommon"
 ```
 
 ### Namespace
 
 ```cpp
-namespace QtNoid
+namespace QtNoid::Common
 ```
+
 
 ### Static Methods
 
-
-- `static QString version()`: Returns the current version of the QtNoid library as a QString.
-- `static QString buildInfo()`: Returns detailed information about the current 
-  library build as a Formatted string containing:
-  - Project name and version
-  - Qt version used for compilation
-  - Build date and time
-  - Project copyright information
+- `static bool isValidUrl(const QString &text)`: Returns true if text contains
+    a valid URL.
 
 
 [← Back to Main Page](./../README.md)

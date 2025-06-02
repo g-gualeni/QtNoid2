@@ -6,7 +6,7 @@ It provides static methods to access project version and build information.
 ### Header
 
 ```cpp
-#include "QtNoidCore/core.h"
+#include "QtNoidCore/QtNoidCore"
 ```
 
 ### Namespace
