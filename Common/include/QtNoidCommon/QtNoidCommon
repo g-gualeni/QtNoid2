@@ -6,5 +6,6 @@
 #define QTNOIDCOMMON_H
 
 #include "text.h"
+#include "scale.h"
 
 #endif // QTNOIDCOMMON_H
