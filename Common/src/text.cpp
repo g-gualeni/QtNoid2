@@ -26,21 +26,23 @@ bool Text::isValidUrl(const QString &text)
     return true;
 }
 
-QStringList Text::tokenizeSnakeCase(const QString &txt)
+
+QStringList Text::tokenizeSnakeCase(const QString &list)
 {
-    return txt.split("_");
+    return list.split('_', Qt::SkipEmptyParts);
 }
 
 QStringList Text::tokenizeSnakeCase(const QStringList &list)
 {
     QStringList out;
     for(const QString &txt : list) {
-        out.append(tokenizeSnakeCase(txt));
+        out.append(txt.split('_', Qt::SkipEmptyParts));
     }
     return out;
 }
 
-QStringList Text::tokenizeCamelCase(const QString &txt)
+
+QStringList Text::tokenizeCamelCase(const QString &text)
 {
     QStringList outTokenList;
 
@@ -50,7 +52,7 @@ QStringList Text::tokenizeCamelCase(const QString &txt)
 
     int ii=0;
     QString nextName;
-    for(auto c : txt){
+    for(auto c : text){
         if(c.isUpper()) {
             // There is an upper case
             if(startUpper == -1) {
@@ -61,10 +63,10 @@ QStringList Text::tokenizeCamelCase(const QString &txt)
             // No more upper case (after at least one)
             // Before Upper Case (if there is something)
             if(startUpper-readIndex > 0) {
-                outTokenList.append(nextName + txt.mid(readIndex, startUpper-readIndex));
+                outTokenList.append(nextName + text.mid(readIndex, startUpper-readIndex));
                 nextName.clear();
             }
-            QString upperSection = txt.mid(startUpper, ii-startUpper);
+            QString upperSection = text.mid(startUpper, ii-startUpper);
             if(upperSection.length() == 1) {
                 // Just one upper char
                 nextName = upperSection;
@@ -81,9 +83,20 @@ QStringList Text::tokenizeCamelCase(const QString &txt)
     }
 
     // Add tail
-    outTokenList.append(nextName + txt.mid(readIndex));
+    outTokenList.append(nextName + text.mid(readIndex));
     return outTokenList;
 }
+
+
+QStringList Text::tokenizeCamelCase(const QStringList &list)
+{
+    QStringList out;
+    for(const QString &txt : list) {
+        out.append(tokenizeCamelCase(txt));
+    }
+    return out;
+}
+
 
 QStringList Text::tokenizeNumberBlocks(const QString &txt, int numberBlockLen)
 {
@@ -133,6 +146,7 @@ QStringList Text::tokenizeNumberBlocks(const QString &txt, int numberBlockLen)
     return outTokenList;
 }
 
+
 QStringList Text::tokenizeNumberBlocks(const QStringList &list, int numberBlockLen)
 {
     QStringList outTokenList;
@@ -142,9 +156,60 @@ QStringList Text::tokenizeNumberBlocks(const QStringList &list, int numberBlockL
     return outTokenList;
 }
 
+
+/**
+ * @brief tokenize tokenize using a list of splitters and contains instead
+ *  of RegExp because this is many times faster even if more limited
+ * @param text
+ * @param splittersString
+ * @param splitCamelCase
+ * @param numberBlockLen: min lengh of the number block or 0 to skip number tokenize
+ * @return
+ */
+QStringList Text::tokenize(const QString &text, const QString &splittersString,
+                           bool splitCamelCase, int minNumBlockLen)
+{
+    // Convert all splitter char we see into splitChar. This is much faster than
+    //   using regular expression
+    QChar splitChar = QChar(0x02);
+    QString newStr = text;
+    for (QChar splitter : splittersString) {
+        newStr = newStr.replace(splitter, splitChar);
+    }
+    QStringList tokenList;
+    tokenList = newStr.split(splitChar, Qt::SkipEmptyParts);
+
+    if(splitCamelCase) {
+        tokenList = tokenizeCamelCase(tokenList);
+    }
+
+    // Create tokens out of number blocks that are at least splitNumbersFromLetters
+    //  consecutive numbers.
+    // "2018-08-23 CamelCase333 22Sup"
+    if(minNumBlockLen > 0) {
+        tokenList = tokenizeNumberBlocks(tokenList, minNumBlockLen);
+    }
+
+    return tokenList;
+}
+
+
 QString Text::convertToCamelCase(const QString &text)
 {
+    QString camelCase;
+    auto tokenList = text.split('_', Qt::SkipEmptyParts);
 
+    // Convert first character to UpperCase
+    camelCase = std::accumulate(tokenList.begin(), tokenList.end(), QString(),
+                                [](const QString &camelCase, const QString &word){
+                                    return camelCase + word.at(0).toUpper() + word.mid(1);
+                                });
+    // -> std::accumulate should be better! At least this is what CPP Check says!
+    //    for(const QString &word : snakeCaseString.split('_', Qt::SkipEmptyParts)) {
+    //        camelCase += word.at(0).toUpper() + word.mid(1);
+    //    }
+
+    return camelCase;
 }
 
 
@@ -153,28 +218,18 @@ QString Text::convertToCamelCase(const QString &text)
  *                            resulting string to lower case
  * @return
  */
-QString Text::convertToSnakeCase(const QString &text)
+QString Text::convertToSnakeCase(const QString &text, int minNumBlockLen)
 {
-    return tokenizeCamelCase(text).join('_').toLower();
-}
-
-
-
-
-QStringList Text::tokenizeCamelCase(const QStringList &list)
-{
-    QStringList out;
-
-    for(const QString &txt : list) {
-        out.append(tokenizeCamelCase(txt));
+    auto tokenList = tokenizeCamelCase(text);
+    if(minNumBlockLen > 0) {
+        tokenList = tokenizeNumberBlocks(tokenList, minNumBlockLen);
     }
-    return out;
+
+    return tokenList.join('_').toLower();
 }
 
-QStringList Text::tokenize(const QString &str, const QString &splittersString, bool splitCamelCase, int minNumBlockLen)
-{
 
-}
+
 
 
 

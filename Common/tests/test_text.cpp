@@ -26,9 +26,17 @@ private slots:
 
     void testTokenizeNumberBlocks_data();
     void testTokenizeNumberBlocks();
-
     void testTokenizeNumberBlocksList_data();
     void testTokenizeNumberBlocksList();
+
+    void testTokenize_data();
+    void testTokenize();
+
+    void testConvertToCamelCase_data();
+    void testConvertToCamelCase();
+
+    void testConvertToSnakeCase_data();
+    void testConvertToSnakeCase();
 
 };
 
@@ -176,6 +184,179 @@ void TestText::testTokenizeNumberBlocksList()
     QFETCH(QStringList, expected);
 
     auto result = Text::tokenizeNumberBlocks(list, minNumBlock);
+    QCOMPARE(result, expected);
+}
+
+void TestText::testTokenize_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("splittersString");
+    QTest::addColumn<bool>("splitCamelCase");
+    QTest::addColumn<int>("numberBlockLen");
+    QTest::addColumn<QStringList>("expected");
+
+    QTest::newRow("FileName012-1Splitters-NoCamelCase-NoNumbers")
+        << "FileTCPName012.png"
+        << "." << false << 0 << QStringList({"FileTCPName012", "png"});
+    QTest::newRow("FileName012-1Splitters-CamelCase-NoNumbers")
+        << "FileTCPName012.png"
+        << "." << true << 0 << QStringList({"File", "TCP", "Name012", "png"});
+    QTest::newRow("FileName012-1Splitters-CamelCase-2Numbers")
+        << "FileTCPName012.png"
+        << "." << true << 2 << QStringList({"File", "TCP", "Name", "012", "png"});
+
+    QTest::newRow("FileName012aa-1Splitters-CamelCase-2Numbers")
+        << "FileTCPName012aa.png"
+        << "." << true << 2 << QStringList({"File", "TCP", "Name", "012", "aa", "png"});
+
+    QTest::newRow("FileName-5Splitters-NoCamelCase-NoNumbers")
+        << "ThisIsCamelFileName99 Sec+01++00-2--00_3__004..png"
+        << " +-_." << false << 0
+        << QStringList({"ThisIsCamelFileName99", "Sec", "01", "00", "2", "00", "3", "004", "png"});
+
+    QTest::newRow("FileName-5Splitters-CamelCase-NoNumbers")
+        << "ThisIsCamelFileName99 Sec+01++01-2--00_3__004..png"
+        << " +-_." << true << 0
+        << QStringList({"This",
+                        "Is",
+                        "Camel",
+                        "File",
+                        "Name99",
+                        "Sec",
+                        "01",
+                        "01",
+                        "2",
+                        "00",
+                        "3",
+                        "004",
+                        "png"});
+
+    QTest::newRow("FileName-5Splitters-CamelCase-2Numbers")
+        << "ThisIsCamelFileName99 Sec+01++01-2--00_3__004..png"
+        << " +-_." << true << 2
+        << QStringList({"This",
+                        "Is",
+                        "Camel",
+                        "File",
+                        "Name",
+                        "99",
+                        "Sec",
+                        "01",
+                        "01",
+                        "2",
+                        "00",
+                        "3",
+                        "004",
+                        "png"});
+
+    QTest::newRow("FilePath-7Splitters-NoCamelCase-NoNumbers")
+        << "this\\is\\my/folder/ThisIsCamelFileName Sec01+002-003_004.png"
+        << " +-_.\\/" << false << 0
+        << QStringList({"this",
+                        "is",
+                        "my",
+                        "folder",
+                        "ThisIsCamelFileName",
+                        "Sec01",
+                        "002",
+                        "003",
+                        "004",
+                        "png"});
+
+    QTest::newRow("LogEntry-2Splitters-NoCamelCase-NoNumbers")
+        << "2020-08-23\t01:27:17\t871 TZ01.ABC011-KK1-2"
+        << "\t " << false << 0
+        << QStringList({"2020-08-23", "01:27:17", "871", "TZ01.ABC011-KK1-2"});
+    QTest::newRow("LogEntry-2Splitters-CamelCase-NoNumbers")
+        << "2020-08-23\t01:27:17\t871 ProductionLotTZ01.ABC011-KK1-2"
+        << "\t " << true << 0
+        << QStringList({"2020-08-23",
+                        "01:27:17",
+                        "871",
+                        "Production",
+                        "Lot",
+                        "T",
+                        "Z01.",
+                        "AB",
+                        "C011-",
+                        "K",
+                        "K1-2"});
+    QTest::newRow("LogEntry-2Splitters-CamelCase-2Numbers")
+        << "2020-08-23\t01:27:17\t871 ProductionLotTZ01.ABC011-KK1-2"
+        << "\t" << true << 2
+        << QStringList({"2020", "-",  "08",  "-", "23",         "01",  ":", "27",
+                        ":",    "17", "871", " ", "Production", "Lot", "T", "Z",
+                        "01",   ".",  "AB",  "C", "011",        "-",   "K", "K1-2"});
+
+    QTest::newRow("LetterNumber-1Split-NoCamelCase-NoNumbers")
+        << "2020-08-23 CamelCase333 22Sup"
+        << " " << false << 0 << QStringList({"2020-08-23", "CamelCase333", "22Sup"});
+
+    QTest::newRow("LetterNumber-1Split-CamelCase-NoNumbers")
+        << "2020-08-23 CamelCase333 22Sup"
+        << " " << true << 0 << QStringList({"2020-08-23", "Camel", "Case333", "22", "Sup"});
+
+    QTest::newRow("LetterNumber-1Split-CamelCase-2Numbers")
+        << "2020-08-23 CamelCase333 22Sup"
+        << " " << true << 2
+        << QStringList({"2020", "-", "08", "-", "23", "Camel", "Case", "333", "22", "Sup"});
+}
+
+void TestText::testTokenize()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, splittersString);
+    QFETCH(bool, splitCamelCase);
+    QFETCH(int, numberBlockLen);
+    QFETCH(QStringList, expected);
+
+    auto result = Text::tokenize(input, splittersString, splitCamelCase,
+                                 numberBlockLen);
+
+    // qDebug() << QtNoidCommon::fastTokenize(input, splittersString, splitCamelCase, numberBlockLen);
+    QCOMPARE(result, expected);
+}
+
+void TestText::testConvertToCamelCase_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("_this_snake_case") << "_this_is_a_snake_case"
+                                      << "ThisIsASnakeCase";
+    QTest::newRow("snake123_turtle_") << "snake123_turtle_"
+                                      << "Snake123Turtle";
+
+}
+
+void TestText::testConvertToCamelCase()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+    auto result = Text::convertToCamelCase(input);
+    QCOMPARE(result, expected);
+}
+
+void TestText::testConvertToSnakeCase_data()
+{
+    QTest::addColumn<int>("minNumBlockLen");
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("CamelNotation-0Numbers")<< 0 << "thisIsACamelNotation123"
+                                          << "this_is_a_camel_notation123";
+    QTest::newRow("Snake1Turtle-2Numbers") << 2 << "Snake1Turtle"
+                                    << "snake1_turtle";
+    QTest::newRow("TCPSnakeIp127-2Numbers") << 2 << "TCPSnakeIp127"
+                                      << "tcp_snake_ip_127";
+}
+
+void TestText::testConvertToSnakeCase()
+{
+    QFETCH(int, minNumBlockLen);
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+    auto result = Text::convertToSnakeCase(input, minNumBlockLen);
     QCOMPARE(result, expected);
 }
 

@@ -8,28 +8,36 @@ project(QtNoidCommonTests)
 # =============================================================================
 find_package(Qt6 REQUIRED COMPONENTS Test Core)
 
-set(CMAKE_AUTOMOC ON)
+# set(CMAKE_AUTOMOC ON)
 
-add_executable(test_text
-    test_text.cpp
-)
 
-target_link_libraries(test_text
-    Qt6::Test
-    Qt6::Core    
-    QtNoidCommon  # Direct Target to the library as artifcat of the project
-)
+function(create_qt_test test_name)
+    add_executable(${test_name}
+        ${test_name}.cpp
+    )
 
-add_test(NAME test_text COMMAND test_text)
+    target_link_libraries(${test_name}
+        Qt6::Test
+        Qt6::Core
+        QtNoidCommon
+    )
+
+    add_test(NAME ${test_name} COMMAND ${test_name})
+
+    message(STATUS "Created test: ${test_name}")
+endfunction()
+
+# =============================================================================
+# Tesing Text
+# =============================================================================
+create_qt_test(test_text)
 
 
 # =============================================================================
-# Proprietà dei test
+# Tesing Scale
 # =============================================================================
-set_target_properties(test_text PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-)
+create_qt_test(test_scale)
+
 
 # =============================================================================
 # Test Configuration

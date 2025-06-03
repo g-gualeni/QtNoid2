@@ -13,18 +13,23 @@ class QTNOIDCOMMON_EXPORT Text
 public:
     static bool isValidUrl(const QString &text);
 
-    static QStringList tokenizeSnakeCase(const QString &txt);
+    static QStringList tokenizeSnakeCase(const QString &text);
     static QStringList tokenizeSnakeCase(const QStringList &list);
-    static QStringList tokenizeCamelCase(const QString &txt);
-    static QStringList tokenizeCamelCase(const QStringList &list);
-    static QStringList tokenizeNumberBlocks(const QString &txt, int minNumberBlockLen = 2);
-    static QStringList tokenizeNumberBlocks(const QStringList &list, int minNumberBlockLen = 2);
 
-    static QStringList tokenize(const QString &str, const QString &splittersString, bool splitCamelCase,
-                                int minNumBlockLen);
+    static QStringList tokenizeCamelCase(const QString &text);
+    static QStringList tokenizeCamelCase(const QStringList &list);
+
+    static QStringList tokenizeNumberBlocks(const QString &text,
+                                            int minNumberBlockLen=2);
+    static QStringList tokenizeNumberBlocks(const QStringList &list,
+                                            int minNumberBlockLen=2);
+
+    static QStringList tokenize(const QString &text, const QString &splittersString,
+                                bool splitCamelCase=true, int minNumBlockLen=2);
 
     static QString convertToCamelCase(const QString &text);
-    static QString convertToSnakeCase(const QString &text);
+
+    static QString convertToSnakeCase(const QString &text, int minNumBlockLen=2);
 
 private:
 };
