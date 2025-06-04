@@ -13,21 +13,42 @@
 namespace QtNoid::Common
 ```
 
+## Class File
+This class contains a set of helper methods to work with files
+
+### Static Methods
+
+### Non Static Methods
+
+
 ## Class Scale
 This class contains a set of helper methods to convert numbers to a human readable
 text 
 
 ### Static Methods
- - `static QStringList scalePrefixList()`:
-  - `static qint64 scaleMultiplier(const QString &prefix)`:
- - `static QString scaleMultiplierPrefix(qint64 scale)`:
+ - `static QStringList scalePrefixList()`: return a list of prefix like "k","M","G","T","P","E".
+ - `static qint64 scaleMultiplier(const QString &prefix)`: given the standard prefix return the 
+ value of the multiplier.
+ - `static QString scaleMultiplierPrefix(qint64 value)`: evaluate the multiplier to be used with
+ value.
  
+ - `static QString sanitizeString(const QString &input)`: remove double spaces or
+   control characters from the input text.
+
  - `static QString scaleAutoUpToExaByte(qint64 value, 
-    const QString& unitOfMeasure="Byte")`:    
+    const QString& unitOfMeasure="Byte")`: convert the value into a string that 
+    has 2 decimal places and a scale prefix like k, M, G and so on. This consider
+    1 kByte as 1024 bytes.
  - `static QString scaleAutoUpToExa(qint64 value, const QString& unitOfMeasure)`:
+ converts the value into a string with 2 decimal places. The scale prefix is 
+ attached to the unitOfMeasure as in this example: 1.00 [kg]
  
- - `static QString scaleNanoSecsUpToDays(quint64 ns)`:
- - `static QString scaleNanoSecsUpToDays(qint64 ns)`:
+ - `static QString scaleNanoSecsUpToDays(quint64 ns)`: convert ns to a more 
+ readable value using ms, seconds, minutes, hours, days. In this case ns is an 
+ unsigned value.
+ - `static QString scaleNanoSecsUpToDays(qint64 ns)`: convert ns to a more 
+ readable value using ms, seconds, minutes, hours, days. In this case ns is a 
+ signed value.
 
 
 ## Class Text
@@ -38,6 +59,8 @@ to camelcase or snake case text strings.
 
 - `static bool isValidUrl(const QString &text)`: Returns true if text contains
     a valid URL.
+- `static bool isValidEmail(const QString &email)`: Returns true if text contains
+        a valid email address.
 
 - `static QStringList tokenizeSnakeCase(const QString &text)`: Split text into tokens
 using the "_" character as separator.
@@ -59,9 +82,10 @@ For every text in the list it convert block numbers longer than minNumberBlockLe
 into tokens. The default length is 2 so QtNoid2 remains 1 token, while Thursday25 
 became {Thursday, 25}.
 
-- `static QStringList tokenize(const QString &text, const QString &splittersString, 
-    bool splitCamelCase, int minNumBlockLen=2)`: Split the text into tokens. CamelCase
-    and numeric blocks can be activated or disabled.
+- `static QStringList tokenize(const QString &text, const QString 
+    &splittersString="_-. /\\", bool splitCamelCase=true, int minNumBlockLen=2)`: Split the text into tokens. CamelCase
+    and numeric blocks can be activated or disabled. The default value should 
+    cover 90% of use cases for path or symbols.
 
 - `static QString convertToCamelCase(const QString &text)`: convert text into a 
 camel_case string.

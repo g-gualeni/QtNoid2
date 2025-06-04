@@ -74,6 +74,8 @@ include(CMakePackageConfigHelpers)
 set(PROJECT_DOCS
     README.md
     LICENSE
+    UserStories/QtNoid.odp
+	UserStories/QtNoidCommon_UserStories.odp
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})
 

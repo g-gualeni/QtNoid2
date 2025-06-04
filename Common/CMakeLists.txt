@@ -37,6 +37,7 @@ set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCES
     ${SOURCES_DIR}/text.cpp
     ${SOURCES_DIR}/scale.cpp
+    ${SOURCES_DIR}/file.cpp
 )
 
 # File header
@@ -44,6 +45,7 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
     ${HEADERS_DIR}/${PROJECT_NAME}/text.h
     ${HEADERS_DIR}/${PROJECT_NAME}/scale.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/file.h
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
 )
 

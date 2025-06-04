@@ -1,5 +1,6 @@
 #include "QtNoidCommon/text.h"
 #include <QCoreApplication>
+#include <QRegularExpression>
 #include <QUrl>
 
 namespace QtNoid {
@@ -24,6 +25,38 @@ bool Text::isValidUrl(const QString &text)
     }
 
     return true;
+}
+
+bool Text::isValidEmail(const QString &email)
+{
+    if (email.isEmpty()) {
+        return false;
+    }
+
+    // Pattern regex per validazione email base
+    static const QRegularExpression emailRegex(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)");
+    QRegularExpressionMatch match = emailRegex.match(email);
+
+    return match.hasMatch();
+}
+
+QString Text::sanitizeString(const QString &input)
+{
+    if (input.isEmpty()) {
+        return {};
+    }
+
+    QString result = input.trimmed();
+
+    // replace multiple space with a single space character
+    static const QRegularExpression multipleSpacesRegex("\\s+");
+    result.replace(multipleSpacesRegex, " ");
+
+    // Remove control characters
+    static const QRegularExpression controlCharsRegex("[\\x00-\\x1F\\x7F]");
+    result.remove(controlCharsRegex);
+
+    return result;
 }
 
 

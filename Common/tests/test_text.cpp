@@ -13,6 +13,11 @@ private slots:
 
     void testIsValidUrl_data();
     void testIsValidUrl();
+    void testIsValidEmail_data();
+    void testIsValidEmail();
+
+    void testSanitizeString_data();
+    void testSanitizeString();
 
     void testTokenizeSnakeCase_data();
     void testTokenizeSnakeCase();
@@ -82,6 +87,57 @@ void TestText::testIsValidUrl()
     QCOMPARE(result, expected);
 
 }
+
+void TestText::testIsValidEmail_data()
+{
+    QTest::addColumn<QString>("email");
+    QTest::addColumn<bool>("expected");
+
+    QTest::newRow("valid_simple") << "test@example.com" << true;
+    QTest::newRow("valid_with_dots") << "user.name@domain.co.uk" << true;
+    QTest::newRow("valid_with_plus") << "user+tag@example.org" << true;
+    QTest::newRow("invalid_no_at") << "invalid.email" << false;
+    QTest::newRow("invalid_no_domain") << "user@" << false;
+    QTest::newRow("invalid_no_user") << "@domain.com" << false;
+    QTest::newRow("invalid_no_tld") << "user@domain" << false;
+    QTest::newRow("empty") << "" << false;
+
+}
+
+void TestText::testIsValidEmail()
+{
+    QFETCH(QString, email);
+    QFETCH(bool, expected);
+
+    auto result = Text::isValidEmail(email);
+    QCOMPARE(result, expected);
+
+}
+
+void TestText::testSanitizeString_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("empty") << "" << "";
+    QTest::newRow("normal") << "Hello World" << "Hello World";
+    QTest::newRow("with_spaces") << "  Hello   World  " << "Hello World";
+    QTest::newRow("with_tabs") << "\tHello\tWorld\t" << "Hello World";
+    QTest::newRow("with_newlines") << "Hello\nWorld\r\n" << "Hello World";
+    QTest::newRow("control_chars") << "Hello\x01\x02World" << "HelloWorld";
+    QTest::newRow("multiple_spaces") << "Hello     World" << "Hello World";
+
+}
+
+void TestText::testSanitizeString()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+
+    QString result = Text::sanitizeString(input);
+    QCOMPARE(result, expected);
+}
+
 
 void TestText::testTokenizeSnakeCase_data()
 {
@@ -194,6 +250,10 @@ void TestText::testTokenize_data()
     QTest::addColumn<bool>("splitCamelCase");
     QTest::addColumn<int>("numberBlockLen");
     QTest::addColumn<QStringList>("expected");
+
+    QTest::newRow("Multiple   Spaces   -1Splitters-NoCamelCase-NoNumbers")
+        << "Multiple   Spaces   "
+        << " " << false << 0 << QStringList({"Multiple", "Spaces"});
 
     QTest::newRow("FileName012-1Splitters-NoCamelCase-NoNumbers")
         << "FileTCPName012.png"
@@ -344,11 +404,11 @@ void TestText::testConvertToSnakeCase_data()
     QTest::addColumn<QString>("expected");
 
     QTest::newRow("CamelNotation-0Numbers")<< 0 << "thisIsACamelNotation123"
-                                          << "this_is_a_camel_notation123";
+                                            << "this_is_a_camel_notation123";
     QTest::newRow("Snake1Turtle-2Numbers") << 2 << "Snake1Turtle"
-                                    << "snake1_turtle";
+                                           << "snake1_turtle";
     QTest::newRow("TCPSnakeIp127-2Numbers") << 2 << "TCPSnakeIp127"
-                                      << "tcp_snake_ip_127";
+                                            << "tcp_snake_ip_127";
 }
 
 void TestText::testConvertToSnakeCase()
