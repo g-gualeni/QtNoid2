@@ -37,8 +37,7 @@ QString File::autoNamingNextName(const QString &currentName)
 
     // If no counter just add 001
     if(currentCounter.isEmpty()){
-        qDebug() << __func__ << FI.path() << FI.dir().filePath("AA");
-        newFileName = FI.dir().filePath(QString("%1 001.%2").arg(baseName, FI.completeSuffix()));
+        newFileName = FI.canonicalFilePath() + QString("%1 001.%2").arg(baseName, FI.completeSuffix());
         return newFileName;
     }
 
