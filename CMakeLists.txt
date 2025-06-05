@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(QtNoid
-    VERSION 2.0.0
+    VERSION 2.0.1
     DESCRIPTION "${PROJECT_NAME} - Modular Qt Library version 2"
     LANGUAGES CXX
 )
