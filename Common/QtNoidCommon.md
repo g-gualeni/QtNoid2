@@ -19,10 +19,19 @@ with files
 
 ### Static Methods
 - `QString File::autoNamingNextName(const QString &fileName)`: splits the file
-   name in tokens, finds the last number block if present and add 1 while trying 
-   to replicate the numbering scheme.This means that 1 becomes 2, 001 becomes 002
-   and (1) becomes (2). The fileName can be just the file name or a full path. If
-   there are no number blocks it adds 001 right before the first "."
+  name in tokens, finds the last number block if present and add 1 while trying 
+  to replicate the numbering scheme.This means that 1 becomes 2, 001 becomes 002
+  and (1) becomes (2). The fileName can be just the file name or a full path. If
+  there are no number blocks it adds ` 001` right before the first "."
+
+- `static QString autoNaming(const QString &filePath)`: given the file path 
+  as a string, calculate the next free name in the folder preserving the 
+  numbering pattern or adding ` 001` right before the first ".".
+
+- `static QFileInfo autoNaming(const QFileInfo &fileInfo)`: starting from
+  fileInfo, calculate the next free name in the folder preserving the numbering 
+  pattern or adding ` 001` right before the first ".".
+
 
 ### Non Static Methods
 

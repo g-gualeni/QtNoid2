@@ -15,15 +15,14 @@ public:
 
     static QString autoNamingNextName(const QString &currentName);
 
-    static QString fileAutoNaming(const QString &filePath);
-    static QFileInfo fileAutoNaming(const QFileInfo &fileInfo);
+    static QString autoNaming(const QString &filePath);
+    static QFileInfo autoNaming(const QFileInfo &fileInfo);
 
+    static bool compareIfEqual(const QString &filePath1, const QString &filePath2);
+    static bool compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2);
 
-    static bool fileCompareIfEqual(const QString &path, const QString &newPath);
-    static bool fileCompareIfEqual(const QFileInfo &afileInfo, const QFileInfo &newFileInfo);
-
-    static bool fileIsTextFile(const QString &absoluteFilePath);
-    static bool fileIsTextFile(const QFileInfo &fileInfo);
+    static bool isTextFile(const QString &filePath);
+    static bool isTextFile(const QFileInfo &fileInfo);
 
     static qint64 fileSaveAsTextFile(const QString &absoluteFilePath, const QByteArray &data, bool addExtension = true);
     static qint64 fileSaveAsTextFile(const QString &absoluteFilePath, const QStringList &data, bool addExtension = true);

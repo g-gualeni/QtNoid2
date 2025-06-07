@@ -37,7 +37,11 @@ QString File::autoNamingNextName(const QString &currentName)
 
     // If no counter just add 001
     if(currentCounter.isEmpty()){
-        newFileName = FI.canonicalFilePath() + QString("%1 001.%2").arg(baseName, FI.completeSuffix());
+        newFileName = QString("%1 001.%2").arg(baseName, FI.completeSuffix());
+        if(FI.filePath() != FI.fileName()) {
+            // There is also a path
+            newFileName = FI.path() + "/" + newFileName;
+        }
         return newFileName;
     }
 
@@ -53,7 +57,7 @@ QString File::autoNamingNextName(const QString &currentName)
 }
 
 
-QString File::fileAutoNaming(const QString &filePath)
+QString File::autoNaming(const QString &filePath)
 {
     QFileInfo fileInfo(filePath);
     if(!fileInfo.exists())
@@ -68,9 +72,123 @@ QString File::fileAutoNaming(const QString &filePath)
 }
 
 
-QFileInfo QtNoid::Common::File::fileAutoNaming(const QFileInfo &fileInfo)
+QFileInfo QtNoid::Common::File::autoNaming(const QFileInfo &fileInfo)
 {
+    if(!fileInfo.exists())
+        return fileInfo;
+
+    QString newFileName = fileInfo.fileName();
+
+    do {
+        newFileName = autoNamingNextName(newFileName);
+    } while(QFile::exists(newFileName));
+
+    return QFileInfo(newFileName);
 }
+
+bool File::compareIfEqual(const QString &filePath1, const QString &filePath2)
+{
+    return compareIfEqual(QFileInfo(filePath1), QFileInfo(filePath2));
+}
+
+
+bool File::compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2)
+{
+    // Non existing files are equal
+    if (!fileInfo1.exists() && !fileInfo2.exists()) {
+        return true;
+    }
+    // If one is not existing then they are different
+    if (!fileInfo1.exists() || !fileInfo2.exists()) {
+        return false; // Solo uno inesistente = diversi
+    }
+    // Size check
+    qint64 size = fileInfo1.size();
+    if (size != fileInfo2.size()) {
+        return false;
+    }
+
+    // is the same fisical path?
+    if (fileInfo1.canonicalFilePath() == fileInfo2.canonicalFilePath()) {
+        return true;
+    }
+
+
+    QFile f1(fileInfo1.absoluteFilePath());
+    QFile f2(fileInfo2.absoluteFilePath());
+
+    if (!f1.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+    if (!f2.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+
+    uchar* f1Buff = f1.map(0, size);
+    uchar* f2Buff = f2.map(0, size);
+
+    int res = memcmp(f1Buff, f2Buff, static_cast<unsigned int>(size));
+
+    f1.unmap(f1Buff);
+    f2.unmap(f2Buff);
+
+    if(res ==0) {
+        // the two files are Equal
+        return true;
+    }
+
+
+    return false;
+}
+
+bool File::isTextFile(const QString &filePath)
+{
+    QFileInfo FI(filePath);
+    return isTextFile(FI);
+}
+
+bool File::isTextFile(const QFileInfo &fileInfo)
+{
+    // Sanity check
+    if (!fileInfo.exists()) {
+        return false;
+    }
+
+    if(!fileInfo.isFile()) {
+        return false;
+    }
+
+
+    // Read filesize or max 50.000 char and look for \0
+    qint64 size = qMin(static_cast<qint64>(50000), fileInfo.size());
+    QFile file(fileInfo.absoluteFilePath());
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+    QTextStream stream(&file);
+    stream.setAutoDetectUnicode(true);
+    QString content = stream.read(size);
+    qDebug() << "Codec rilevato:" << stream.encoding();
+
+    // Controllo se contiene caratteri non stampabili?
+    //  - dipende, perchè se fosse UNICODE ne avrebbe molti
+    // uso il reader di Qt e cosa succede?
+
+    // QTextStream bool QTextStream::autoDetectUnicode() const
+
+    // e lo converto in unicode
+
+    //  qDebug() << "Codec rilevato:" << stream.codec()->name();
+
+
+    // Attenzione che devo gestire sia il testo UCHAR che il testo UTF8
+
+    return false;
+}
+
+
+
 
 
 
