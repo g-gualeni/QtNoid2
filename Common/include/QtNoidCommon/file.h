@@ -22,7 +22,6 @@ public:
     static bool compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2);
 
     static bool isTextFile(const QString &filePath);
-    static void extracted(QByteArray &rawData, int &controlChars);
     static bool isTextFile(const QFileInfo &fileInfo);
 
     static QString saveAsTextFile(const QString &data, const QString &filePath, const QString &basePath="", const QString &fileSuffix="*");
@@ -30,7 +29,6 @@ public:
 
     static QStringList readAsStringList(const QString &absoluteFilePath);
 
-    // Make it static, use a private non static
     QStringList listPathRecursively(const QString &path, const QStringList &nameFilters);
 
 private:

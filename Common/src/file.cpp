@@ -203,15 +203,13 @@ bool File::isTextFile(const QFileInfo &fileInfo)
 }
 
 
-
-
-
-
-
 QFileInfo File::saveAsTextFileCreatePath(const QString &filePath, const QString &basePath, const QString &fileSuffix)
 {
-    QDir dir(basePath);
-    QFileInfo fileInfo(dir, filePath);
+    QString newPath = basePath + "/" + filePath;
+    QFileInfo fileInfo(newPath);
+
+    QDir dir;
+
     if(!dir.mkpath(fileInfo.absolutePath())){
         return {};
     };
@@ -262,7 +260,68 @@ QString File::saveAsTextFile(const QStringList &data, const QString &filePath, c
     stream << data.join("\n");
 
     return path;
+}
 
+QStringList File::readAsStringList(const QString &absoluteFilePath)
+{
+    QFile f(absoluteFilePath);
+    if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return {};
+    }
+    QTextStream stream(&f);
+
+    QStringList lines;
+    while (!stream.atEnd()) {
+        lines << stream.readLine();
+    }
+
+    f.close();
+
+    return lines;
+}
+
+
+QStringList File::listPathRecursively(const QString &path, const QStringList &nameFilters)
+{
+    QStringList list;
+    QFileInfo pathFI(path);
+    QDir dir;
+
+    // If we have a path then we look for siblings and all
+    // sub-folders
+    if(pathFI.exists() && pathFI.isFile()) {
+        dir.setPath(pathFI.absolutePath());
+    }
+    else {
+        dir.setPath(path);
+    }
+
+    // We have a folder, scan it!
+    // Use System to list also broken .lnk files
+    QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System;
+
+    // entryInfoList(nameFilters, ...) skip filter also folders name
+    const QFileInfoList fileList = dir.entryInfoList(filters);
+    for(const QFileInfo& FI : fileList) {
+        if(FI.isDir()) {
+            list.append(listPathRecursively(FI.filePath(), nameFilters));
+        }
+        else {
+            QString filePath = FI.filePath();
+            if(nameFilters.isEmpty()) {
+                list << filePath;
+            }
+            // else not needed
+            for(const QString &ext : nameFilters) {
+                if(filePath.endsWith(ext, Qt::CaseInsensitive)) {
+                    list << filePath;
+                    break;
+                }
+            }
+        }
+    }
+
+    return list;
 }
 
 

@@ -43,7 +43,18 @@ private slots:
     void testSaveAsTextFile4StringList_data();
     void testSaveAsTextFile4StringList();
 
+    void testSaveAsTextFileWithSubFolder_data();
     void testSaveAsTextFileWithSubFolder();
+
+    void testReadAsStringList();
+
+
+    void testListPathRecursively_data();
+    void testListPathRecursively();
+
+    void testListPathRecursivelyStartingFromAFileInTheFolder();
+
+
 
 private:
     QDir testDataDir(const QString &testMethod, const QString &dataTag = {}) const
@@ -484,11 +495,68 @@ void TestFile::testSaveAsTextFile4StringList()
 
 }
 
+void TestFile::testSaveAsTextFileWithSubFolder_data()
+{
+    QTest::addColumn<QString>("filePath");
+    QTest::addColumn<QString>("fileSuffix");
+    QTest::addColumn<QString>("expectedRelativePath");
+
+    QTest::newRow("TxtFileWithSubFolder"  ) << "a/TxtFileWithSubFolder" << "" << "a/TxtFileWithSubFolder";
+    QTest::newRow("IniFile+SubFolderNo"  ) << "a/IniFile+SubFolder.txt" << ".ini" << "a/IniFile+SubFolder.ini";
+
+}
+
 void TestFile::testSaveAsTextFileWithSubFolder()
 {
-        // QTest::newRow("TxtFileWithSubFolder"  ) << "/a/TxtFileWithSubFolder" << "" << "TxtFileWithSubFolderNo";
+    QFETCH(QString, filePath);
+    QFETCH(QString, fileSuffix);
+    QFETCH(QString, expectedRelativePath);
 
-        // QTest::newRow("TxtFileWithSubFolder"  ) << "/a/TxtFileWithSubFolder" << "" << "TxtFileWithSubFolderNo";
+    QDir dir = testDataDir(__func__);
+    QStringList data = {"AA BB CC", "KK"};
+    auto resPath = File::saveAsTextFile(data, filePath, dir.absolutePath(), fileSuffix);
+
+    auto relPath = dir.relativeFilePath(resPath);
+    QCOMPARE(relPath, expectedRelativePath);
+
+    // QTest::newRow("TxtFileWithSubFolder"  ) << "/a/TxtFileWithSubFolder" << "" << "TxtFileWithSubFolderNo";
+}
+
+
+void TestFile::testReadAsStringList()
+{
+    QDir dir = testDataDir(__func__);
+    dir.mkpath(dir.absolutePath());
+
+    auto path = dir.absoluteFilePath("readAsStringList.txt");
+
+    QFile f(path);
+    QCOMPARE(f.open(QIODevice::WriteOnly | QIODevice::Text), true);
+    QTextStream stream(&f);
+    QStringList data = {"AA BB CC", "KK"};
+    stream << data.join("\n");
+    f.close();
+
+    auto out = File::readAsStringList(path);
+
+    QCOMPARE(out, data);
+
+
+}
+
+void TestFile::testListPathRecursively_data()
+{
+
+}
+
+void TestFile::testListPathRecursively()
+{
+    QCOMPARE(false, true);
+}
+
+void TestFile::testListPathRecursivelyStartingFromAFileInTheFolder()
+{
+    QCOMPARE(false, true);
 }
 
 

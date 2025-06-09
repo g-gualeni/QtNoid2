@@ -7,13 +7,18 @@
 #include "QtNoidCommon/QtNoidCommon"
 ```
 
+&nbsp;
+
+
 ## Namespace
 
 ```cpp
 namespace QtNoid::Common
 ```
 
-## Class File
+&nbsp;
+
+## Class: File
 This class contains a set of helper methods to work
 with files
 
@@ -31,12 +36,46 @@ with files
 - `static QFileInfo autoNaming(const QFileInfo &fileInfo)`: starting from
   fileInfo, calculate the next free name in the folder preserving the numbering 
   pattern or adding ` 001` right before the first ".".
+  
+- `static bool compareIfEqual(const QString &filePath1, const QString &filePath2)`: 
+  given two full file path returns true if the files are byte per byte equals.
+  
+- `static bool compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2)`
+  Compares 2 files and return true if they are equal byte per byte.
 
+- `static bool isTextFile(const QString &filePath)`: read the file and return true
+  if it guess this is a text file. 
+  
+- `static bool isTextFile(const QFileInfo &fileInfo)`: read the file pointed by
+  fileInfo and returns true if it guess this is a text file. 
+
+- `static QString saveAsTextFile(const QString &data, const QString &filePath, 
+  const QString &basePath="", const QString &fileSuffix="*")`:
+  Save data to a text file as specified by filePath. FilePath can be a fileName 
+  with or without suffix. We can also specify a base folder and ask the method
+  to replace the suffix with fileSuffix.
+  
+- `static QString saveAsTextFile(const QStringList &data, const QString &filePath,
+  const QString &basePath="", const QString &fileSuffix="*")`
+  Save a string list to a text file as specified by filePath. FilePath can be a 
+  fileName with or without suffix. We can also specify a base folder and ask the 
+  method to replace the suffix with fileSuffix.
+
+- `static QStringList readAsStringList(const QString &absoluteFilePath)`: reads
+  a text file and return it as a string list.
+  
 
 ### Non Static Methods
 
+- `QStringList listPathRecursively(const QString &path, const QStringList 
+   &nameFilters)`: returns a string list with the full path of all files available
+   under the specified path and matching the nameFilters. If nameFilters is empty
+   the method collects all files. If path points to a file, then it also returns 
+   all its siblings.
 
-## Class Scale
+&nbsp;
+
+## Class: Scale
 This class contains a set of helper methods to convert numbers to 
 a human readable text. 
 
@@ -69,8 +108,9 @@ a human readable text.
     to a readable value using ms, seconds, minutes, hours, days. In
     this case ns is a signed value.
 
+&nbsp;
 
-## Class Text
+## Class: Text
 This class contains a set of helper methods to cleanup, tokenize, 
 convert to camelcase or snake case text strings.
 
@@ -98,9 +138,9 @@ convert to camelcase or snake case text strings.
     Split text into tokens using the character capitalization 
     change as a start for the new token.
     
-- `static QStringList tokenizeCamelCase(const QStringList &list)`: Split all text 
-    Split all strings in the list and return all tokens into one 
-    list of tokens.
+- `static QStringList tokenizeCamelCase(const QStringList &list)`: 
+  Split all strings in the list and return all tokens into one 
+  list of tokens.
 
 - `static QStringList tokenizeNumberBlocks(const QString &txt, 
     int minNumberBlockLen=2)`: Convert block numbers longer than 

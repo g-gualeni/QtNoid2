@@ -15,8 +15,9 @@ It provides static methods to access project version and build information.
 namespace QtNoid
 ```
 
-### Static Methods
+## Class: Core
 
+### Static Methods
 
 - `static QString version()`: Returns the current version of the QtNoid library as a QString.
 - `static QString buildInfo()`: Returns detailed information about the current 
