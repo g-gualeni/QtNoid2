@@ -1,5 +1,8 @@
 #include <QTest>
 #include <QtNoidCommon/QtNoidCommon>
+#include <QImage>
+#include <QPainter>
+#include <QPdfWriter>
 
 class TestFile : public QObject
 {
@@ -23,11 +26,27 @@ private slots:
     void testCompareIfEqual_data();
     void testCompareIfEqual();
 
-    void testIsTextFile_data();
-    void testIsTextFile();
+    void testIsTextFileShouldBeTrue_data();
+    void testIsTextFileShouldBeTrue();
+
+    void testIsTextFile_ImagesShouldBeFalse_data();
+    void testIsTextFile_ImagesShouldBeFalse();
+
+    void testIsTextFile_PdfShouldBeFalse();
+
+    void testIsTestFile_EmptyFileShouldBeFalse();
+
+    void testSaveAsTextFile4String_data();
+    void testSaveAsTextFile4String();
+
+
+    void testSaveAsTextFile4StringList_data();
+    void testSaveAsTextFile4StringList();
+
+    void testSaveAsTextFileWithSubFolder();
 
 private:
-    QDir testDataDir(const QString &testMethod, const QString &dataTag) const
+    QDir testDataDir(const QString &testMethod, const QString &dataTag = {}) const
     {
         QString dataPath = QDir::currentPath() +
                            QDir::separator() + metaObject()->className() +
@@ -230,18 +249,251 @@ void TestFile::testCompareIfEqual()
 
 }
 
-void TestFile::testIsTextFile_data()
+void TestFile::testIsTextFileShouldBeTrue_data()
 {
-    qDebug() << __func__;
+    QTest::addColumn<bool>("enableBom");
+    QTest::addColumn<QStringConverter::Encoding>("codec");
+    //     enum Encoding {
+    //         Utf8,
+    // #ifndef QT_BOOTSTRAPPED
+    //         Utf16,
+    //         Utf16LE,
+    //         Utf16BE,
+    //         Utf32,
+    //         Utf32LE,
+    //         Utf32BE,
+    // #endif
+    //         Latin1,
+    //         System,
 
-    QDir dir = testDataDir(__func__, QTest::currentDataTag());
+    // These test cases are not significant since a correct decoding is not possible
+    // QTest::newRow("NoBom-Utf16"     ) << false << QStringConverter::Utf16;
+    // QTest::newRow("NoBom-Utf16LE"   ) << false << QStringConverter::Utf16LE;
+    // QTest::newRow("NoBom-Utf16BE"   ) << false << QStringConverter::Utf16BE;
+    // QTest::newRow("NoBom-Utf32"     ) << false << QStringConverter::Utf32;
+    // QTest::newRow("NoBom-Utf32LE"   ) << false << QStringConverter::Utf32LE;
+    // QTest::newRow("NoBom-Utf32BE"   ) << false << QStringConverter::Utf32BE;
+
+    QTest::newRow("NoBom-Utf8"      ) << false << QStringConverter::Utf8;
+    QTest::newRow("NoBom-Latin1"    ) << false << QStringConverter::Latin1;
+    QTest::newRow("NoBom-System"    ) << false << QStringConverter::System;
+
+    QTest::newRow("Bom-Utf8"      ) << true << QStringConverter::Utf8;
+    QTest::newRow("Bom-Utf16"     ) << true << QStringConverter::Utf16;
+    QTest::newRow("Bom-Utf16LE"   ) << true << QStringConverter::Utf16LE;
+    QTest::newRow("Bom-Utf16BE"   ) << true << QStringConverter::Utf16BE;
+    QTest::newRow("Bom-Utf32"     ) << true << QStringConverter::Utf32;
+    QTest::newRow("Bom-Utf32LE"   ) << true << QStringConverter::Utf32LE;
+    QTest::newRow("Bom-Utf32BE"   ) << true << QStringConverter::Utf32BE;
+    QTest::newRow("Bom-Latin1"    ) << true << QStringConverter::Latin1;
+    QTest::newRow("Bom-System"    ) << true << QStringConverter::System;
+
 }
 
-void TestFile::testIsTextFile()
+
+void TestFile::testIsTextFileShouldBeTrue()
 {
+    QFETCH(bool, enableBom);
+    QFETCH(QStringConverter::Encoding, codec);
+
+    QDir dir = testDataDir(__func__);
+    // dir.removeRecursively();
+    QCOMPARE(dir.mkpath(dir.absolutePath()), true);
+    auto path = dir.absoluteFilePath( QTest::currentDataTag() + QString(".txt"));
+    auto file = QFile(path);
+
+    QCOMPARE(file.open(QIODevice::WriteOnly | QIODevice::Text), true);
+
+    QTextStream out(&file);
+    out.setGenerateByteOrderMark(enableBom);
+    out.setEncoding(codec);
+    out << "pippoàé pippoàéñ 🚀"<< Qt::endl;
+    out << "Testo con BOM UTF-8" << Qt::endl;
+    out << "Caratteri speciali: àèìòù 🚀" << Qt::endl;
+    QString goodLuck = "祝你好运";
+    out << goodLuck << Qt::endl;
+
+    QCOMPARE(File::isTextFile(path), true);
+}
+
+void TestFile::testIsTextFile_ImagesShouldBeFalse_data()
+{
+    QTest::addColumn<QString>("format");
+
+    QTest::newRow("Image BMP"    ) << ".BMP" ;
+    QTest::newRow("Image PNG"    ) << ".PNG" ;
+    QTest::newRow("Image JPG"    ) << ".JPG" ;
+    QTest::newRow("Image TIF"    ) << ".TIF" ;
+}
+
+void TestFile::testIsTextFile_ImagesShouldBeFalse()
+{
+    QFETCH(QString, format);
+
+    QDir dir = testDataDir(__func__);
+    QCOMPARE(dir.mkpath(dir.absolutePath()), true);
+
+    auto path = dir.absoluteFilePath( QTest::currentDataTag() + format);
+
+
+    QSize size(640,480);
+    QRect rect({0,0}, size);
+    QPixmap pixmap(size);
+    QPainter painter(&pixmap);
+    QLinearGradient gradient(rect.topLeft(), rect.bottomRight());
+    gradient.setColorAt(0, Qt::green);
+    gradient.setColorAt(1, Qt::darkGreen);
+    painter.fillRect(rect, gradient);
+    painter.setPen(Qt::white);
+    painter.setFont(QFont("Arial", 30, 900, true));
+    painter.drawText(10, 50, "Sample Image Qt");
+
+    painter.setPen(QPen(Qt::red, 3));
+    painter.drawEllipse(rect.center(), 50, 50);
+    QRect redRect(0,0, 200, 150);
+    redRect.moveCenter(rect.center());
+    painter.drawRect(redRect);
+
+
+    // QImage::save() - guess the encoding using the file suffix
+    QCOMPARE(pixmap.save(path), true);
+
+
+    QCOMPARE(File::isTextFile(path), false);
 
 }
+
+void TestFile::testIsTextFile_PdfShouldBeFalse()
+{
+    QDir dir = testDataDir(__func__);
+    QCOMPARE(dir.mkpath(dir.absolutePath()), true);
+    auto path = dir.absoluteFilePath("PdfShouldBeFalse.pdf");
+
+    QPdfWriter writer(path);
+    writer.setPageSize(QPageSize::A4);
+    writer.setResolution(300);
+    writer.setTitle("PDF Test document");
+    writer.setCreator("QtNoid::Common::File -> TestFile");
+    QPainter painter(&writer);
+    painter.setFont(QFont("Arial", 16, QFont::Bold));
+    painter.drawText(100, 200, "automated test report");
+    painter.end();
+
+
+    QCOMPARE(File::isTextFile(path), false);
+
+}
+
+void TestFile::testIsTestFile_EmptyFileShouldBeFalse()
+{
+    QDir dir = testDataDir(__func__);
+    QCOMPARE(dir.mkpath(dir.absolutePath()), true);
+    auto path = dir.absoluteFilePath("EmptyShouldBeFalse.txt");
+
+    auto file = QFile(path);
+
+    QCOMPARE(file.open(QIODevice::WriteOnly | QIODevice::Text), true);
+    file.close();
+
+    QCOMPARE(File::isTextFile(path), false);
+
+}
+
+void TestFile::testSaveAsTextFile4String_data()
+{
+    QTest::addColumn<QString>("filePath");
+    QTest::addColumn<QString>("fileSuffix");
+    QTest::addColumn<QString>("expectedFileName");
+
+    QTest::newRow("TxtFileNoSuffix"         ) << "TxtFile" << "" << "TxtFile";
+    QTest::newRow("TxtFileRemoveSuffix"     ) << "TxtFileRemoveSuffix.abc" << "" << "TxtFileRemoveSuffix";
+
+    QTest::newRow("TxtFile+SuffixNoDot"     ) << "TxtFileSuffix.ini" << "txt" <<"TxtFileSuffix.txt" ;
+    QTest::newRow("TxtFile+DotSuffix"       ) << "TxtFileDotSuffix.ini" << ".txt" << "TxtFileDotSuffix.txt";
+    QTest::newRow("TxtFile+DotDubleSuffix"  ) << "TxtFileDotSuffix.tar.ini" << ".txt" << "TxtFileDotSuffix.tar.txt";
+    QTest::newRow("TxtFile+BadSuffix"       ) << "TxtFile+BadSuffix" << " .txt" << "TxtFile+BadSuffix.txt";
+    QTest::newRow("TxtFile+BadSuffix2"      ) << "TxtFile+BadSuffix2" << " txt" << "TxtFile+BadSuffix2.txt";
+}
+
+void TestFile::testSaveAsTextFile4String()
+{
+    QFETCH(QString, filePath);
+    QFETCH(QString, fileSuffix);
+    QFETCH(QString, expectedFileName);
+
+    QDir dir = testDataDir(__func__);
+    QString data = "AA BB CC";
+    auto resPath = File::saveAsTextFile(data, filePath, dir.absolutePath(), fileSuffix);
+
+    QFileInfo fileInfo(resPath);
+    auto out = fileInfo.fileName();
+
+    QCOMPARE(out, expectedFileName);
+
+
+    // Check there is the file
+    QCOMPARE(fileInfo.exists(), true);
+
+    // Check the file content is the same
+    QFile f(resPath);
+    QCOMPARE(f.open(QIODevice::ReadOnly | QIODevice::Text), true);
+    QTextStream stream(&f);
+    auto outText = f.readAll();
+    QCOMPARE(outText, data);
+}
+
+void TestFile::testSaveAsTextFile4StringList_data()
+{
+    QTest::addColumn<QString>("filePath");
+    QTest::addColumn<QString>("fileSuffix");
+    QTest::addColumn<QString>("expectedFileName");
+
+    QTest::newRow("TxtFile+DotDubleSuffix"  ) << "TxtFileDotSuffix.tar.ini" << ".txt" << "TxtFileDotSuffix.tar.txt";
+
+}
+
+void TestFile::testSaveAsTextFile4StringList()
+{
+
+    QFETCH(QString, filePath);
+    QFETCH(QString, fileSuffix);
+    QFETCH(QString, expectedFileName);
+
+    QDir dir = testDataDir(__func__);
+    QStringList data = {"AA BB CC", "KK"};
+    auto resPath = File::saveAsTextFile(data, filePath, dir.absolutePath(), fileSuffix);
+
+    QFileInfo fileInfo(resPath);
+    auto out = fileInfo.fileName();
+
+    QCOMPARE(out, expectedFileName);
+
+
+    // Check there is the file
+    QCOMPARE(fileInfo.exists(), true);
+
+    // Check the file content is the same
+    QFile f(resPath);
+    QCOMPARE(f.open(QIODevice::ReadOnly | QIODevice::Text), true);
+    QTextStream stream(&f);
+    QStringList outText;
+    outText << f.readLine().replace("\n", "");
+    outText << f.readLine();
+
+    QCOMPARE(outText, data);
+
+}
+
+void TestFile::testSaveAsTextFileWithSubFolder()
+{
+        // QTest::newRow("TxtFileWithSubFolder"  ) << "/a/TxtFileWithSubFolder" << "" << "TxtFileWithSubFolderNo";
+
+        // QTest::newRow("TxtFileWithSubFolder"  ) << "/a/TxtFileWithSubFolder" << "" << "TxtFileWithSubFolderNo";
+}
+
 
 
 QTEST_MAIN(TestFile)
 #include "test_file.moc"
+
+

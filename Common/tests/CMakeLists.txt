@@ -6,7 +6,7 @@ project(QtNoidCommonTests)
 # =============================================================================
 # Find Required Packages
 # =============================================================================
-find_package(Qt6 REQUIRED COMPONENTS Test Core)
+find_package(Qt6 REQUIRED COMPONENTS Test Core Gui)
 
 # set(CMAKE_AUTOMOC ON)
 
@@ -19,6 +19,7 @@ function(create_qt_test test_name)
     target_link_libraries(${test_name}
         Qt6::Test
         Qt6::Core
+        Qt6::Gui
         QtNoidCommon
     )
 

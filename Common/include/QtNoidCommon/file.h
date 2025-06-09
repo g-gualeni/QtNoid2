@@ -22,11 +22,11 @@ public:
     static bool compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2);
 
     static bool isTextFile(const QString &filePath);
+    static void extracted(QByteArray &rawData, int &controlChars);
     static bool isTextFile(const QFileInfo &fileInfo);
 
-    static qint64 saveAsTextFile(const QString &absoluteFilePath, const QByteArray &data, bool addExtension = true);
-    static qint64 saveAsTextFile(const QString &absoluteFilePath, const QStringList &data, bool addExtension = true);
-    static qint64 saveAsTextFile(const QString &absoluteFilePath, const QString &data, bool addExtension = true);
+    static QString saveAsTextFile(const QString &data, const QString &filePath, const QString &basePath="", const QString &fileSuffix="*");
+    static QString saveAsTextFile(const QStringList &data, const QString &filePath, const QString &basePath="", const QString &fileSuffix="*");
 
     static QStringList readAsStringList(const QString &absoluteFilePath);
 
@@ -34,7 +34,10 @@ public:
     QStringList listPathRecursively(const QString &path, const QStringList &nameFilters);
 
 private:
+    static QFileInfo saveAsTextFileCreatePath(const QString &filePath, const QString &basePath, const QString &fileSuffix);
+
 };
+
 
 } // namespace QtCommon
 } // namespace QtNoid

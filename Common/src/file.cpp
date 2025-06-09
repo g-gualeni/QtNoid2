@@ -161,6 +161,10 @@ bool File::isTextFile(const QFileInfo &fileInfo)
 
     // Read filesize or max 50.000 char and look for \0
     qint64 size = qMin(static_cast<qint64>(50000), fileInfo.size());
+    if(size == 0) {
+        return false;
+    }
+
     QFile file(fileInfo.absoluteFilePath());
 
     if (!file.open(QIODevice::ReadOnly)) {
@@ -169,23 +173,101 @@ bool File::isTextFile(const QFileInfo &fileInfo)
     QTextStream stream(&file);
     stream.setAutoDetectUnicode(true);
     QString content = stream.read(size);
-    qDebug() << "Codec rilevato:" << stream.encoding();
+    Q_UNUSED(content)
 
-    // Controllo se contiene caratteri non stampabili?
-    //  - dipende, perchè se fosse UNICODE ne avrebbe molti
-    // uso il reader di Qt e cosa succede?
+    // This test cover files with the BOM. Detection in this case
+    // is quite reliable using QTextStream::encoding().
+    if(stream.encoding() >= QStringConverter::Utf16) {
+        // this is UNICODE text for sure
+        return true;
+    }
 
-    // QTextStream bool QTextStream::autoDetectUnicode() const
+    // If codec is 0 then I can check if there are null characters
+    // Count the number of control characters
+    file.seek(0);
+    QByteArray rawData = file.read(size);
+    int controlChars = 0;
+    for (size_t ii=0; ii< rawData.size(); ii++) {
+        unsigned char c = static_cast<unsigned char>(rawData[ii]);
+        if (c == 0 || (c < 32 && c != 9 && c != 10 && c != 13)) {
+            controlChars++;
+        }
+    }
+    if(controlChars == 0) {
+        // No control chars, means it is a 8 bit char text.
+        return true;
+    }
 
-    // e lo converto in unicode
-
-    //  qDebug() << "Codec rilevato:" << stream.codec()->name();
-
-
-    // Attenzione che devo gestire sia il testo UCHAR che il testo UTF8
-
+    // All the rest is not text
     return false;
 }
+
+
+
+
+
+
+
+QFileInfo File::saveAsTextFileCreatePath(const QString &filePath, const QString &basePath, const QString &fileSuffix)
+{
+    QDir dir(basePath);
+    QFileInfo fileInfo(dir, filePath);
+    if(!dir.mkpath(fileInfo.absolutePath())){
+        return {};
+    };
+
+    if(fileSuffix != "*") {
+        QString newFileName = fileSuffix.trimmed();
+        if(newFileName.isEmpty()){
+        }
+        else if(newFileName.startsWith(".")) {
+        }
+        else {
+            newFileName = "." + newFileName;
+        }
+        newFileName = fileInfo.completeBaseName() + newFileName;
+        fileInfo.setFile(fileInfo.absoluteDir(), newFileName);
+    }
+
+    return fileInfo;
+}
+
+
+QString File::saveAsTextFile(const QString &data, const QString &filePath, const QString &basePath, const QString &fileSuffix)
+{
+    auto path = saveAsTextFileCreatePath(filePath, basePath, fileSuffix).absoluteFilePath();
+
+    auto file = QFile(path);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return {};
+    }
+
+    auto stream = QTextStream(&file);
+    stream << data;
+
+    return path;
+}
+
+
+QString File::saveAsTextFile(const QStringList &data, const QString &filePath, const QString &basePath, const QString &fileSuffix)
+{
+    auto path = saveAsTextFileCreatePath(filePath, basePath, fileSuffix).absoluteFilePath();
+
+    auto file = QFile(path);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return {};
+    }
+
+    auto stream = QTextStream(&file);
+    stream << data.join("\n");
+
+    return path;
+
+}
+
+
+
+
 
 
 
