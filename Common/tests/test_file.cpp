@@ -52,7 +52,7 @@ private slots:
     void testListPathRecursively_data();
     void testListPathRecursively();
 
-    void testListPathRecursivelyStartingFromAFileInTheFolder();
+    void testListPathRecursively_PathIsAFileInTheFolder();
 
 
 
@@ -557,12 +557,7 @@ void TestFile::testListPathRecursively_data()
                                                           "a/lst1.txt", "a/lst2.txt"});
 
 
-    // void testListPathRecursively_EmptyDirectory();
-    // void testListPathRecursively_SingleFile();
-    // void testListPathRecursively_MultipleFiles();
-    // void testListPathRecursively_NestedDirectories();
     // void testListPathRecursively_WithFilters();
-    // void testListPathRecursively_PathIsFile();
     // void testListPathRecursively_InvalidPath();
 
 }
@@ -579,19 +574,33 @@ void TestFile::testListPathRecursively()
     for(const auto &item : std::as_const(fileList)) {
         expected << dir.absoluteFilePath(item);
     }
+    expected.sort();
 
     File QtNoidFIle;
     auto resList = QtNoidFIle.listPathRecursively(dir.absolutePath());
-    expected.sort();
     resList.sort();
     QCOMPARE(resList, expected);
-
-    QCOMPARE(false, true);
 }
 
-void TestFile::testListPathRecursivelyStartingFromAFileInTheFolder()
+void TestFile::testListPathRecursively_PathIsAFileInTheFolder()
 {
-    QCOMPARE(false, true);
+    QStringList fileList({"a.txt, b.txt"});
+
+    QDir dir = testDataDir(__func__, QTest::currentDataTag());
+    auto res = testDataDirInit(dir, fileList);
+    QCOMPARE(res, true);
+
+    QStringList expected;
+    for(const auto &item : std::as_const(fileList)) {
+        expected << dir.absoluteFilePath(item);
+    }
+    expected.sort();
+
+    File QtNoidFIle;
+    auto resList = QtNoidFIle.listPathRecursively(expected.first());
+    resList.sort();
+
+    QCOMPARE(resList, expected);
 }
 
 
