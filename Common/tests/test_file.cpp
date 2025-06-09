@@ -547,10 +547,45 @@ void TestFile::testReadAsStringList()
 void TestFile::testListPathRecursively_data()
 {
 
+    QTest::addColumn<QStringList>("fileList");
+
+
+    QTest::newRow("EmptyFolder"         ) << QStringList();
+    QTest::newRow("SingleFile"          ) << QStringList({"lst.txt"});
+    QTest::newRow("MultipleFilea"       ) << QStringList({"lst1.txt", "lst2.txt"});
+    QTest::newRow("NestedDirectories"   ) << QStringList({"lst1.txt", "lst2.txt",
+                                                          "a/lst1.txt", "a/lst2.txt"});
+
+
+    // void testListPathRecursively_EmptyDirectory();
+    // void testListPathRecursively_SingleFile();
+    // void testListPathRecursively_MultipleFiles();
+    // void testListPathRecursively_NestedDirectories();
+    // void testListPathRecursively_WithFilters();
+    // void testListPathRecursively_PathIsFile();
+    // void testListPathRecursively_InvalidPath();
+
 }
 
 void TestFile::testListPathRecursively()
 {
+    QFETCH(QStringList, fileList);
+
+    QDir dir = testDataDir(__func__, QTest::currentDataTag());
+    auto res = testDataDirInit(dir, fileList);
+    QCOMPARE(res, true);
+
+    QStringList expected;
+    for(const auto &item : std::as_const(fileList)) {
+        expected << dir.absoluteFilePath(item);
+    }
+
+    File QtNoidFIle;
+    auto resList = QtNoidFIle.listPathRecursively(dir.absolutePath());
+    expected.sort();
+    resList.sort();
+    QCOMPARE(resList, expected);
+
     QCOMPARE(false, true);
 }
 

@@ -68,10 +68,10 @@ with files
 ### Non Static Methods
 
 - `QStringList listPathRecursively(const QString &path, const QStringList 
-   &nameFilters)`: returns a string list with the full path of all files available
-   under the specified path and matching the nameFilters. If nameFilters is empty
-   the method collects all files. If path points to a file, then it also returns 
-   all its siblings.
+   &nameFilters)`: returns a string list containing the full path of all files 
+   found recursively under the specified path that match the given nameFilters. 
+   If path refers to a file, the method also returns all siblings files in the
+   same directory.
 
 &nbsp;
 
