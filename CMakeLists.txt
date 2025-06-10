@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(QtNoid
-    VERSION 2.0.0
+    VERSION 2.0.1
     DESCRIPTION "${PROJECT_NAME} - Modular Qt Library version 2"
     LANGUAGES CXX
 )
@@ -11,6 +11,8 @@ set(LEGAL_COPYRIGHT "(C) 2025 Gianbattista Gualeni")
 # Build Options
 # =============================================================================
 option(BUILD_CORE "Build QtNoidCore library" ON)
+option(BUILD_COMMON "Build QtNoidCommon library" ON)
+
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 
@@ -32,7 +34,7 @@ endif()
 # Compiler Configuration
 # =============================================================================
 # Imposta lo standard C++
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS
@@ -49,6 +51,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # =============================================================================
 if(BUILD_CORE)
     add_subdirectory(Core)
+endif()
+
+if(BUILD_COMMON)
+    add_subdirectory(Common)
 endif()
 
 if(BUILD_EXAMPLES)
@@ -68,6 +74,8 @@ include(CMakePackageConfigHelpers)
 set(PROJECT_DOCS
     README.md
     LICENSE
+    UserStories/QtNoid.odp
+	UserStories/QtNoidCommon_UserStories.odp
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})
 

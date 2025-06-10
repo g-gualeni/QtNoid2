@@ -2,21 +2,34 @@
 This is a simple class to control the library life cycle.
 It provides static methods to access project version and build information.
 
+## CMake
+```
+find_package: QtNoidCore
 
-### Header
-
-```cpp
-#include "QtNoidCore/core.h"
+target_link_libraries: QtNoid::QtNoidCore
 ```
 
-### Namespace
+&nbsp;
+
+## Header
+
+```cpp
+#include "QtNoidCore/QtNoidCore"
+```
+
+&nbsp;
+
+## Namespace
 
 ```cpp
 namespace QtNoid
 ```
 
-### Static Methods
+&nbsp;
 
+## Class: Core
+
+### Static Methods
 
 - `static QString version()`: Returns the current version of the QtNoid library as a QString.
 - `static QString buildInfo()`: Returns detailed information about the current 

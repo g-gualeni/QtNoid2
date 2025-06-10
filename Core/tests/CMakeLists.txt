@@ -17,7 +17,7 @@ add_executable(test_core
 target_link_libraries(test_core
     Qt6::Test
     Qt6::Core    
-    QtNoidCore  # Target diretto dalla libreria principale
+    QtNoidCore  # Direct Target to the library as artifcat of the project
 )
 
 add_test(NAME test_core COMMAND test_core)
