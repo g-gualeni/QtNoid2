@@ -12,7 +12,7 @@ set(LEGAL_COPYRIGHT "(C) 2025 Gianbattista Gualeni")
 # =============================================================================
 option(BUILD_CORE "Build QtNoidCore library" ON)
 option(BUILD_COMMON "Build QtNoidCommon library" ON)
-option(BUILD_APP "Build QtNoidApp library" OFF)
+option(BUILD_APP "Build QtNoidApp library" ON)
 
 option(BUILD_TESTS "Build tests" ON)
 
@@ -24,11 +24,7 @@ option(BUILD_EXAMPLES "Build examples" ON)
 # =============================================================================
 # You can overwrite the command line
 if(NOT DEFINED CMAKE_INSTALL_PREFIX OR CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    if(WIN32)
-           set(CMAKE_INSTALL_PREFIX "C:/GitHub/Libs/QtNoid2" CACHE PATH "Installation directory" FORCE)
-       elseif(APPLE)
-           set(CMAKE_INSTALL_PREFIX "/Users/QtQb/GitHub/Libs/QtNoid2" CACHE PATH "Installation directory" FORCE)
-       endif()
+    set(CMAKE_INSTALL_PREFIX "../../../ExtLibs/QtNoid2" CACHE PATH "Installation directory" FORCE)
 endif()
 
 

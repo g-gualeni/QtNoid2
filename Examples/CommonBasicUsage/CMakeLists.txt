@@ -15,7 +15,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 # =============================================================================
 # Search for QtNoid Installed library
 # =============================================================================
-find_package(QtNoidCommon REQUIRED HINTS "../../../Libs/QtNoid2")
+find_package(QtNoidCommon REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 
 set(PROJECT_SOURCES
         main.cpp

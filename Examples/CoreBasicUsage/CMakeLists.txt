@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # =============================================================================
 # Search for QtNoid Installed library
 # =============================================================================
-find_package(QtNoidCore REQUIRED HINTS "../../../Libs/QtNoid2")
+find_package(QtNoidCore REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 
 # if(WIN32)
 #   find_package(QtNoidCore REQUIRED HINTS "C:/GitHub/Libs/QtNoid2")
