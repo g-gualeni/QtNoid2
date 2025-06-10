@@ -54,6 +54,12 @@ private slots:
 
     void testListPathRecursively_PathIsAFileInTheFolder();
 
+    void testListPathRecursively_InvalidPath_data();
+
+    void testListPathRecursively_InvalidPath();
+
+
+
 
 
 private:
@@ -546,20 +552,13 @@ void TestFile::testReadAsStringList()
 
 void TestFile::testListPathRecursively_data()
 {
-
     QTest::addColumn<QStringList>("fileList");
-
 
     QTest::newRow("EmptyFolder"         ) << QStringList();
     QTest::newRow("SingleFile"          ) << QStringList({"lst.txt"});
     QTest::newRow("MultipleFilea"       ) << QStringList({"lst1.txt", "lst2.txt"});
     QTest::newRow("NestedDirectories"   ) << QStringList({"lst1.txt", "lst2.txt",
                                                           "a/lst1.txt", "a/lst2.txt"});
-
-
-    // void testListPathRecursively_WithFilters();
-    // void testListPathRecursively_InvalidPath();
-
 }
 
 void TestFile::testListPathRecursively()
@@ -601,6 +600,26 @@ void TestFile::testListPathRecursively_PathIsAFileInTheFolder()
     resList.sort();
 
     QCOMPARE(resList, expected);
+}
+
+void TestFile::testListPathRecursively_InvalidPath_data()
+{
+    QTest::addColumn<QString>("path");
+
+    QTest::addRow("Empty Path") << QString();
+    QTest::addRow("Crazy Path") << "./asqwetqxcxz";
+
+}
+
+void TestFile::testListPathRecursively_InvalidPath()
+{
+    QFETCH(QString, path);
+
+    // Invalid path should give an empty list
+    File QtNoidFIle;
+    auto resList = QtNoidFIle.listPathRecursively(path);
+
+    QCOMPARE(resList, {});
 }
 
 
