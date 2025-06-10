@@ -1,0 +1,10 @@
+
+// QtNoidApp - Main convenience header
+// Include this to get all QtNoid::App functionality
+
+#ifndef QTNOIDAPP_H
+#define QTNOIDAPP_H
+
+#include "settings.h"
+
+#endif // QTNOIDAPP_H

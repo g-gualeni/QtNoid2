@@ -12,15 +12,17 @@ set(LEGAL_COPYRIGHT "(C) 2025 Gianbattista Gualeni")
 # =============================================================================
 option(BUILD_CORE "Build QtNoidCore library" ON)
 option(BUILD_COMMON "Build QtNoidCommon library" ON)
+option(BUILD_APP "Build QtNoidApp library" OFF)
 
 option(BUILD_TESTS "Build tests" ON)
+
 option(BUILD_EXAMPLES "Build examples" ON)
 
 
 # =============================================================================
 # Installation Configuration
 # =============================================================================
-# Permette di sovrascrivere dalla command line
+# You can overwrite the command line
 if(NOT DEFINED CMAKE_INSTALL_PREFIX OR CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     if(WIN32)
            set(CMAKE_INSTALL_PREFIX "C:/GitHub/Libs/QtNoid2" CACHE PATH "Installation directory" FORCE)
@@ -55,6 +57,10 @@ endif()
 
 if(BUILD_COMMON)
     add_subdirectory(Common)
+endif()
+
+if(BUILD_APP)
+    add_subdirectory(App)
 endif()
 
 if(BUILD_EXAMPLES)
