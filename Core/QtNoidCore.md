@@ -2,18 +2,30 @@
 This is a simple class to control the library life cycle.
 It provides static methods to access project version and build information.
 
+## CMake
+```
+find_package: QtNoidCore
 
-### Header
+target_link_libraries: QtNoid::QtNoidCore
+```
+
+&nbsp;
+
+## Header
 
 ```cpp
 #include "QtNoidCore/QtNoidCore"
 ```
 
-### Namespace
+&nbsp;
+
+## Namespace
 
 ```cpp
 namespace QtNoid
 ```
+
+&nbsp;
 
 ## Class: Core
 

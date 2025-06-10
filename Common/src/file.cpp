@@ -289,7 +289,11 @@ QStringList File::listPathRecursively(const QString &path, const QStringList &na
 
     // If we have a path then we look for siblings and all
     // sub-folders
-    if(pathFI.exists() && pathFI.isFile()) {
+    if(path.isEmpty()) {
+        // Sanity check on empty path
+        return {};
+    }
+    else if(pathFI.exists() && pathFI.isFile()) {
         dir.setPath(pathFI.absolutePath());
     }
     else {

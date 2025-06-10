@@ -1,5 +1,19 @@
 # QtNoidCommon
+This module contains:
+- [**File:**](#class-file) collection of methods to manage files, rename, read and write text files.
+- [**Scale:**](#class-scale): convert numbers to a human readable format.
+- [**Text:**](#class-text): clean up, tokenize convert to camel case or snake case methods.
 
+&nbsp;
+
+## CMake
+```
+find_package: QtNoidCommon
+
+target_link_libraries: QtNoid::QtNoidCommon
+```
+
+&nbsp;
 
 ## Header
 
@@ -8,7 +22,6 @@
 ```
 
 &nbsp;
-
 
 ## Namespace
 
@@ -73,6 +86,8 @@ with files
    If path refers to a file, the method also returns all siblings files in the
    same directory.
 
+[⬆ Back to top](#qtnoidcommon)
+
 &nbsp;
 
 ## Class: Scale
@@ -107,6 +122,8 @@ a human readable text.
  - `static QString scaleNanoSecsUpToDays(qint64 ns)`: convert ns 
     to a readable value using ms, seconds, minutes, hours, days. In
     this case ns is a signed value.
+    
+[⬆ Back to top](#qtnoidcommon)
 
 &nbsp;
 
@@ -172,6 +189,9 @@ convert to camelcase or snake case text strings.
     splitted from text. If minNumBlockLen is 0, number blocks
     are left untouched.
 
+[⬆ Back to top](#qtnoidcommon)
+
+&nbsp;
 
 
 [← Back to Main Page](./../README.md)

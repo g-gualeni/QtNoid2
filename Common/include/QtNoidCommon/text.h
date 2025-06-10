@@ -37,7 +37,7 @@ public:
 private:
 };
 
-} // namespace QtCommon
+} // namespace Common
 } // namespace QtNoid
 
 #endif // QTNOID_TEXT_H

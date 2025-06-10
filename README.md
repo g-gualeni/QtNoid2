@@ -12,9 +12,8 @@ practices I have re-implemented many times when creating applications.
 In an effort to avoid repeating myself, I created 
 this library.
 
-I called this library **QtNoid2** because it is the 
-second iteration of the same project, though it is 
-the first public version.
+This is **QtNoid2**, the second iteration of the project, and  
+the first public release.
 
 &nbsp;
 
