@@ -16,21 +16,21 @@ class QTNOIDAPP_EXPORT Settings
 public:
     static QString fileAsAppSibling();
     static QString appExeOrAppBundlePath();
+
+
 private:
 };
 
 
 
 /**
- *
-
     static QWidget *mainWindowsFromWidget(QWidget *ref);
-
     static QString iniGroupNameFromClass(const QObject* ref);
     static QString iniGroupNameFromObjectName(const QObject* ref);
-
- *
 */
+
+
+
 
 
 
