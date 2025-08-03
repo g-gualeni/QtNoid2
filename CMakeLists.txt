@@ -56,7 +56,7 @@ if(BUILD_COMMON)
 endif()
 
 if(BUILD_APP)
-    add_subdirectory(App)
+    add_subdirectory(QtNoidApp)
 endif()
 
 if(BUILD_EXAMPLES)

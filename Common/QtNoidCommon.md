@@ -1,8 +1,8 @@
 # QtNoidCommon
 This module contains:
-- [**File:**](#class-file) collection of methods to manage files, rename, read and write text files.
-- [**Scale:**](#class-scale): convert numbers to a human readable format.
-- [**Text:**](#class-text): clean up, tokenize convert to camel case or snake case methods.
+- [**File**](#class-file): collection of methods to manage files, rename, read and write text files.
+- [**Scale**](#class-scale): convert numbers to a human readable format.
+- [**Text**](#class-text): clean up, tokenize convert to camel case or snake case methods.
 
 &nbsp;
 
