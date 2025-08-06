@@ -23,8 +23,9 @@ option(BUILD_EXAMPLES "Build examples" ON)
 # Installation Configuration
 # =============================================================================
 # You can overwrite the command line
+set(LIB_INSTALL_PATH "${CMAKE_SOURCE_DIR}/../ExtLibs/QtNoid2")
 if(NOT DEFINED CMAKE_INSTALL_PREFIX OR CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "../../../ExtLibs/QtNoid2" CACHE PATH "Installation directory" FORCE)
+    set(CMAKE_INSTALL_PREFIX "${LIB_INSTALL_PATH}" CACHE PATH "Installation directory" FORCE)
 endif()
 
 
