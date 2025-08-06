@@ -24,9 +24,13 @@ private:
 
 
 /**
-    static QWidget *mainWindowsFromWidget(QWidget *ref);
-    static QString iniGroupNameFromClass(const QObject* ref);
-    static QString iniGroupNameFromObjectName(const QObject* ref);
+
+    static QWidget *mainWindowsFromWidget(QWidget *ref); Cerca la form principale
+    static QString groupNameFromClass(const QObject* ref); Esplicitamente ritorna la classe
+    static QString groupNameFromObject(const QObject* ref); Se ha un nome bene, altrimenti usa la classe
+
+
+--> aggingere la classe bindableProperty
 */
 
 
