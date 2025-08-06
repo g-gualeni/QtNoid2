@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <QPdfWriter>
 
-class TestSettings : public QObject
+class TestQtNoidAppSettings : public QObject
 {
     Q_OBJECT
 
@@ -13,6 +13,10 @@ private slots:
     void cleanupTestCase();
     void init();
     void cleanup();
+    void testAppExeOrAppBundlePath();
+    void testFilePathAsAppSibling_data();
+    void testFilePathAsAppSibling();
+
 
 private:
 
@@ -21,21 +25,44 @@ private:
 using namespace QtNoid::App;
 
 
-void TestSettings::initTestCase()
+void TestQtNoidAppSettings::initTestCase()
 {}
 
-void TestSettings::cleanupTestCase()
+void TestQtNoidAppSettings::cleanupTestCase()
 {}
 
-void TestSettings::init()
+void TestQtNoidAppSettings::init()
 {}
 
-void TestSettings::cleanup()
+void TestQtNoidAppSettings::cleanup()
 {}
 
+void TestQtNoidAppSettings::testAppExeOrAppBundlePath()
+{
+    auto actual = Settings::appExeOrAppBundlePath();
+    auto expected = qApp->applicationFilePath();
+    QCOMPARE(actual, expected);
+}
+
+void TestQtNoidAppSettings::testFilePathAsAppSibling_data()
+{
+    QTest::addColumn<QString>("fileName");
+
+    QTest::addRow("FileName") <<"moon.ini";
+    QTest::addRow("FileName WithPath") <<"c:/a/b/c/mars.ini";
+}
+
+void TestQtNoidAppSettings::testFilePathAsAppSibling()
+{
+    QFETCH(QString, fileName);
+    auto actual = Settings::filePathAsAppSibling(fileName);
+    auto split = fileName.split("/").last();
+    auto expected = qApp->applicationDirPath() + "/" + split;
+    QCOMPARE(actual, expected);
+}
 
 
-QTEST_MAIN(TestSettings)
+QTEST_MAIN(TestQtNoidAppSettings)
 #include "test_settings.moc"
 
 

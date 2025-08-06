@@ -1,7 +1,7 @@
 #include <QTest>
 #include <QtNoidCore/QtNoidCore>
 
-class TestCore : public QObject
+class TestQtNoidCore : public QObject
 {
     Q_OBJECT
 
@@ -18,30 +18,30 @@ private:
     QtNoid::Core* m_core;
 };
 
-void TestCore::initTestCase()
+void TestQtNoidCore::initTestCase()
 {
 }
 
-void TestCore::cleanupTestCase()
+void TestQtNoidCore::cleanupTestCase()
 {
 }
 
-void TestCore::init()
+void TestQtNoidCore::init()
 {
 }
 
-void TestCore::cleanup()
+void TestQtNoidCore::cleanup()
 {
 }
 
-void TestCore::testVersion()
+void TestQtNoidCore::testVersion()
 {
     QString version = QtNoid::Core::version();
     QVERIFY(!version.isEmpty());
     QCOMPARE(version, QString("2.0.1"));
 }
 
-void TestCore::testBuildInfo()
+void TestQtNoidCore::testBuildInfo()
 {
     QString buildInfo = QtNoid::Core::buildInfo();
     qDebug() << buildInfo;
@@ -53,5 +53,5 @@ void TestCore::testBuildInfo()
 }
 
 
-QTEST_MAIN(TestCore)
+QTEST_MAIN(TestQtNoidCore)
 #include "test_core.moc"

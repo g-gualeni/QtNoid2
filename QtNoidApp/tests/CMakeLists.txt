@@ -29,7 +29,7 @@ function(create_qt_test test_name)
 endfunction()
 
 # =============================================================================
-# Tesing first xxxxx
+# Tesing QtNoid::Settings
 # =============================================================================
 create_qt_test(test_settings)
 

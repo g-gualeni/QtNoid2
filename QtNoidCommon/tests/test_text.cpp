@@ -1,7 +1,7 @@
 #include <QTest>
 #include <QtNoidCommon/QtNoidCommon>
 
-class TestText : public QObject
+class TestQtNoidCommonText : public QObject
 {
     Q_OBJECT
 
@@ -47,23 +47,23 @@ private slots:
 
 using namespace QtNoid::Common;
 
-void TestText::initTestCase()
+void TestQtNoidCommonText::initTestCase()
 {
 }
 
-void TestText::cleanupTestCase()
+void TestQtNoidCommonText::cleanupTestCase()
 {
 }
 
-void TestText::init()
+void TestQtNoidCommonText::init()
 {
 }
 
-void TestText::cleanup()
+void TestQtNoidCommonText::cleanup()
 {
 }
 
-void TestText::testIsValidUrl_data()
+void TestQtNoidCommonText::testIsValidUrl_data()
 {
     QTest::addColumn<QString>("url");
     QTest::addColumn<bool>("expected");
@@ -78,7 +78,7 @@ void TestText::testIsValidUrl_data()
     QTest::newRow("empty") << "" << false;
 }
 
-void TestText::testIsValidUrl()
+void TestQtNoidCommonText::testIsValidUrl()
 {
     QFETCH(QString, url);
     QFETCH(bool, expected);
@@ -88,7 +88,7 @@ void TestText::testIsValidUrl()
 
 }
 
-void TestText::testIsValidEmail_data()
+void TestQtNoidCommonText::testIsValidEmail_data()
 {
     QTest::addColumn<QString>("email");
     QTest::addColumn<bool>("expected");
@@ -104,7 +104,7 @@ void TestText::testIsValidEmail_data()
 
 }
 
-void TestText::testIsValidEmail()
+void TestQtNoidCommonText::testIsValidEmail()
 {
     QFETCH(QString, email);
     QFETCH(bool, expected);
@@ -114,7 +114,7 @@ void TestText::testIsValidEmail()
 
 }
 
-void TestText::testSanitizeString_data()
+void TestQtNoidCommonText::testSanitizeString_data()
 {
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("expected");
@@ -129,7 +129,7 @@ void TestText::testSanitizeString_data()
 
 }
 
-void TestText::testSanitizeString()
+void TestQtNoidCommonText::testSanitizeString()
 {
     QFETCH(QString, input);
     QFETCH(QString, expected);
@@ -139,14 +139,14 @@ void TestText::testSanitizeString()
 }
 
 
-void TestText::testTokenizeSnakeCase_data()
+void TestQtNoidCommonText::testTokenizeSnakeCase_data()
 {
     QTest::addColumn<QString>("text");
     QTest::addColumn<QStringList>("expected");
     QTest::newRow("simple_text") << "simple_text" << QStringList({"simple", "text"});
 }
 
-void TestText::testTokenizeSnakeCase()
+void TestQtNoidCommonText::testTokenizeSnakeCase()
 {
     QFETCH(QString, text);
     QFETCH(QStringList, expected);
@@ -155,14 +155,14 @@ void TestText::testTokenizeSnakeCase()
     QCOMPARE(result, expected);
 }
 
-void TestText::testTokenizeSnakeCaseList_data()
+void TestQtNoidCommonText::testTokenizeSnakeCaseList_data()
 {
     QTest::addColumn<QStringList>("list");
     QTest::addColumn<QStringList>("expected");
     QTest::newRow("A_B C_D") << QStringList({"A_B", "C_D"}) << QStringList({"A", "B", "C", "D"});
 }
 
-void TestText::testTokenizeSnakeCaseList()
+void TestQtNoidCommonText::testTokenizeSnakeCaseList()
 {
     QFETCH(QStringList, list);
     QFETCH(QStringList, expected);
@@ -172,14 +172,14 @@ void TestText::testTokenizeSnakeCaseList()
 
 }
 
-void TestText::testTokenizeCamelCase_data()
+void TestQtNoidCommonText::testTokenizeCamelCase_data()
 {
     QTest::addColumn<QString>("text");
     QTest::addColumn<QStringList>("expected");
     QTest::newRow("SimpleText") << "SimpleText" << QStringList({"Simple", "Text"});
 }
 
-void TestText::testTokenizeCamelCase()
+void TestQtNoidCommonText::testTokenizeCamelCase()
 {
     QFETCH(QString, text);
     QFETCH(QStringList, expected);
@@ -188,7 +188,7 @@ void TestText::testTokenizeCamelCase()
     QCOMPARE(result, expected);
 }
 
-void TestText::testTokenizeCamelCaseList_data()
+void TestQtNoidCommonText::testTokenizeCamelCaseList_data()
 {
     QTest::addColumn<QStringList>("list");
     QTest::addColumn<QStringList>("expected");
@@ -196,7 +196,7 @@ void TestText::testTokenizeCamelCaseList_data()
 
 }
 
-void TestText::testTokenizeCamelCaseList()
+void TestQtNoidCommonText::testTokenizeCamelCaseList()
 {
     QFETCH(QStringList, list);
     QFETCH(QStringList, expected);
@@ -205,7 +205,7 @@ void TestText::testTokenizeCamelCaseList()
     QCOMPARE(result, expected);
 }
 
-void TestText::testTokenizeNumberBlocks_data()
+void TestQtNoidCommonText::testTokenizeNumberBlocks_data()
 {
     QTest::addColumn<QString>("text");
     QTest::addColumn<QStringList>("expected");
@@ -213,7 +213,7 @@ void TestText::testTokenizeNumberBlocks_data()
     QTest::newRow("Simple01") << "Simple01" << QStringList({"Simple", "01"});
 }
 
-void TestText::testTokenizeNumberBlocks()
+void TestQtNoidCommonText::testTokenizeNumberBlocks()
 {
     QFETCH(QString, text);
     QFETCH(QStringList, expected);
@@ -222,7 +222,7 @@ void TestText::testTokenizeNumberBlocks()
     QCOMPARE(result, expected);
 }
 
-void TestText::testTokenizeNumberBlocksList_data()
+void TestQtNoidCommonText::testTokenizeNumberBlocksList_data()
 {
     QTest::addColumn<int>("minNumBlock");
     QTest::addColumn<QStringList>("list");
@@ -233,7 +233,7 @@ void TestText::testTokenizeNumberBlocksList_data()
                                  << QStringList({"A1", "B02", "C", "003"});
 }
 
-void TestText::testTokenizeNumberBlocksList()
+void TestQtNoidCommonText::testTokenizeNumberBlocksList()
 {
     QFETCH(int, minNumBlock);
     QFETCH(QStringList, list);
@@ -243,7 +243,7 @@ void TestText::testTokenizeNumberBlocksList()
     QCOMPARE(result, expected);
 }
 
-void TestText::testTokenize_data()
+void TestQtNoidCommonText::testTokenize_data()
 {
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("splittersString");
@@ -362,7 +362,7 @@ void TestText::testTokenize_data()
         << QStringList({"2020", "-", "08", "-", "23", "Camel", "Case", "333", "22", "Sup"});
 }
 
-void TestText::testTokenize()
+void TestQtNoidCommonText::testTokenize()
 {
     QFETCH(QString, input);
     QFETCH(QString, splittersString);
@@ -377,7 +377,7 @@ void TestText::testTokenize()
     QCOMPARE(result, expected);
 }
 
-void TestText::testConvertToCamelCase_data()
+void TestQtNoidCommonText::testConvertToCamelCase_data()
 {
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("expected");
@@ -389,7 +389,7 @@ void TestText::testConvertToCamelCase_data()
 
 }
 
-void TestText::testConvertToCamelCase()
+void TestQtNoidCommonText::testConvertToCamelCase()
 {
     QFETCH(QString, input);
     QFETCH(QString, expected);
@@ -397,7 +397,7 @@ void TestText::testConvertToCamelCase()
     QCOMPARE(result, expected);
 }
 
-void TestText::testConvertToSnakeCase_data()
+void TestQtNoidCommonText::testConvertToSnakeCase_data()
 {
     QTest::addColumn<int>("minNumBlockLen");
     QTest::addColumn<QString>("input");
@@ -411,7 +411,7 @@ void TestText::testConvertToSnakeCase_data()
                                             << "tcp_snake_ip_127";
 }
 
-void TestText::testConvertToSnakeCase()
+void TestQtNoidCommonText::testConvertToSnakeCase()
 {
     QFETCH(int, minNumBlockLen);
     QFETCH(QString, input);
@@ -423,5 +423,5 @@ void TestText::testConvertToSnakeCase()
 
 
 
-QTEST_MAIN(TestText)
+QTEST_MAIN(TestQtNoidCommonText)
 #include "test_text.moc"

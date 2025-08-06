@@ -14,8 +14,8 @@ namespace App {
 class QTNOIDAPP_EXPORT Settings
 {
 public:
-    static QString fileAsAppSibling();
     static QString appExeOrAppBundlePath();
+    static QString filePathAsAppSibling(const QString& fileName);
 
 
 private:

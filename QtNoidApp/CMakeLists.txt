@@ -19,7 +19,7 @@ endif()
 # =============================================================================
 project(QtNoidApp
     VERSION ${PARENT_PROJECT_VERSION}
-    DESCRIPTION "QtNoidApp - Desktop Application configuration helper"
+    DESCRIPTION "QtNoidApp - Desktop Application common features helper"
     LANGUAGES CXX
 )
 
@@ -73,6 +73,7 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         Qt6::Core
+        Qt6::Widgets
 )
 
 # Set library properties

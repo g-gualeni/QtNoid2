@@ -1,7 +1,7 @@
 #include <QTest>
 #include <QtNoidCommon/QtNoidCommon>
 
-class TestScale : public QObject
+class TestQtNoidCommonScale : public QObject
 {
     Q_OBJECT
 
@@ -32,27 +32,27 @@ private slots:
 using namespace QtNoid::Common;
 
 
-void TestScale::initTestCase()
+void TestQtNoidCommonScale::initTestCase()
 {}
 
-void TestScale::cleanupTestCase()
+void TestQtNoidCommonScale::cleanupTestCase()
 {}
 
-void TestScale::init()
+void TestQtNoidCommonScale::init()
 {}
 
-void TestScale::cleanup()
+void TestQtNoidCommonScale::cleanup()
 {}
 
 
-void TestScale::testPrefixList()
+void TestQtNoidCommonScale::testPrefixList()
 {
     auto result = Scale::prefixList();
     QCOMPARE(result.isEmpty(), false);
 }
 
 
-void TestScale::testMultiplier_data()
+void TestQtNoidCommonScale::testMultiplier_data()
 {
     QTest::addColumn<QString>("prefix");
     QTest::addColumn<qint64>("expected");
@@ -64,7 +64,7 @@ void TestScale::testMultiplier_data()
     QTest::newRow("Peta") << "P" << 1000LL * 1000 * 1000 * 1000 * 1000;
     QTest::newRow("Exa") << "E" << 1000LL * 1000 * 1000 * 1000 * 1000 * 1000;
 }
-void TestScale::testMultiplier()
+void TestQtNoidCommonScale::testMultiplier()
 {
     QFETCH(QString, prefix);
     QFETCH(qint64, expected);
@@ -74,7 +74,7 @@ void TestScale::testMultiplier()
 }
 
 
-void TestScale::testMultiplierPrefix_data()
+void TestQtNoidCommonScale::testMultiplierPrefix_data()
 {
     QTest::addColumn<qint64>("value");
     QTest::addColumn<QString>("expected");
@@ -90,7 +90,7 @@ void TestScale::testMultiplierPrefix_data()
     QTest::newRow("500k") << 500LL * 1000L << "k";
 
 }
-void TestScale::testMultiplierPrefix()
+void TestQtNoidCommonScale::testMultiplierPrefix()
 {
     QFETCH(qint64, value);
     QFETCH(QString, expected);
@@ -99,7 +99,7 @@ void TestScale::testMultiplierPrefix()
 }
 
 
-void TestScale::testAutoUpToExaByte_data()
+void TestQtNoidCommonScale::testAutoUpToExaByte_data()
 {
     QTest::addColumn<qint64>("value");
     QTest::addColumn<QString>("expected");
@@ -115,7 +115,7 @@ void TestScale::testAutoUpToExaByte_data()
     QTest::newRow("1EB") << 1024LL * 1024 * 1024 * 1024 * 1024 * 1024 << "1.00 [EByte]";
 
 }
-void TestScale::testAutoUpToExaByte()
+void TestQtNoidCommonScale::testAutoUpToExaByte()
 {
     QFETCH(qint64, value);
     QFETCH(QString, expected);
@@ -124,7 +124,7 @@ void TestScale::testAutoUpToExaByte()
 }
 
 
-void TestScale::testAutoUpToExa_data()
+void TestQtNoidCommonScale::testAutoUpToExa_data()
 {
     QTest::addColumn<qint64>("value");
     QTest::addColumn<QString>("measUnit");
@@ -144,7 +144,7 @@ void TestScale::testAutoUpToExa_data()
 
 
 }
-void TestScale::testAutoUpToExa()
+void TestQtNoidCommonScale::testAutoUpToExa()
 {
     QFETCH(qint64, value);
     QFETCH(QString, measUnit);
@@ -154,7 +154,7 @@ void TestScale::testAutoUpToExa()
 
 }
 
-void TestScale::testNanoSecsUpToDays_data()
+void TestQtNoidCommonScale::testNanoSecsUpToDays_data()
 {
     QTest::addColumn<qint64>("value");
     QTest::addColumn<QString>("expected");
@@ -170,7 +170,7 @@ void TestScale::testNanoSecsUpToDays_data()
 
 }
 
-void TestScale::testNanoSecsUpToDays()
+void TestQtNoidCommonScale::testNanoSecsUpToDays()
 {
     QFETCH(qint64, value);
     QFETCH(QString, expected);
@@ -180,5 +180,5 @@ void TestScale::testNanoSecsUpToDays()
 }
 
 
-QTEST_MAIN(TestScale)
+QTEST_MAIN(TestQtNoidCommonScale)
 #include "test_scale.moc"

@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <QPdfWriter>
 
-class TestFile : public QObject
+class TestQtNoidCommonFile : public QObject
 {
     Q_OBJECT
 
@@ -127,19 +127,19 @@ private:
 using namespace QtNoid::Common;
 
 
-void TestFile::initTestCase()
+void TestQtNoidCommonFile::initTestCase()
 {}
 
-void TestFile::cleanupTestCase()
+void TestQtNoidCommonFile::cleanupTestCase()
 {}
 
-void TestFile::init()
+void TestQtNoidCommonFile::init()
 {}
 
-void TestFile::cleanup()
+void TestQtNoidCommonFile::cleanup()
 {}
 
-void TestFile::testAutoNamingNextName_data()
+void TestQtNoidCommonFile::testAutoNamingNextName_data()
 {
     QTest::addColumn<QString>("currentName");
     QTest::addColumn<QString>("expected");
@@ -159,7 +159,7 @@ void TestFile::testAutoNamingNextName_data()
     QTest::newRow("No Extension") << "ReadMe01" << "ReadMe02";
 }
 
-void TestFile::testAutoNamingNextName()
+void TestQtNoidCommonFile::testAutoNamingNextName()
 {
     QFETCH(QString, currentName);
     QFETCH(QString, expected);
@@ -167,7 +167,7 @@ void TestFile::testAutoNamingNextName()
     QCOMPARE(result, expected);
 }
 
-void TestFile::testAutoNaming_data()
+void TestQtNoidCommonFile::testAutoNaming_data()
 {
     QTest::addColumn<QStringList>("fileList");
     QTest::addColumn<QString>("newFile");
@@ -181,7 +181,7 @@ void TestFile::testAutoNaming_data()
     QTest::newRow("Duplicated Multiple") << QStringList({"saturn_001.txt","saturn_002.txt", "saturn_1001.txt"}) << "saturn_001.txt" << "saturn_003.txt";
 }
 
-void TestFile::testAutoNaming()
+void TestQtNoidCommonFile::testAutoNaming()
 {
     QFETCH(QStringList, fileList);
     QFETCH(QString, newFile);
@@ -198,7 +198,7 @@ void TestFile::testAutoNaming()
 
 }
 
-void TestFile::testAutoNamingFileInfo_data()
+void TestQtNoidCommonFile::testAutoNamingFileInfo_data()
 {
     QTest::addColumn<QStringList>("fileList");
     QTest::addColumn<QString>("newFile");
@@ -215,7 +215,7 @@ void TestFile::testAutoNamingFileInfo_data()
                                                                   "saturn 1001.txt"}) << "saturn.txt" << "saturn 003.txt";
 }
 
-void TestFile::testAutoNamingFileInfo()
+void TestQtNoidCommonFile::testAutoNamingFileInfo()
 {
     QFETCH(QStringList, fileList);
     QFETCH(QString, newFile);
@@ -233,7 +233,7 @@ void TestFile::testAutoNamingFileInfo()
 
 }
 
-void TestFile::testCompareIfEqual_data()
+void TestQtNoidCommonFile::testCompareIfEqual_data()
 {
     QTest::addColumn<QStringList>("fileList");
     QTest::addColumn<bool>("expected");
@@ -246,7 +246,7 @@ void TestFile::testCompareIfEqual_data()
     QTest::newRow("ExpectIsDifferent") << QStringList({"AAAAA","BBBBB"}) << false;
 }
 
-void TestFile::testCompareIfEqual()
+void TestQtNoidCommonFile::testCompareIfEqual()
 {
     QFETCH(QStringList, fileList);
     QFETCH(bool, expected);
@@ -267,7 +267,7 @@ void TestFile::testCompareIfEqual()
 
 }
 
-void TestFile::testIsTextFileShouldBeTrue_data()
+void TestQtNoidCommonFile::testIsTextFileShouldBeTrue_data()
 {
     QTest::addColumn<bool>("enableBom");
     QTest::addColumn<QStringConverter::Encoding>("codec");
@@ -309,7 +309,7 @@ void TestFile::testIsTextFileShouldBeTrue_data()
 }
 
 
-void TestFile::testIsTextFileShouldBeTrue()
+void TestQtNoidCommonFile::testIsTextFileShouldBeTrue()
 {
     QFETCH(bool, enableBom);
     QFETCH(QStringConverter::Encoding, codec);
@@ -334,7 +334,7 @@ void TestFile::testIsTextFileShouldBeTrue()
     QCOMPARE(File::isTextFile(path), true);
 }
 
-void TestFile::testIsTextFile_ImagesShouldBeFalse_data()
+void TestQtNoidCommonFile::testIsTextFile_ImagesShouldBeFalse_data()
 {
     QTest::addColumn<QString>("format");
 
@@ -344,7 +344,7 @@ void TestFile::testIsTextFile_ImagesShouldBeFalse_data()
     QTest::newRow("Image TIF"    ) << ".TIF" ;
 }
 
-void TestFile::testIsTextFile_ImagesShouldBeFalse()
+void TestQtNoidCommonFile::testIsTextFile_ImagesShouldBeFalse()
 {
     QFETCH(QString, format);
 
@@ -381,7 +381,7 @@ void TestFile::testIsTextFile_ImagesShouldBeFalse()
 
 }
 
-void TestFile::testIsTextFile_PdfShouldBeFalse()
+void TestQtNoidCommonFile::testIsTextFile_PdfShouldBeFalse()
 {
     QDir dir = testDataDir(__func__);
     QCOMPARE(dir.mkpath(dir.absolutePath()), true);
@@ -402,7 +402,7 @@ void TestFile::testIsTextFile_PdfShouldBeFalse()
 
 }
 
-void TestFile::testIsTestFile_EmptyFileShouldBeFalse()
+void TestQtNoidCommonFile::testIsTestFile_EmptyFileShouldBeFalse()
 {
     QDir dir = testDataDir(__func__);
     QCOMPARE(dir.mkpath(dir.absolutePath()), true);
@@ -417,7 +417,7 @@ void TestFile::testIsTestFile_EmptyFileShouldBeFalse()
 
 }
 
-void TestFile::testSaveAsTextFile4String_data()
+void TestQtNoidCommonFile::testSaveAsTextFile4String_data()
 {
     QTest::addColumn<QString>("filePath");
     QTest::addColumn<QString>("fileSuffix");
@@ -433,7 +433,7 @@ void TestFile::testSaveAsTextFile4String_data()
     QTest::newRow("TxtFile+BadSuffix2"      ) << "TxtFile+BadSuffix2" << " txt" << "TxtFile+BadSuffix2.txt";
 }
 
-void TestFile::testSaveAsTextFile4String()
+void TestQtNoidCommonFile::testSaveAsTextFile4String()
 {
     QFETCH(QString, filePath);
     QFETCH(QString, fileSuffix);
@@ -460,7 +460,7 @@ void TestFile::testSaveAsTextFile4String()
     QCOMPARE(outText, data);
 }
 
-void TestFile::testSaveAsTextFile4StringList_data()
+void TestQtNoidCommonFile::testSaveAsTextFile4StringList_data()
 {
     QTest::addColumn<QString>("filePath");
     QTest::addColumn<QString>("fileSuffix");
@@ -470,7 +470,7 @@ void TestFile::testSaveAsTextFile4StringList_data()
 
 }
 
-void TestFile::testSaveAsTextFile4StringList()
+void TestQtNoidCommonFile::testSaveAsTextFile4StringList()
 {
 
     QFETCH(QString, filePath);
@@ -502,7 +502,7 @@ void TestFile::testSaveAsTextFile4StringList()
 
 }
 
-void TestFile::testSaveAsTextFileWithSubFolder_data()
+void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder_data()
 {
     QTest::addColumn<QString>("filePath");
     QTest::addColumn<QString>("fileSuffix");
@@ -513,7 +513,7 @@ void TestFile::testSaveAsTextFileWithSubFolder_data()
 
 }
 
-void TestFile::testSaveAsTextFileWithSubFolder()
+void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder()
 {
     QFETCH(QString, filePath);
     QFETCH(QString, fileSuffix);
@@ -530,7 +530,7 @@ void TestFile::testSaveAsTextFileWithSubFolder()
 }
 
 
-void TestFile::testReadAsStringList()
+void TestQtNoidCommonFile::testReadAsStringList()
 {
     QDir dir = testDataDir(__func__);
     dir.mkpath(dir.absolutePath());
@@ -551,7 +551,7 @@ void TestFile::testReadAsStringList()
 
 }
 
-void TestFile::testListPathRecursively_data()
+void TestQtNoidCommonFile::testListPathRecursively_data()
 {
     QTest::addColumn<QStringList>("fileList");
 
@@ -562,7 +562,7 @@ void TestFile::testListPathRecursively_data()
                                                           "a/lst1.txt", "a/lst2.txt"});
 }
 
-void TestFile::testListPathRecursively()
+void TestQtNoidCommonFile::testListPathRecursively()
 {
     QFETCH(QStringList, fileList);
 
@@ -582,7 +582,7 @@ void TestFile::testListPathRecursively()
     QCOMPARE(resList, expected);
 }
 
-void TestFile::testListPathRecursively_PathIsAFileInTheFolder()
+void TestQtNoidCommonFile::testListPathRecursively_PathIsAFileInTheFolder()
 {
     QStringList fileList({"a.txt, b.txt"});
 
@@ -603,7 +603,7 @@ void TestFile::testListPathRecursively_PathIsAFileInTheFolder()
     QCOMPARE(resList, expected);
 }
 
-void TestFile::testListPathRecursively_InvalidPath_data()
+void TestQtNoidCommonFile::testListPathRecursively_InvalidPath_data()
 {
     QTest::addColumn<QString>("path");
 
@@ -612,7 +612,7 @@ void TestFile::testListPathRecursively_InvalidPath_data()
 
 }
 
-void TestFile::testListPathRecursively_InvalidPath()
+void TestQtNoidCommonFile::testListPathRecursively_InvalidPath()
 {
     QFETCH(QString, path);
 
@@ -623,7 +623,7 @@ void TestFile::testListPathRecursively_InvalidPath()
     QCOMPARE(resList, {});
 }
 
-void TestFile::testListPathRecursively_UsingFiltes_data()
+void TestQtNoidCommonFile::testListPathRecursively_UsingFiltes_data()
 {
     QTest::addColumn<QStringList>("goodList");
     QTest::addColumn<QStringList>("badList");
@@ -637,7 +637,7 @@ void TestFile::testListPathRecursively_UsingFiltes_data()
 
 }
 
-void TestFile::testListPathRecursively_UsingFiltes()
+void TestQtNoidCommonFile::testListPathRecursively_UsingFiltes()
 {
     QFETCH(QStringList, goodList);
     QFETCH(QStringList, badList);
@@ -661,7 +661,7 @@ void TestFile::testListPathRecursively_UsingFiltes()
 
 
 
-QTEST_MAIN(TestFile)
+QTEST_MAIN(TestQtNoidCommonFile)
 #include "test_file.moc"
 
 

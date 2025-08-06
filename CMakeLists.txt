@@ -37,6 +37,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS
     Core
+    Widgets
 )
 
 set(CMAKE_AUTOMOC ON)
@@ -48,11 +49,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Add Subdirectories
 # =============================================================================
 if(BUILD_CORE)
-    add_subdirectory(Core)
+    add_subdirectory(QtNoidCore)
 endif()
 
 if(BUILD_COMMON)
-    add_subdirectory(Common)
+    add_subdirectory(QtNoidCommon)
 endif()
 
 if(BUILD_APP)
