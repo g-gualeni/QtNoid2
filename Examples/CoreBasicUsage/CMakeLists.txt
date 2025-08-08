@@ -15,12 +15,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # =============================================================================
 find_package(QtNoidCore REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 
-# if(WIN32)
-#   find_package(QtNoidCore REQUIRED HINTS "C:/GitHub/Libs/QtNoid2")
-# elseif(APPLE)
-#   find_package(QtNoidCore REQUIRED HINTS "/Users/QtQb/GitHub/Libs/QtNoid2")
-# endif()
 
+# =============================================================================
+# Search for Qt libraries
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
