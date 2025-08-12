@@ -25,7 +25,16 @@ QString Settings::appExeOrAppBundlePath()
 QString Settings::filePathAsAppSibling(const QString &fileName)
 {
     QFileInfo FI(fileName);
-    auto cleanFName = FI.fileName();
+
+    QString cleanFName;
+    if(fileName.isEmpty()) {
+        qDebug() << __func__ << qApp->applicationName();
+        cleanFName = qApp->applicationName();
+    }
+    else {
+        cleanFName = FI.fileName();
+        qDebug() << __func__ << cleanFName;
+    }
     auto res = qApp->applicationDirPath() + "/" +cleanFName;
     return res;
 }

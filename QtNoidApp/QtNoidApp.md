@@ -27,7 +27,7 @@ target_link_libraries: QtNoid::QtNoidApp
 ## Namespace
 
 ```cpp
-namespace QtNoid::App
+using namespace QtNoid::App;
 ```
 
 &nbsp;

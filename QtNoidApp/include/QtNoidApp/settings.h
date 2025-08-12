@@ -15,7 +15,7 @@ class QTNOIDAPP_EXPORT Settings
 {
 public:
     static QString appExeOrAppBundlePath();
-    static QString filePathAsAppSibling(const QString& fileName);
+    static QString filePathAsAppSibling(const QString& fileName={});
 
 
 private:

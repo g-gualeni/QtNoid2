@@ -22,7 +22,7 @@ target_link_libraries: QtNoid::QtNoidCore
 ## Namespace
 
 ```cpp
-namespace QtNoid
+using namespace QtNoid;
 ```
 
 &nbsp;

@@ -12,6 +12,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
+# =============================================================================
+# Search for QtNoid Installed library
+# =============================================================================
+find_package(QtNoidApp REQUIRED HINTS "../../../ExtLibs/QtNoid2")
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
@@ -42,7 +47,10 @@ else()
     endif()
 endif()
 
-target_link_libraries(AppBasicUsage PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(AppBasicUsage
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+    QtNoid::QtNoidApp
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

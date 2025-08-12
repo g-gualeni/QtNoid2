@@ -26,7 +26,7 @@ target_link_libraries: QtNoid::QtNoidCommon
 ## Namespace
 
 ```cpp
-namespace QtNoid::Common
+using namespace QtNoid::Common;
 ```
 
 &nbsp;
