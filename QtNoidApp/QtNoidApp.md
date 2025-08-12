@@ -40,10 +40,15 @@ This class contains a set of helper methods to work with the application setting
 
 - `QString appExeOrAppBundlePath()`: return the path of the application exe file 
 or of the Application Bundle for macOS.
-- `QString filePathAsAppSibling(const QString &fileName)`: calulate the absolute
-file path for fileName, as an application or bundle sibling. This is helpful to
-create the configuration file in the same folder of the application.
 
+- `QString filePathAsAppSibling(const QString &fileName = {})`: calulate the absolute
+file path for fileName, as an application or bundle sibling. If fileName is empty
+then it will use the applicationName as fileName and .json as extension.
+This is helpful to create the configuration file in the same folder of the 
+application. 
+
+- `QWidget* mainWindowsFromWidget(QWidget *ref)`: return the main dialog of the 
+current widget. Basically scan all parents till it finds a MainDialog widget.
 
 
 ### Non Static Methods

@@ -1,8 +1,13 @@
 #include <QTest>
 #include <QtNoidApp/QtNoidApp>
+#include <QHBoxLayout>
 #include <QImage>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMainWindow>
 #include <QPainter>
 #include <QPdfWriter>
+#include <QPushButton>
 
 class TestQtNoidAppSettings : public QObject
 {
@@ -16,7 +21,9 @@ private slots:
     void testAppExeOrAppBundlePath();
     void testFilePathAsAppSibling_data();
     void testFilePathAsAppSibling();
-
+    void testFilePathAsAppSiblingWithEmptyFileName();
+    void testMainWindowsFromWidget();
+    void testGroupNameFromClass();
 
 private:
 
@@ -56,9 +63,44 @@ void TestQtNoidAppSettings::testFilePathAsAppSibling()
 {
     QFETCH(QString, fileName);
     auto actual = Settings::filePathAsAppSibling(fileName);
+
+    QString expected = qApp->applicationDirPath();
     auto split = fileName.split("/").last();
-    auto expected = qApp->applicationDirPath() + "/" + split;
+    expected +=  + "/" + split;
     QCOMPARE(actual, expected);
+}
+
+void TestQtNoidAppSettings::testFilePathAsAppSiblingWithEmptyFileName()
+{
+    auto actual = Settings::filePathAsAppSibling();
+    auto expected = qApp->applicationDirPath() + "/" + qApp->applicationName() + ".json";
+    QCOMPARE(actual, expected);
+}
+
+void TestQtNoidAppSettings::testMainWindowsFromWidget()
+{
+    QMainWindow frm;
+    frm.setCentralWidget(new QWidget());
+    frm.centralWidget()->setLayout(new QHBoxLayout());
+    auto myWidget = new QLabel("TEST");
+    frm.centralWidget()->layout()->addWidget(myWidget);
+
+    // Save the MainWindows as a dialog for debug purpose
+    auto pixMap = frm.grab();
+    auto path = qApp->applicationDirPath() + "/" + __func__ + ".png";
+    pixMap.save(path);
+
+    auto actual = Settings::mainWindowFromWidget(myWidget);
+    auto expected = &frm;
+    QCOMPARE(actual, expected);
+}
+
+void TestQtNoidAppSettings::testGroupNameFromClass()
+{
+    auto actual = Settings::groupNameFromClass(new QLabel("Test"));
+    auto expected ="QLabel";
+    QCOMPARE(actual, expected);
+
 }
 
 

@@ -7,6 +7,9 @@
 #include <QString>
 
 
+
+class QMainWindow;
+
 namespace QtNoid {
 namespace App {
 
@@ -16,6 +19,9 @@ class QTNOIDAPP_EXPORT Settings
 public:
     static QString appExeOrAppBundlePath();
     static QString filePathAsAppSibling(const QString& fileName={});
+    static QMainWindow *mainWindowFromWidget(QWidget *ref);
+    static QString groupNameFromClass(const QObject* ref);
+    static QString groupNameFromObject(const QObject* ref);
 
 
 private:
@@ -25,9 +31,6 @@ private:
 
 /**
 
-    static QWidget *mainWindowsFromWidget(QWidget *ref); Cerca la form principale
-    static QString groupNameFromClass(const QObject* ref); Esplicitamente ritorna la classe
-    static QString groupNameFromObject(const QObject* ref); Se ha un nome bene, altrimenti usa la classe
 
 
 --> aggingere la classe bindableProperty
