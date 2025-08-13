@@ -17,6 +17,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_cmdGroupName_clicked();
+    void on_optUpdateWindowTitle_clicked(bool checked);
+
+    void on_optUpdateWindowTitle_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

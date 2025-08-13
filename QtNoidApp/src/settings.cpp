@@ -4,6 +4,7 @@
 #include <QFileInfo>
 #include <QMainWindow>
 #include <QWidget>
+#include <QScreen>
 #include <QtNoidCommon/QtNoidCommon>
 
 namespace QtNoid {
@@ -35,7 +36,7 @@ QString Settings::filePathAsAppSibling(const QString &fileName)
         QFileInfo FI(fileName);
         cleanFName = FI.fileName();
     }
-    qDebug() << __func__ << cleanFName;
+    // qDebug() << __func__ << cleanFName;
     auto res = qApp->applicationDirPath() + "/" +cleanFName;
     return res;
 }
@@ -60,18 +61,58 @@ QMainWindow *Settings::mainWindowFromWidget(QWidget *ref)
 }
 
 
-QString Settings::groupNameFromClass(const QObject *ref)
+QString Settings::groupNameFromObjectOrClass(const QObject *ref)
 {
     if (ref == nullptr)
         return QString();
 
-    return QtNoid::Common::Text::convertToCamelCase(ref->metaObject()->className());
+    auto groupName = ref->objectName();
+    if(groupName.isEmpty()) {
+        return QtNoid::Common::Text::convertToCamelCase(ref->metaObject()->className());
+    }
+    else {
+        return QtNoid::Common::Text::convertToCamelCase(groupName);
+    }
 }
 
-
-QString Settings::groupNameFromObject(const QObject *ref)
+bool Settings::updateMainWindowTitle(bool changed, QWidget *ref)
 {
-return {};
+    auto mainWindow = mainWindowFromWidget(ref);
+    if(mainWindow == nullptr)
+    {
+        return false;
+    }
+
+    auto current = mainWindow->windowTitle();
+    if(current.last(1) == "*") {
+        current = current.removeLast();
+    }
+    current = current.trimmed();
+    qDebug() << __func__ << current;
+    if(changed) {
+        current += "*";
+    }
+    mainWindow->setWindowTitle(current);
+
+    return true;
+}
+
+QPixmap Settings::fullDialogGrab(QWidget *ref)
+{
+    auto mainWindow = mainWindowFromWidget(ref);
+    if(mainWindow == nullptr)
+    {
+        return {};
+    }
+
+    QRect windowRect = mainWindow->frameGeometry();
+    QPixmap pixMap  = mainWindow->screen()->grabWindow(0,
+                                                      windowRect.x(),
+                                                      windowRect.y(),
+                                                      windowRect.width(),
+                                                      windowRect.height());
+
+    return pixMap;
 }
 
 

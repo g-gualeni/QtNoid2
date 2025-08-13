@@ -43,6 +43,34 @@
      <widget class="QLineEdit" name="txtConfigPath"/>
     </item>
     <item>
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>groupNameFromObjectOrClass</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLineEdit" name="txtGroupName"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cmdGroupName">
+        <property name="text">
+         <string>Set MainWindow Name to AppTest</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QRadioButton" name="optUpdateWindowTitle">
+      <property name="text">
+       <string>UpdateWindowsTitle (Changed* / Unchanged)</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <spacer name="verticalSpacer">
       <property name="orientation">
        <enum>Qt::Orientation::Vertical</enum>
@@ -63,7 +91,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

@@ -23,7 +23,15 @@ private slots:
     void testFilePathAsAppSibling();
     void testFilePathAsAppSiblingWithEmptyFileName();
     void testMainWindowsFromWidget();
-    void testGroupNameFromClass();
+    void testGroupNameFromObjectOrClassUsingClass();
+    void testGroupNameFromObjectOrClassUsingObjectName();
+    void testUpdateMainWindowTitle_shouldFail();
+    void testUpdateMainWindowTitle_data();
+    void testUpdateMainWindowTitle();
+    void testUpdateMainWindowTitle_multipleChange();
+
+    void testFullDialogGrab_shouldBeEmpty();
+    void testFullDialogGrab();
 
 private:
 
@@ -86,7 +94,7 @@ void TestQtNoidAppSettings::testMainWindowsFromWidget()
     frm.centralWidget()->layout()->addWidget(myWidget);
 
     // Save the MainWindows as a dialog for debug purpose
-    auto pixMap = frm.grab();
+    auto pixMap = frm.grab(frm.frameGeometry());
     auto path = qApp->applicationDirPath() + "/" + __func__ + ".png";
     pixMap.save(path);
 
@@ -95,12 +103,119 @@ void TestQtNoidAppSettings::testMainWindowsFromWidget()
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testGroupNameFromClass()
+void TestQtNoidAppSettings::testGroupNameFromObjectOrClassUsingClass()
 {
-    auto actual = Settings::groupNameFromClass(new QLabel("Test"));
+    auto actual = Settings::groupNameFromObjectOrClass(new QLabel("Test"));
     auto expected ="QLabel";
     QCOMPARE(actual, expected);
+}
 
+void TestQtNoidAppSettings::testGroupNameFromObjectOrClassUsingObjectName()
+{
+    auto lbl = new QLabel("Test");
+    lbl->setObjectName("MyObjectIsBetter");
+
+    auto actual = Settings::groupNameFromObjectOrClass(lbl);
+    auto expected ="MyObjectIsBetter";
+    QCOMPARE(actual, expected);
+
+}
+
+void TestQtNoidAppSettings::testUpdateMainWindowTitle_shouldFail()
+{
+    auto res = Settings::updateMainWindowTitle(true, nullptr);
+    QCOMPARE(res, false);
+}
+
+void TestQtNoidAppSettings::testUpdateMainWindowTitle_data()
+{
+    QTest::addColumn<QString>("title");
+    QTest::addColumn<bool>("modified");
+    QTest::addColumn<QString>("expected");
+
+    QTest::addRow("No Changes") <<"MoonApp" << false << "MoonApp";
+    QTest::addRow("Set Changed") <<"MoonApp" << true << "MoonApp*";
+    QTest::addRow("With Space and Not Changed") <<"MoonApp " << false << "MoonApp";
+    QTest::addRow("With Space and Set Changed") <<"MoonApp " << true << "MoonApp*";
+
+}
+
+
+void TestQtNoidAppSettings::testUpdateMainWindowTitle()
+{
+    QFETCH(QString, title);
+    QFETCH(bool, modified);
+    QFETCH(QString, expected);
+
+    QMainWindow frm;
+    frm.setWindowTitle(title);
+    frm.setCentralWidget(new QWidget());
+    auto res = Settings::updateMainWindowTitle(modified, frm.centralWidget());
+    QCOMPARE(res, true);
+
+    QCOMPARE(frm.windowTitle(), expected);
+
+}
+
+void TestQtNoidAppSettings::testUpdateMainWindowTitle_multipleChange()
+{
+    QMainWindow frm;
+
+    frm.setWindowTitle("We Are Ready");
+    frm.setCentralWidget(new QWidget());
+    auto res = Settings::updateMainWindowTitle(true, frm.centralWidget());
+    QCOMPARE(res, true);
+    res = Settings::updateMainWindowTitle(false, frm.centralWidget());
+    QCOMPARE(res, true);
+    res = Settings::updateMainWindowTitle(true, frm.centralWidget());
+    QCOMPARE(res, true);
+    auto expected = "We Are Ready*";
+    QCOMPARE(frm.windowTitle(), expected);
+
+}
+
+void TestQtNoidAppSettings::testFullDialogGrab_shouldBeEmpty()
+{
+    auto expected = QPixmap();
+    auto actual = Settings::fullDialogGrab(nullptr);
+    QCOMPARE(actual, expected);
+}
+
+void TestQtNoidAppSettings::testFullDialogGrab()
+{
+    QMainWindow frm;
+    frm.setWindowTitle("MyMainWindowsCaption");
+    frm.setCentralWidget(new QWidget());
+    frm.centralWidget()->setLayout(new QHBoxLayout());
+    auto myWidget = new QLabel("TEST");
+    frm.centralWidget()->layout()->addWidget(myWidget);
+    frm.setFixedWidth(400);
+
+    frm.show();
+    auto res = QTest::qWaitForWindowExposed(&frm);
+    QCOMPARE(res, true);
+    QTest::qWait(500);
+
+    // Get the window content + decorations
+    QRect windowRect = frm.frameGeometry();
+    QPixmap pixMap  = frm.screen()->grabWindow(0,
+                                            windowRect.x(),
+                                            windowRect.y(),
+                                            windowRect.width(),
+                                            windowRect.height());
+    // Validate the image size
+    QVERIFY(pixMap.width() >= frm.width());
+    QVERIFY(pixMap.height() >= frm.height());
+
+    // Save the MainWindows as a dialog for debug purpose
+    auto path = qApp->applicationDirPath() + "/" + __func__;
+    pixMap.save(path  + ".png");
+
+    auto expected = pixMap;
+    auto actual = Settings::fullDialogGrab(myWidget);
+    actual.save(path + "_Actual.png");
+
+    QCOMPARE(actual, expected);
 }
 
 

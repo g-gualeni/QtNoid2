@@ -11,12 +11,34 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     QString appBundle = Settings::appExeOrAppBundlePath();
     ui->txtAppBundle->setText(appBundle);
-    qApp->setApplicationDisplayName("AA");
+    qApp->setApplicationDisplayName("This Is Application Display Name");
     QString config = Settings::filePathAsAppSibling();
     ui->txtConfigPath->setText(config);
+
+    ui->txtGroupName->setText(Settings::groupNameFromObjectOrClass(this));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_cmdGroupName_clicked()
+{
+    this->setObjectName("AppBasicUsage");
+    ui->txtGroupName->setText(Settings::groupNameFromObjectOrClass(this));
+}
+
+
+void MainWindow::on_optUpdateWindowTitle_clicked(bool checked)
+{
+    // I use the central widget as the simplest way to get the main window.
+    Settings::updateMainWindowTitle(checked, ui->centralwidget);
+}
+
+
+void MainWindow::on_optUpdateWindowTitle_clicked()
+{
+
+}
+
