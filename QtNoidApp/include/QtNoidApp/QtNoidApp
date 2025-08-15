@@ -6,5 +6,6 @@
 #define QTNOIDAPP_H
 
 #include "settings.h"
+#include "parameter.h"
 
 #endif // QTNOIDAPP_H

@@ -2,6 +2,8 @@
 This module contains:
 - [**Settings**](#class-settings): collection of methods to simplify the management of the application
 settings.
+- [**Parameter**](#class-parameter): Generic application parameter class with 
+value storage, range validation, presets, and Qt property binding.
 
 
 
@@ -65,15 +67,31 @@ notes. If you need to capture only the widget content, just use the Qt
 method `grab()`. You can pass also a `QMainWindow` pointer, since this class inherits
 QWidget.
 
+&nbsp;
 
 ### Non Static Methods
 
-&nbsp;
 
 [⬆ Back to top](#qtnoidsapp)
 
 &nbsp;
+## Class: Parameter
+This class is a generic application parameter class with value storage, range 
+validation, presets, and Qt property binding.
 
+&nbsp;
+
+### Static Methods
+
+
+&nbsp;
+
+### Non Static Methods
+
+[⬆ Back to top](#qtnoidsapp)
+
+
+&nbsp;
 
 [← Back to Main Page](./../README.md)
 

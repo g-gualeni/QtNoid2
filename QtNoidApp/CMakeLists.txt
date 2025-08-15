@@ -36,6 +36,7 @@ set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # =============================================================================
 set(SOURCES
     ${SOURCES_DIR}/settings.cpp
+    ${SOURCES_DIR}/parameter.cpp
 )
 
 # File header
@@ -43,6 +44,7 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
     ${HEADERS_DIR}/${PROJECT_NAME}/settings.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/parameter.h
 )
 
 
