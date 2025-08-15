@@ -45,10 +45,11 @@ QMainWindow *Settings::mainWindowFromWidget(QWidget *ref)
 {
     if (ref == nullptr)
         return nullptr;
-    QObject *parent = ref->parent();
 
+    QObject *parent = ref->parent();
     if (parent == nullptr) {
-        return nullptr;
+        // Could be this is already the main window
+        return qobject_cast<QMainWindow *>(ref);;
     }
     // Loop till the QMainWindow
     while (parent->isWidgetType()) {
@@ -88,7 +89,7 @@ bool Settings::updateMainWindowTitle(bool changed, QWidget *ref)
         current = current.removeLast();
     }
     current = current.trimmed();
-    qDebug() << __func__ << current;
+    // qDebug() << __func__ << current;
     if(changed) {
         current += "*";
     }
@@ -105,12 +106,16 @@ QPixmap Settings::fullDialogGrab(QWidget *ref)
         return {};
     }
 
+    QScreen* screen = mainWindow->screen();
     QRect windowRect = mainWindow->frameGeometry();
-    QPixmap pixMap  = mainWindow->screen()->grabWindow(0,
-                                                      windowRect.x(),
-                                                      windowRect.y(),
-                                                      windowRect.width(),
-                                                      windowRect.height());
+    QPoint screenOffset = screen->geometry().topLeft();
+    QRect relativeRect = windowRect.translated(-screenOffset);
+    QPixmap pixMap = screen->grabWindow(0,
+                                        relativeRect.x(),
+                                        relativeRect.y(),
+                                        relativeRect.width(),
+                                        relativeRect.height());
+
 
     return pixMap;
 }

@@ -23,6 +23,7 @@ private slots:
     void testFilePathAsAppSibling();
     void testFilePathAsAppSiblingWithEmptyFileName();
     void testMainWindowsFromWidget();
+    void testMainWindowsFromWidget_usingTheMainWindow();
     void testGroupNameFromObjectOrClassUsingClass();
     void testGroupNameFromObjectOrClassUsingObjectName();
     void testUpdateMainWindowTitle_shouldFail();
@@ -90,17 +91,36 @@ void TestQtNoidAppSettings::testMainWindowsFromWidget()
     QMainWindow frm;
     frm.setCentralWidget(new QWidget());
     frm.centralWidget()->setLayout(new QHBoxLayout());
-    auto myWidget = new QLabel("TEST");
+    auto myWidget = new QLabel("testMainWindowsFromWidget");
     frm.centralWidget()->layout()->addWidget(myWidget);
 
     // Save the MainWindows as a dialog for debug purpose
-    auto pixMap = frm.grab(frm.frameGeometry());
+    auto pixMap = frm.grab();
     auto path = qApp->applicationDirPath() + "/" + __func__ + ".png";
     pixMap.save(path);
 
     auto actual = Settings::mainWindowFromWidget(myWidget);
     auto expected = &frm;
     QCOMPARE(actual, expected);
+}
+
+void TestQtNoidAppSettings::testMainWindowsFromWidget_usingTheMainWindow()
+{
+    QMainWindow frm;
+    frm.setCentralWidget(new QWidget());
+    frm.centralWidget()->setLayout(new QHBoxLayout());
+    auto myWidget = new QLabel("testMainWindowsFromWidget_usingTheMainWindow");
+    frm.centralWidget()->layout()->addWidget(myWidget);
+
+    // Save the MainWindows as a dialog for debug purpose
+    auto pixMap = frm.grab();
+    auto path = qApp->applicationDirPath() + "/" + __func__ + ".png";
+    pixMap.save(path);
+
+    auto actual = Settings::mainWindowFromWidget(&frm);
+    auto expected = &frm;
+    QCOMPARE(actual, expected);
+
 }
 
 void TestQtNoidAppSettings::testGroupNameFromObjectOrClassUsingClass()
@@ -187,7 +207,7 @@ void TestQtNoidAppSettings::testFullDialogGrab()
     frm.setWindowTitle("MyMainWindowsCaption");
     frm.setCentralWidget(new QWidget());
     frm.centralWidget()->setLayout(new QHBoxLayout());
-    auto myWidget = new QLabel("TEST");
+    auto myWidget = new QLabel("testFullDialogGrab");
     frm.centralWidget()->layout()->addWidget(myWidget);
     frm.setFixedWidth(400);
 
@@ -209,10 +229,10 @@ void TestQtNoidAppSettings::testFullDialogGrab()
 
     // Save the MainWindows as a dialog for debug purpose
     auto path = qApp->applicationDirPath() + "/" + __func__;
-    pixMap.save(path  + ".png");
+    pixMap.save(path  + "_Expected.png");
 
     auto expected = pixMap;
-    auto actual = Settings::fullDialogGrab(myWidget);
+    auto actual = Settings::fullDialogGrab(&frm);
     actual.save(path + "_Actual.png");
 
     QCOMPARE(actual, expected);

@@ -49,6 +49,8 @@ application.
 
 - `QWidget* mainWindowsFromWidget(QWidget *ref)`: returns the main dialog of the 
 current widget. It basically scans all parents untill it finds a MainDialog widget.
+You can pass also a `QMainWindow` pointer, since this class inherits
+QWidget.
 
 - `QString groupNameFromObjectOrClass(const QObject* ref)`: generates a name for a
 group of settings using the object name if present, or the class name. This is 
@@ -57,11 +59,11 @@ perfect for storing settings for a pop-up dialog or even for the main dialog.
 - `bool updateMainWindowTitle(bool changed, QWidget *ref)`: starting from a widget, 
 it updates the main dialog title, adding an * if changed is true, or removing 
 the * if false.
-
-- `QPixmap fullDialogGrab(QWidget *ref)`: starting from a widget, captures the 
-full dialog. This is perfect for creating screenshots for a user manual or for 
-release notes. If you need to acquire only the widget content, just use the Qt 
-method grab().
+- `QPixmap fullDialogGrab(QWidget *ref)`: Starting from a widget, captures the 
+full dialog. This is perfect for creating screenshots for a user manuals or release
+notes. If you need to capture only the widget content, just use the Qt 
+method `grab()`. You can pass also a `QMainWindow` pointer, since this class inherits
+QWidget.
 
 
 ### Non Static Methods

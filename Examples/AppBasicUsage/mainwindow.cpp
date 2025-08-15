@@ -37,8 +37,24 @@ void MainWindow::on_optUpdateWindowTitle_clicked(bool checked)
 }
 
 
-void MainWindow::on_optUpdateWindowTitle_clicked()
+void MainWindow::on_cmdFullDialogGrab_clicked()
 {
+    // Label Toggle
+    auto text = ui->cmdFullDialogGrab->text();
+    if(text.startsWith("Clear")) {
+        ui->cmdFullDialogGrab->setText(text.remove("Clear").trimmed());
+        ui->txtFullDialogGrab->clear();
+        ui->txtFullDialogGrab->setStyleSheet({});
+    }
+    else {
+        auto pixMap = Settings::fullDialogGrab(this);
+        ui->txtFullDialogGrab->setStyleSheet("border: 2px solid blue;");
+        ui->txtFullDialogGrab->setScaledContents(true);
+        ui->txtFullDialogGrab->setPixmap(pixMap);
+        ui->cmdFullDialogGrab->setText("Clear " + text);
+    }
+
+
 
 }
 

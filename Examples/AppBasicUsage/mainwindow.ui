@@ -61,12 +61,33 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="cmdFullDialogGrab">
+        <property name="text">
+         <string>fullDialogGrab</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
      <widget class="QRadioButton" name="optUpdateWindowTitle">
       <property name="text">
        <string>UpdateWindowsTitle (Changed* / Unchanged)</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>FullDialogGrab Result</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="txtFullDialogGrab">
+      <property name="text">
+       <string>TextLabel</string>
       </property>
      </widget>
     </item>

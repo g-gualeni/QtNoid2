@@ -20,8 +20,7 @@ public:
 private slots:
     void on_cmdGroupName_clicked();
     void on_optUpdateWindowTitle_clicked(bool checked);
-
-    void on_optUpdateWindowTitle_clicked();
+    void on_cmdFullDialogGrab_clicked();
 
 private:
     Ui::MainWindow *ui;
