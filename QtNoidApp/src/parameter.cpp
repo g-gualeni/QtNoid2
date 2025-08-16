@@ -51,7 +51,9 @@ QVariant Parameter::value() const
 
 void Parameter::setValue(const QVariant &val)
 {
-    m_value = val;
+    // No needs for checking if different or to manually emit value changed
+
+    m_value = clampValue(val);
 }
 
 QBindable<QVariant> Parameter::bindableValue()
@@ -188,6 +190,7 @@ void Parameter::enforceRange()
 
 QVariant Parameter::clampValue(const QVariant &value) const
 {
+    // qDebug() << __func__ << "value:" << value << "range:" << range();
     QVariant result = value;
 
     // Clamp to min value

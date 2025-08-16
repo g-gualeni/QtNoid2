@@ -145,4 +145,4 @@ endif()
 set(PROJECT_DOCS
     QtNoidCommon.md
 )
-add_custom_target(CommonDocs SOURCES ${PROJECT_DOCS})
+add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})
