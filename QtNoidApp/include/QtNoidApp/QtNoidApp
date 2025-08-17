@@ -7,5 +7,6 @@
 
 #include "settings.h"
 #include "parameter.h"
+#include "parameterlist.h"
 
 #endif // QTNOIDAPP_H
