@@ -25,6 +25,8 @@ class QTNOIDAPP_EXPORT Parameter : public QObject
     Q_PROPERTY(QVariantMap presets READ presets WRITE setPresets BINDABLE bindablePresets NOTIFY presetsChanged FINAL)
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
+    Q_PROPERTY(QString unit READ unit WRITE setUnit BINDABLE bindableUnit NOTIFY unitChanged FINAL)
+    Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
 
 public:
     explicit Parameter(QObject *parent = nullptr);
@@ -70,6 +72,17 @@ public:
     void setDescription(const QString& value);
     QBindable<QString> bindableDescription();
 
+    // Unit
+    QString unit() const;
+    void setUnit(const QString& value);
+    QBindable<QString> bindableUnit();
+
+    // ReadOnly
+    bool readOnly() const;
+    void setReadOnly(bool value);
+    QBindable<bool> bindableReadOnly();
+    
+
 signals:
     void valueChanged(const QVariant &newValue);
     void minChanged(const QVariant &min);
@@ -78,6 +91,9 @@ signals:
     void presetsChanged(const QVariantMap &presets);
     void nameChanged(const QString &value);
     void descriptionChanged(const QString &value);
+    void unitChanged(const QString &value);
+    void readOnlyChanged(bool value);
+    void writeAttemptedWhileReadOnly(const QString &parameterName);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariant, m_value, &Parameter::valueChanged)
@@ -86,11 +102,14 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariantMap, m_presets, &Parameter::presetsChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_name, &Parameter::nameChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_description, &Parameter::descriptionChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_unit, &Parameter::unitChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_readOnly, &Parameter::readOnlyChanged)
 
     void enforceRange();
     QVariant clampValue(const QVariant &value) const;
     void connectRangeChanged();
     bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
+    bool canModify() const; // Modification control
 };
 
 } // namespace App

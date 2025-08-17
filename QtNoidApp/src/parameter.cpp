@@ -51,9 +51,10 @@ QVariant Parameter::value() const
 
 void Parameter::setValue(const QVariant &val)
 {
-    // No needs for checking if different or to manually emit value changed
-
-    m_value = clampValue(val);
+    if (canModify()) {
+        // No needs for checking if different or to manually emit value changed
+        m_value = clampValue(val);
+    }
 }
 
 QBindable<QVariant> Parameter::bindableValue()
@@ -179,6 +180,44 @@ QBindable<QString> Parameter::bindableDescription()
 {
     return QBindable<QString>(&m_description);
 }
+
+
+QString Parameter::unit() const
+{
+    return m_unit.value();
+}
+void Parameter::setUnit(const QString &value)
+{
+    m_unit = value;
+}
+QBindable<QString> Parameter::bindableUnit()
+{
+    return QBindable<QString>(&m_unit);
+}
+
+
+bool Parameter::readOnly() const
+{
+    return m_readOnly.value();
+}
+void Parameter::setReadOnly(bool value)
+{
+    m_readOnly = value;
+}
+QBindable<bool> Parameter::bindableReadOnly()
+{
+    return QBindable<bool>(&m_readOnly);
+}
+
+bool Parameter::canModify() const
+{
+    if(m_readOnly.value()) {
+        const_cast<Parameter*>(this)->emit writeAttemptedWhileReadOnly(m_name.value());
+        return false;
+    }
+    return true;
+}
+
 
 void Parameter::enforceRange()
 {

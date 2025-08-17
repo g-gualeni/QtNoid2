@@ -17,6 +17,8 @@ private slots:
     void testParameterRange();
     void testParameterName();
     void testParameterDescription();
+    void testParameterUnit();
+    void testParameterReadOnly();
 
     // Q_PROPERTY(QVariant value READ value WRITE setValue BINDABLE bindableValue NOTIFY valueChanged FINAL)
     // Q_PROPERTY(QVariant min READ min WRITE setMin BINDABLE bindableMin NOTIFY minChanged FINAL)
@@ -62,6 +64,9 @@ void TestQtNoidAppParameter::testCreatingParameter()
 
     QCOMPARE(par.name(), "ParameterName");
     QCOMPARE(par.description(), "This is the first time");
+
+    par.setUnit("°C");
+    QCOMPARE(par.unit(), "°C");
 
 }
 
@@ -142,6 +147,59 @@ void TestQtNoidAppParameter::testParameterDescription()
     par.setDescription("this is the Earth diameter in km");
     QCOMPARE(spy.count(), 0);
 
+}
+
+void TestQtNoidAppParameter::testParameterUnit()
+{
+    Parameter par("Temperature", "Current temperature", 25.0);
+    QSignalSpy spy(&par, &Parameter::unitChanged);
+
+    par.setUnit("°C");
+    QCOMPARE(spy.count(), 1);
+
+    // check the value is the correct one
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "°C");
+
+    // Same value, no activation
+    par.setUnit("°C");
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppParameter::testParameterReadOnly()
+{
+    Parameter par("ReadOnlyParamName", "Test parameter", 100.0);
+    
+    // Test initial state (should be writable)
+    QCOMPARE(par.readOnly(), false);
+    
+    // Test setting readOnly property
+    QSignalSpy readOnlyChangeSpy(&par, &Parameter::readOnlyChanged);
+    par.setReadOnly(true);
+    QCOMPARE(readOnlyChangeSpy.count(), 1);
+    QCOMPARE(par.readOnly(), true);
+    
+    // Test that setValue emits writeAttemptedWhileReadOnly signal when readOnly
+    QSignalSpy writeAttemptSpy(&par, &Parameter::writeAttemptedWhileReadOnly);
+    QSignalSpy valueChangeSpy(&par, &Parameter::valueChanged);
+    
+    par.setValue(200.0);
+    QCOMPARE(writeAttemptSpy.count(), 1);
+
+    // Signal contains the parameter name
+    QList<QVariant> arguments = writeAttemptSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "ReadOnlyParamName");
+
+
+    QCOMPARE(valueChangeSpy.count(), 0);
+    QCOMPARE(par.value(), 100.0); // Value should not change
+    
+    // Test that setValue works normally when readOnly is false
+    par.setReadOnly(false);
+    par.setValue(200.0);
+    QCOMPARE(writeAttemptSpy.count(), 0); // No additional signal
+    QCOMPARE(valueChangeSpy.count(), 1);
+    QCOMPARE(par.value(), 200.0);
 }
 
 
