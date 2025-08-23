@@ -14,6 +14,9 @@ private slots:
     void testCreatingParameter();
     void testParameterValueChanged();
     void testParameterValueChangedNoEmitForSameValue();
+    void testParameterMin();
+    void testParameterMax();
+    void testParameterPresets();
     void testParameterRange();
     void testParameterName();
     void testParameterDescription();
@@ -77,12 +80,13 @@ void TestQtNoidAppParameter::testParameterValueChanged()
     QVERIFY(spy.isValid());
 
     // Change the value and verify the signal is emitted
-    par.setValue(500);
+    double expected = 500.00001;
+    par.setValue(expected);
     QCOMPARE(spy.count(), 1);
 
     // check the value is the correct one
     QList<QVariant> arguments = spy.takeFirst();
-    QCOMPARE(arguments.at(0).toInt(), 500);
+    QCOMPARE(arguments.at(0).toDouble(), expected);
 
 }
 
@@ -95,6 +99,21 @@ void TestQtNoidAppParameter::testParameterValueChangedNoEmitForSameValue()
     par.setValue(100);
     QCOMPARE(spy.count(), 0);
 
+}
+
+void TestQtNoidAppParameter::testParameterMin()
+{
+    QCOMPARE(true, false);
+}
+
+void TestQtNoidAppParameter::testParameterMax()
+{
+    QCOMPARE(true, false);
+}
+
+void TestQtNoidAppParameter::testParameterPresets()
+{
+    QCOMPARE(true, false);
 }
 
 void TestQtNoidAppParameter::testParameterRange()
