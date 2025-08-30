@@ -1,6 +1,3 @@
-//=============================================================================
-// parameter.cpp
-//=============================================================================
 #include "QtNoidApp/parameter.h"
 #include <QDebug>
 
@@ -44,6 +41,7 @@ void Parameter::connectRangeChanged()
     });
 }
 
+
 QVariant Parameter::value() const
 {
     return m_value.value();
@@ -56,7 +54,6 @@ void Parameter::setValue(const QVariant &val)
         m_value = clampValue(val);
     }
 }
-
 QBindable<QVariant> Parameter::bindableValue()
 {
     return QBindable<QVariant>(&m_value);
@@ -145,9 +142,21 @@ bool Parameter::applyPreset(const QString &name)
     if(!m_presets.value().contains(name)) {
         return false;
     }
-    m_value = m_presets.value()[name];
+
+    auto val = m_presets.value()[name];
+    if(val == m_value) {
+        // No needs to trigger errors if the variable is locked
+        return true;
+    }
+    if (!canModify()) {
+        // We have a different value but we cannot change
+        return false;
+    }
+
+    m_value = clampValue(val);
     return true;
 }
+
 QBindable<QVariantMap> Parameter::bindablePresets()
 {
     return QBindable<QVariantMap>(&m_presets);
@@ -212,7 +221,7 @@ QBindable<bool> Parameter::bindableReadOnly()
 bool Parameter::canModify() const
 {
     if(m_readOnly.value()) {
-        const_cast<Parameter*>(this)->emit writeAttemptedWhileReadOnly(m_name.value());
+        emit const_cast<Parameter*>(this)->writeAttemptedWhileReadOnly(m_name.value());
         return false;
     }
     return true;
@@ -244,6 +253,16 @@ QVariant Parameter::clampValue(const QVariant &value) const
 
     return result;
 }
+
+
+/**
+ * @brief Parameter::compareVariants
+ * @param a
+ * @param b
+ * @param comparison -1 sa < sb, 0 sa == sb, +1 sa > sb
+ * @return
+ */
+
 
 bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int comparison) const
 {

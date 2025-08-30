@@ -1,9 +1,6 @@
 #ifndef QTNOID_APP_PARAMETERLIST_H
 #define QTNOID_APP_PARAMETERLIST_H
 
-//=============================================================================
-// parameterlist.h
-//=============================================================================
 
 #include "global.h"
 #include "parameter.h"
@@ -54,8 +51,8 @@ public:
 signals:
     void nameChanged(const QString& value);
     void countChanged(int count);
-    void parameterAdded(Parameter* parameter);
-    void parameterRemoved(Parameter* parameter);
+    void parameterAdded(QtNoid::App::Parameter* parameter);
+    void parameterRemoved(QtNoid::App::Parameter* parameter);
 
 private slots:
     void onParameterDestroyed(QObject* parameter);

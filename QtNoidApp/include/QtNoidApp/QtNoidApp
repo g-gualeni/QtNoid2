@@ -1,12 +1,7 @@
-
 // QtNoidApp - Main convenience header
 // Include this to get all QtNoid::App functionality
 
-#ifndef QTNOIDAPP_H
-#define QTNOIDAPP_H
+#include "settings.h"  // IWYU pragma: export
+#include "parameter.h" // IWYU pragma: export
+#include "parameterlist.h" // IWYU pragma: export
 
-#include "settings.h"
-#include "parameter.h"
-#include "parameterlist.h"
-
-#endif // QTNOIDAPP_H

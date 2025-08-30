@@ -16,14 +16,14 @@
 working on ParameterList
 
 ### Todo Parameter
-- [ ] Manca il test per Min / Max
-- [ ] Manca il test per Preset
+- [x] Manca il test per Min / Max
+- [x] Manca il test per Preset
 - [ ] Manca il test per tutti i bindable
 
 
 ### Todo ParameterList
-- [ ] Controlla tutta l'implementazione
-- [ ] Controlla tutti i test
+- [ ] Rivedere la gestione della lista e degli eventi
+- [ ] creare i test
 
 ### Todo App -> Examples
 - [ ] Mettere un esempio in cui si usa bindable

@@ -1,10 +1,6 @@
 #ifndef QTNOID_APP_PARAMETER_H
 #define QTNOID_APP_PARAMETER_H
 
-//=============================================================================
-// parameter.h
-//=============================================================================
-
 #include "global.h"
 #include <QObject>
 #include <QProperty>

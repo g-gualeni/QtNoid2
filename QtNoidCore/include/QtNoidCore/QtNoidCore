@@ -2,9 +2,6 @@
 // QtNoidCore - Main convenience header
 // Include this to get all QtNoid::Core functionality
 
-#ifndef QTNOIDCORE_H
-#define QTNOIDCORE_H
+#include "core.h" // IWYU pragma: export
 
-#include "core.h"
 
-#endif // QTNOIDCORE_H

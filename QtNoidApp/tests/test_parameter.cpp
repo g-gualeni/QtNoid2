@@ -12,26 +12,25 @@ private slots:
     void init();
     void cleanup();
     void testCreatingParameter();
+    void testConstructorWithNameAndInitialValue();
+    void testConstructorWithNameDescriptionAndInitialValue();
     void testParameterValueChanged();
     void testParameterValueChangedNoEmitForSameValue();
     void testParameterMin();
     void testParameterMax();
-    void testParameterPresets();
+    void testParameterSetPresets();
+    void testParameterSetPreset();
+    void testParameterApplyPresetByName();
+    void testParameterRemovePreset();
+    void testParameterClearPreset();
+    void testParameterSetPresetShouldAbideToRangeRules();
+    void testParameterApplyPresetReadOnly();
+
     void testParameterRange();
     void testParameterName();
     void testParameterDescription();
     void testParameterUnit();
     void testParameterReadOnly();
-
-    // Q_PROPERTY(QVariant value READ value WRITE setValue BINDABLE bindableValue NOTIFY valueChanged FINAL)
-    // Q_PROPERTY(QVariant min READ min WRITE setMin BINDABLE bindableMin NOTIFY minChanged FINAL)
-    // Q_PROPERTY(QVariant max READ max WRITE setMax BINDABLE bindableMax NOTIFY maxChanged FINAL)
-    // Q_PROPERTY(std::pair<QVariant, QVariant> range READ range WRITE setRange NOTIFY rangeChanged FINAL)
-    // Q_PROPERTY(QVariantMap presets READ presets WRITE setPresets BINDABLE bindablePresets NOTIFY presetsChanged FINAL)
-    // Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
-    // Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
-
-    // AGGIUNGERE unità di misura per il parameter
 
 private:
 
@@ -73,6 +72,33 @@ void TestQtNoidAppParameter::testCreatingParameter()
 
 }
 
+void TestQtNoidAppParameter::testConstructorWithNameAndInitialValue()
+{
+    auto par = Parameter("Param", 456.789, this);
+    
+    QCOMPARE(par.name(), "Param");
+    QCOMPARE(par.value(), 456.789);
+    QCOMPARE(par.description(), QString());
+    QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.readOnly(), false);
+    QCOMPARE(par.min(), QVariant());
+    QCOMPARE(par.max(), QVariant());
+}
+
+void TestQtNoidAppParameter::testConstructorWithNameDescriptionAndInitialValue()
+{
+    // I use __func__ as a description
+    auto par = Parameter("Param", __func__, 789.123, this);
+    
+    QCOMPARE(par.name(), "Param");
+    QCOMPARE(par.description(), __func__);
+    QCOMPARE(par.value(), 789.123);
+    QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.readOnly(), false);
+    QCOMPARE(par.min(), QVariant());
+    QCOMPARE(par.max(), QVariant());
+}
+
 void TestQtNoidAppParameter::testParameterValueChanged()
 {
     auto par = Parameter(1000);
@@ -103,17 +129,224 @@ void TestQtNoidAppParameter::testParameterValueChangedNoEmitForSameValue()
 
 void TestQtNoidAppParameter::testParameterMin()
 {
-    QCOMPARE(true, false);
+    Parameter par(100);
+    QSignalSpy spyValue(&par, &Parameter::valueChanged);
+    QSignalSpy spyMin(&par, &Parameter::minChanged);
+    QSignalSpy spyRange(&par, &Parameter::rangeChanged);
+
+
+    // Change the min check value and range
+    QVariant expected = 101;
+    par.setMin(expected);
+    QCOMPARE(spyValue.count(), 1);
+    QCOMPARE(spyValue.takeFirst().at(0), expected);
+
+    QCOMPARE(spyMin.count(), 1);
+    QCOMPARE(spyMin.takeFirst().at(0), expected);
+
+
+    QCOMPARE(spyRange.count(), 1);
+    auto rangeChanged = spyRange.takeFirst();
+    QCOMPARE(rangeChanged.at(0), expected);
+    QCOMPARE(rangeChanged.at(1), QVariant());
+
 }
 
 void TestQtNoidAppParameter::testParameterMax()
 {
-    QCOMPARE(true, false);
+    Parameter par(100);
+    QSignalSpy spyValue(&par, &Parameter::valueChanged);
+    QSignalSpy spyMax(&par, &Parameter::maxChanged);
+    QSignalSpy spyRange(&par, &Parameter::rangeChanged);
+
+
+    // Change the max check value and range
+    QVariant expected = 99;
+    par.setMax(expected);
+    QCOMPARE(spyValue.count(), 1);
+    QCOMPARE(spyValue.takeFirst().at(0), expected);
+
+    QCOMPARE(spyMax.count(), 1);
+    QCOMPARE(spyMax.takeFirst().at(0), expected);
+
+
+    QCOMPARE(spyRange.count(), 1);
+    auto rangeChanged = spyRange.takeFirst();
+    QCOMPARE(rangeChanged.at(0), QVariant());
+    QCOMPARE(rangeChanged.at(1), expected);
+
 }
 
-void TestQtNoidAppParameter::testParameterPresets()
+void TestQtNoidAppParameter::testParameterSetPresets()
 {
-    QCOMPARE(true, false);
+    Parameter par(100.0);
+    QSignalSpy spy(&par, &Parameter::presetsChanged);
+
+    // Test initial state (should be empty)
+    QCOMPARE(par.presets(), QVariantMap());
+
+    // Create test presets
+    QVariantMap expected;
+    expected["Low"] = 10.0;
+    expected["Medium"] = 50.0;
+    expected["High"] = 100.0;
+
+    // Set presets and verify signal is emitted
+    par.setPresets(expected);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(par.presets(), expected);
+
+    // Check signal contains the correct presets
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toMap(), expected);
+
+    // Same presets, no signal should be emitted
+    par.setPresets(expected);
+    QCOMPARE(spy.count(), 0);
+
+    qDebug() << par.presets();
+}
+
+void TestQtNoidAppParameter::testParameterSetPreset()
+{
+    Parameter par(100.0);
+    QSignalSpy spy(&par, &Parameter::presetsChanged);
+
+    par.setPreset("Low", 10.0);
+    QCOMPARE(spy.count(), 1);
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.first(), QVariantMap({{"Low", 10.0}}));
+    QCOMPARE(par.presets(), QVariantMap({{"Low", 10.0}}));
+
+    QCOMPARE(par.preset("Low"), 10.0);
+}
+
+
+void TestQtNoidAppParameter::testParameterApplyPresetByName()
+{
+    Parameter par(50.0);
+    QSignalSpy spyValue(&par, &Parameter::valueChanged);
+
+    par.setPreset("Low", 10.0);
+    par.applyPreset("Low");
+    QCOMPARE(spyValue.count(), 1);
+    auto newVal = spyValue.takeFirst();
+    QCOMPARE(newVal.first(), 10.0);
+    QCOMPARE(par.value(), 10.0);
+
+    // Applying the same preset, there should be no changes
+    par.applyPreset("Low");
+    QCOMPARE(spyValue.count(), 0);
+}
+
+void TestQtNoidAppParameter::testParameterRemovePreset()
+{
+    Parameter par(100.0);
+
+    // Set up initial presets
+    par.setPreset("Low", 10.0);
+    par.setPreset("Medium", 50.0);
+    par.setPreset("High", 100.0);
+
+    // Remove one preset
+    QSignalSpy spy(&par, &Parameter::presetsChanged);
+    par.removePreset("Medium");
+    QCOMPARE(spy.count(), 1);
+    
+    QVariantMap expected;
+    expected["Low"] = 10.0;
+    expected["High"] = 100.0;
+    QCOMPARE(par.presets(), expected);
+
+    // Verify signal contains updated presets
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.first().toMap(), expected);
+
+    // Remove non-existent preset should not emit signal
+    par.removePreset("NonExistent");
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppParameter::testParameterClearPreset()
+{
+    Parameter par(100.0);
+
+    // Set up initial presets
+    par.setPreset("Low", 10.0);
+    par.setPreset("Medium", 50.0);
+    par.setPreset("High", 100.0);
+
+    // Clear all presets
+    QSignalSpy spy(&par, &Parameter::presetsChanged);
+    par.clearPresets();
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(par.presets(), QVariantMap());
+
+    // Verify signal contains empty presets
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.first().toMap(), QVariantMap());
+
+    // Clear already empty presets should not emit signal
+    par.clearPresets();
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppParameter::testParameterSetPresetShouldAbideToRangeRules()
+{
+    Parameter par(50.0);
+    par.setRange(0.0, 100.0);
+    
+    // Apply preset exactly at min boundary
+    par.setPreset("AtMin", 0.0);
+    par.applyPreset("AtMin");
+    QCOMPARE(par.value(), 0.0);
+
+    // Apply preset exactly at max boundary
+    par.setPreset("AtMax", 100.0);
+    par.applyPreset("AtMax");
+    QCOMPARE(par.value(), 100.0);
+
+    // Apply preset below min range - should be clamped to min
+    par.setPreset("TooLow", -10.0);
+    par.applyPreset("TooLow");
+    QCOMPARE(par.value(), 0.0); // Clamped to min
+
+    // Apply preset above max range - should be clamped to max
+    par.setPreset("TooHigh", 150.0);
+    par.applyPreset("TooHigh");
+    QCOMPARE(par.value(), 100.0); // Clamped to max
+
+}
+
+void TestQtNoidAppParameter::testParameterApplyPresetReadOnly()
+{
+    Parameter par("ReadOnlyParam", 50.0);
+    par.setReadOnly(true);
+    
+    // Set up presets
+    par.setPreset("Low", 10.0);
+    
+    // Set up signal spies
+    QSignalSpy valueChangedSpy(&par, &Parameter::valueChanged);
+    QSignalSpy writeAttemptSpy(&par, &Parameter::writeAttemptedWhileReadOnly);
+    
+    // Try to apply preset when read-only
+    par.applyPreset("Low");
+    // Value should not change
+    QCOMPARE(par.value(), 50.0);
+    QCOMPARE(valueChangedSpy.count(), 0);
+    
+    // writeAttemptedWhileReadOnly signal should be emitted
+    QCOMPARE(writeAttemptSpy.count(), 1);
+    QList<QVariant> arguments = writeAttemptSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "ReadOnlyParam");
+
+    // Try to apply the same value and there should be no errors
+    par.setPreset("asItIsNow", par.value());
+    auto res = par.applyPreset("asItIsNow");
+    QCOMPARE(res, true);
+    QCOMPARE(writeAttemptSpy.count(), 0);
+    QCOMPARE(valueChangedSpy.count(), 0);
 }
 
 void TestQtNoidAppParameter::testParameterRange()

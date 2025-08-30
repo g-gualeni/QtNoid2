@@ -2,11 +2,8 @@
 // QtNoidCommon - Main convenience header
 // Include this to get all QtNoid::Common functionality
 
-#ifndef QTNOIDCOMMON_H
-#define QTNOIDCOMMON_H
+#include "text.h" // IWYU pragma: export
+#include "scale.h" // IWYU pragma: export
+#include "file.h" // IWYU pragma: export
 
-#include "text.h"
-#include "scale.h"
-#include "file.h"
 
-#endif // QTNOIDCOMMON_H
