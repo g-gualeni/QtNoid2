@@ -24,13 +24,23 @@ private slots:
     void testParameterRemovePreset();
     void testParameterClearPreset();
     void testParameterSetPresetShouldAbideToRangeRules();
-    void testParameterApplyPresetReadOnly();
+    void testParameterApplyPresetReadOnlyShouldBeIneffective();
 
     void testParameterRange();
     void testParameterName();
     void testParameterDescription();
     void testParameterUnit();
     void testParameterReadOnly();
+    
+    // Bindable properties tests
+    void testBindableValue();
+    void testBindableMin();
+    void testBindableMax();
+    void testBindablePresets();
+    void testBindableName();
+    void testBindableDescription();
+    void testBindableUnit();
+    void testBindableReadOnly();
 
 private:
 
@@ -318,7 +328,7 @@ void TestQtNoidAppParameter::testParameterSetPresetShouldAbideToRangeRules()
 
 }
 
-void TestQtNoidAppParameter::testParameterApplyPresetReadOnly()
+void TestQtNoidAppParameter::testParameterApplyPresetReadOnlyShouldBeIneffective()
 {
     Parameter par("ReadOnlyParam", 50.0);
     par.setReadOnly(true);
@@ -452,6 +462,203 @@ void TestQtNoidAppParameter::testParameterReadOnly()
     QCOMPARE(writeAttemptSpy.count(), 0); // No additional signal
     QCOMPARE(valueChangeSpy.count(), 1);
     QCOMPARE(par.value(), 200.0);
+}
+
+void TestQtNoidAppParameter::testBindableValue()
+{
+    Parameter par(100.0);
+    
+    // Get bindable value
+    auto bindableValue = par.bindableValue();
+    QVERIFY(bindableValue.isValid());
+    
+    // Test binding to another QProperty
+    QProperty<QVariant> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableValue().value(); });
+    QCOMPARE(externalProperty.value(), 100.0);
+    
+    // Change parameter value and verify binding updates
+    par.setValue(200.0);
+    QCOMPARE(externalProperty.value(), 200.0);
+    
+    // Test setting value through bindable
+    bindableValue.setValue(300.0);
+    QCOMPARE(par.value(), 300.0);
+    QCOMPARE(externalProperty.value(), 300.0);
+
+}
+
+void TestQtNoidAppParameter::testBindableMin()
+{
+    Parameter par(50.0);
+    
+    // Get bindable min
+    auto bindableMin = par.bindableMin();
+    QVERIFY(bindableMin.isValid());
+    QCOMPARE(bindableMin.value(), QVariant());
+    
+    // Test binding to another QProperty
+    QProperty<QVariant> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableMin().value(); });
+    QCOMPARE(externalProperty.value(), QVariant());
+    
+    // Change parameter min and verify binding updates
+    par.setMin(10.0);
+    QCOMPARE(externalProperty.value(), 10.0);
+    
+    // Test setting min through bindable
+    bindableMin.setValue(5.0);
+    QCOMPARE(par.min(), 5.0);
+    QCOMPARE(externalProperty.value(), 5.0);
+}
+
+void TestQtNoidAppParameter::testBindableMax()
+{
+    Parameter par(50.0);
+    
+    // Get bindable max
+    auto bindableMax = par.bindableMax();
+    QVERIFY(bindableMax.isValid());
+    QCOMPARE(bindableMax.value(), QVariant());
+    
+    // Test binding to another QProperty
+    QProperty<QVariant> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableMax().value(); });
+    QCOMPARE(externalProperty.value(), QVariant());
+    
+    // Change parameter max and verify binding updates
+    par.setMax(100.0);
+    QCOMPARE(externalProperty.value(), 100.0);
+    
+    // Test setting max through bindable
+    bindableMax.setValue(200.0);
+    QCOMPARE(par.max(), 200.0);
+    QCOMPARE(externalProperty.value(), 200.0);
+}
+
+void TestQtNoidAppParameter::testBindablePresets()
+{
+    Parameter par(50.0);
+    
+    // Get bindable presets
+    auto bindablePresets = par.bindablePresets();
+    QVERIFY(bindablePresets.isValid());
+    QCOMPARE(bindablePresets.value(), QVariantMap());
+    
+    // Test binding to another QProperty
+    QProperty<QVariantMap> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindablePresets().value(); });
+    QCOMPARE(externalProperty.value(), QVariantMap());
+    
+    // Change parameter presets and verify binding updates
+    QVariantMap testPresets;
+    testPresets["Low"] = 10.0;
+    testPresets["High"] = 90.0;
+    par.setPresets(testPresets);
+    QCOMPARE(externalProperty.value(), testPresets);
+    
+    // Test setting presets through bindable
+    QVariantMap newPresets;
+    newPresets["Medium"] = 50.0;
+    bindablePresets.setValue(newPresets);
+    QCOMPARE(par.presets(), newPresets);
+    QCOMPARE(externalProperty.value(), newPresets);
+}
+
+void TestQtNoidAppParameter::testBindableName()
+{
+    Parameter par("TestParam", 50.0);
+    
+    // Get bindable name
+    auto bindableName = par.bindableName();
+    QVERIFY(bindableName.isValid());
+    QCOMPARE(bindableName.value(), "TestParam");
+    
+    // Test binding to another QProperty
+    QProperty<QString> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableName().value(); });
+    QCOMPARE(externalProperty.value(), "TestParam");
+    
+    // Change parameter name and verify binding updates
+    par.setName("NewName");
+    QCOMPARE(externalProperty.value(), "NewName");
+    
+    // Test setting name through bindable
+    bindableName.setValue("FinalName");
+    QCOMPARE(par.name(), "FinalName");
+    QCOMPARE(externalProperty.value(), "FinalName");
+}
+
+void TestQtNoidAppParameter::testBindableDescription()
+{
+    Parameter par("TestParam", "Initial description", 50.0);
+    
+    // Get bindable description
+    auto bindableDescription = par.bindableDescription();
+    QVERIFY(bindableDescription.isValid());
+    QCOMPARE(bindableDescription.value(), "Initial description");
+    
+    // Test binding to another QProperty
+    QProperty<QString> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableDescription().value(); });
+    QCOMPARE(externalProperty.value(), "Initial description");
+    
+    // Change parameter description and verify binding updates
+    par.setDescription("Updated description");
+    QCOMPARE(externalProperty.value(), "Updated description");
+    
+    // Test setting description through bindable
+    bindableDescription.setValue("Final description");
+    QCOMPARE(par.description(), "Final description");
+    QCOMPARE(externalProperty.value(), "Final description");
+}
+
+void TestQtNoidAppParameter::testBindableUnit()
+{
+    Parameter par("Temperature", 25.0);
+    
+    // Get bindable unit
+    auto bindableUnit = par.bindableUnit();
+    QVERIFY(bindableUnit.isValid());
+    QCOMPARE(bindableUnit.value(), QString());
+    
+    // Test binding to another QProperty
+    QProperty<QString> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableUnit().value(); });
+    QCOMPARE(externalProperty.value(), QString());
+    
+    // Change parameter unit and verify binding updates
+    par.setUnit("°C");
+    QCOMPARE(externalProperty.value(), "°C");
+    
+    // Test setting unit through bindable
+    bindableUnit.setValue("°F");
+    QCOMPARE(par.unit(), "°F");
+    QCOMPARE(externalProperty.value(), "°F");
+}
+
+void TestQtNoidAppParameter::testBindableReadOnly()
+{
+    Parameter par("TestParam", 50.0);
+    
+    // Get bindable readOnly
+    auto bindableReadOnly = par.bindableReadOnly();
+    QVERIFY(bindableReadOnly.isValid());
+    QCOMPARE(bindableReadOnly.value(), false);
+    
+    // Test binding to another QProperty
+    QProperty<bool> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableReadOnly().value(); });
+    QCOMPARE(externalProperty.value(), false);
+    
+    // Change parameter readOnly and verify binding updates
+    par.setReadOnly(true);
+    QCOMPARE(externalProperty.value(), true);
+    
+    // Test setting readOnly through bindable
+    bindableReadOnly.setValue(false);
+    QCOMPARE(par.readOnly(), false);
+    QCOMPARE(externalProperty.value(), false);
 }
 
 
