@@ -15,8 +15,9 @@ private slots:
     void testParameterListName();
     void testAddingParameters();
     void testRemovingParameters();
+    void testParameterListClear();
     void testParameterAccess();
-    void testParameterListConvenienceMethods();
+    void testParameterListSetValueConvenienceMethods();
     void testParameterDestruction();
 
 private:
@@ -44,9 +45,9 @@ void TestQtNoidAppParameterList::testCreatingParameterList()
     QCOMPARE(list.count(), 0);
     QCOMPARE(list.name(), QString());
     
-    ParameterList namedList("TestList", this);
+    ParameterList namedList("Application Configuration", this);
     QCOMPARE(namedList.count(), 0);
-    QCOMPARE(namedList.name(), "TestList");
+    QCOMPARE(namedList.name(), "Application Configuration");
 }
 
 void TestQtNoidAppParameterList::testParameterListName()
@@ -54,16 +55,16 @@ void TestQtNoidAppParameterList::testParameterListName()
     ParameterList list(this);
     QSignalSpy spy(&list, &ParameterList::nameChanged);
     
-    list.setName("MyParameterList");
+    list.setName("Application Configuration");
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.name(), "MyParameterList");
+    QCOMPARE(list.name(), "Application Configuration");
     
     // Check signal argument
     QList<QVariant> arguments = spy.takeFirst();
-    QCOMPARE(arguments.at(0).toString(), "MyParameterList");
+    QCOMPARE(arguments.at(0).toString(), "Application Configuration");
     
     // Same value, no signal
-    list.setName("MyParameterList");
+    list.setName("Application Configuration");
     QCOMPARE(spy.count(), 0);
 }
 
@@ -73,9 +74,7 @@ void TestQtNoidAppParameterList::testAddingParameters()
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
     
-    auto param1 = new Parameter("Param1", 100.0, this);
-    auto param2 = new Parameter("Param2", 200.0, this);
-    
+    auto param1 = new Parameter("Param1", 100.0, this);   
     list.addParameter(param1);
     QCOMPARE(list.count(), 1);
     QCOMPARE(countSpy.count(), 1);
@@ -83,6 +82,7 @@ void TestQtNoidAppParameterList::testAddingParameters()
     QCOMPARE(list.contains(param1), true);
     QCOMPARE(list.contains("Param1"), true);
     
+    auto param2 = new Parameter("Param2", 200.0, this);
     list.addParameter(param2);
     QCOMPARE(list.count(), 2);
     QCOMPARE(countSpy.count(), 2);
@@ -102,16 +102,14 @@ void TestQtNoidAppParameterList::testAddingParameters()
 void TestQtNoidAppParameterList::testRemovingParameters()
 {
     ParameterList list(this);
-    QSignalSpy countSpy(&list, &ParameterList::countChanged);
-    QSignalSpy removedSpy(&list, &ParameterList::parameterRemoved);
     
     auto param1 = new Parameter("Param1", 100.0, this);
     auto param2 = new Parameter("Param2", 200.0, this);
     
     list.addParameter(param1);
     list.addParameter(param2);
-    countSpy.clear(); // Clear signals from adding
-    removedSpy.clear();
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy removedSpy(&list, &ParameterList::parameterRemoved);
     
     list.removeParameter(param1);
     QCOMPARE(list.count(), 1);
@@ -125,10 +123,42 @@ void TestQtNoidAppParameterList::testRemovingParameters()
     QCOMPARE(list.count(), 0);
     QCOMPARE(countSpy.count(), 2);
     QCOMPARE(removedSpy.count(), 2);
-    
-    // Clear empty list
+}
+
+void TestQtNoidAppParameterList::testParameterListClear()
+{
+    ParameterList list(this);
+
+    auto param1 = new Parameter("Param1", 100.0, this);
+    auto param2 = new Parameter("Param2", 200.0, this);
+    auto param3 = new Parameter("Param3", 300.0, this);
+
+    list.addParameter(param1);
+    list.addParameter(param2);
+    list.addParameter(param3);
+    QCOMPARE(list.count(), 3);
+
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy removedSpy(&list, &ParameterList::parameterRemoved);
     list.clear();
+
+    // Verify list is empty
     QCOMPARE(list.count(), 0);
+
+    // Verify signals were emitted for each parameter removal
+    QCOMPARE(removedSpy.count(), 3);
+    QCOMPARE(countSpy.count(), 1); // Final count change signal
+
+    // Verify final count change signal has correct value
+    QList<QVariant> arguments = countSpy.takeLast();
+    QCOMPARE(arguments.at(0).toInt(), 0);
+
+    // Test clearing empty list (should not emit signals)
+    countSpy.clear();
+    removedSpy.clear();
+    list.clear();
+    QCOMPARE(countSpy.count(), 0);
+    QCOMPARE(removedSpy.count(), 0);
 }
 
 void TestQtNoidAppParameterList::testParameterAccess()
@@ -170,7 +200,7 @@ void TestQtNoidAppParameterList::testParameterAccess()
     QCOMPARE(params.contains(param3), true);
 }
 
-void TestQtNoidAppParameterList::testParameterListConvenienceMethods()
+void TestQtNoidAppParameterList::testParameterListSetValueConvenienceMethods()
 {
     ParameterList list(this);
     auto param1 = new Parameter("Temperature", 25.0, this);

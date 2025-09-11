@@ -34,6 +34,8 @@ private slots:
     
     // Bindable properties tests
     void testBindableValue();
+    void testBindableValueUsingBidirectionalNotifier();
+
     void testBindableMin();
     void testBindableMax();
     void testBindablePresets();
@@ -485,7 +487,28 @@ void TestQtNoidAppParameter::testBindableValue()
     bindableValue.setValue(300.0);
     QCOMPARE(par.value(), 300.0);
     QCOMPARE(externalProperty.value(), 300.0);
+}
 
+void TestQtNoidAppParameter::testBindableValueUsingBidirectionalNotifier()
+{
+    Parameter par(1.0);
+    QProperty<QVariant> prop(2.0);
+
+    auto propNotifier = prop.addNotifier([&]{
+        // qDebug() << "prop changed -> " << prop.value();
+        par.setValue(prop.value());
+    });
+
+    auto parNotifier = par.bindableValue().addNotifier([&]{
+        // qDebug() << "par changed -> " << par.value();
+        prop.setValue(par.value());
+    });
+    //  Change the property and check the parameter
+    prop.setValue(123);
+    QCOMPARE(par.value(), 123);
+    //  Change the parameter and check the property
+    par.setValue(456);
+    QCOMPARE(prop.value(), 456);
 }
 
 void TestQtNoidAppParameter::testBindableMin()

@@ -73,6 +73,9 @@ void ParameterList::removeParameter(const QString &name)
 
 void ParameterList::clear()
 {
+    if(m_parameters.isEmpty())
+        return;
+
     while (!m_parameters.isEmpty()) {
         Parameter *param = m_parameters.takeLast();
         disconnect(param, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);

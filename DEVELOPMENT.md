@@ -1,9 +1,11 @@
-# Development Status
+# QtNoid Development Status
 
 ## Current Sprint (Sprint-003)
 
 ### Sprint-003 Goals
 - Implementation of the QtNoid::App library
+
+
 
 ### Completed
 - [x] ParameterList implementation ✅ (commit: 2efbc1e)
@@ -13,20 +15,27 @@
 - [x] QtNoid:::App::Settings::fullDialogGrab() ✅ (commit: 9adac1b)
 
 ### In Progress
-working on ParameterList
+working on ParameterList Test for Bindable
+create and example
+
 
 ### Todo Parameter
 - [x] Manca il test per Min / Max
 - [x] Manca il test per Preset
-- [ ] Manca il test per tutti i bindable
+- [x] Manca il test per tutti i bindable
 
 
 ### Todo ParameterList
-- [ ] Rivedere la gestione della lista e degli eventi
-- [ ] creare i test
+- [x] Rivedere la gestione della lista e degli eventi
+- [x] creare i test
+- [ ] Manca il test per tutti i bindable
 
 ### Todo App -> Examples
-- [ ] Mettere un esempio in cui si usa bindable
+- [ ] Mettere un esempio in cui si definisce un oggetto parameterList e lo si usa
+per creare alcuni oggetti dinamicamente, con valore, max, min descrizione, un pop-up
+quando si supera il valore massimo / minimo del range
+Ad esempio impostare la dimensione massima di log file?
+
 
 
 &nbsp;
@@ -59,7 +68,10 @@ working on ParameterList
 
 
 ## Next Sprint Ideas
-
+Txt2Json:
+https://jsonstudio.io/convert/TEXT-to-JSON-Converter
+Create a library to convert structured text with a symple syntax to JSON
+And the opposite.
 
 ---
 *Last updated: 2025-08-23*
