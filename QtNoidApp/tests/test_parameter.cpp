@@ -1,3 +1,4 @@
+#include <QJsonObject>
 #include <QSignalSpy>
 #include <QTest>
 #include <QtNoidApp/QtNoidApp>
@@ -43,6 +44,16 @@ private slots:
     void testBindableDescription();
     void testBindableUnit();
     void testBindableReadOnly();
+
+    // JSON Schema tests
+    void testParameterToJsonSchema();
+    void testParameterToJsonSchemaWithNoNameAndEmptyParameters();
+    void testParameterToJsonSchemaWithFullMetadataForFloatNumber();
+    
+    // JSON tests
+    void testParameterToJson();
+    void testParameterToJsonWithNoName();
+    void testParameterToJsonWithDifferentValueTypes();
 
 private:
 
@@ -682,6 +693,115 @@ void TestQtNoidAppParameter::testBindableReadOnly()
     bindableReadOnly.setValue(false);
     QCOMPARE(par.readOnly(), false);
     QCOMPARE(externalProperty.value(), false);
+}
+
+void TestQtNoidAppParameter::testParameterToJsonSchema()
+{
+    Parameter par("Log File Size", "Parameter description", 50.0);
+    par.setUnit("kB");
+    par.setMin(0.0);
+    par.setMax(100.0);
+    par.setReadOnly(true);
+    
+    QJsonObject schema = par.toJsonSchema();
+    // qDebug() << schema;
+    
+    QVERIFY(schema.contains("Log File Size"));
+    QJsonObject paramSchema = schema["Log File Size"].toObject();
+    
+    QCOMPARE(paramSchema["description"].toString(), "Parameter description");
+    QCOMPARE(paramSchema["unit"].toString(), "kB");
+    QCOMPARE(paramSchema["readOnly"].toBool(), true);
+    QCOMPARE(paramSchema["min"].toVariant(), QVariant(0.0));
+    QCOMPARE(paramSchema["max"].toVariant(), QVariant(100.0));
+}
+
+void TestQtNoidAppParameter::testParameterToJsonSchemaWithNoNameAndEmptyParameters()
+{
+    Parameter par(42.0);
+    
+    QJsonObject schema = par.toJsonSchema();
+    // qDebug() << schema;
+    
+    QVERIFY(schema.contains("Name"));
+    QJsonObject paramSchema = schema["Name"].toObject();
+    
+    QCOMPARE(paramSchema["description"].toString(), QString());
+    QCOMPARE(paramSchema["unit"].toString(), QString());
+    QCOMPARE(paramSchema["readOnly"].toBool(), false);
+    QVERIFY(paramSchema["min"].isNull());
+    QVERIFY(paramSchema["max"].isNull());
+}
+
+void TestQtNoidAppParameter::testParameterToJsonSchemaWithFullMetadataForFloatNumber()
+{
+    Parameter par("ComplexParam", "A complex parameter with all metadata", 75.5);
+    par.setUnit("°C");
+    par.setMin(-273.15);
+    par.setMax(1000.0);
+    par.setReadOnly(false);
+    
+    QJsonObject schema = par.toJsonSchema();
+    
+    QVERIFY(schema.contains("ComplexParam"));
+    QJsonObject paramSchema = schema["ComplexParam"].toObject();
+    
+    QCOMPARE(paramSchema["description"].toString(), "A complex parameter with all metadata");
+    QCOMPARE(paramSchema["unit"].toString(), "°C");
+    QCOMPARE(paramSchema["readOnly"].toBool(), false);
+    QCOMPARE(paramSchema["min"].toVariant(), QVariant(-273.15));
+    QCOMPARE(paramSchema["max"].toVariant(), QVariant(1000.0));
+}
+
+void TestQtNoidAppParameter::testParameterToJson()
+{
+    Parameter par("Temperature", "Current temperature", 25.5);
+    
+    QJsonObject json = par.toJson();
+    // qDebug() << __func__ << json;
+    
+    QVERIFY(json.contains("Temperature"));
+    QCOMPARE(json["Temperature"].toVariant(), QVariant(25.5));
+    QCOMPARE(json.size(), 1);
+}
+
+void TestQtNoidAppParameter::testParameterToJsonWithNoName()
+{
+    Parameter par(42.0);
+    
+    QJsonObject json = par.toJson();
+    // qDebug() << __func__ << json;
+
+    QVERIFY(json.contains("Name"));
+    QCOMPARE(json["Name"].toVariant(), QVariant(42.0));
+    QCOMPARE(json.size(), 1);
+}
+
+void TestQtNoidAppParameter::testParameterToJsonWithDifferentValueTypes()
+{
+    // Test with integer
+    Parameter parInt("IntParam", 100);
+    QJsonObject jsonInt = parInt.toJson();
+    QVERIFY(jsonInt.contains("IntParam"));
+    QCOMPARE(jsonInt["IntParam"].toVariant(), QVariant(100));
+    
+    // Test with string
+    Parameter parString("StringParam", "Hello World");
+    QJsonObject jsonString = parString.toJson();
+    QVERIFY(jsonString.contains("StringParam"));
+    QCOMPARE(jsonString["StringParam"].toVariant(), QVariant("Hello World"));
+    
+    // Test with boolean
+    Parameter parBool("BoolParam", true);
+    QJsonObject jsonBool = parBool.toJson();
+    QVERIFY(jsonBool.contains("BoolParam"));
+    QCOMPARE(jsonBool["BoolParam"].toVariant(), QVariant(true));
+    
+    // Test with negative double
+    Parameter parNegative("NegativeParam", -123.456);
+    QJsonObject jsonNegative = parNegative.toJson();
+    QVERIFY(jsonNegative.contains("NegativeParam"));
+    QCOMPARE(jsonNegative["NegativeParam"].toVariant(), QVariant(-123.456));
 }
 
 

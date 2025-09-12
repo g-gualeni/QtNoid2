@@ -1,5 +1,7 @@
 #include "QtNoidApp/parameter.h"
 #include <QDebug>
+#include <QJsonObject>
+#include <QJsonValue>
 
 namespace QtNoid {
 namespace App {
@@ -26,6 +28,36 @@ Parameter::Parameter(const QString &name, const QString &description, const QVar
     : QObject(parent), m_name(name), m_description(description), m_value(initialValue)
 {
     connectRangeChanged();
+}
+
+QJsonObject Parameter::toJson()
+{
+    QJsonObject res;
+    QString name = m_name;
+    if(name.isEmpty()) {
+        name = "Name";
+    }
+    res[name] = QJsonValue::fromVariant(value());
+    return res;
+}
+
+QJsonObject Parameter::toJsonSchema()
+{
+    QJsonObject schema;
+    schema["description"] = m_description.value();
+    schema["unit"] = m_unit.value();
+    schema["readOnly"] = m_readOnly.value();
+    schema["min"] = QJsonValue::fromVariant(m_min.value());
+    schema["max"] = QJsonValue::fromVariant(m_max.value());
+
+    QString name = m_name;
+    if(name.isEmpty()) {
+        name = "Name";
+    }
+
+    QJsonObject res;
+    res[name] = schema;
+    return res;
 }
 
 void Parameter::connectRangeChanged()

@@ -30,6 +30,10 @@ public:
     explicit Parameter(const QString &name, const QVariant& initialValue, QObject *parent = nullptr);
     explicit Parameter(const QString &name, const QString &description, const QVariant& initialValue, QObject *parent = nullptr);
 
+    // Serialization
+    QJsonObject toJson();
+    QJsonObject toJsonSchema();
+
     // Value management
     QVariant value() const;
     void setValue(const QVariant& val);
