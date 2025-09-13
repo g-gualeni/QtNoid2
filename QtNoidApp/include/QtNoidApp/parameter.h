@@ -32,8 +32,8 @@ public:
     explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr);
 
     // Serialization
-    QJsonObject toJsonValue();
-    QJsonObject toJsonSchema();
+    QJsonObject toJsonValue() const;
+    QJsonObject toJsonSchema() const;
     bool valueFromJson(const QJsonObject& json);
     bool schemaFromJson(const QJsonObject& json);
 

@@ -20,6 +20,13 @@ class QTNOIDAPP_EXPORT ParameterList : public QObject
 public:
     explicit ParameterList(QObject *parent = nullptr);
     explicit ParameterList(const QString& name, QObject *parent = nullptr);
+    explicit ParameterList(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr);
+
+    // JSON Serialization / Deserialization
+    QJsonObject toJsonValues() const;
+    QJsonObject toJsonSchema() const;
+    bool valuesFromJson(const QJsonObject& json);
+    bool schemaFromJson(const QJsonObject& json);
     
     // Name
     QString name() const;

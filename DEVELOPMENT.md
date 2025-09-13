@@ -3,7 +3,7 @@
 ## Current Sprint (Sprint-003)
 
 ### Sprint-003 Goals
-- Implementation of the QtNoid::App library
+- Implementation of the QtNoid::App library and release of QtNoid2 version 2.0.2
 
 
 
@@ -30,6 +30,8 @@ create and example
 - [x] Manca il test per tutti i bindable
 - [x] Add serialization to JSON
 - [x] Add JSON de serialization
+- [ ] JSON Quamto ci mette a serializzare 1000 elementi
+- [ ] JSON Quanto ci mette a caricare 1000 elementi
 - [ ] Test performance using bindings and using signal/slots
 - [ ] Add tooltip parameter (remember test and schema)
 - [ ] Add the visible parameter (remember test and schema)
@@ -39,10 +41,13 @@ create and example
 ### Todo ParameterList
 - [x] Rivedere la gestione della lista e degli eventi
 - [x] creare i test
-- [ ] Manca il test per tutti i bindable
+- [x] Manca il test per tutti i bindable
 - [ ] Add JSON serialization 
 - [ ] Add JSON deserialization
 - [ ] Update documentation 
+aagiungere un parametro come JSON
+convertire un parametro in JSON? Serve?
+
 
 
 ### Todo App -> Examples
@@ -99,3 +104,12 @@ static bool jsonPlainTextIsString(const QString &val);
 static bool jsonPlainTextIsNumber(const QString &val);
 static QStringList jsonPlainTextIsArray(const QString &val);
 static QStringList jsonPlainTextFromJson(const QJsonObject &json);
+
+
+---> Recuperare il codice di Massive File Copy / Rename / Move
+Si trova in Deep
+Potrebbe essere: Copy Move Marshal
+
+Poi c'è anche la funzione che rinomina file in massa
+--> Forse è solo in DeepImageLoader
+

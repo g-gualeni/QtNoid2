@@ -74,7 +74,7 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
     connectRangeChanged();
 }
 
-QJsonObject Parameter::toJsonValue()
+QJsonObject Parameter::toJsonValue() const
 {
     QJsonObject res;
     QString name = m_name;
@@ -85,7 +85,7 @@ QJsonObject Parameter::toJsonValue()
     return res;
 }
 
-QJsonObject Parameter::toJsonSchema()
+QJsonObject Parameter::toJsonSchema() const
 {
     QJsonObject schema;
     schema["description"] = m_description.value();

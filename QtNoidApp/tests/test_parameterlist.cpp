@@ -1,5 +1,7 @@
 #include <QSignalSpy>
 #include <QTest>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QtNoidApp/QtNoidApp>
 
 class TestQtNoidAppParameterList : public QObject
@@ -19,6 +21,18 @@ private slots:
     void testParameterAccess();
     void testParameterListSetValueConvenienceMethods();
     void testParameterDestruction();
+    void testBindableNameProperty();
+    void testToJsonValues();
+    void testToJsonValuesNoName();
+    void TestToJsonSchema();
+    void TestToJsonSchemaNoName();
+    void testValuesFromJsonWithEmptyNameShouldTakeTheJsonName();
+    void testValuesFromJsonWithWrongName();
+    void testValuesFromJsonWithCorrectName();
+
+    void testSchemaFromJson();
+
+
 
 private:
 
@@ -238,6 +252,159 @@ void TestQtNoidAppParameterList::testParameterDestruction()
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(removedSpy.count(), 1);
 }
+
+void TestQtNoidAppParameterList::testBindableNameProperty()
+{
+    // Get the bindable property
+    ParameterList list("File Settings", this);
+    auto bindableName = list.bindableName();
+    QVERIFY(bindableName.isValid());
+    QCOMPARE(bindableName.value(), "File Settings");
+
+    // Test binding to another property
+    QProperty<QString> externalProperty;
+    externalProperty.setBinding([&]() { return bindableName.value(); });
+    QCOMPARE(externalProperty.value(), "File Settings");
+
+    // Change parameter name and verify binding updates
+    list.setName("NewName");
+    QCOMPARE(externalProperty.value(), "NewName");
+
+    // Test setting name through bindable
+    bindableName.setValue("FinalName");
+    QCOMPARE(list.name(), "FinalName");
+    QCOMPARE(externalProperty.value(), "FinalName");
+
+    // Create a reverse binding from externalProperty to list
+    // Change external property and verify binding works
+    QSignalSpy spy(&list, &ParameterList::nameChanged);
+    bindableName.setBinding([&]() { return externalProperty.value(); });
+    externalProperty.setValue("Updated External Value");
+    QCOMPARE(bindableName.value(), "Updated External Value");
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().first().toString(), "Updated External Value");
+}
+
+void TestQtNoidAppParameterList::testToJsonValues()
+{
+    // Create a parameter list with parameters
+    ParameterList page("Configuration", this);
+    auto param1 = new Parameter("Temperature", 25.5, this);
+    page.addParameter(param1);
+    auto param2 = new Parameter("Pressure", 1013.25, this);
+    page.addParameter(param2);
+
+    QJsonObject json = page.toJsonValues();
+    // qDebug() << __func__ << json;
+
+    // Verify JSON structure
+    QVERIFY(json.contains("Configuration"));
+    QJsonArray parametersArray = json["Configuration"].toArray();
+    QCOMPARE(parametersArray.size(), 2);
+    QVERIFY(parametersArray.contains(param1->toJsonValue()));
+    QVERIFY(parametersArray.contains(param2->toJsonValue()));
+}
+
+void TestQtNoidAppParameterList::testToJsonValuesNoName()
+{
+    ParameterList page(this);
+    QJsonObject json = page.toJsonValues();
+    // qDebug() << __func__ << json;
+    QVERIFY(json.contains("PageName"));
+
+}
+
+void TestQtNoidAppParameterList::TestToJsonSchema()
+{
+    ParameterList page("Configuration", this);
+    auto param1 = new Parameter("Temperature", "temp", 25.5, this);
+    param1->setRange(0,100);
+    param1->setUnit("°C");
+    param1->setReadOnly(true);
+    page.addParameter(param1);
+
+
+    auto param2 = new Parameter("Pressure", "pres" , 1013.25, this);
+    param2->setRange(0,2000);
+    param1->setUnit("hPa");
+    page.addParameter(param2);
+    param2->setReadOnly(true);
+
+    QJsonObject jsonSchema = page.toJsonSchema();
+    // qDebug() << __func__ << jsonSchema;
+
+    QVERIFY(jsonSchema.contains("Configuration"));
+    QJsonArray parametersArray = jsonSchema["Configuration"].toArray();
+    QCOMPARE(parametersArray.size(), 2);
+
+    QVERIFY(parametersArray.contains(param1->toJsonSchema()));
+    QVERIFY(parametersArray.contains(param2->toJsonSchema()));
+}
+
+void TestQtNoidAppParameterList::TestToJsonSchemaNoName()
+{
+    ParameterList page(this);
+    QJsonObject json = page.toJsonSchema();
+    // qDebug() << __func__ << json;
+    QVERIFY(json.contains("PageName"));
+}
+
+void TestQtNoidAppParameterList::testValuesFromJsonWithEmptyNameShouldTakeTheJsonName()
+{
+    // Create JSON objects (simulating what Parameter::toJsonValue() would return)
+    QJsonArray parametersArray;
+
+    QJsonObject pressureJson;
+    pressureJson["Pressure"]= 1013.25;
+    parametersArray.append(pressureJson);
+    
+    QJsonObject temperatureJson;
+    temperatureJson["Temperature"]= 25;
+    parametersArray.append(temperatureJson);
+
+    QJsonObject json;
+    json["MyTestPage"] = parametersArray;
+    // qDebug() << __func__ << json;
+
+    // Test successful fromJson
+    ParameterList list(this);
+    QVERIFY(list.valuesFromJson(json));
+
+    // Verify list properties
+    QCOMPARE(list.name(), "MyTestPage");
+    QCOMPARE(list.count(), 2);
+
+    auto actual = list.parameter("Pressure")->toJsonValue();
+    QCOMPARE(actual, pressureJson);
+    actual = list.parameter("Temperature")->toJsonValue();
+    QCOMPARE(actual, temperatureJson);
+}
+
+void TestQtNoidAppParameterList::testValuesFromJsonWithWrongName()
+{
+    QJsonObject json;
+    json["MyTestPage"] = QJsonArray();
+
+    ParameterList list("NotMyTestPage", this);
+    QCOMPARE(list.valuesFromJson(json), false);
+}
+
+void TestQtNoidAppParameterList::testValuesFromJsonWithCorrectName()
+{
+    QJsonObject json;
+    json["MyTestPage"] = QJsonArray();
+    qDebug() << __func__ << json;
+
+    // Test successful fromJson
+    ParameterList list("MyTestPage", this);
+    QCOMPARE(list.valuesFromJson(json), true);
+}
+
+void TestQtNoidAppParameterList::testSchemaFromJson()
+{
+    QVERIFY(0);
+}
+
 
 
 QTEST_MAIN(TestQtNoidAppParameterList)

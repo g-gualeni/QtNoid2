@@ -3,6 +3,8 @@
 //=============================================================================
 #include "QtNoidApp/parameterlist.h"
 #include <QDebug>
+#include <QJsonObject>
+#include <QJsonArray>
 
 namespace QtNoid {
 namespace App {
@@ -16,6 +18,109 @@ ParameterList::ParameterList(const QString &name, QObject *parent)
     : QObject(parent), m_name(name)
 {
 }
+
+ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
+    : QObject(parent)
+{
+    schemaFromJson(schemaList);
+    valuesFromJson(valueList);
+}
+
+QJsonObject ParameterList::toJsonValues() const
+{
+    QString name = m_name;
+    if(name.isEmpty()) {
+        name = "PageName";
+    }
+
+    QJsonArray parametersArray;
+    for (const Parameter* param : m_parameters) {
+        if (param) {
+            parametersArray.append(param->toJsonValue());
+        }
+    }
+    QJsonObject json;
+    json[name] = parametersArray;
+    return json;
+}
+
+QJsonObject ParameterList::toJsonSchema() const
+{
+    QString name = m_name;
+    if(name.isEmpty()) {
+        name = "PageName";
+    }
+
+    QJsonArray parametersArray;
+    for (const Parameter* param : m_parameters) {
+        if (param) {
+            parametersArray.append(param->toJsonSchema());
+        }
+    }
+
+    QJsonObject schema;
+    schema[name] = parametersArray;
+    return schema;
+}
+
+bool ParameterList::valuesFromJson(const QJsonObject &json)
+{
+    QString name = m_name.value();
+    if(name.isEmpty() && (json.count() == 1)) {
+        // Get the unique JSON object and use it to set the name
+        name = json.begin().key();
+        setName(name);
+    }
+    else if(!json.contains(name)) {
+        // This is not the correct JSON model
+        return false;
+    }
+
+    // Clear existing parameters
+    clear();
+
+    // Load parameters
+    const QJsonArray parametersArray = json[name].toArray();
+    for (const QJsonValue& value : parametersArray) {
+        if (value.isObject()) {
+            const QJsonObject valueObj = value.toObject();
+            auto valueName = valueObj.begin().key();
+            auto valueVal = valueObj.begin().value().toVariant();
+            addParameter(new Parameter(valueName, valueVal, this));
+        }
+    }
+
+    return true;
+}
+
+bool ParameterList::schemaFromJson(const QJsonObject &json)
+{
+    QString name = m_name.value();
+    if(name.isEmpty() && (json.count() == 1)) {
+        // Get the unique JSON object and use it to set the name
+        name = json.begin().key();
+        setName(name);
+    }
+    else if(!json.contains(name)) {
+        // This is not the correct JSON model
+        return false;
+    }
+
+    // Clear existing parameters
+    clear();
+
+    // Load parameters from schema
+    const QJsonArray schemaArray = json[name].toArray();
+    for (const QJsonValue& schema : schemaArray) {
+        if (schema.isObject()) {
+            const QJsonObject schemaObj = schema.toObject();
+            addParameter(new Parameter(schemaObj, {}, this));
+        }
+    }
+    return true;
+}
+
+
 
 QString ParameterList::name() const
 {
@@ -157,6 +262,7 @@ void ParameterList::onParameterDestroyed(QObject *parameter)
         emit countChanged(m_parameters.count());
     }
 }
+
 
 } // namespace App
 } // namespace QtNoid
