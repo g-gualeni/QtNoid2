@@ -1,9 +1,11 @@
 # QtNoidApp
 This module contains:
-- [**Settings**](#class-settings): collection of methods to simplify the management of the application
-settings.
+- [**Settings**](#class-settings): collection of methods to simplify the management of 
+the application settings.
 - [**Parameter**](#class-parameter): Generic application parameter class with 
 value storage, range validation, presets, and Qt property binding.
+- [**ParameterList**](#class-parameterlist): Container class for managing multiple 
+Parameter instances with binding support and serialization.
 
 
 
@@ -81,6 +83,21 @@ class inherits QWidget.
 ## Class: Parameter
 This class is a generic application parameter class with value storage, range 
 validation, presets, and Qt property binding.
+
+&nbsp;
+
+### Static Methods
+
+
+&nbsp;
+
+### Non Static Methods
+
+[⬆ Back to top](#qtnoidsapp)
+
+&nbsp;
+## Class: ParameterList
+This class is a container for managing multiple Parameter instances with support for binding and serialization.
 
 &nbsp;
 

@@ -29,10 +29,13 @@ public:
     explicit Parameter(const QVariant& initialValue, QObject *parent = nullptr);
     explicit Parameter(const QString &name, const QVariant& initialValue, QObject *parent = nullptr);
     explicit Parameter(const QString &name, const QString &description, const QVariant& initialValue, QObject *parent = nullptr);
+    explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr);
 
     // Serialization
-    QJsonObject toJson();
+    QJsonObject toJsonValue();
     QJsonObject toJsonSchema();
+    bool valueFromJson(const QJsonObject& json);
+    bool schemaFromJson(const QJsonObject& json);
 
     // Value management
     QVariant value() const;

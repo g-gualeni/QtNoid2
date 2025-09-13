@@ -30,7 +30,51 @@ Parameter::Parameter(const QString &name, const QString &description, const QVar
     connectRangeChanged();
 }
 
-QJsonObject Parameter::toJson()
+Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObject *parent)
+    : QObject(parent)
+{
+    // Extract parameter name from schema (first key) or value (first key)
+    QString paramName;
+    if (!schema.isEmpty()) {
+        paramName = schema.begin().key();
+    } else if (!value.isEmpty()) {
+        paramName = value.begin().key();
+    }
+    
+    if (!paramName.isEmpty()) {
+        m_name = paramName;
+        
+        // Initialize from schema using paramName as key
+        if (schema.contains(paramName)) {
+            QJsonObject schemaData = schema[paramName].toObject();
+            
+            if (schemaData.contains("description")) {
+                m_description = schemaData["description"].toString();
+            }
+            if (schemaData.contains("unit")) {
+                m_unit = schemaData["unit"].toString();
+            }
+            if (schemaData.contains("readOnly")) {
+                m_readOnly = schemaData["readOnly"].toBool();
+            }
+            if (schemaData.contains("min")) {
+                m_min = schemaData["min"].toVariant();
+            }
+            if (schemaData.contains("max")) {
+                m_max = schemaData["max"].toVariant();
+            }
+        }
+        
+        // Initialize value if paramName is correct
+        if (value.contains(paramName)) {
+            m_value = value[paramName].toVariant();
+        }
+    }
+    
+    connectRangeChanged();
+}
+
+QJsonObject Parameter::toJsonValue()
 {
     QJsonObject res;
     QString name = m_name;
@@ -58,6 +102,66 @@ QJsonObject Parameter::toJsonSchema()
     QJsonObject res;
     res[name] = schema;
     return res;
+}
+
+bool Parameter::valueFromJson(const QJsonObject& json)
+{
+    //
+    QString name = m_name.value();
+    if(name.isEmpty() && (json.count() == 1)) {
+        // Get the unique JSON object and use it to set the name
+        name = json.begin().key();
+        setName(name);
+        QVariant value = json.value(name).toVariant();
+        setValue(value);
+        return true;
+    }
+
+    if(json.contains(name)) {
+        QVariant value = json[name].toVariant();
+        setValue(value);
+        return true;
+    }
+    return false;
+}
+
+bool Parameter::schemaFromJson(const QJsonObject &json)
+{
+    // Sanity check
+    if(json.isEmpty())
+        return false;
+
+    // Get parameter name - use existing name or first key in JSON
+    QString paramName = m_name.value();
+    if (paramName.isEmpty()) {
+        paramName = json.begin().key();
+        setName(paramName);
+    }
+    
+    if (!json.contains(paramName)) {
+        return false;
+    }
+    
+    QJsonObject schemaData = json[paramName].toObject();
+    
+    // Load schema properties
+    if (schemaData.contains("description")) {
+        setDescription(schemaData["description"].toString());
+    }
+    if (schemaData.contains("unit")) {
+        setUnit(schemaData["unit"].toString());
+    }
+    if (schemaData.contains("readOnly")) {
+        setReadOnly(schemaData["readOnly"].toBool());
+    }
+    if (schemaData.contains("min")) {
+        setMin(schemaData["min"].toVariant());
+    }
+    if (schemaData.contains("max")) {
+        setMax(schemaData["max"].toVariant());
+    }
+    
+    return true;
 }
 
 void Parameter::connectRangeChanged()

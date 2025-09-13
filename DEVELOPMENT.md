@@ -17,9 +17,10 @@
 - [x] Clean up on parameter and test completion ✅ (commit: faf83c2, 2025-08-30)
 - [x] Binding test ✅ (commit: 8d3764b, 2025-09-09)
 - [x] Test and Review of Parameter List ✅ (commit: 180c86f, 2025-09-11)
+- [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
-working on ParameterList Test for Bindable
+Serialization / deserialization
 create and example
 
 
@@ -28,12 +29,12 @@ create and example
 - [x] Manca il test per Preset
 - [x] Manca il test per tutti i bindable
 - [x] Add serialization to JSON
-- [ ] Add JSON de serialization
+- [x] Add JSON de serialization
 - [ ] Test performance using bindings and using signal/slots
 - [ ] Add tooltip parameter (remember test and schema)
 - [ ] Add the visible parameter (remember test and schema)
 - [ ] Add index parameter (remember test and schema)
-
+- [ ] Update documentation 
 
 ### Todo ParameterList
 - [x] Rivedere la gestione della lista e degli eventi
@@ -41,6 +42,7 @@ create and example
 - [ ] Manca il test per tutti i bindable
 - [ ] Add JSON serialization 
 - [ ] Add JSON deserialization
+- [ ] Update documentation 
 
 
 ### Todo App -> Examples

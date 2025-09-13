@@ -54,6 +54,26 @@ private slots:
     void testParameterToJson();
     void testParameterToJsonWithNoName();
     void testParameterToJsonWithDifferentValueTypes();
+    
+    // JSON deserialization tests
+    void testParameterValueFromJson();
+    void testParameterValueFromJsonWithEmptyName();
+    void testParameterValueFromJsonWithNonExistentKey();
+    void testParameterValueFromJsonWithDifferentTypes();
+    
+    // JSON constructor tests
+    void testParameterConstructorFromJsonSchemaAndValue();
+    void testParameterConstructorFromJsonSchemaOnly();
+    void testParameterConstructorFromJsonValueOnly();
+    void testParameterConstructorFromJsonEmptyObjects();
+    
+    // JSON schema loading tests
+    void testParameterSchemaFromJson();
+    void testParameterSchemaFromJsonWithEmptyName();
+    void testParameterSchemaFromJsonWithNonExistentKey();
+    void testParameterSchemaFromJsonEmptyObject();
+    void testParameterSchemaFromJsonPartialSchema();
+    void testParameterSchemaFromJsonChangeRangeForceNewValue();
 
 private:
 
@@ -757,7 +777,7 @@ void TestQtNoidAppParameter::testParameterToJson()
 {
     Parameter par("Temperature", "Current temperature", 25.5);
     
-    QJsonObject json = par.toJson();
+    QJsonObject json = par.toJsonValue();
     // qDebug() << __func__ << json;
     
     QVERIFY(json.contains("Temperature"));
@@ -769,7 +789,7 @@ void TestQtNoidAppParameter::testParameterToJsonWithNoName()
 {
     Parameter par(42.0);
     
-    QJsonObject json = par.toJson();
+    QJsonObject json = par.toJsonValue();
     // qDebug() << __func__ << json;
 
     QVERIFY(json.contains("Name"));
@@ -781,27 +801,374 @@ void TestQtNoidAppParameter::testParameterToJsonWithDifferentValueTypes()
 {
     // Test with integer
     Parameter parInt("IntParam", 100);
-    QJsonObject jsonInt = parInt.toJson();
+    QJsonObject jsonInt = parInt.toJsonValue();
     QVERIFY(jsonInt.contains("IntParam"));
     QCOMPARE(jsonInt["IntParam"].toVariant(), QVariant(100));
     
     // Test with string
     Parameter parString("StringParam", "Hello World");
-    QJsonObject jsonString = parString.toJson();
+    QJsonObject jsonString = parString.toJsonValue();
     QVERIFY(jsonString.contains("StringParam"));
     QCOMPARE(jsonString["StringParam"].toVariant(), QVariant("Hello World"));
     
     // Test with boolean
     Parameter parBool("BoolParam", true);
-    QJsonObject jsonBool = parBool.toJson();
+    QJsonObject jsonBool = parBool.toJsonValue();
     QVERIFY(jsonBool.contains("BoolParam"));
     QCOMPARE(jsonBool["BoolParam"].toVariant(), QVariant(true));
     
     // Test with negative double
     Parameter parNegative("NegativeParam", -123.456);
-    QJsonObject jsonNegative = parNegative.toJson();
+    QJsonObject jsonNegative = parNegative.toJsonValue();
     QVERIFY(jsonNegative.contains("NegativeParam"));
     QCOMPARE(jsonNegative["NegativeParam"].toVariant(), QVariant(-123.456));
+}
+
+void TestQtNoidAppParameter::testParameterValueFromJson()
+{
+    Parameter par("Temperature", 25.0);
+    QSignalSpy spy(&par, &Parameter::valueChanged);
+    
+    QJsonObject json;
+    json["Temperature"] = 30.5;
+    
+    QCOMPARE(par.valueFromJson(json), true);
+    QCOMPARE(par.value(), 30.5);
+    QCOMPARE(spy.count(), 1);
+    
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toDouble(), 30.5);
+}
+
+void TestQtNoidAppParameter::testParameterValueFromJsonWithEmptyName()
+{
+    Parameter par(42.0);  // No name set
+    QSignalSpy spy(&par, &Parameter::valueChanged);
+    QSignalSpy nameSpy(&par, &Parameter::nameChanged);
+    
+    QJsonObject json;
+    json["NewParameterName"] = 100.0;
+    
+    QCOMPARE(par.valueFromJson(json), true);
+    QCOMPARE(par.value(), 100.0);
+    QCOMPARE(par.name(), "NewParameterName");
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(nameSpy.count(), 1);
+}
+
+void TestQtNoidAppParameter::testParameterValueFromJsonWithNonExistentKey()
+{
+    Parameter par("Temperature", 25.0);
+    QSignalSpy spy(&par, &Parameter::valueChanged);
+    
+    QJsonObject json;
+    json["Pressure"] = 1013.25;
+    
+    QCOMPARE(par.valueFromJson(json), false);
+    QCOMPARE(par.value(), 25.0);  // Value should not change
+    QCOMPARE(spy.count(), 0);     // No signal should be emitted
+}
+
+void TestQtNoidAppParameter::testParameterValueFromJsonWithDifferentTypes()
+{
+    // Test with integer
+    Parameter parInt("IntParam", 50);
+    QJsonObject jsonInt;
+    jsonInt["IntParam"] = 100;
+    QCOMPARE(parInt.valueFromJson(jsonInt), true);
+    QCOMPARE(parInt.value().toInt(), 100);
+
+    // Test with float
+    Parameter parDouble("DoubleParam", 50.2);
+    QJsonObject jsonDouble;
+    jsonDouble["DoubleParam"] = 100.5;
+    QCOMPARE(parDouble.valueFromJson(jsonDouble), true);
+    QCOMPARE(parDouble.value().toDouble(), 100.5);
+
+    // Test with string
+    Parameter parString("StringParam", "initial");
+    QJsonObject jsonString;
+    jsonString["StringParam"] = "updated";
+    QCOMPARE(parString.valueFromJson(jsonString), true);
+    QCOMPARE(parString.value().toString(), "updated");
+    
+    // Test with boolean
+    Parameter parBool("BoolParam", false);
+    QJsonObject jsonBool;
+    jsonBool["BoolParam"] = true;
+    QCOMPARE(parBool.valueFromJson(jsonBool), true);
+    QCOMPARE(parBool.value().toBool(), true);
+}
+
+void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValue()
+{
+    // Create schema and value JSON objects
+    QJsonObject schema;
+    QJsonObject temperatureSchema;
+    temperatureSchema["description"] = "Current temperature";
+    temperatureSchema["unit"] = "°C";
+    temperatureSchema["readOnly"] = false;
+    temperatureSchema["min"] = -273.15;
+    temperatureSchema["max"] = 1000.0;
+    schema["Temperature"] = temperatureSchema;
+    
+    QJsonObject value;
+    value["Temperature"] = 25.5;
+    
+    // Create parameter from JSON
+    Parameter par(schema, value, this);
+    
+    // Verify all properties were set correctly
+    QCOMPARE(par.name(), "Temperature");
+    QCOMPARE(par.description(), "Current temperature");
+    QCOMPARE(par.unit(), "°C");
+    QCOMPARE(par.readOnly(), false);
+    QCOMPARE(par.min().toDouble(), -273.15);
+    QCOMPARE(par.max().toDouble(), 1000.0);
+    QCOMPARE(par.value().toDouble(), 25.5);
+}
+
+void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaOnly()
+{
+    // Create schema without value
+    QJsonObject schema;
+    QJsonObject pressureSchema;
+    pressureSchema["description"] = "Atmospheric pressure";
+    pressureSchema["unit"] = "hPa";
+    pressureSchema["readOnly"] = true;
+    pressureSchema["min"] = 800.0;
+    pressureSchema["max"] = 1100.0;
+    schema["Pressure"] = pressureSchema;
+    
+    // Create parameter from schema only
+    Parameter par(schema, QJsonObject(), this);
+    
+    // Verify schema properties were set
+    QCOMPARE(par.name(), "Pressure");
+    QCOMPARE(par.description(), "Atmospheric pressure");
+    QCOMPARE(par.unit(), "hPa");
+    QCOMPARE(par.readOnly(), true);
+    QCOMPARE(par.min().toDouble(), 800.0);
+    QCOMPARE(par.max().toDouble(), 1100.0);
+    
+    // Value should be invalid/empty since no value was provided
+    QVERIFY(!par.value().isValid());
+}
+
+void TestQtNoidAppParameter::testParameterConstructorFromJsonValueOnly()
+{
+    // Create value without schema
+    QJsonObject value;
+    value["Voltage"] = 12.5;
+    
+    // Create parameter from value only
+    Parameter par(QJsonObject(), value, this);
+    
+    // Verify name and value were set
+    QCOMPARE(par.name(), "Voltage");
+    QCOMPARE(par.value().toDouble(), 12.5);
+    
+    // Other properties should be default values
+    QCOMPARE(par.description(), QString());
+    QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.readOnly(), false);
+    QVERIFY(!par.min().isValid());
+    QVERIFY(!par.max().isValid());
+}
+
+void TestQtNoidAppParameter::testParameterConstructorFromJsonEmptyObjects()
+{
+    // Create parameter from empty objects
+    Parameter par(QJsonObject(), QJsonObject(), this);
+    
+    // All properties should be default values
+    QCOMPARE(par.name(), QString());
+    QCOMPARE(par.description(), QString());
+    QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.readOnly(), false);
+    QVERIFY(!par.min().isValid());
+    QVERIFY(!par.max().isValid());
+    QVERIFY(!par.value().isValid());
+}
+
+void TestQtNoidAppParameter::testParameterSchemaFromJson()
+{
+    Parameter par("Temperature", 20.0);
+    
+    // Create schema JSON
+    QJsonObject schema;
+    QJsonObject temperatureSchema;
+    temperatureSchema["description"] = "Current temperature";
+    temperatureSchema["unit"] = "°C";
+    temperatureSchema["readOnly"] = true;
+    temperatureSchema["min"] = -50.0;
+    temperatureSchema["max"] = 100.0;
+    schema["Temperature"] = temperatureSchema;
+    
+    // Apply schema to parameter
+    bool result = par.schemaFromJson(schema);
+    QCOMPARE(result, true);
+    
+    // Verify all schema properties were applied
+    QCOMPARE(par.name(), "Temperature");
+    QCOMPARE(par.description(), "Current temperature");
+    QCOMPARE(par.unit(), "°C");
+    QCOMPARE(par.readOnly(), true);
+    QCOMPARE(par.min().toDouble(), -50.0);
+    QCOMPARE(par.max().toDouble(), 100.0);
+    
+    // Value should remain unchanged
+    QCOMPARE(par.value().toDouble(), 20.0);
+}
+
+void TestQtNoidAppParameter::testParameterSchemaFromJsonWithEmptyName()
+{
+    Parameter par(1000.0);  // No name set
+    QSignalSpy nameSpy(&par, &Parameter::nameChanged);
+    
+    // Create schema JSON
+    QJsonObject schema;
+    QJsonObject pressureSchema;
+    pressureSchema["description"] = "Atmospheric pressure";
+    pressureSchema["unit"] = "hPa";
+    pressureSchema["readOnly"] = false;
+    pressureSchema["min"] = 800.0;
+    pressureSchema["max"] = 1100.0;
+    schema["Pressure"] = pressureSchema;
+    
+    // Apply schema - should set name from JSON key
+    bool result = par.schemaFromJson(schema);
+    QCOMPARE(result, true);
+    
+    // Verify name was set and schema applied
+    QCOMPARE(par.name(), "Pressure");
+    QCOMPARE(par.description(), "Atmospheric pressure");
+    QCOMPARE(par.unit(), "hPa");
+    QCOMPARE(par.readOnly(), false);
+    QCOMPARE(par.min().toDouble(), 800.0);
+    QCOMPARE(par.max().toDouble(), 1100.0);
+    QCOMPARE(nameSpy.count(), 1);
+    
+    // Value should remain unchanged
+    QCOMPARE(par.value().toDouble(), 1000.0);
+}
+
+void TestQtNoidAppParameter::testParameterSchemaFromJsonWithNonExistentKey()
+{
+    Parameter par("Temperature", 25.0);
+    
+    // Create schema JSON with different key
+    QJsonObject schema;
+    QJsonObject pressureSchema;
+    pressureSchema["description"] = "Atmospheric pressure";
+    schema["Pressure"] = pressureSchema;
+    
+    // Apply schema - should fail because key doesn't match parameter name
+    bool result = par.schemaFromJson(schema);
+    QCOMPARE(result, false);
+    
+    // Properties should remain unchanged
+    QCOMPARE(par.name(), "Temperature");
+    QCOMPARE(par.description(), QString());
+    QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.readOnly(), false);
+    QVERIFY(!par.min().isValid());
+    QVERIFY(!par.max().isValid());
+    QCOMPARE(par.value().toDouble(), 25.0);
+}
+
+void TestQtNoidAppParameter::testParameterSchemaFromJsonEmptyObject()
+{
+    Parameter par("Temperature", 25.0);
+    
+    // Apply empty schema
+    QCOMPARE(par.schemaFromJson(QJsonObject()), false);
+    
+    // Properties should remain unchanged
+    QCOMPARE(par.name(), "Temperature");
+    QCOMPARE(par.description(), QString());
+    QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.readOnly(), false);
+    QVERIFY(!par.min().isValid());
+    QVERIFY(!par.max().isValid());
+    QCOMPARE(par.value().toDouble(), 25.0);
+}
+
+void TestQtNoidAppParameter::testParameterSchemaFromJsonPartialSchema()
+{
+    Parameter par("Voltage", 12.0);
+    par.setDescription("Original description");
+    par.setUnit("mV");
+    par.setReadOnly(true);
+    
+    // Create partial schema (only some properties)
+    QJsonObject schema;
+    QJsonObject voltageSchema;
+    voltageSchema["description"] = "Updated description";
+    voltageSchema["unit"] = "V";
+    // Note: readOnly not included, min/max not included
+    schema["Voltage"] = voltageSchema;
+    
+    // Apply partial schema
+    bool result = par.schemaFromJson(schema);
+    QCOMPARE(result, true);
+    
+    // Only specified properties should be updated
+    QCOMPARE(par.name(), "Voltage");
+    QCOMPARE(par.description(), "Updated description");
+    QCOMPARE(par.unit(), "V");
+    QCOMPARE(par.readOnly(), true);  // Should remain unchanged
+    QVERIFY(!par.min().isValid());   // Should remain unchanged
+    QVERIFY(!par.max().isValid());   // Should remain unchanged
+    QCOMPARE(par.value().toDouble(), 12.0);  // Should remain unchanged
+}
+
+void TestQtNoidAppParameter::testParameterSchemaFromJsonChangeRangeForceNewValue()
+{
+    // Create parameter with value outside the new range we'll set
+    Parameter par("Temperature", 150.0);  // Current value is 150
+    QSignalSpy valueSpy(&par, &Parameter::valueChanged);
+    QSignalSpy rangeSpy(&par, &Parameter::rangeChanged);
+    
+    // Create schema with new range that will force the value to be clamped
+    QJsonObject schema;
+    QJsonObject temperatureSchema;
+    temperatureSchema["min"] = -50.0;   // New min
+    temperatureSchema["max"] = 100.0;   // New max - current value (150) exceeds this
+    schema["Temperature"] = temperatureSchema;
+    
+    // Apply schema - should clamp the current value to the new max
+    bool result = par.schemaFromJson(schema);
+    QCOMPARE(result, true);
+    
+    // Verify schema was applied
+    QCOMPARE(par.min().toDouble(), -50.0);
+    QCOMPARE(par.max().toDouble(), 100.0);
+    
+    // Value should be clamped to the new maximum
+    QCOMPARE(par.value().toDouble(), 100.0);
+    QCOMPARE(valueSpy.count(), 1);
+    QCOMPARE(rangeSpy.count(), 2);  // Once for min change, once for max change
+    
+    // Test with value below new minimum
+    Parameter par2("Voltage", -200.0);  // Current value is -200
+    QSignalSpy valueSpy2(&par2, &Parameter::valueChanged);
+    
+    QJsonObject schema2;
+    QJsonObject voltageSchema;
+    voltageSchema["min"] = -100.0;  // New min - current value (-200) is below this
+    voltageSchema["max"] = 50.0;    // New max
+    schema2["Voltage"] = voltageSchema;
+    
+    // Apply schema - should clamp the current value to the new min
+    bool result2 = par2.schemaFromJson(schema2);
+    QCOMPARE(result2, true);
+    
+    // Value should be clamped to the new minimum
+    QCOMPARE(par2.value().toDouble(), -100.0);
+    QCOMPARE(par2.min().toDouble(), -100.0);
+    QCOMPARE(par2.max().toDouble(), 50.0);
+    QCOMPARE(valueSpy2.count(), 1);
 }
 
 
