@@ -22,15 +22,17 @@ private slots:
     void testParameterListSetValueConvenienceMethods();
     void testParameterDestruction();
     void testBindableNameProperty();
+
     void testToJsonValues();
     void testToJsonValuesNoName();
     void TestToJsonSchema();
     void TestToJsonSchemaNoName();
     void testValuesFromJsonWithEmptyNameShouldTakeTheJsonName();
-    void testValuesFromJsonWithWrongName();
+    void testValuesFromJsonWithWrongNameShouldFail();
     void testValuesFromJsonWithCorrectName();
 
     void testSchemaFromJson();
+    void testSchemaFromJsonWithWrongNameShouldFail();
 
 
 
@@ -326,9 +328,9 @@ void TestQtNoidAppParameterList::TestToJsonSchema()
 
     auto param2 = new Parameter("Pressure", "pres" , 1013.25, this);
     param2->setRange(0,2000);
-    param1->setUnit("hPa");
-    page.addParameter(param2);
+    param2->setUnit("hPa");
     param2->setReadOnly(true);
+    page.addParameter(param2);
 
     QJsonObject jsonSchema = page.toJsonSchema();
     // qDebug() << __func__ << jsonSchema;
@@ -380,7 +382,7 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithEmptyNameShouldTakeTheJso
     QCOMPARE(actual, temperatureJson);
 }
 
-void TestQtNoidAppParameterList::testValuesFromJsonWithWrongName()
+void TestQtNoidAppParameterList::testValuesFromJsonWithWrongNameShouldFail()
 {
     QJsonObject json;
     json["MyTestPage"] = QJsonArray();
@@ -393,7 +395,7 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithCorrectName()
 {
     QJsonObject json;
     json["MyTestPage"] = QJsonArray();
-    qDebug() << __func__ << json;
+    // qDebug() << __func__ << json;
 
     // Test successful fromJson
     ParameterList list("MyTestPage", this);
@@ -402,7 +404,69 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithCorrectName()
 
 void TestQtNoidAppParameterList::testSchemaFromJson()
 {
-    QVERIFY(0);
+    // Create JSON schema with multiple parameters
+    QJsonArray parametersArray;
+
+    // Temperature parameter schema
+    QJsonObject tempSchema;
+    tempSchema["description"] = "Current temperature";
+    tempSchema["unit"] = "°C";
+    tempSchema["readOnly"] = true;
+    tempSchema["min"] = -50.0;
+    tempSchema["max"] = 100.0;
+
+    QJsonObject expectedTemp;
+    expectedTemp["Temperature"] = tempSchema;
+    parametersArray.append(expectedTemp);
+
+    // Pressure parameter schema
+    QJsonObject pressSchema;
+    pressSchema["description"] = "Atmospheric pressure";
+    pressSchema["unit"] = "hPa";
+    pressSchema["readOnly"] = false;
+    pressSchema["min"] = 800.0;
+    pressSchema["max"] = 1100.0;
+    QJsonObject expectedPress;
+    expectedPress["Pressure"] = pressSchema;
+    parametersArray.append(expectedPress);
+
+    // Complete schema JSON
+    QJsonObject json;
+    json["TestConfiguration"] = parametersArray;
+
+    // Test with empty-named parameter list (should take JSON name)
+    ParameterList list(this);
+    QVERIFY(list.schemaFromJson(json));
+
+    // Verify list properties
+    QCOMPARE(list.name(), "TestConfiguration");
+    QCOMPARE(list.count(), 2);
+
+    // Verify Temperature in list
+    QJsonObject actualTemp = list.parameter("Temperature")->toJsonSchema();
+    qDebug() << actualTemp;
+    QCOMPARE(actualTemp, expectedTemp);
+
+    // Verify Pressure in list
+    QJsonObject actualPress = list.parameter("Pressure")->toJsonSchema();
+    qDebug() << actualPress;
+    QCOMPARE(actualPress, expectedPress);
+
+}
+
+void TestQtNoidAppParameterList::testSchemaFromJsonWithWrongNameShouldFail()
+{
+    // Create JSON schema with multiple parameters
+    QJsonObject json;
+    json["WrongName"] = QJsonArray();
+
+
+    ParameterList list("", this);
+    QVERIFY(list.schemaFromJson(json));
+
+
+
+
 }
 
 
