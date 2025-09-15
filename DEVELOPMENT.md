@@ -45,9 +45,9 @@ Parameter::isValid() how can I say that the parameter is invalid? No Name, No Va
 - [x] creare i test
 - [x] Manca il test per tutti i bindable
 - [x] Add JSON serialization 
-- [ ] Add JSON deserialization
+- [x] Add JSON deserialization
 - [ ] Update documentation 
-- [ ] aggiungere un parametro come JSON
+- [x] Add Element as JSON Schema / Value
 
 
 
