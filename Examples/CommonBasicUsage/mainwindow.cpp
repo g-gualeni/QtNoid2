@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setWindowTitle("Common Basic Usage");
+
     QtNoid::Common::File QtNoidFile;
     auto res = QtNoidFile.listPathRecursively(qApp->applicationFilePath());
     ui->plainTextEdit->setPlainText(res.join("\n"));

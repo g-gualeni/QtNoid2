@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(AppBasicUsage VERSION 0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16)
+
+project(AppBasicUsage VERSION 2.0.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -15,6 +17,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 # =============================================================================
 # Search for QtNoid Installed library
 # =============================================================================
+find_package(QtNoidCommon REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 find_package(QtNoidApp REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 
 set(PROJECT_SOURCES
