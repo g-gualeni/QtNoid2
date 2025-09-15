@@ -35,7 +35,8 @@ public:
     
     // List management
     int count() const;
-    void addParameter(Parameter* parameter);
+    bool addParameter(Parameter* parameter);
+    bool addParameter(const QJsonObject& schema, const QJsonObject& value);
     void removeParameter(Parameter* parameter);
     void removeParameter(const QString& name);
     void clear();

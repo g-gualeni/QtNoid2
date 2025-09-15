@@ -86,7 +86,11 @@ bool ParameterList::valuesFromJson(const QJsonObject &json)
             const QJsonObject valueObj = value.toObject();
             auto valueName = valueObj.begin().key();
             auto valueVal = valueObj.begin().value().toVariant();
-            addParameter(new Parameter(valueName, valueVal, this));
+
+            auto newParam = new Parameter(valueName, valueVal, this);
+            if(newParam->isValid()) {
+                addParameter(newParam);
+            }
         }
     }
 
@@ -106,6 +110,11 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
         return false;
     }
 
+    // Check if name already exists
+    if(contains(name)){
+        return false;
+    }
+
     // Clear existing parameters
     clear();
 
@@ -114,7 +123,10 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
     for (const QJsonValue& schema : schemaArray) {
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
-            addParameter(new Parameter(schemaObj, {}, this));
+            auto newParam = new Parameter(schemaObj, {}, this);
+            if(newParam->isValid()) {
+                addParameter(newParam);
+            }
         }
     }
     return true;
@@ -142,17 +154,33 @@ int ParameterList::count() const
     return m_parameters.count();
 }
 
-void ParameterList::addParameter(Parameter *parameter)
+bool ParameterList::addParameter(Parameter *parameter)
 {
     if (!parameter || m_parameters.contains(parameter)) {
-        return;
+        return false;
     }
-    
+
+    auto paramName = parameter->name();
+    if(paramName.isEmpty()){
+        return false;
+    }
+    // Check if a parameter with the same name already exists
+    if (contains(paramName)) {
+        return false;
+    }
+
     m_parameters.append(parameter);
     connect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
-    
+
     emit parameterAdded(parameter);
     emit countChanged(m_parameters.count());
+    return true;
+}
+
+bool ParameterList::addParameter(const QJsonObject& schema, const QJsonObject& value)
+{
+    Parameter* parameter = new Parameter(schema, value, this);
+    return addParameter(parameter);
 }
 
 void ParameterList::removeParameter(Parameter *parameter)

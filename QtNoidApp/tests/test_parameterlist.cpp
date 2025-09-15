@@ -16,6 +16,12 @@ private slots:
     void testCreatingParameterList();
     void testParameterListName();
     void testAddingParameters();
+    void testAddingDuplicatedParametersShouldFail();
+    void testAddingSameNameParametersShouldFail();
+    void testAddingNoNameParametersShouldFail();
+    void testAddParameterFromJsonObjects();
+    void testAddParameterFromBadJsonObjectsShouldFail();
+
     void testRemovingParameters();
     void testParameterListClear();
     void testParameterAccess();
@@ -33,6 +39,9 @@ private slots:
 
     void testSchemaFromJson();
     void testSchemaFromJsonWithWrongNameShouldFail();
+    void testSchemaFromJsonWithCorrectName();
+    void testSchemaFromDuplicatedJsonOverwriteAndNotFail();
+
 
 
 
@@ -113,6 +122,89 @@ void TestQtNoidAppParameterList::testAddingParameters()
     // Adding nullptr should not change anything
     list.addParameter(nullptr);
     QCOMPARE(list.count(), 2);
+}
+
+void TestQtNoidAppParameterList::testAddingDuplicatedParametersShouldFail()
+{
+    ParameterList list(this);
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
+
+    auto param1 = new Parameter("Param1", 100.0, this);
+    list.addParameter(param1);
+
+    bool res = list.addParameter(param1);
+    QCOMPARE(res, false);
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(addedSpy.count(), 1);
+}
+
+void TestQtNoidAppParameterList::testAddingSameNameParametersShouldFail()
+{
+    ParameterList list(this);
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
+
+    auto param1 = new Parameter("Param1", 100.0, this);
+    list.addParameter(param1);
+
+    auto sameNameParam1= new Parameter("Param1", 123, this);
+    bool res = list.addParameter(sameNameParam1);
+
+    // qDebug() << list.toJsonValues() << list.toJsonSchema();
+
+    QCOMPARE(res, false);
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(addedSpy.count(), 1);
+}
+
+void TestQtNoidAppParameterList::testAddingNoNameParametersShouldFail()
+{
+    auto param = new Parameter(this);
+    ParameterList list(this);
+    bool res = list.addParameter(param);
+    QCOMPARE(res, false);
+}
+
+void TestQtNoidAppParameterList::testAddParameterFromJsonObjects()
+{
+    ParameterList list(this);
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
+
+    // Test successful addition with valid schema and value
+    QJsonObject schema;
+    QJsonObject tempSchema;
+    tempSchema["description"] = "Temperature sensor";
+    tempSchema["unit"] = "°C";
+    tempSchema["min"] = -50.0;
+    tempSchema["max"] = 100.0;
+    tempSchema["readOnly"] = true;
+    schema["Temperature"] = tempSchema;
+
+    QJsonObject value;
+    value["Temperature"] = 25.5;
+
+    bool result = list.addParameter(schema, value);
+    QCOMPARE(result, true);
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(addedSpy.count(), 1);
+
+    QCOMPARE(list.parameter(0)->toJsonSchema(), schema);
+    QCOMPARE(list.parameter(0)->toJsonValue(), value);
+
+}
+
+void TestQtNoidAppParameterList::testAddParameterFromBadJsonObjectsShouldFail()
+{
+    ParameterList list(this);
+    QJsonObject schema;
+    QJsonObject value;
+    bool result = list.addParameter(schema, value);
+    QCOMPARE(result, false);
 }
 
 void TestQtNoidAppParameterList::testRemovingParameters()
@@ -404,7 +496,9 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithCorrectName()
 
 void TestQtNoidAppParameterList::testSchemaFromJson()
 {
-    // Create JSON schema with multiple parameters
+    // Create JSON schema with multiple parameters and use it
+    // to inizialize ParameterList list(this);
+
     QJsonArray parametersArray;
 
     // Temperature parameter schema
@@ -451,23 +545,55 @@ void TestQtNoidAppParameterList::testSchemaFromJson()
     QJsonObject actualPress = list.parameter("Pressure")->toJsonSchema();
     qDebug() << actualPress;
     QCOMPARE(actualPress, expectedPress);
-
 }
 
 void TestQtNoidAppParameterList::testSchemaFromJsonWithWrongNameShouldFail()
 {
-    // Create JSON schema with multiple parameters
     QJsonObject json;
     json["WrongName"] = QJsonArray();
+    // qDebug() << __func__ << json;
 
+    // If there is no name if is ok
+    ParameterList list2(this);
+    QVERIFY(list2.schemaFromJson(json));
+    QCOMPARE(list2.name(), "WrongName");
 
-    ParameterList list("", this);
+    // IF there is a name schemaFromJson() fails
+    ParameterList list("MyPage", this);
+    QCOMPARE(list.schemaFromJson(json), false);
+}
+
+void TestQtNoidAppParameterList::testSchemaFromJsonWithCorrectName()
+{
+    QJsonObject json;
+    json["CorrectName"] = QJsonArray();
+    // qDebug() << __func__ << json;
+
+    ParameterList list("CorrectName", this);
     QVERIFY(list.schemaFromJson(json));
+}
 
+void TestQtNoidAppParameterList::testSchemaFromDuplicatedJsonOverwriteAndNotFail()
+{
+    QJsonObject schemaDefinition;
+    schemaDefinition["min"] = 800.0;
+    schemaDefinition["max"] = 1100.0;
+    QJsonObject schemaItem;
+    schemaItem["Pressure"] = schemaDefinition;
+    QJsonArray schemaList;
+    schemaList.append(schemaItem);
+    QJsonObject schema;
+    schema["LIST"] = schemaList;
 
+    // qDebug() << schema;
 
+    ParameterList list(this);
+    QCOMPARE(list.schemaFromJson(schema), true);
+    QCOMPARE(list.schemaFromJson(schema), true);
+    QCOMPARE(list.count(), 1);
 
 }
+
 
 
 

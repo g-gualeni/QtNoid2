@@ -363,6 +363,33 @@ bool Parameter::canModify() const
     return true;
 }
 
+bool Parameter::isValid() const
+{
+    // Parameter must have a non-empty name
+    if (m_name.value().isEmpty()) {
+        return false;
+    }
+
+    // If min/max are set, they must be valid
+    if (m_min.value().isValid() && m_max.value().isValid()) {
+        if (compareVariants(m_min.value(), m_max.value(), 1)) {
+            return false;
+        }
+    }
+
+    // If value is set and range is defined, value must be within range
+    if (m_value.value().isValid()) {
+        if (m_min.value().isValid() && compareVariants(m_value.value(), m_min.value(), -1)) {
+            return false;
+        }
+        if (m_max.value().isValid() && compareVariants(m_value.value(), m_max.value(), 1)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 void Parameter::enforceRange()
 {

@@ -38,15 +38,17 @@ create and example
 - [ ] Add index parameter (remember test and schema)
 - [ ] Update documentation 
 
+Parameter::isValid() how can I say that the parameter is invalid? No Name, No Value?
+
 ### Todo ParameterList
 - [x] Rivedere la gestione della lista e degli eventi
 - [x] creare i test
 - [x] Manca il test per tutti i bindable
-- [ ] Add JSON serialization 
+- [x] Add JSON serialization 
 - [ ] Add JSON deserialization
 - [ ] Update documentation 
-aagiungere un parametro come JSON
-convertire un parametro in JSON? Serve?
+- [ ] aggiungere un parametro come JSON
+
 
 
 

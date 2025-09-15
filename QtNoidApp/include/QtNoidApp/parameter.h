@@ -84,6 +84,9 @@ public:
     bool readOnly() const;
     void setReadOnly(bool value);
     QBindable<bool> bindableReadOnly();
+
+    // Validation
+    bool isValid() const;
     
 
 signals:
