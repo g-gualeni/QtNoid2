@@ -20,8 +20,11 @@
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
-Serialization / deserialization
-create and example
+Esempio AppParameterListBenchmark
+
+
+
+
 
 
 ### Todo Parameter
@@ -53,6 +56,7 @@ Parameter::isValid() how can I say that the parameter is invalid? No Name, No Va
 
 
 ### Todo App -> Examples
+- [ ] Performance for Parameter and ParameterList using new and using JSON
 - [ ] Mettere un esempio in cui si definisce un oggetto parameterList e lo si usa
 per creare una pagina con alcuni oggetti dinamicamente, con valore, max, min descrizione, un pop-up
 quando si supera il valore massimo / minimo del range
