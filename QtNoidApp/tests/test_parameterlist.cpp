@@ -41,6 +41,8 @@ private slots:
     void testSchemaFromJsonWithWrongNameShouldFail();
     void testSchemaFromJsonWithCorrectName();
     void testSchemaFromDuplicatedJsonOverwriteAndNotFail();
+    void testConstructorWithSchemaAndValueJsonObjects();
+
 
 
 
@@ -585,13 +587,18 @@ void TestQtNoidAppParameterList::testSchemaFromDuplicatedJsonOverwriteAndNotFail
     QJsonObject schema;
     schema["LIST"] = schemaList;
 
-    // qDebug() << schema;
+    qDebug() << __func__ << schema;
 
     ParameterList list(this);
     QCOMPARE(list.schemaFromJson(schema), true);
     QCOMPARE(list.schemaFromJson(schema), true);
     QCOMPARE(list.count(), 1);
 
+}
+
+void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
+{
+    QVERIFY(0);
 }
 
 

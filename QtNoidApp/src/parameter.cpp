@@ -365,6 +365,10 @@ bool Parameter::canModify() const
 
 bool Parameter::isValid() const
 {
+    if (!m_value.value().isValid()) {
+        return false;
+    }
+
     // Parameter must have a non-empty name
     if (m_name.value().isEmpty()) {
         return false;

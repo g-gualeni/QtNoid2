@@ -3,6 +3,8 @@
 #include "QtNoidCommon/QtNoidCommon"
 #include "QtNoidApp/QtNoidApp"
 
+#include <QIntValidator>
+#include <QJsonArray>
 #include <QJsonObject>
 
 
@@ -12,6 +14,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setWindowTitle("App Parameter List Benchmark");
+
+    QValidator *validator = new QIntValidator(0, 1000000, this);
+    ui->txtIterationsNew->setValidator(validator);
+    ui->txtIterationsJson->setValidator(validator);
+    ui->txtParametersCountJson->setValidator(validator);
+
+
 }
 
 MainWindow::~MainWindow()
@@ -29,7 +38,35 @@ void MainWindow::on_cmdGONew_clicked()
                         QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
 
     ui->txtElapsedTimeNew->setText(txt);
+    ui->txtElapsedTimeNew->setEnabled(true);
 }
+void MainWindow::on_cmdGOJson_clicked()
+{
+    int iterations = ui->txtIterationsJson->text().toInt();
+    auto ns = benchmarkParameterUsingJSON(iterations);
+    auto singleRunTime = ns / iterations;
+    auto txt = QString("Total Time: %1, singleTime: %2")
+                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
+                        QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
+
+    ui->txtElapsedTimeJson->setText(txt);
+    ui->txtElapsedTimeJson->setEnabled(true);
+}
+void MainWindow::on_cmdGOJsonList_clicked()
+{
+    int parametersCount = ui->txtParametersCountJson->text().toInt();
+    auto ns = benchmarkParameterListUsingJSON(parametersCount);
+    auto singleRunTime = ns / parametersCount;
+    auto txt = QString("Total Time: %1, AverageParameterTime: %2")
+                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
+                        QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
+
+    ui->txtElapsedTimeJsonList->setText(txt);
+    ui->txtElapsedTimeJsonList->setEnabled(true);
+}
+
+
+
 
 quint64 MainWindow::benchmarkParameterUsingNewAndDelete(int iterations)
 {
@@ -51,18 +88,6 @@ quint64 MainWindow::benchmarkParameterUsingNewAndDelete(int iterations)
 
 
 
-void MainWindow::on_cmdGOJson_clicked()
-{
-    int iterations = ui->txtIterationsJson->text().toInt();
-    auto ns = benchmarkParameterUsingJSON(iterations);
-    auto singleRunTime = ns / iterations;
-    auto txt = QString("Total Time: %1, singleTime: %2")
-                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
-                        QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
-
-    ui->txtElapsedTimeJson->setText(txt);
-
-}
 quint64 MainWindow::benchmarkParameterUsingJSON(int iterations)
 {
     QElapsedTimer ET;
@@ -88,4 +113,51 @@ quint64 MainWindow::benchmarkParameterUsingJSON(int iterations)
 
     return ET.nsecsElapsed();
 }
+
+quint64 MainWindow::benchmarkParameterListUsingJSON(int paramtersCount)
+{
+
+    // Create schema JSON for the ParameterList
+    QJsonArray schemaArray;
+    QJsonArray valueArray;
+
+    for(int i = 0; i < paramtersCount; i++) {
+        // Create schema for each parameter
+        QJsonObject paramSchema;
+        QJsonObject schemaDetails;
+        schemaDetails["description"] = QString("Parameter %1 description").arg(i);
+        schemaDetails["unit"] = "units";
+        schemaDetails["readOnly"] = false;
+        schemaDetails["min"] = -1000.0;
+        schemaDetails["max"] = 1000.0;
+
+        QString paramName = QString("Param_%1").arg(i);
+        paramSchema[paramName] = schemaDetails;
+        schemaArray.append(paramSchema);
+
+        // Create value for each parameter
+        QJsonObject paramValue;
+        paramValue[paramName] = i * 10.0; // Some test value
+        valueArray.append(paramValue);
+    }
+
+    // Create the main schema and value objects
+    QJsonObject mainSchema;
+    mainSchema["BenchmarkParameterList"] = schemaArray;
+
+    QJsonObject mainValue;
+    mainValue["BenchmarkParameterList"] = valueArray;
+
+    QElapsedTimer ET;
+    ET.start();
+    // Create ParameterList using schema and values
+    QtNoid::App::ParameterList paramList(mainSchema, mainValue, this);
+
+    // Use the parameter list to prevent optimization
+    Q_UNUSED(paramList)
+
+    return ET.nsecsElapsed();
+}
+
+
 

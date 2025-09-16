@@ -31,6 +31,8 @@ public:
     explicit Parameter(const QString &name, const QString &description, const QVariant& initialValue, QObject *parent = nullptr);
     explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr);
 
+    bool isValid() const;
+
     // Serialization
     QJsonObject toJsonValue() const;
     QJsonObject toJsonSchema() const;
@@ -85,8 +87,6 @@ public:
     void setReadOnly(bool value);
     QBindable<bool> bindableReadOnly();
 
-    // Validation
-    bool isValid() const;
     
 
 signals:

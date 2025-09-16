@@ -78,6 +78,7 @@ include(CMakePackageConfigHelpers)
 set(PROJECT_DOCS
     README.md
     DEVELOPMENT.md
+    BUILD-INSTRUCTIONS.md
     LICENSE
     UserStories/QtNoid.odp
 	UserStories/QtNoidCommon_UserStories.odp

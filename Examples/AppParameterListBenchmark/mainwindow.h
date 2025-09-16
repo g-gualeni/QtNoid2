@@ -19,12 +19,13 @@ public:
 
 private slots:
     void on_cmdGONew_clicked();
-
     void on_cmdGOJson_clicked();
+    void on_cmdGOJsonList_clicked();
 
 private:
     quint64 benchmarkParameterUsingNewAndDelete(int iterations);
     quint64 benchmarkParameterUsingJSON(int iterations);
+    quint64 benchmarkParameterListUsingJSON(int paramtersCount);
 
 private:
     Ui::MainWindow *ui;

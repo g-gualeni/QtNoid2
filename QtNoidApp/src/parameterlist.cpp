@@ -124,9 +124,9 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
             auto newParam = new Parameter(schemaObj, {}, this);
-            if(newParam->isValid()) {
-                addParameter(newParam);
-            }
+            //no need to check if it is valid since it is just schema
+            // if(newParam->isValid()) {} -
+            addParameter(newParam);
         }
     }
     return true;

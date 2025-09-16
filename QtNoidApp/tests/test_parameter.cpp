@@ -75,6 +75,9 @@ private slots:
     void testParameterSchemaFromJsonPartialSchema();
     void testParameterSchemaFromJsonChangeRangeForceNewValue();
 
+    // isValid() method tests
+    void testParameterIsValid();
+
 private:
 
 };
@@ -1169,6 +1172,82 @@ void TestQtNoidAppParameter::testParameterSchemaFromJsonChangeRangeForceNewValue
     QCOMPARE(par2.min().toDouble(), -100.0);
     QCOMPARE(par2.max().toDouble(), 50.0);
     QCOMPARE(valueSpy2.count(), 1);
+}
+
+void TestQtNoidAppParameter::testParameterIsValid()
+{
+    // Test case 1: Parameter with empty name should be invalid
+    Parameter parEmptyName(this);
+    parEmptyName.setValue(100.0);
+    QCOMPARE(parEmptyName.isValid(), false);
+
+    // Test case 2: Parameter with name but no value should be invalid
+    Parameter parNameOnly("ValidName", this);
+    QCOMPARE(parNameOnly.isValid(), false);
+
+    // Test case 3: Parameter with valid name and value should be valid
+    Parameter parNameAndValue("ValidParam", 50.0, this);
+    QCOMPARE(parNameAndValue.isValid(), true);
+
+    // Test case 4: Parameter with valid range (min < max) should be valid
+    Parameter parValidRange("RangeParam", 50.0, this);
+    parValidRange.setMin(0.0);
+    parValidRange.setMax(100.0);
+    QCOMPARE(parValidRange.isValid(), true);
+
+    // Test case 5: Parameter with invalid range (min > max) should be invalid
+    Parameter parInvalidRange("InvalidRange", 50.0, this);
+    parInvalidRange.setMin(100.0);
+    parInvalidRange.setMax(0.0);
+    QCOMPARE(parInvalidRange.isValid(), false);
+
+    // Test case 6: Parameter with equal min and max should be valid
+    Parameter parEqualRange("EqualRange", 50.0, this);
+    parEqualRange.setMin(50.0);
+    parEqualRange.setMax(50.0);
+    QCOMPARE(parEqualRange.isValid(), true);
+
+    // Test case 7: Parameter with value within range should be valid
+    Parameter parValueInRange("ValueInRange", 25.0, this);
+    parValueInRange.setMin(0.0);
+    parValueInRange.setMax(100.0);
+    QCOMPARE(parValueInRange.isValid(), true);
+
+    // Test case 8: It should be not possible to set a value out of the range
+    // Or to set the range without clamping the value
+    Parameter parValueBelowMin("ValueBelowMin", -10.0, this);
+    parValueBelowMin.setMin(0.0);
+    parValueBelowMin.setMax(100.0);
+    QCOMPARE(parValueBelowMin.isValid(), true);
+
+    // Test case 9: Parameter with value exactly at minimum should be valid
+    Parameter parValueAtMin("ValueAtMin", 0.0, this);
+    parValueAtMin.setMin(0.0);
+    parValueAtMin.setMax(100.0);
+    QCOMPARE(parValueAtMin.isValid(), true);
+
+    // Test case 10: Parameter with value exactly at maximum should be valid
+    Parameter parValueAtMax("ValueAtMax", 100.0, this);
+    parValueAtMax.setMin(0.0);
+    parValueAtMax.setMax(100.0);
+    QCOMPARE(parValueAtMax.isValid(), true);
+
+    // Test case 11: Parameter with only min set and value above it should be valid
+    Parameter parMinOnly("MinOnly", 50.0, this);
+    parMinOnly.setMin(10.0);
+    QCOMPARE(parMinOnly.isValid(), true);
+
+    // Test case 12: Parameter with invalid value (empty QVariant) should be invalid
+    Parameter parInvalidValue("InvalidValue", 123, this);
+    parInvalidValue.setValue(QVariant());
+    QCOMPARE(parInvalidValue.isValid(), false);
+
+    // Test case 13: Test with string values and range
+    Parameter parStringRange("StringParam", "middle", this);
+    parStringRange.setMin("a");
+    parStringRange.setMax("z");
+    QCOMPARE(parStringRange.isValid(), true);
+
 }
 
 
