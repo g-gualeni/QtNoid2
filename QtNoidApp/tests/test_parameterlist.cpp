@@ -598,7 +598,77 @@ void TestQtNoidAppParameterList::testSchemaFromDuplicatedJsonOverwriteAndNotFail
 
 void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
 {
-    QVERIFY(0);
+    // Create schema JSON with two parameters
+    QJsonArray schemaArray;
+
+    // Temperature parameter schema
+    QJsonObject tempSchema;
+    tempSchema["description"] = "Current temperature";
+    tempSchema["unit"] = "°C";
+    tempSchema["readOnly"] = true;
+    tempSchema["min"] = -50.0;
+    tempSchema["max"] = 100.0;
+    QJsonObject tempSchemaWrapper;
+    tempSchemaWrapper["Temperature"] = tempSchema;
+    schemaArray.append(tempSchemaWrapper);
+
+    // Pressure parameter schema
+    QJsonObject pressSchema;
+    pressSchema["description"] = "Atmospheric pressure";
+    pressSchema["unit"] = "hPa";
+    pressSchema["readOnly"] = false;
+    pressSchema["min"] = 800.0;
+    pressSchema["max"] = 1100.0;
+    QJsonObject pressSchemaWrapper;
+    pressSchemaWrapper["Pressure"] = pressSchema;
+    schemaArray.append(pressSchemaWrapper);
+
+    QJsonObject schemaList;
+    schemaList["SensorConfiguration"] = schemaArray;
+
+    // Create values JSON
+    QJsonArray valuesArray;
+    QJsonObject tempValue;
+    tempValue["Temperature"] = 25.5;
+    valuesArray.append(tempValue);
+
+    QJsonObject pressValue;
+    pressValue["Pressure"] = 1013.25;
+    valuesArray.append(pressValue);
+
+    QJsonObject valueList;
+    valueList["SensorConfiguration"] = valuesArray;
+
+    // Test constructor
+    ParameterList list(schemaList, valueList, this);
+
+    // Verify the list was created correctly
+    QCOMPARE(list.name(), "SensorConfiguration");
+    QCOMPARE(list.count(), 2);
+
+    // Verify Temperature parameter
+    Parameter* tempParam = list.parameter("Temperature");
+    QVERIFY(tempParam != nullptr);
+    QCOMPARE(tempParam->value().toDouble(), 25.5);
+    QCOMPARE(tempParam->description(), "Current temperature");
+    QCOMPARE(tempParam->unit(), "°C");
+    QCOMPARE(tempParam->readOnly(), true);
+    QCOMPARE(tempParam->min().toDouble(), -50.0);
+    QCOMPARE(tempParam->max().toDouble(), 100.0);
+
+    // Verify Pressure parameter
+    Parameter* pressParam = list.parameter("Pressure");
+    QVERIFY(pressParam != nullptr);
+    QCOMPARE(pressParam->value().toDouble(), 1013.25);
+    QCOMPARE(pressParam->description(), "Atmospheric pressure");
+    QCOMPARE(pressParam->unit(), "hPa");
+    QCOMPARE(pressParam->readOnly(), false);
+    QCOMPARE(pressParam->min().toDouble(), 800.0);
+    QCOMPARE(pressParam->max().toDouble(), 1100.0);
+
+    // Verify JSON serialization matches input
+    QCOMPARE(list.toJsonSchema(), schemaList);
+    QCOMPARE(list.toJsonValues(), valueList);
 }
 
 
