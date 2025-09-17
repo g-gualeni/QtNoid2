@@ -3,35 +3,49 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
+
+
 namespace QtNoid {
 namespace App {
 
+QAtomicInt Parameter::s_nextUniqueId(1000);  // Inizializzazione thread-safe
+
+
+QAtomicInt Parameter::getNextUniqueId()
+{
+    if (s_nextUniqueId == INT_MAX) {
+        s_nextUniqueId = 0;  // Reset if overflow
+    }
+    return s_nextUniqueId++;
+}
+
+
 Parameter::Parameter(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), m_uniqueId(getNextUniqueId())
 {
     connectRangeChanged();
 }
 
 Parameter::Parameter(const QVariant &initialValue, QObject *parent)
-    : QObject(parent), m_value(initialValue)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_value(initialValue)
 {
     connectRangeChanged();
 }
 
 Parameter::Parameter(const QString &name, const QVariant &initialValue, QObject *parent)
-    : QObject(parent), m_name(name), m_value(initialValue)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_value(initialValue)
 {
     connectRangeChanged();
 }
 
 Parameter::Parameter(const QString &name, const QString &description, const QVariant &initialValue, QObject *parent)
-    : QObject(parent), m_name(name), m_description(description), m_value(initialValue)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_description(description), m_value(initialValue)
 {
     connectRangeChanged();
 }
 
 Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObject *parent)
-    : QObject(parent)
+    : QObject(parent), m_uniqueId(getNextUniqueId())
 {
     // Extract parameter name from schema (first key) or value (first key)
     QString paramName;
@@ -362,6 +376,7 @@ bool Parameter::canModify() const
     }
     return true;
 }
+
 
 bool Parameter::isValid() const
 {

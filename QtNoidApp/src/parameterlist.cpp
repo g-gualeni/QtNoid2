@@ -34,7 +34,7 @@ QJsonObject ParameterList::toJsonValues() const
     }
 
     QJsonArray parametersArray;
-    for (const Parameter* param : m_parameters) {
+    for (const Parameter* param : m_parametersByIndex) {
         if (param) {
             parametersArray.append(param->toJsonValue());
         }
@@ -52,7 +52,7 @@ QJsonObject ParameterList::toJsonSchema() const
     }
 
     QJsonArray parametersArray;
-    for (const Parameter* param : m_parameters) {
+    for (const Parameter* param : m_parametersByIndex) {
         if (param) {
             parametersArray.append(param->toJsonSchema());
         }
@@ -151,12 +151,16 @@ QBindable<QString> ParameterList::bindableName()
 
 int ParameterList::count() const
 {
-    return m_parameters.count();
+    return m_parametersByIndex.count();
 }
 
 bool ParameterList::addParameter(Parameter *parameter)
 {
-    if (!parameter || m_parameters.contains(parameter)) {
+    if (parameter == nullptr) {
+        return false;
+    }
+    int paramterId = parameter->uniqueId();
+    if (m_parametersByUniqueId.contains(parameter->uniqueId())) {
         return false;
     }
 
@@ -164,16 +168,18 @@ bool ParameterList::addParameter(Parameter *parameter)
     if(paramName.isEmpty()){
         return false;
     }
-    // Check if a parameter with the same name already exists
-    if (contains(paramName)) {
+    if (m_parametersByName.contains(paramName)) {
         return false;
     }
-
-    m_parameters.append(parameter);
+    // Update all indexes
+    m_parametersByUniqueId.insert(paramterId, parameter);
+    m_parametersByIndex.insert(m_nextParameterIndex, parameter);
+    m_nextParameterIndex++;
+    m_parametersByName.insert(paramName, parameter);
     connect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
 
     emit parameterAdded(parameter);
-    emit countChanged(m_parameters.count());
+    emit countChanged(m_parametersByIndex.count());
     return true;
 }
 
@@ -185,110 +191,139 @@ bool ParameterList::addParameter(const QJsonObject& schema, const QJsonObject& v
 
 void ParameterList::removeParameter(Parameter *parameter)
 {
-    if (!parameter || !m_parameters.contains(parameter)) {
+    if (parameter == nullptr) {
         return;
     }
-    
-    m_parameters.removeOne(parameter);
+    int paramterId = parameter->uniqueId();
+    if (m_parametersByUniqueId.remove(paramterId) == false) {
+        // ID not found
+        return;
+    }
+
+    auto paramName = parameter->name();
+    if(!paramName.isEmpty()){
+        m_parametersByName.remove(paramName);
+    }
+
+    int idx = m_parameterToIndex.value(parameter, -1);
+    if(idx > 0) {
+        m_parameterToIndex.remove(parameter);
+        m_parametersByIndex.remove(idx);
+    }
+
     disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
     
     emit parameterRemoved(parameter);
-    emit countChanged(m_parameters.count());
+    emit countChanged(m_parametersByIndex.count());
 }
 
 void ParameterList::removeParameter(const QString &name)
 {
-    Parameter *param = parameter(name);
-    if (param) {
-        removeParameter(param);
+    Parameter* parameter = m_parametersByName.value(name, nullptr);
+    if(parameter == nullptr) {
+        return;
     }
+
+    m_parametersByName.remove(name);
+    m_parametersByUniqueId.remove(parameter->uniqueId());
+    int idx = m_parameterToIndex.value(parameter, -1);
+    if(idx > 0) {
+        m_parameterToIndex.remove(parameter);
+        m_parametersByIndex.remove(idx);
+    }
+
+    disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+    emit parameterRemoved(parameter);
+    emit countChanged(m_parametersByIndex.count());
+
 }
 
 void ParameterList::clear()
 {
-    if(m_parameters.isEmpty())
-        return;
-
-    while (!m_parameters.isEmpty()) {
-        Parameter *param = m_parameters.takeLast();
+    for (auto it = m_parametersByUniqueId.begin(); it != m_parametersByUniqueId.end(); ++it) {
+        Parameter* param = it.value();
         disconnect(param, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
         emit parameterRemoved(param);
     }
+    m_parametersByUniqueId.clear();
+    m_parametersByIndex.clear();
+    m_parameterToIndex.clear();
+    m_parametersByName.clear();
+
     emit countChanged(0);
 }
 
 Parameter *ParameterList::parameter(int index) const
 {
-    if (index < 0 || index >= m_parameters.count()) {
-        return nullptr;
-    }
-    return m_parameters.at(index);
+    return m_parametersByIndex.value(index, nullptr);
 }
 
 Parameter *ParameterList::parameter(const QString &name) const
 {
-    for (Parameter *param : m_parameters) {
-        if (param && param->name() == name) {
-            return param;
-        }
-    }
-    return nullptr;
+    return m_parametersByName.value(name, nullptr);
 }
 
 int ParameterList::indexOf(Parameter *parameter) const
 {
-    return m_parameters.indexOf(parameter);
+    return m_parameterToIndex.value(parameter, -1);
 }
 
 int ParameterList::indexOf(const QString &name) const
 {
-    for (int i = 0; i < m_parameters.count(); ++i) {
-        if (m_parameters.at(i) && m_parameters.at(i)->name() == name) {
-            return i;
-        }
-    }
-    return -1;
+    Parameter *param = m_parametersByName.value(name, nullptr);
+
+    return m_parameterToIndex.value(param, -1);
 }
 
 bool ParameterList::contains(Parameter *parameter) const
 {
-    return m_parameters.contains(parameter);
+    return (m_parameterToIndex.value(parameter, -1)>0);
 }
 
 bool ParameterList::contains(const QString &name) const
 {
-    return parameter(name) != nullptr;
+    return (m_parametersByName.value(name, nullptr) != nullptr);
 }
 
 QList<Parameter *> ParameterList::parameters() const
 {
-    return m_parameters;
+    return m_parameterToIndex.keys();
 }
 
 QVariant ParameterList::value(const QString &name) const
 {
-    Parameter *param = parameter(name);
-    return param ? param->value() : QVariant();
+    Parameter *param = m_parametersByName.value(name, nullptr);
+    if(param == nullptr)
+        return {};
+
+    return param->value();
 }
 
 bool ParameterList::setValue(const QString &name, const QVariant &value)
 {
-    Parameter *param = parameter(name);
-    if (param) {
-        param->setValue(value);
-        return true;
+    Parameter *param = m_parametersByName.value(name, nullptr);
+    if(param == nullptr) {
+        return false;
     }
-    return false;
+
+    param->setValue(value);
+    return true;
 }
 
 void ParameterList::onParameterDestroyed(QObject *parameter)
 {
     Parameter *param = static_cast<Parameter*>(parameter);
-    if (m_parameters.contains(param)) {
-        m_parameters.removeOne(param);
-        emit parameterRemoved(param);
-        emit countChanged(m_parameters.count());
+    int idx = m_parameterToIndex.value(param, -1);
+    if(idx == -1) {
+        return;
     }
+    m_parameterToIndex.remove(param);
+    m_parametersByIndex.remove(idx);
+    m_parametersByName.remove(param->name());
+    m_parametersByUniqueId.remove(param->uniqueId());
+
+    emit parameterRemoved(param);
+    emit countChanged(m_parametersByIndex.count());
 }
 
 

@@ -67,7 +67,11 @@ private slots:
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_name, &ParameterList::nameChanged)
-    QList<Parameter*> m_parameters;
+    QHash<int, Parameter*> m_parametersByUniqueId;
+    QMap<int, Parameter*> m_parametersByIndex;
+    QHash<Parameter*, int> m_parameterToIndex; // Parameter -> sortIndex
+    QHash<QString, Parameter*> m_parametersByName;
+    int m_nextParameterIndex = 0;
 };
 
 } // namespace App

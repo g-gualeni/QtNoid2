@@ -31,6 +31,7 @@ public:
     explicit Parameter(const QString &name, const QString &description, const QVariant& initialValue, QObject *parent = nullptr);
     explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr);
 
+    int uniqueId() const { return m_uniqueId; }
     bool isValid() const;
 
     // Serialization
@@ -87,8 +88,6 @@ public:
     void setReadOnly(bool value);
     QBindable<bool> bindableReadOnly();
 
-    
-
 signals:
     void valueChanged(const QVariant &newValue);
     void minChanged(const QVariant &min);
@@ -116,6 +115,11 @@ private:
     void connectRangeChanged();
     bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
     bool canModify() const; // Modification control
+
+private:
+    static QAtomicInt s_nextUniqueId;
+    int m_uniqueId;
+    QAtomicInt getNextUniqueId();
 };
 
 } // namespace App

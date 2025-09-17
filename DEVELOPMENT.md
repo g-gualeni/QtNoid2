@@ -21,6 +21,8 @@
 
 ### In Progress
 Esempio AppParameterListBenchmark
+Finire rework di ParameterList per velocizzarlo con indici multipli
+Sistemare i test che non passano
 
 
 
@@ -37,7 +39,7 @@ Esempio AppParameterListBenchmark
 - [ ] Test performance using bindings and using signal/slots
 - [ ] Add tooltip parameter (remember test and schema)
 - [ ] Add the visible parameter (remember test and schema)
-- [ ] Add index parameter (remember test and schema)
+- [ ] Add test for UniqueID
 - [ ] Update documentation 
       
 
@@ -48,6 +50,20 @@ Esempio AppParameterListBenchmark
 - [x] Add JSON serialization 
 - [x] Add JSON deserialization
 - [x] Add Element as JSON Schema / Value
+
+- [ ] Add ID to Parameter so we have a unique key and review 
+  paramterList
+- [ ] check that if the paramter name change, so it should be
+  in the list or I cannot find it by name
+- [ ] Add a description property
+- [ ] Add a tooltip property
+
+- [ ] fare il test con addParameter(Parameter *parameter) in cui aggiungo
+lo stesso oggetto con 2 nomi diversi.
+
+- [ ] Fare il test per ParameterList::addParameter(nullptr)
+
+
 
 there is a flaw if I add a schema or a value list I clear the
 internal list. It should be smarter and avoid clear
