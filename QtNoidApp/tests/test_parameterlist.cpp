@@ -15,12 +15,15 @@ private slots:
     void cleanup();
     void testCreatingParameterList();
     void testParameterListName();
-    void testAddingParameters();
-    void testAddingDuplicatedParametersShouldFail();
-    void testAddingSameNameParametersShouldFail();
-    void testAddingNoNameParametersShouldFail();
-    void testAddParameterFromJsonObjects();
-    void testAddParameterFromBadJsonObjectsShouldFail();
+    void testAppendingParameters();
+    void testAppendingDuplicatedParametersShouldFail();
+    void testAppendingSameNameParametersShouldFail();
+    void testAppendingNoNameParametersShouldFail();
+    void testAppendingParameterFromJsonObjects();
+    void testAppendingParameterFromBadJsonObjectsShouldFail();
+    void testEmplaceWithNameDescriptionValue();
+    void testEmplaceWithDefaultParameters();
+    void testEmplaceWithJsonObjects();
 
     void testRemovingParameters();
     void testParameterListClear();
@@ -33,17 +36,17 @@ private slots:
     void testToJsonValuesNoName();
     void TestToJsonSchema();
     void TestToJsonSchemaNoName();
+    void testToJsonSchemaWithPresets();
     void testValuesFromJsonWithEmptyNameShouldTakeTheJsonName();
     void testValuesFromJsonWithWrongNameShouldFail();
     void testValuesFromJsonWithCorrectName();
-    void testPresetsShouldBeInTheSchema();
 
     void testSchemaFromJson();
     void testSchemaFromJsonWithWrongNameShouldFail();
     void testSchemaFromJsonWithCorrectName();
     void testSchemaFromDuplicatedJsonOverwriteAndNotFail();
     void testConstructorWithSchemaAndValueJsonObjects();
-    void testPresetsShouldBeCreatedFromSchema();
+
 
 
 
@@ -97,14 +100,14 @@ void TestQtNoidAppParameterList::testParameterListName()
     QCOMPARE(spy.count(), 0);
 }
 
-void TestQtNoidAppParameterList::testAddingParameters()
+void TestQtNoidAppParameterList::testAppendingParameters()
 {
     ParameterList list(this);
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
     
     auto param1 = new Parameter("Param1", 100.0, this);   
-    list.addParameter(param1);
+    list.append(param1);
     QCOMPARE(list.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
@@ -115,49 +118,49 @@ void TestQtNoidAppParameterList::testAddingParameters()
     QCOMPARE(list.contains("Param1"), true);
     
     auto param2 = new Parameter("Param2", 200.0, this);
-    list.addParameter(param2);
+    list.append(param2);
     QCOMPARE(list.count(), 2);
     QCOMPARE(countSpy.count(), 2);
     QCOMPARE(addedSpy.count(), 2);
     
     // Adding same parameter again should not change anything
-    list.addParameter(param1);
+    list.append(param1);
     QCOMPARE(list.count(), 2);
     QCOMPARE(countSpy.count(), 2);
     QCOMPARE(addedSpy.count(), 2);
     
     // Adding nullptr should not change anything
-    list.addParameter(nullptr);
+    list.append(nullptr);
     QCOMPARE(list.count(), 2);
 }
 
-void TestQtNoidAppParameterList::testAddingDuplicatedParametersShouldFail()
+void TestQtNoidAppParameterList::testAppendingDuplicatedParametersShouldFail()
 {
     ParameterList list(this);
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
     auto param1 = new Parameter("Param1", 100.0, this);
-    list.addParameter(param1);
+    list.append(param1);
 
-    bool res = list.addParameter(param1);
+    bool res = list.append(param1);
     QCOMPARE(res, false);
     QCOMPARE(list.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 }
 
-void TestQtNoidAppParameterList::testAddingSameNameParametersShouldFail()
+void TestQtNoidAppParameterList::testAppendingSameNameParametersShouldFail()
 {
     ParameterList list(this);
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
     auto param1 = new Parameter("Param1", 100.0, this);
-    list.addParameter(param1);
+    list.append(param1);
 
     auto sameNameParam1= new Parameter("Param1", 123, this);
-    bool res = list.addParameter(sameNameParam1);
+    bool res = list.append(sameNameParam1);
 
     // qDebug() << list.toJsonValues() << list.toJsonSchema();
 
@@ -167,15 +170,15 @@ void TestQtNoidAppParameterList::testAddingSameNameParametersShouldFail()
     QCOMPARE(addedSpy.count(), 1);
 }
 
-void TestQtNoidAppParameterList::testAddingNoNameParametersShouldFail()
+void TestQtNoidAppParameterList::testAppendingNoNameParametersShouldFail()
 {
     auto param = new Parameter(this);
     ParameterList list(this);
-    bool res = list.addParameter(param);
+    bool res = list.append(param);
     QCOMPARE(res, false);
 }
 
-void TestQtNoidAppParameterList::testAddParameterFromJsonObjects()
+void TestQtNoidAppParameterList::testAppendingParameterFromJsonObjects()
 {
     ParameterList list(this);
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
@@ -194,7 +197,7 @@ void TestQtNoidAppParameterList::testAddParameterFromJsonObjects()
     QJsonObject value;
     value["Temperature"] = 25.5;
 
-    bool result = list.addParameter(schema, value);
+    bool result = list.append(schema, value);
     QCOMPARE(result, true);
     QCOMPARE(list.count(), 1);
     QCOMPARE(countSpy.count(), 1);
@@ -205,13 +208,117 @@ void TestQtNoidAppParameterList::testAddParameterFromJsonObjects()
 
 }
 
-void TestQtNoidAppParameterList::testAddParameterFromBadJsonObjectsShouldFail()
+void TestQtNoidAppParameterList::testAppendingParameterFromBadJsonObjectsShouldFail()
 {
     ParameterList list(this);
     QJsonObject schema;
     QJsonObject value;
-    bool result = list.addParameter(schema, value);
+    bool result = list.append(schema, value);
     QCOMPARE(result, false);
+}
+
+void TestQtNoidAppParameterList::testEmplaceWithNameDescriptionValue()
+{
+    ParameterList list(this);
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
+
+    Parameter* param = list.emplace("Temperature", "Ambient temperature", 25.5);
+
+    QVERIFY(param != nullptr);
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(addedSpy.count(), 1);
+
+    QCOMPARE(param->name(), "Temperature");
+    QCOMPARE(param->description(), "Ambient temperature");
+    QCOMPARE(param->value().toDouble(), 25.5);
+
+    QCOMPARE(list.contains("Temperature"), true);
+    QCOMPARE(list.parameter("Temperature"), param);
+
+    Parameter* duplicate = list.emplace("Temperature", "Another temperature", 30.0);
+    QCOMPARE(duplicate, nullptr);
+    QCOMPARE(list.count(), 1);
+}
+
+void TestQtNoidAppParameterList::testEmplaceWithDefaultParameters()
+{
+    ParameterList list(this);
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
+
+    Parameter* param0 = list.emplace({});
+    QVERIFY(param0 == nullptr);
+
+    Parameter* param1 = list.emplace("Param1");
+    QVERIFY(param1 != nullptr);
+    QCOMPARE(param1->name(), "Param1");
+    QCOMPARE(param1->description(), QString());
+    QCOMPARE(param1->value(), QVariant());
+
+    Parameter* param2 = list.emplace("Param2", "A description");
+    QVERIFY(param2 != nullptr);
+    QCOMPARE(param2->name(), "Param2");
+    QCOMPARE(param2->description(), "A description");
+    QCOMPARE(param2->value(), QVariant());
+
+    Parameter* param3 = list.emplace("Param3", QString(), 42);
+    QVERIFY(param3 != nullptr);
+    QCOMPARE(param3->name(), "Param3");
+    QCOMPARE(param3->description(), QString());
+    QCOMPARE(param3->value().toInt(), 42);
+
+
+    QCOMPARE(list.count(), 3);
+    QCOMPARE(countSpy.count(), 3);
+    QCOMPARE(addedSpy.count(), 3);
+}
+
+void TestQtNoidAppParameterList::testEmplaceWithJsonObjects()
+{
+    ParameterList list(this);
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
+
+    QJsonObject schema;
+    QJsonObject schemaObject;
+    schemaObject["description"] = "Temperature sensor";
+    schemaObject["unit"] = "°C";
+    schemaObject["min"] = -50.0;
+    schemaObject["max"] = 100.0;
+    schemaObject["readOnly"] = true;
+    schema["Temperature"] = schemaObject;
+
+    QJsonObject value;
+    value["Temperature"] = 25.5;
+
+    Parameter* param = list.emplace(schema, value);
+
+    QVERIFY(param != nullptr);
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(addedSpy.count(), 1);
+
+    QCOMPARE(param->name(), "Temperature");
+    QCOMPARE(param->description(), "Temperature sensor");
+    QCOMPARE(param->unit(), "°C");
+    QCOMPARE(param->value().toDouble(), 25.5);
+    QCOMPARE(param->min().toDouble(), -50.0);
+    QCOMPARE(param->max().toDouble(), 100.0);
+    QCOMPARE(param->readOnly(), true);
+
+    QCOMPARE(list.contains("Temperature"), true);
+    QCOMPARE(list.parameter("Temperature"), param);
+
+    QCOMPARE(param->toJsonSchema(), schema);
+    QCOMPARE(param->toJsonValue(), value);
+
+    QJsonObject badSchema;
+    QJsonObject badValue;
+    Parameter* failedParam = list.emplace(badSchema, badValue);
+    QCOMPARE(failedParam, nullptr);
+    QCOMPARE(list.count(), 1);
 }
 
 void TestQtNoidAppParameterList::testRemovingParameters()
@@ -221,8 +328,8 @@ void TestQtNoidAppParameterList::testRemovingParameters()
     auto param1 = new Parameter("Param1", 100.0, this);
     auto param2 = new Parameter("Param2", 200.0, this);
     
-    list.addParameter(param1);
-    list.addParameter(param2);
+    list.append(param1);
+    list.append(param2);
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy removedSpy(&list, &ParameterList::parameterRemoved);
     
@@ -248,9 +355,9 @@ void TestQtNoidAppParameterList::testParameterListClear()
     auto param2 = new Parameter("Param2", 200.0, this);
     auto param3 = new Parameter("Param3", 300.0, this);
 
-    list.addParameter(param1);
-    list.addParameter(param2);
-    list.addParameter(param3);
+    list.append(param1);
+    list.append(param2);
+    list.append(param3);
     QCOMPARE(list.count(), 3);
 
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
@@ -283,9 +390,9 @@ void TestQtNoidAppParameterList::testParameterAccess()
     auto param2 = new Parameter("Pressure", 1013.25, this);
     auto param3 = new Parameter("Humidity", 60.0, this);
     
-    list.addParameter(param1);
-    list.addParameter(param2);
-    list.addParameter(param3);
+    list.append(param1);
+    list.append(param2);
+    list.append(param3);
     
     // Test access by index
     QCOMPARE(list.parameter(0), param1);
@@ -321,8 +428,8 @@ void TestQtNoidAppParameterList::testParameterListSetValueConvenienceMethods()
     auto param1 = new Parameter("Temperature", 25.0, this);
     auto param2 = new Parameter("Pressure", 1013.25, this);
     
-    list.addParameter(param1);
-    list.addParameter(param2);
+    list.append(param1);
+    list.append(param2);
     
     // Test value() method
     QCOMPARE(list.value("Temperature"), 25.0);
@@ -342,7 +449,7 @@ void TestQtNoidAppParameterList::testParameterDestruction()
     QSignalSpy removedSpy(&list, &ParameterList::parameterRemoved);
     
     auto param1 = new Parameter("Param1", 100.0);
-    list.addParameter(param1);
+    list.append(param1);
     countSpy.clear();
     removedSpy.clear();
     
@@ -391,9 +498,9 @@ void TestQtNoidAppParameterList::testToJsonValues()
     // Create a parameter list with parameters
     ParameterList page("Configuration", this);
     auto param1 = new Parameter("Temperature", 25.5, this);
-    page.addParameter(param1);
+    page.append(param1);
     auto param2 = new Parameter("Pressure", 1013.25, this);
-    page.addParameter(param2);
+    page.append(param2);
 
     QJsonObject json = page.toJsonValues();
     // qDebug() << __func__ << json;
@@ -412,7 +519,6 @@ void TestQtNoidAppParameterList::testToJsonValuesNoName()
     QJsonObject json = page.toJsonValues();
     // qDebug() << __func__ << json;
     QVERIFY(json.contains("PageName"));
-
 }
 
 void TestQtNoidAppParameterList::TestToJsonSchema()
@@ -422,14 +528,14 @@ void TestQtNoidAppParameterList::TestToJsonSchema()
     param1->setRange(0,100);
     param1->setUnit("°C");
     param1->setReadOnly(true);
-    page.addParameter(param1);
+    page.append(param1);
 
 
     auto param2 = new Parameter("Pressure", "pres" , 1013.25, this);
     param2->setRange(0,2000);
     param2->setUnit("hPa");
     param2->setReadOnly(true);
-    page.addParameter(param2);
+    page.append(param2);
 
     QJsonObject jsonSchema = page.toJsonSchema();
     // qDebug() << __func__ << jsonSchema;
@@ -448,6 +554,57 @@ void TestQtNoidAppParameterList::TestToJsonSchemaNoName()
     QJsonObject json = page.toJsonSchema();
     // qDebug() << __func__ << json;
     QVERIFY(json.contains("PageName"));
+}
+
+void TestQtNoidAppParameterList::testToJsonSchemaWithPresets()
+{
+    // Create a parameter with presets
+    Parameter param("Mode", "test", this);
+
+    // Add multiple presets
+    param.setPreset("Auto", "auto");
+    param.setPreset("Manual", "manual");
+    param.setPreset("Eco", "eco");
+    param.setPreset("Performance", "performance");
+
+    // Get the JSON schema
+    QJsonObject schema = param.toJsonSchema();
+
+    // Verify schema structure
+    QVERIFY(schema.contains("Mode"));
+    QJsonObject modeSchema = schema["Mode"].toObject();
+
+    // Verify presets are included
+    QVERIFY(modeSchema.contains("presets"));
+    const QJsonArray presetsArray = modeSchema["presets"].toArray();
+    QCOMPARE(presetsArray.size(), 4);
+
+    // Verify preset contents
+    QSet<QString> expectedPresetNames = {"Auto", "Manual", "Eco", "Performance"};
+    QSet<QString> actualPresetNames;
+
+    for (const QJsonValue& presetValue : presetsArray) {
+        const QJsonObject presetObj = presetValue.toObject();
+        QCOMPARE(presetObj.keys().size(), 1);
+
+        QStringList presetNameList = presetObj.keys();
+        QString presetName = presetNameList.first();
+        actualPresetNames.insert(presetName);
+
+        // Verify specific preset values
+        if (presetName == "Auto") {
+            QCOMPARE(presetObj["Auto"].toString(), "auto");
+        } else if (presetName == "Manual") {
+            QCOMPARE(presetObj["Manual"].toString(), "manual");
+        } else if (presetName == "Eco") {
+            QCOMPARE(presetObj["Eco"].toString(), "eco");
+        } else if (presetName == "Performance") {
+            QCOMPARE(presetObj["Performance"].toString(), "performance");
+        }
+    }
+
+    // Verify all expected presets are present
+    QCOMPARE(actualPresetNames, expectedPresetNames);
 }
 
 void TestQtNoidAppParameterList::testValuesFromJsonWithEmptyNameShouldTakeTheJsonName()
@@ -501,10 +658,6 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithCorrectName()
     QCOMPARE(list.valuesFromJson(json), true);
 }
 
-void TestQtNoidAppParameterList::testPresetsShouldBeInTheSchema()
-{
-    QVERIFY(0);
-}
 
 void TestQtNoidAppParameterList::testSchemaFromJson()
 {
@@ -681,10 +834,7 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     QCOMPARE(list.toJsonValues(), valueList);
 }
 
-void TestQtNoidAppParameterList::testPresetsShouldBeCreatedFromSchema()
-{
-    QVERIFY(0);
-}
+
 
 
 

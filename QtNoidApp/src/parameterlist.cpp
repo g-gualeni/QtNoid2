@@ -54,7 +54,7 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
             const QString& newParamName = schemaObj.constBegin().key();
             const QJsonObject valueObj = valueMap.value(newParamName, {});
             auto newParam = new Parameter(schemaObj, valueObj, this);
-            bool res = addParameter(newParam);
+            bool res = append(newParam);
             if(!res) delete newParam;
         }
     }
@@ -118,7 +118,7 @@ bool ParameterList::valuesFromJson(const QJsonObject &json)
             const auto valueVal = valueObj.constBegin().value().toVariant();
 
             auto newParam = new Parameter(valueName, valueVal, this);
-            auto res = addParameter(newParam);
+            auto res = append(newParam);
             if(!res) {
                 delete newParam;
             }
@@ -147,7 +147,7 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
             auto newParam = new Parameter(schemaObj, {}, this);
-            auto res = addParameter(newParam);
+            auto res = append(newParam);
             if(!res) {
                 delete newParam;
             }
@@ -178,7 +178,7 @@ int ParameterList::count() const
     return m_parametersByIndex.count();
 }
 
-bool ParameterList::addParameter(Parameter *parameter)
+bool ParameterList::append(Parameter *parameter)
 {
     if (parameter == nullptr) {
         return false;
@@ -198,26 +198,44 @@ bool ParameterList::addParameter(Parameter *parameter)
     }
 
     // Update all indexes
-    m_parametersByUniqueId.insert(paramterId, parameter);
-    m_parameterToIndex.insert(parameter, m_nextParameterIndex);
-    m_parametersByIndex.insert(m_nextParameterIndex, parameter);
-    m_nextParameterIndex++;
-    m_parametersByName.insert(paramName, parameter);
-    connect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
-
-    emit parameterAdded(parameter);
-    emit countChanged(m_parametersByIndex.count());
+    appendParameterAndUpdateIndexs(parameter);
     return true;
 }
 
-bool ParameterList::addParameter(const QJsonObject& schema, const QJsonObject& value)
+bool ParameterList::append(const QJsonObject& schema, const QJsonObject& value)
 {
     Parameter* parameter = new Parameter(schema, value, this);
-    auto res = addParameter(parameter);
+    auto res = append(parameter);
     if(!res) {
         delete parameter;
     }
     return res;
+}
+
+Parameter* ParameterList::emplace(const QString& name, const QString& description, const QVariant& initialValue)
+{
+    if(name.isEmpty()) {
+        return {};
+    }
+    if (m_parametersByName.contains(name)) {
+        return {};
+    }
+
+    Parameter* parameter = new Parameter(name, description, initialValue, this);
+    appendParameterAndUpdateIndexs(parameter);
+
+    return parameter;
+}
+
+Parameter* ParameterList::emplace(const QJsonObject& schema, const QJsonObject& value)
+{
+    Parameter* parameter = new Parameter(schema, value, this);
+    bool res = append(parameter);
+    if(!res) {
+        delete parameter;
+        return nullptr;
+    }
+    return parameter;
 }
 
 void ParameterList::removeParameter(Parameter *parameter)
@@ -358,6 +376,19 @@ void ParameterList::onParameterDestroyed(QObject *parameter)
     m_parametersByUniqueId.remove(param->uniqueId());
 
     emit parameterRemoved(param);
+    emit countChanged(m_parametersByIndex.count());
+}
+
+void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
+{
+    m_parametersByUniqueId.insert(parameter->uniqueId(), parameter);
+    m_parameterToIndex.insert(parameter, m_nextParameterIndex);
+    m_parametersByIndex.insert(m_nextParameterIndex, parameter);
+    m_nextParameterIndex++;
+    m_parametersByName.insert(parameter->name(), parameter);
+    connect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+
+    emit parameterAdded(parameter);
     emit countChanged(m_parametersByIndex.count());
 }
 

@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include "QtNoidCommon/QtNoidCommon"
 #include "QtNoidApp/QtNoidApp"
+#include "ui_mainwindow.h"
 
 #include <QIntValidator>
 #include <QJsonArray>
@@ -19,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->txtIterationsNew->setValidator(validator);
     ui->txtIterationsJson->setValidator(validator);
     ui->txtParametersCountJson->setValidator(validator);
-
 
 }
 
@@ -63,6 +63,20 @@ void MainWindow::on_cmdGOJsonList_clicked()
 
     ui->txtElapsedTimeJsonList->setText(txt);
     ui->txtElapsedTimeJsonList->setEnabled(true);
+}
+
+void MainWindow::on_cmdGOToJson_clicked()
+{
+    int parametersCount = ui->txtParametersCountToJson->text().toInt();
+    auto ns = benchmarkParameterListToJSON(parametersCount);
+    auto singleRunTime = ns / parametersCount;
+    auto txt = QString("Total Time: %1, AverageParameterTime: %2")
+                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
+                        QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
+
+    ui->txtElapsedTimeToJson->setText(txt);
+    ui->txtElapsedTimeToJson->setEnabled(true);
+
 }
 
 
@@ -116,11 +130,13 @@ quint64 MainWindow::benchmarkParameterUsingJSON(int iterations)
 
 quint64 MainWindow::benchmarkParameterListUsingJSON(int paramtersCount)
 {
+    QElapsedTimer ET;
 
     // Create schema JSON for the ParameterList
     QJsonArray schemaArray;
     QJsonArray valueArray;
 
+    ET.start();
     for(int i = 0; i < paramtersCount; i++) {
         // Create schema for each parameter
         QJsonObject paramSchema;
@@ -140,6 +156,8 @@ quint64 MainWindow::benchmarkParameterListUsingJSON(int paramtersCount)
         paramValue[paramName] = i * 10.0; // Some test value
         valueArray.append(paramValue);
     }
+    qDebug() << __func__ << "Creating schema and value array" << QtNoid::Common::Scale::nanoSecsUpToDays(ET.nsecsElapsed());
+
 
     // Create the main schema and value objects
     QJsonObject mainSchema;
@@ -148,7 +166,6 @@ quint64 MainWindow::benchmarkParameterListUsingJSON(int paramtersCount)
     QJsonObject mainValue;
     mainValue["BenchmarkParameterList"] = valueArray;
 
-    QElapsedTimer ET;
     ET.start();
     // Create ParameterList using schema and values
     QtNoid::App::ParameterList paramList(mainSchema, mainValue, this);
@@ -158,6 +175,26 @@ quint64 MainWindow::benchmarkParameterListUsingJSON(int paramtersCount)
 
     return ET.nsecsElapsed();
 }
+
+quint64 MainWindow::benchmarkParameterListToJSON(int paramtersCount)
+{
+    QElapsedTimer ET;
+    QtNoid::App::ParameterList paramList(this);
+
+    ET.start();
+    for(int ii=0; ii < paramtersCount; ii++) {
+        paramList.emplace(QString::number(ii), {}, ii);
+    }
+    qDebug() << __func__ << "Creating ParameterList" << QtNoid::Common::Scale::nanoSecsUpToDays(ET.nsecsElapsed());
+
+    ET.start();
+    QJsonObject values = paramList.toJsonValues();
+    // Use values to prevent optimization
+    Q_UNUSED(values)
+
+    return ET.nsecsElapsed();
+}
+
 
 
 

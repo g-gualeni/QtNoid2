@@ -1,5 +1,6 @@
 #include "QtNoidApp/parameter.h"
 #include <QDebug>
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
 
@@ -107,6 +108,18 @@ QJsonObject Parameter::toJsonSchema() const
     schema["readOnly"] = m_readOnly.value();
     schema["min"] = QJsonValue::fromVariant(m_min.value());
     schema["max"] = QJsonValue::fromVariant(m_max.value());
+
+
+    if(m_presets.value().count() > 0) {
+        QVariantMap presetsMap = m_presets;
+        QJsonArray presetsArray;
+        for (auto it = presetsMap.constBegin(); it != presetsMap.constEnd(); ++it) {
+            QJsonObject item;
+            item[it.key()] = it.value().toJsonValue();
+            presetsArray.append(item);
+        }
+        schema["presets"] = presetsArray;
+    }
 
     QString name = m_name;
     if(name.isEmpty()) {

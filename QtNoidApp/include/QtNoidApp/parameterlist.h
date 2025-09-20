@@ -35,8 +35,10 @@ public:
     
     // List management
     int count() const;
-    bool addParameter(Parameter* parameter);
-    bool addParameter(const QJsonObject& schema, const QJsonObject& value);
+    bool append(Parameter* parameter);
+    bool append(const QJsonObject& schema, const QJsonObject& value);
+    Parameter* emplace(const QString& name, const QString& description = QString(), const QVariant& initialValue = QVariant());
+    Parameter* emplace(const QJsonObject& schema, const QJsonObject& value);
     void removeParameter(Parameter* parameter);
     void removeParameter(const QString& name);
     void clear();
@@ -73,6 +75,7 @@ private:
     QHash<Parameter*, int> m_parameterToIndex; // Parameter -> sortIndex
     QHash<QString, Parameter*> m_parametersByName;
     int m_nextParameterIndex = 0;
+    void appendParameterAndUpdateIndexs(Parameter *parameter);
 };
 
 } // namespace App

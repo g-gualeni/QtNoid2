@@ -45,7 +45,7 @@
          </size>
         </property>
         <property name="text">
-         <string>10000</string>
+         <string>100000</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -108,7 +108,7 @@
          </size>
         </property>
         <property name="text">
-         <string>10000</string>
+         <string>100000</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -149,7 +149,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Creating Parameter List using JSON+SCHEMA (as reading from file)</string>
+       <string>Creating Parameter List using JSON+SCHEMA (as in application init + reading config from file)</string>
       </property>
      </widget>
     </item>
@@ -171,7 +171,7 @@
          </size>
         </property>
         <property name="text">
-         <string>10000</string>
+         <string>100000</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -194,6 +194,69 @@
       </item>
       <item>
        <widget class="QLineEdit" name="txtElapsedTimeJsonList">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_12">
+      <property name="font">
+       <font>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Creating JSON from Parameter List (as in saving app configuration to a file)</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Parameters</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="txtParametersCountToJson">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>100000</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cmdGOToJson">
+        <property name="text">
+         <string>GO!</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Elapsed Time:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="txtElapsedTimeToJson">
         <property name="enabled">
          <bool>false</bool>
         </property>

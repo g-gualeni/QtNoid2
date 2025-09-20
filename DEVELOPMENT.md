@@ -36,15 +36,15 @@ Sistemare i test che non passano
 - [x] Add JSON de serialization
 - [x] Parameter::isValid() how can I say that the parameter is invalid? 
       No Name, No Value, Bad Range and so on
-- [ ] Presets should be enter in the schema      
-- [ ] Presets should created from schema
+- [x] Presets should be enter in the schema      
+- [ ] Presets should be created from schema
 - [ ] Add test for UniqueID
 - [ ] uniqueId should not be saved to JSON
 - [ ] It should not be possible to create a invalid Paramter Object
       In teoria posso creare dei Parameter non validi in questo modo  
       --> Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, 
       QObject *parent)
-- [ ] Test di creazione di un oggetto partendo da JSON non corretti
+- [ ] Test Parameter constructor using bad JSON objects
 
 
 - [ ] Test performance using bindings and using signal/slots
@@ -61,7 +61,9 @@ Sistemare i test che non passano
 - [x] Add JSON serialization 
 - [x] Add JSON deserialization
 - [x] Add Element as JSON Schema / Value
-
+- [x] Emplace method to add new values 
+- [x] Rename addParameter to append to be consistent
+- [ ] Fare il test per ParameterList::append(nullptr)
 - [ ] check that if the paramter name change, so it should be
   in the list or I cannot find it by name
 
@@ -70,8 +72,6 @@ Sistemare i test che non passano
 
 - [ ] fare il test con addParameter(Parameter *parameter) in cui aggiungo
 lo stesso oggetto con 2 nomi diversi.
-
-- [ ] Fare il test per ParameterList::addParameter(nullptr)
 
 
 -> Gestione dei preset di tutta la pagina
