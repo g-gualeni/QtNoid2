@@ -40,6 +40,7 @@ public:
     void removeParameter(Parameter* parameter);
     void removeParameter(const QString& name);
     void clear();
+    bool isEmpty();
     
     // Access methods
     Parameter* parameter(int index) const;

@@ -22,8 +22,42 @@ ParameterList::ParameterList(const QString &name, QObject *parent)
 ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
     : QObject(parent)
 {
-    schemaFromJson(schemaList);
-    valuesFromJson(valueList);
+    // Scan schemaList and valueList to recreate the page
+    QString name = m_name.value();
+    if(name.isEmpty() && (schemaList.count() == 1)) {
+        // Get the unique JSON object and use it to set the name
+        name = schemaList.constBegin().key();
+        setName(name);
+    }
+    else if(name.isEmpty() && (valueList.count() == 1)) {
+        // Get the unique JSON object and use it to set the name
+        name = valueList.constBegin().key();
+        setName(name);
+    }
+
+    // Prepare a QHash map for values so I can get them fast from their name
+    QHash<QString, QJsonObject> valueMap;
+    const QJsonArray valueArray = valueList[name].toArray();
+    for (const QJsonValue& value : valueArray) {
+        if (value.isObject()) {
+            const QJsonObject valueObj = value.toObject();
+            auto valueName = valueObj.begin().key();
+            valueMap.insert(valueName, valueObj);
+        }
+    }
+
+    // Load parameters from schemaList and merge with values in valueList
+    const QJsonArray schemaArray = schemaList[name].toArray();
+    for (const QJsonValue& schema : schemaArray) {
+        if (schema.isObject()) {
+            const QJsonObject schemaObj = schema.toObject();
+            const QString& newParamName = schemaObj.constBegin().key();
+            const QJsonObject valueObj = valueMap.value(newParamName, {});
+            auto newParam = new Parameter(schemaObj, valueObj, this);
+            bool res = addParameter(newParam);
+            if(!res) delete newParam;
+        }
+    }
 }
 
 QJsonObject ParameterList::toJsonValues() const
@@ -34,11 +68,11 @@ QJsonObject ParameterList::toJsonValues() const
     }
 
     QJsonArray parametersArray;
-    for (const Parameter* param : m_parametersByIndex) {
-        if (param) {
-            parametersArray.append(param->toJsonValue());
-        }
+    for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
+        Parameter* param = it.value();
+        parametersArray.append(param->toJsonValue());
     }
+
     QJsonObject json;
     json[name] = parametersArray;
     return json;
@@ -52,10 +86,9 @@ QJsonObject ParameterList::toJsonSchema() const
     }
 
     QJsonArray parametersArray;
-    for (const Parameter* param : m_parametersByIndex) {
-        if (param) {
-            parametersArray.append(param->toJsonSchema());
-        }
+    for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
+        Parameter* param = it.value();
+        parametersArray.append(param->toJsonSchema());
     }
 
     QJsonObject schema;
@@ -76,20 +109,18 @@ bool ParameterList::valuesFromJson(const QJsonObject &json)
         return false;
     }
 
-    // Clear existing parameters
-    clear();
-
     // Load parameters
     const QJsonArray parametersArray = json[name].toArray();
     for (const QJsonValue& value : parametersArray) {
         if (value.isObject()) {
             const QJsonObject valueObj = value.toObject();
-            auto valueName = valueObj.begin().key();
-            auto valueVal = valueObj.begin().value().toVariant();
+            const auto valueName = valueObj.constBegin().key();
+            const auto valueVal = valueObj.constBegin().value().toVariant();
 
             auto newParam = new Parameter(valueName, valueVal, this);
-            if(newParam->isValid()) {
-                addParameter(newParam);
+            auto res = addParameter(newParam);
+            if(!res) {
+                delete newParam;
             }
         }
     }
@@ -110,23 +141,16 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
         return false;
     }
 
-    // Check if name already exists
-    if(contains(name)){
-        return false;
-    }
-
-    // Clear existing parameters
-    clear();
-
     // Load parameters from schema
     const QJsonArray schemaArray = json[name].toArray();
     for (const QJsonValue& schema : schemaArray) {
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
             auto newParam = new Parameter(schemaObj, {}, this);
-            //no need to check if it is valid since it is just schema
-            // if(newParam->isValid()) {} -
-            addParameter(newParam);
+            auto res = addParameter(newParam);
+            if(!res) {
+                delete newParam;
+            }
         }
     }
     return true;
@@ -168,11 +192,14 @@ bool ParameterList::addParameter(Parameter *parameter)
     if(paramName.isEmpty()){
         return false;
     }
+
     if (m_parametersByName.contains(paramName)) {
         return false;
     }
+
     // Update all indexes
     m_parametersByUniqueId.insert(paramterId, parameter);
+    m_parameterToIndex.insert(parameter, m_nextParameterIndex);
     m_parametersByIndex.insert(m_nextParameterIndex, parameter);
     m_nextParameterIndex++;
     m_parametersByName.insert(paramName, parameter);
@@ -186,7 +213,11 @@ bool ParameterList::addParameter(Parameter *parameter)
 bool ParameterList::addParameter(const QJsonObject& schema, const QJsonObject& value)
 {
     Parameter* parameter = new Parameter(schema, value, this);
-    return addParameter(parameter);
+    auto res = addParameter(parameter);
+    if(!res) {
+        delete parameter;
+    }
+    return res;
 }
 
 void ParameterList::removeParameter(Parameter *parameter)
@@ -200,13 +231,10 @@ void ParameterList::removeParameter(Parameter *parameter)
         return;
     }
 
-    auto paramName = parameter->name();
-    if(!paramName.isEmpty()){
-        m_parametersByName.remove(paramName);
-    }
+    m_parametersByName.remove(parameter->name());
 
     int idx = m_parameterToIndex.value(parameter, -1);
-    if(idx > 0) {
+    if(idx != -1) {
         m_parameterToIndex.remove(parameter);
         m_parametersByIndex.remove(idx);
     }
@@ -240,7 +268,9 @@ void ParameterList::removeParameter(const QString &name)
 
 void ParameterList::clear()
 {
-    for (auto it = m_parametersByUniqueId.begin(); it != m_parametersByUniqueId.end(); ++it) {
+    if(isEmpty()) return;
+
+    for (auto it = m_parametersByIndex.begin(); it != m_parametersByIndex.end(); ++it) {
         Parameter* param = it.value();
         disconnect(param, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
         emit parameterRemoved(param);
@@ -251,6 +281,11 @@ void ParameterList::clear()
     m_parametersByName.clear();
 
     emit countChanged(0);
+}
+
+bool ParameterList::isEmpty()
+{
+    return m_parametersByIndex.isEmpty();
 }
 
 Parameter *ParameterList::parameter(int index) const
@@ -277,12 +312,12 @@ int ParameterList::indexOf(const QString &name) const
 
 bool ParameterList::contains(Parameter *parameter) const
 {
-    return (m_parameterToIndex.value(parameter, -1)>0);
+    return m_parameterToIndex.contains(parameter);
 }
 
 bool ParameterList::contains(const QString &name) const
 {
-    return (m_parametersByName.value(name, nullptr) != nullptr);
+    return m_parametersByName.contains(name);
 }
 
 QList<Parameter *> ParameterList::parameters() const

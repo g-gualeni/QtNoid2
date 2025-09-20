@@ -36,12 +36,14 @@ private slots:
     void testValuesFromJsonWithEmptyNameShouldTakeTheJsonName();
     void testValuesFromJsonWithWrongNameShouldFail();
     void testValuesFromJsonWithCorrectName();
+    void testPresetsShouldBeInTheSchema();
 
     void testSchemaFromJson();
     void testSchemaFromJsonWithWrongNameShouldFail();
     void testSchemaFromJsonWithCorrectName();
     void testSchemaFromDuplicatedJsonOverwriteAndNotFail();
     void testConstructorWithSchemaAndValueJsonObjects();
+    void testPresetsShouldBeCreatedFromSchema();
 
 
 
@@ -106,6 +108,9 @@ void TestQtNoidAppParameterList::testAddingParameters()
     QCOMPARE(list.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
+
+    qDebug() << list.contains(param1);
+
     QCOMPARE(list.contains(param1), true);
     QCOMPARE(list.contains("Param1"), true);
     
@@ -496,6 +501,11 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithCorrectName()
     QCOMPARE(list.valuesFromJson(json), true);
 }
 
+void TestQtNoidAppParameterList::testPresetsShouldBeInTheSchema()
+{
+    QVERIFY(0);
+}
+
 void TestQtNoidAppParameterList::testSchemaFromJson()
 {
     // Create JSON schema with multiple parameters and use it
@@ -605,7 +615,7 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     QJsonObject tempSchema;
     tempSchema["description"] = "Current temperature";
     tempSchema["unit"] = "°C";
-    tempSchema["readOnly"] = true;
+    tempSchema["readOnly"] = true;  // it should be possible initialize a read only!
     tempSchema["min"] = -50.0;
     tempSchema["max"] = 100.0;
     QJsonObject tempSchemaWrapper;
@@ -669,6 +679,11 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     // Verify JSON serialization matches input
     QCOMPARE(list.toJsonSchema(), schemaList);
     QCOMPARE(list.toJsonValues(), valueList);
+}
+
+void TestQtNoidAppParameterList::testPresetsShouldBeCreatedFromSchema()
+{
+    QVERIFY(0);
 }
 
 

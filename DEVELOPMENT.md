@@ -35,12 +35,23 @@ Sistemare i test che non passano
 - [x] Add serialization to JSON
 - [x] Add JSON de serialization
 - [x] Parameter::isValid() how can I say that the parameter is invalid? 
-      No Name, No Value?
+      No Name, No Value, Bad Range and so on
+- [ ] Presets should be enter in the schema      
+- [ ] Presets should created from schema
+- [ ] Add test for UniqueID
+- [ ] uniqueId should not be saved to JSON
+- [ ] It should not be possible to create a invalid Paramter Object
+      In teoria posso creare dei Parameter non validi in questo modo  
+      --> Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, 
+      QObject *parent)
+- [ ] Test di creazione di un oggetto partendo da JSON non corretti
+
+
 - [ ] Test performance using bindings and using signal/slots
 - [ ] Add tooltip parameter (remember test and schema)
 - [ ] Add the visible parameter (remember test and schema)
-- [ ] Add test for UniqueID
 - [ ] Update documentation 
+
       
 
 ### Todo ParameterList
@@ -51,10 +62,9 @@ Sistemare i test che non passano
 - [x] Add JSON deserialization
 - [x] Add Element as JSON Schema / Value
 
-- [ ] Add ID to Parameter so we have a unique key and review 
-  paramterList
 - [ ] check that if the paramter name change, so it should be
   in the list or I cannot find it by name
+
 - [ ] Add a description property
 - [ ] Add a tooltip property
 
@@ -64,17 +74,19 @@ lo stesso oggetto con 2 nomi diversi.
 - [ ] Fare il test per ParameterList::addParameter(nullptr)
 
 
-
-there is a flaw if I add a schema or a value list I clear the
-internal list. It should be smarter and avoid clear
-
-The time to build a list is huge and the average keep growing
-with the size. I need a smarter way to collect paramters
-
+-> Gestione dei preset di tutta la pagina
+  Raccolgo i nomi e poi faccio una lista per applicarli?
+  
+- [ ] test the first element in the list has index 0.
+    --> come si comporta m_parametersByIndex.insert(m_nextParameterIndex++, parameter)?
+    il primo elemento è lo 0?
+   
 - [ ] Update documentation 
 
---- TEST COVERAGE
-Based on my analysis of the ParameterList header file (parameterlist.h:21-57) and the existing tests
+
+
+--- TEST COVERAGE REPORT
+  ParameterList header file (parameterlist.h:21-57) and the existing tests
   (test_parameterlist.cpp), here are the methods that are NOT covered by tests:
 
   Untested ParameterList Methods:
