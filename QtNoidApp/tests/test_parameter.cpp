@@ -1,3 +1,4 @@
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QSignalSpy>
 #include <QTest>
@@ -15,6 +16,9 @@ private slots:
     void testCreatingParameter();
     void testConstructorWithNameAndInitialValue();
     void testConstructorWithNameDescriptionAndInitialValue();
+
+    void testUniqueId();
+
     void testParameterValueChanged();
     void testParameterValueChangedNoEmitForSameValue();
     void testParameterMin();
@@ -28,6 +32,7 @@ private slots:
     void testParameterApplyPresetReadOnlyShouldBeIneffective();
 
     void testParameterRange();
+    void testParameterRangeShouldBeConsistent();
     void testParameterName();
     void testParameterDescription();
     void testParameterUnit();
@@ -45,38 +50,45 @@ private slots:
     void testBindableUnit();
     void testBindableReadOnly();
 
-    // JSON Schema tests
+    // ToJSON Schema tests
     void testParameterToJsonSchema();
     void testParameterToJsonSchemaWithNoNameAndEmptyParameters();
     void testParameterToJsonSchemaWithFullMetadataForFloatNumber();
     
-    // JSON tests
+    // ToJSON tests
     void testParameterToJson();
     void testParameterToJsonWithNoName();
     void testParameterToJsonWithDifferentValueTypes();
     
-    // JSON deserialization tests
+    // Value fromJSON deserialization tests
     void testParameterValueFromJson();
     void testParameterValueFromJsonWithEmptyName();
     void testParameterValueFromJsonWithNonExistentKey();
     void testParameterValueFromJsonWithDifferentTypes();
     
-    // JSON constructor tests
-    void testParameterConstructorFromJsonSchemaAndValue();
-    void testParameterConstructorFromJsonSchemaOnly();
-    void testParameterConstructorFromJsonValueOnly();
-    void testParameterConstructorFromJsonEmptyObjects();
-    
-    // JSON schema loading tests
+    // Schema fromJSON schema loading tests
     void testParameterSchemaFromJson();
     void testParameterSchemaFromJsonWithEmptyName();
     void testParameterSchemaFromJsonWithNonExistentKey();
     void testParameterSchemaFromJsonEmptyObject();
-    void testParameterSchemaFromJsonPartialSchema();
-    void testParameterSchemaFromJsonChangeRangeForceNewValue();
+    void testParameterSchemaFromJsonPartialSchemaShouldSetUnspecifiedParamtersToDefault();
+    void testParameterSchemaFromJsonChangeANewRangeShouldForceANewValue();
+
+    // fromJSON constructor tests
+    void testParameterConstructorFromJsonSchemaAndValue();
+    void testParameterConstructorFromJsonSchemaOnly();
+    void testParameterConstructorFromJsonValueOnly();
+    void testParameterConstructorFromJsonEmptyObjects();
 
     // isValid() method tests
     void testParameterIsValid();
+
+    // fromJson method tests
+    void testParameterFromJson();
+    void testParameterFromJsonShouldUpdateAnExistingParameter();
+    void testParameterFromJsonWithInvalidSchemaShouldLeaveTheParameterUnchanged();
+    void testParameterFromJsonWithInvalidValueShouldLeaveValueUnchanged();
+    void testParameterFromJsonWithIncompleteSchemaShouldOverrideExisitingSchema();
 
 private:
 
@@ -143,6 +155,19 @@ void TestQtNoidAppParameter::testConstructorWithNameDescriptionAndInitialValue()
     QCOMPARE(par.readOnly(), false);
     QCOMPARE(par.min(), QVariant());
     QCOMPARE(par.max(), QVariant());
+}
+
+void TestQtNoidAppParameter::testUniqueId()
+{
+    Parameter par(this);
+    // Paramter should have a uniqueID
+    QVERIFY(par.uniqueId() != 0);
+
+    Parameter newPar(par.toJsonSchema(), par.toJsonValue(), this);
+    QVERIFY(par.uniqueId() != newPar.uniqueId());
+
+    // Unique ID should be consecutive
+    QCOMPARE(par.uniqueId()+1, newPar.uniqueId());
 }
 
 void TestQtNoidAppParameter::testParameterValueChanged()
@@ -410,6 +435,30 @@ void TestQtNoidAppParameter::testParameterRange()
     // Apply a value and check it is clipped to the min
     par.setValue(-100);
     QCOMPARE(par.value(), -10);
+}
+
+void TestQtNoidAppParameter::testParameterRangeShouldBeConsistent()
+{
+    Parameter par("Par", 1000, this);
+
+    par.setRange(1200, 10);
+    auto range = par.range();
+
+    QVERIFY(par.isValid());
+
+    QCOMPARE(range.first, 10);
+    QCOMPARE(range.second, 1000);
+
+    // Setting Range using schema
+    QJsonObject schemaObj{{"min", 222}, {"max", 2}};
+    QJsonObject schema{{"Par", schemaObj}};
+    par.schemaFromJson(schema);
+    range = par.range();
+    QCOMPARE(range.first, 2);
+    QCOMPARE(range.second, 222);
+
+
+
 }
 
 void TestQtNoidAppParameter::testParameterName()
@@ -721,13 +770,15 @@ void TestQtNoidAppParameter::testBindableReadOnly()
 void TestQtNoidAppParameter::testParameterToJsonSchema()
 {
     Parameter par("Log File Size", "Parameter description", 50.0);
+
     par.setUnit("kB");
     par.setMin(0.0);
     par.setMax(100.0);
     par.setReadOnly(true);
+    par.setPreset("Small", 2.0);
+    par.setPreset("Large", 90.0);
     
     QJsonObject schema = par.toJsonSchema();
-    // qDebug() << schema;
     
     QVERIFY(schema.contains("Log File Size"));
     QJsonObject paramSchema = schema["Log File Size"].toObject();
@@ -737,6 +788,19 @@ void TestQtNoidAppParameter::testParameterToJsonSchema()
     QCOMPARE(paramSchema["readOnly"].toBool(), true);
     QCOMPARE(paramSchema["min"].toVariant(), QVariant(0.0));
     QCOMPARE(paramSchema["max"].toVariant(), QVariant(100.0));
+
+    QVERIFY(paramSchema.contains("presets"));
+    QJsonArray presetArray = paramSchema["presets"].toArray();
+    QHash<QString, QVariant> presetMap;
+
+    for(auto it = presetArray.constBegin(); it != presetArray.constEnd(); ++it) {
+        QJsonObject element = it->toObject();
+        QString key = element.begin().key();
+        QVariant value = element.begin().value().toVariant();
+        presetMap.emplace(key, value);
+    }
+    QCOMPARE(presetMap["Small"], QVariant(2.0));
+    QCOMPARE(presetMap["Large"], QVariant(90.0));
 }
 
 void TestQtNoidAppParameter::testParameterToJsonSchemaWithNoNameAndEmptyParameters()
@@ -754,6 +818,7 @@ void TestQtNoidAppParameter::testParameterToJsonSchemaWithNoNameAndEmptyParamete
     QCOMPARE(paramSchema["readOnly"].toBool(), false);
     QVERIFY(paramSchema["min"].isNull());
     QVERIFY(paramSchema["max"].isNull());
+    QCOMPARE(paramSchema.contains("presets"), false);
 }
 
 void TestQtNoidAppParameter::testParameterToJsonSchemaWithFullMetadataForFloatNumber()
@@ -763,6 +828,8 @@ void TestQtNoidAppParameter::testParameterToJsonSchemaWithFullMetadataForFloatNu
     par.setMin(-273.15);
     par.setMax(1000.0);
     par.setReadOnly(false);
+    par.setPreset("Small", 2.0);
+    par.setPreset("Large", 90.0);
     
     QJsonObject schema = par.toJsonSchema();
     
@@ -774,6 +841,7 @@ void TestQtNoidAppParameter::testParameterToJsonSchemaWithFullMetadataForFloatNu
     QCOMPARE(paramSchema["readOnly"].toBool(), false);
     QCOMPARE(paramSchema["min"].toVariant(), QVariant(-273.15));
     QCOMPARE(paramSchema["max"].toVariant(), QVariant(1000.0));
+    QCOMPARE(paramSchema.contains("presets"), true);
 }
 
 void TestQtNoidAppParameter::testParameterToJson()
@@ -1006,8 +1074,13 @@ void TestQtNoidAppParameter::testParameterSchemaFromJson()
     temperatureSchema["readOnly"] = true;
     temperatureSchema["min"] = -50.0;
     temperatureSchema["max"] = 100.0;
-    schema["Temperature"] = temperatureSchema;
     
+    QJsonObject preset1{{"Low", -40}};
+    QJsonObject preset2{{"High", 90}};
+    QJsonArray presetArray{preset1, preset2};
+    temperatureSchema["presets"] = presetArray;
+    schema["Temperature"] = temperatureSchema;
+
     // Apply schema to parameter
     bool result = par.schemaFromJson(schema);
     QCOMPARE(result, true);
@@ -1019,6 +1092,10 @@ void TestQtNoidAppParameter::testParameterSchemaFromJson()
     QCOMPARE(par.readOnly(), true);
     QCOMPARE(par.min().toDouble(), -50.0);
     QCOMPARE(par.max().toDouble(), 100.0);
+    auto presetList = par.presets();
+    QCOMPARE(presetList.count(), 2);
+    QCOMPARE(par.preset("Low"), -40);
+    QCOMPARE(par.preset("High"), 90);
     
     // Value should remain unchanged
     QCOMPARE(par.value().toDouble(), 20.0);
@@ -1097,7 +1174,7 @@ void TestQtNoidAppParameter::testParameterSchemaFromJsonEmptyObject()
     QCOMPARE(par.value().toDouble(), 25.0);
 }
 
-void TestQtNoidAppParameter::testParameterSchemaFromJsonPartialSchema()
+void TestQtNoidAppParameter::testParameterSchemaFromJsonPartialSchemaShouldSetUnspecifiedParamtersToDefault()
 {
     Parameter par("Voltage", 12.0);
     par.setDescription("Original description");
@@ -1120,13 +1197,13 @@ void TestQtNoidAppParameter::testParameterSchemaFromJsonPartialSchema()
     QCOMPARE(par.name(), "Voltage");
     QCOMPARE(par.description(), "Updated description");
     QCOMPARE(par.unit(), "V");
-    QCOMPARE(par.readOnly(), true);  // Should remain unchanged
+    QCOMPARE(par.readOnly(), false);  // Should get the default
     QVERIFY(!par.min().isValid());   // Should remain unchanged
     QVERIFY(!par.max().isValid());   // Should remain unchanged
     QCOMPARE(par.value().toDouble(), 12.0);  // Should remain unchanged
 }
 
-void TestQtNoidAppParameter::testParameterSchemaFromJsonChangeRangeForceNewValue()
+void TestQtNoidAppParameter::testParameterSchemaFromJsonChangeANewRangeShouldForceANewValue()
 {
     // Create parameter with value outside the new range we'll set
     Parameter par("Temperature", 150.0);  // Current value is 150
@@ -1247,6 +1324,147 @@ void TestQtNoidAppParameter::testParameterIsValid()
     parStringRange.setMin("a");
     parStringRange.setMax("z");
     QCOMPARE(parStringRange.isValid(), true);
+
+}
+
+void TestQtNoidAppParameter::testParameterFromJson()
+{
+    Parameter par(this);
+
+    // Create schema and value JSON objects
+    QJsonObject schema;
+    QJsonObject temperatureSchema;
+    temperatureSchema["description"] = "Test temperature parameter";
+    temperatureSchema["unit"] = "°C";
+    temperatureSchema["readOnly"] = false;
+    temperatureSchema["min"] = -50.0;
+    temperatureSchema["max"] = 150.0;
+    schema["Temperature"] = temperatureSchema;
+
+    QJsonObject value;
+    value["Temperature"] = 25.5;
+
+    // Test fromJson method
+    bool result = par.fromJson(schema, value);
+    QCOMPARE(result, true);
+
+    // Verify all properties were set correctly
+    QCOMPARE(par.name(), "Temperature");
+    QCOMPARE(par.description(), "Test temperature parameter");
+    QCOMPARE(par.unit(), "°C");
+    QCOMPARE(par.readOnly(), false);
+    QCOMPARE(par.min().toDouble(), -50.0);
+    QCOMPARE(par.max().toDouble(), 150.0);
+    QCOMPARE(par.value().toDouble(), 25.5);
+}
+
+void TestQtNoidAppParameter::testParameterFromJsonShouldUpdateAnExistingParameter()
+{
+    Parameter par("ExistingName", "This is an existing paramter", "InitialValue", this);
+    QCOMPARE(par.name(), "ExistingName");
+    QCOMPARE(par.value().toString(), "InitialValue");
+
+
+    // Create schema and value for a different parameter name
+    QJsonObject pressureSchema {
+        {"description", "Atmospheric pressure sensor"},
+        {"unit", "hPa"},
+        {"readOnly", false},
+        {"min", 900.0},
+        {"max", 1100.0},
+    };
+    QJsonObject preset1{{"High", 1050.0}};
+    QJsonObject preset2{{"Low", 950.0}};
+    QJsonArray presetArray{preset1, preset2};
+    pressureSchema["Presets"]= presetArray;
+    QJsonObject schema{{"Pressure", pressureSchema}};
+
+    QJsonObject value{{"Pressure", 1013.25}};
+
+    // Test fromJson method - should update name and all properties
+    bool result = par.fromJson(schema, value);
+    QCOMPARE(result, true);
+
+    // Verify properties were updated to match the JSON
+    QCOMPARE(par.name(), "Pressure");
+    QCOMPARE(par.description(), "Atmospheric pressure sensor");
+    QCOMPARE(par.unit(), "hPa");
+    QCOMPARE(par.readOnly(), false);
+    QCOMPARE(par.min().toDouble(), 900.0);
+    QCOMPARE(par.max().toDouble(), 1100.0);
+    QCOMPARE(par.value().toDouble(), 1013.25);
+}
+
+void TestQtNoidAppParameter::testParameterFromJsonWithInvalidSchemaShouldLeaveTheParameterUnchanged()
+{
+    Parameter par("TestParam", 100.0, this);
+
+    // Create invalid schema (empty object)
+    QJsonObject emptySchema;
+
+    QJsonObject value;
+    value["TestParam"] = 200.0;
+
+    // Test fromJson with invalid schema - should fail
+    bool result = par.fromJson(emptySchema, value);
+    QCOMPARE(result, false);
+
+    // Original properties should remain unchanged
+    QCOMPARE(par.name(), "TestParam");
+    QCOMPARE(par.value().toDouble(), 100.0);
+    QCOMPARE(par.description(), QString());
+    QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.readOnly(), false);
+}
+
+void TestQtNoidAppParameter::testParameterFromJsonWithInvalidValueShouldLeaveValueUnchanged()
+{
+    Parameter par("ExistingName", "This is an existing paramter", "InitialValue", this);
+
+    // Create valid schema
+    QJsonObject testSchema{{"unit", "°K"}};
+    QJsonObject schema{{"NewParameter", testSchema}};
+
+    // Create invalid value (non-matching key)
+    QJsonObject value;
+    value["DifferentParam"] = 150.0;
+
+    // Test fromJson with invalid value - should fail
+    bool result = par.fromJson(schema, value);
+    QCOMPARE(result, false);
+
+    // Schema should have been applied, but value should remain invalid
+    QCOMPARE(par.name(), "NewParameter");
+    QCOMPARE(par.unit(), "°K");
+    QVERIFY(par.isValid()); // Value should remain valid
+}
+
+void TestQtNoidAppParameter::testParameterFromJsonWithIncompleteSchemaShouldOverrideExisitingSchema()
+{
+    Parameter par("ExistingName", "This is an existing paramter", "InitialValue", this);
+    par.setRange("A", "Z");
+    par.setUnit("Char");
+    par.setPreset("Low", "A");
+    par.setPreset("High", "Z");
+
+    QJsonObject testSchema;
+    QJsonObject schema{{"NewParameter", testSchema}};
+    QJsonObject value{{"NewParameter", "NewlValue"}};
+
+    bool result = par.fromJson(schema, value);
+
+    qDebug() << par.toJsonSchema();
+    qDebug() << par.toJsonValue();
+
+    QCOMPARE(result, true);
+
+    // Original properties should remain unchanged
+    QCOMPARE(par.name(), "NewParameter");
+    QCOMPARE(par.value().toString(), "NewlValue");
+    QCOMPARE(par.description(), QString());
+    QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.range(), {});
+    QCOMPARE(par.presets(), {});
 
 }
 

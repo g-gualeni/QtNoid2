@@ -27,6 +27,11 @@ private slots:
     void on_cmdFromJson_clicked();
 
 private:
+    void setRangeFromText(const QString& val);
+    void setPresetsFromText(const QString& val);
+    void updateStatusBar(const QString& msg);
+
+private:
     Ui::MainWindow *ui;
 
     QtNoid::App::Parameter m_parameter;

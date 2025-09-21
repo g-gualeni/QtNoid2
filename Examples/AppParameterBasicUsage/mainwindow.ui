@@ -206,9 +206,9 @@ Summer 25.6</string>
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="txtErrors">
+     <widget class="QLabel" name="txtStatusBar">
       <property name="text">
-       <string>No Errors</string>
+       <string>Status Bar with last operation or error</string>
       </property>
      </widget>
     </item>

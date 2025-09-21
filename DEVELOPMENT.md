@@ -20,11 +20,6 @@
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
-Esempio AppParameterListBenchmark
-Finire rework di ParameterList per velocizzarlo con indici multipli
-Sistemare i test che non passano
-
-
 
 
 
@@ -37,15 +32,17 @@ Sistemare i test che non passano
 - [x] Parameter::isValid() how can I say that the parameter is invalid? 
       No Name, No Value, Bad Range and so on
 - [x] Presets should be enter in the schema      
-- [ ] Presets should be created from schema
-- [ ] Add test for UniqueID
-- [ ] uniqueId should not be saved to JSON
-- [ ] It should not be possible to create a invalid Paramter Object
+- [x] Presets should be created from schema
+
+- [x] Add test for UniqueID
+- [x] uniqueId should not be saved to JSON
+- [ ] Check the min and max are correct when we apply range
+- [ ] Check the min and max are correct when we apply schema
+    
       In teoria posso creare dei Parameter non validi in questo modo  
       --> Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, 
       QObject *parent)
 - [ ] Test Parameter constructor using bad JSON objects
-
 
 - [ ] Test performance using bindings and using signal/slots
 - [ ] Add tooltip parameter (remember test and schema)
@@ -63,6 +60,7 @@ Sistemare i test che non passano
 - [x] Add Element as JSON Schema / Value
 - [x] Emplace method to add new values 
 - [x] Rename addParameter to append to be consistent
+
 - [ ] Fare il test per ParameterList::append(nullptr)
 - [ ] check that if the paramter name change, so it should be
   in the list or I cannot find it by name
@@ -125,13 +123,11 @@ lo stesso oggetto con 2 nomi diversi.
   specific method overloads need coverage.
 
 
-### Todo App -> Examples
-- [ ] Performance for Parameter and ParameterList using new and using JSON
-- [ ] Mettere un esempio in cui si definisce un oggetto parameterList e lo si usa
-per creare una pagina con alcuni oggetti dinamicamente, con valore, max, min descrizione, un pop-up
-quando si supera il valore massimo / minimo del range
-Ad esempio impostare la dimensione massima di log file?
-Ad esempio una casella di testo + una spinbox con unità di misura max e min e pop-up 
+### Test AppParameterBasicUsage
+Application that shows all elements and some feature for Paramter
+
+### Test AppParameterListBenchmark
+- [x] Performance for Parameter and ParameterList using new and using JSON
 
 
 

@@ -37,6 +37,7 @@ public:
     // Serialization
     QJsonObject toJsonValue() const;
     QJsonObject toJsonSchema() const;
+    bool fromJson(const QJsonObject& schema, const QJsonObject& value);
     bool valueFromJson(const QJsonObject& json);
     bool schemaFromJson(const QJsonObject& json);
 

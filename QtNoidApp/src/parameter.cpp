@@ -131,6 +131,20 @@ QJsonObject Parameter::toJsonSchema() const
     return res;
 }
 
+bool Parameter::fromJson(const QJsonObject &schema, const QJsonObject &value)
+{
+    // Override the parameter name using schema
+    if(schema.isEmpty())    return false;
+    QString paramName = schema.begin().key();
+    if(paramName.isEmpty()) return false;
+    m_name = paramName;
+
+    if(!schemaFromJson(schema))         return false;
+    if(!valueFromJson(value))         return false;
+
+    return true;
+}
+
 bool Parameter::valueFromJson(const QJsonObject& json)
 {
     //
@@ -175,19 +189,48 @@ bool Parameter::schemaFromJson(const QJsonObject &json)
     if (schemaData.contains("description")) {
         setDescription(schemaData["description"].toString());
     }
+    else{
+        setDescription(QString());
+    }
     if (schemaData.contains("unit")) {
         setUnit(schemaData["unit"].toString());
+    }
+    else {
+        setUnit(QString());
     }
     if (schemaData.contains("readOnly")) {
         setReadOnly(schemaData["readOnly"].toBool());
     }
+    else {
+        setReadOnly(false);
+    }
     if (schemaData.contains("min")) {
         setMin(schemaData["min"].toVariant());
+    }
+    else {
+        setMin(QVariant());
     }
     if (schemaData.contains("max")) {
         setMax(schemaData["max"].toVariant());
     }
-    
+    else {
+        setMax(QVariant());
+    }
+    if (schemaData.contains("presets")) {
+        const QJsonArray presetList = schemaData["presets"].toArray();
+        for(auto it = presetList.constBegin(); it != presetList.constEnd(); ++it) {
+            if(it->isObject()) {
+                QJsonObject preset = it->toObject();
+                QString name = preset.begin().key();
+                QVariant val = preset.begin().value().toVariant();
+                setPreset(name, val);
+            }
+        }
+    }
+    else {
+        setPresets({});
+    }
+
     return true;
 }
 
