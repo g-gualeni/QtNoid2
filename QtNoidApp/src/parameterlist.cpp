@@ -117,7 +117,7 @@ bool ParameterList::valuesFromJson(const QJsonObject &json)
             const auto valueName = valueObj.constBegin().key();
             const auto valueVal = valueObj.constBegin().value().toVariant();
 
-            auto newParam = new Parameter(valueName, valueVal, this);
+            auto newParam = new Parameter(valueVal, valueName, this);
             auto res = append(newParam);
             if(!res) {
                 delete newParam;
@@ -173,6 +173,36 @@ QBindable<QString> ParameterList::bindableName()
     return QBindable<QString>(&m_name);
 }
 
+QString ParameterList::description() const
+{
+    return m_description.value();
+}
+
+void ParameterList::setDescription(const QString &value)
+{
+    m_description = value;
+}
+
+QBindable<QString> ParameterList::bindableDescription()
+{
+    return QBindable<QString>(&m_description);
+}
+
+QString ParameterList::tooltip() const
+{
+    return m_tooltip.value();
+}
+
+void ParameterList::setTooltip(const QString &value)
+{
+    m_tooltip = value;
+}
+
+QBindable<QString> ParameterList::bindableTooltip()
+{
+    return QBindable<QString>(&m_tooltip);
+}
+
 int ParameterList::count() const
 {
     return m_parametersByIndex.count();
@@ -221,7 +251,7 @@ Parameter* ParameterList::emplace(const QString& name, const QString& descriptio
         return {};
     }
 
-    Parameter* parameter = new Parameter(name, description, initialValue, this);
+    Parameter* parameter = new Parameter(initialValue, name, description, this);
     appendParameterAndUpdateIndexs(parameter);
 
     return parameter;
@@ -258,7 +288,8 @@ void ParameterList::removeParameter(Parameter *parameter)
     }
 
     disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
-    
+    disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
+
     emit parameterRemoved(parameter);
     emit countChanged(m_parametersByIndex.count());
 }
@@ -279,6 +310,7 @@ void ParameterList::removeParameter(const QString &name)
     }
 
     disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+    disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
     emit parameterRemoved(parameter);
     emit countChanged(m_parametersByIndex.count());
 
@@ -291,6 +323,7 @@ void ParameterList::clear()
     for (auto it = m_parametersByIndex.begin(); it != m_parametersByIndex.end(); ++it) {
         Parameter* param = it.value();
         disconnect(param, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+        disconnect(param, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
         emit parameterRemoved(param);
     }
     m_parametersByUniqueId.clear();
@@ -379,6 +412,28 @@ void ParameterList::onParameterDestroyed(QObject *parameter)
     emit countChanged(m_parametersByIndex.count());
 }
 
+void ParameterList::onParameterNameEdited(const QString &oldName, const QString &newName)
+{
+    Parameter* parameter = qobject_cast<Parameter*>(sender());
+    if (!parameter) {
+        return;
+    }
+    if(!m_parametersByName.contains(oldName)) {
+        emit parameterRenameError(parameter, oldName, newName);
+        return;
+    }
+
+    if(m_parametersByName.contains(newName)) {
+        emit parameterRenameError(parameter, oldName, newName);
+        return;
+    }
+
+    Parameter* currentParameter = m_parametersByName.take(oldName);
+    m_parametersByName.insert(newName, currentParameter);
+
+    return;
+}
+
 void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
 {
     m_parametersByUniqueId.insert(parameter->uniqueId(), parameter);
@@ -387,6 +442,8 @@ void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
     m_nextParameterIndex++;
     m_parametersByName.insert(parameter->name(), parameter);
     connect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+    connect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
+
 
     emit parameterAdded(parameter);
     emit countChanged(m_parametersByIndex.count());

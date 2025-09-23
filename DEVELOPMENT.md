@@ -33,18 +33,21 @@
       No Name, No Value, Bad Range and so on
 - [x] Presets should be enter in the schema      
 - [x] Presets should be created from schema
-
 - [x] Add test for UniqueID
 - [x] uniqueId should not be saved to JSON
 - [x] Check the min and max are correct when we apply range
 - [x] Check the min and max are correct when we apply schema
 - [x] Test Parameter constructor using bad JSON objects
 - [x] Add tooltip parameter (remember test and schema)
-
-- [ ] Add the visible parameter (remember test and schema)
-
+- [x] Add the visible parameter (remember test and schema)
+- [x] Parameter::nameEdited to track oldName and NewName
 - [ ] Test performance using bindings and using signal/slots
+
+- [ ] Change argument position for the constructor because they are confusing
 - [ ] Update documentation 
+
+
+
 
       
 
@@ -57,72 +60,51 @@
 - [x] Add Element as JSON Schema / Value
 - [x] Emplace method to add new values 
 - [x] Rename addParameter to append to be consistent
-
-- [ ] Fare il test per ParameterList::append(nullptr)
-- [ ] check that if the paramter name change, so it should be
-  in the list or I cannot find it by name
-
-- [ ] Add a description property
-- [ ] Add a tooltip property
-
-- [ ] fare il test con addParameter(Parameter *parameter) in cui aggiungo
-lo stesso oggetto con 2 nomi diversi.
+- [x] Fare il test per ParameterList::append(nullptr)
+- [x] check that if the paramter name change, the list automatically update
+- [x] test the first element in the list has index 0.
+- [x] addParameter(Parameter *parameter) should fail with same object renamed
+- [x] Add a description property
+- [x] Add a tooltip property
 
 
 -> Gestione dei preset di tutta la pagina
   Raccolgo i nomi e poi faccio una lista per applicarli?
-  
-- [ ] test the first element in the list has index 0.
-    --> come si comporta m_parametersByIndex.insert(m_nextParameterIndex++, parameter)?
-    il primo elemento è lo 0?
    
 - [ ] Update documentation 
 
 
 
 --- TEST COVERAGE REPORT
-  ParameterList header file (parameterlist.h:21-57) and the existing tests
-  (test_parameterlist.cpp), here are the methods that are NOT covered by tests:
-
   Untested ParameterList Methods:
-
-  Constructors:
-  1. ParameterList(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr) - The
-  constructor that takes both schema and value JSON objects is not directly tested (only individual schemaFromJson
-  and valuesFromJson are tested)
-
-  Access Methods:
-
-  2. indexOf(Parameter* parameter) - Line 47 in header - Only indexOf(const QString& name) is tested
-  3. contains(Parameter* parameter) - Line 49 in header - Only contains(const QString& name) is tested
+  2. indexOf(Parameter* parameter) - Line 47 in header - 
+      Only indexOf(const QString& name) is tested
+  3. contains(Parameter* parameter) - Line 49 in header - 
+      Only contains(const QString& name) is tested
 
   Overloaded Methods:
-
-  4. removeParameter(Parameter* parameter) - Line 40 in header - Only removeParameter(const QString& name) is tested
-  5. addParameter(const QJsonObject& schema, const QJsonObject& value) - Line 39 in header - This method is tested,
-  but could use more edge cases
+  4. removeParameter(Parameter* parameter) - Line 40 in header - 
+    Only removeParameter(const QString& name) is tested
+  5. addParameter(const QJsonObject& schema, const QJsonObject& value) - Line 39 in header - 
+  This method is tested, but could use more edge cases
 
   Signal Testing:
-
   While signals are tested in some cases, there could be more comprehensive signal testing for:
   - countChanged signal in edge cases
   - parameterAdded signal with different scenarios
   - parameterRemoved signal with different scenarios
 
   Edge Cases Not Fully Covered:
-
   6. Boundary testing for parameter(int index) with invalid indices (partially tested)
   7. Memory management scenarios when parameters are deleted externally
   8. JSON constructor edge cases with malformed or empty JSON objects
 
-  Summary: The main untested methods are the overloaded versions of indexOf, contains, removeParameter that take
-  Parameter* objects instead of strings, and the JSON constructor. The core functionality is well-tested, but these
-  specific method overloads need coverage.
 
 
 ### Test AppParameterBasicUsage
-Application that shows all elements and some feature for Paramter
-- [ ] Add tooltip parameter
+- [x] Application that shows all elements and some feature for Paramter
+- [x] Add tooltip parameter
+- [x] Add the visible parameter
 
 ### Test AppParameterListBenchmark
 - [x] Performance for Parameter and ParameterList using new and using JSON
@@ -131,39 +113,9 @@ Application that shows all elements and some feature for Paramter
 
 
 &nbsp;
-## Notes & Remarks
-
-### Recent Development Notes
-- ParameterList implementation completed
-- Parameter class now supports readOnly and Measure Unit features
-- Extended test coverage for Parameter class
-- QtNoid App Settings fullDialogGrab functionality is complete
-
-
-
-### Technical Decisions
- 
-
-### Known Issues
-
-
-## Backlog
-
-### Features
-
-
-### Bugs
-
-
-### Improvements
-
-
-
-
-
 ## Next Sprint Ideas
 
-Text2Json:
+### Text2Json:
 https://jsonstudio.io/convert/TEXT-to-JSON-Converter
 Create a library to convert structured text with a symple syntax to JSON
 And the opposite.
@@ -175,11 +127,10 @@ static bool jsonPlainTextIsNumber(const QString &val);
 static QStringList jsonPlainTextIsArray(const QString &val);
 static QStringList jsonPlainTextFromJson(const QJsonObject &json);
 
-
----> Recuperare il codice di Massive File Copy / Rename / Move
-Si trova in Deep
-Potrebbe essere: Copy Move Marshal
-
-Poi c'è anche la funzione che rinomina file in massa
---> Forse è solo in DeepImageLoader
+### Upgrade QtNoid::Common::File
+- [ ] Massive File Copy / Rename / Move could became Copy Move Marshal
+      Si trova in Deep  
+- [ ] Massive File Rename: replace token in huge file list above multipe folders
+      Forse è solo in DeepImageLoader
+    
 

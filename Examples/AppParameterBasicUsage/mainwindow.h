@@ -21,9 +21,7 @@ public:
 
 private slots:
     void on_cmdUpdate_clicked();
-
     void on_cmdToJson_clicked();
-
     void on_cmdFromJson_clicked();
 
 private:
@@ -35,5 +33,6 @@ private:
     Ui::MainWindow *ui;
 
     QtNoid::App::Parameter m_parameter;
+    void updateFromGui();
 };
 #endif // MAINWINDOW_H

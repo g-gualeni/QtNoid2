@@ -24,12 +24,13 @@ class QTNOIDAPP_EXPORT Parameter : public QObject
     Q_PROPERTY(QString unit READ unit WRITE setUnit BINDABLE bindableUnit NOTIFY unitChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
+    Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
 
 public:
     explicit Parameter(QObject *parent = nullptr);
     explicit Parameter(const QVariant& initialValue, QObject *parent = nullptr);
-    explicit Parameter(const QString &name, const QVariant& initialValue, QObject *parent = nullptr);
-    explicit Parameter(const QString &name, const QString &description, const QVariant& initialValue, QObject *parent = nullptr);
+    explicit Parameter(const QVariant& initialValue, const QString &name, QObject *parent = nullptr);
+    explicit Parameter(const QVariant& initialValue, const QString &name, const QString &description, QObject *parent = nullptr);
     explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr);
 
     int uniqueId() const { return m_uniqueId; }
@@ -95,17 +96,24 @@ public:
     void setReadOnly(bool value);
     QBindable<bool> bindableReadOnly();
 
+    // Visible
+    bool visible() const;
+    void setVisible(bool value);
+    QBindable<bool> bindableVisible();
+
 signals:
     void valueChanged(const QVariant &newValue);
     void minChanged(const QVariant &min);
     void maxChanged(const QVariant &max);
     void rangeChanged(const QVariant &min, const QVariant &max);
     void presetsChanged(const QVariantMap &presets);
-    void nameChanged(const QString &value);
+    void nameChanged(const QString &newName);
+    void nameEdited(const QString &oldName, const QString &newName);
     void descriptionChanged(const QString &value);
     void unitChanged(const QString &value);
     void tooltipChanged(const QString &value);
     void readOnlyChanged(bool value);
+    void visibleChanged(bool value);
     void writeAttemptedWhileReadOnly(const QString &parameterName);
 
 private:
@@ -118,6 +126,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_unit, &Parameter::unitChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_tooltip, &Parameter::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_readOnly, &Parameter::readOnlyChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_visible, &Parameter::visibleChanged)
 
     void enforceRange();
     QVariant clampValue(const QVariant &value) const;

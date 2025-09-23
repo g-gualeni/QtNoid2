@@ -17,6 +17,10 @@ MainWindow::MainWindow(QWidget *parent)
             [&](const QString& val){m_parameter.setDescription(val);
                 updateStatusBar("txtDescription::textChanged");
             });
+    connect(ui->txtTooltip, &QLineEdit::textChanged, this,
+            [&](const QString& val){m_parameter.setTooltip(val);
+                updateStatusBar("txtTooltip::textChanged");
+            });
     connect(ui->txtRange, &QLineEdit::textChanged, this,
             [&](const QString& val){setRangeFromText(val);
                 updateStatusBar("txtRange::textChanged");
@@ -33,6 +37,10 @@ MainWindow::MainWindow(QWidget *parent)
             [&](bool val){m_parameter.setReadOnly(val);
                 updateStatusBar("optReadOnly::clicked");
             });
+    connect(ui->optVisible, &QCheckBox::clicked, this,
+            [&](bool val){m_parameter.setVisible(val);
+                updateStatusBar("optVisible::clicked");
+            });
     connect(ui->txtPresets, &QPlainTextEdit::textChanged, this,
             [&](){setPresetsFromText(ui->txtPresets->toPlainText());
                 updateStatusBar("txtPresets::textChanged");
@@ -41,28 +49,45 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
             [&](QString val){
                 ui->txtName->setText((val));
+                updateStatusBar("QtNoid::App::Parameter::nameChanged");
             });
     connect(&m_parameter, &QtNoid::App::Parameter::descriptionChanged, this,
             [&](QString val){
                 ui->txtDescription->setText((val));
+                updateStatusBar("QtNoid::App::Parameter::descriptionChanged");
+            });
+    connect(&m_parameter, &QtNoid::App::Parameter::tooltipChanged, this,
+            [&](QString val){
+                ui->txtTooltip->setText((val));
+                updateStatusBar("QtNoid::App::Parameter::tooltipChanged");
             });
     connect(&m_parameter, &QtNoid::App::Parameter::rangeChanged, this,
             [&](const QVariant& min, const QVariant& max){
-        QString range = QString("%1 %2").arg(min.toString(), max.toString());
+                QString range = QString("%1 %2").arg(min.toString(), max.toString());
                 ui->txtRange->setText(range);
+                updateStatusBar("QtNoid::App::Parameter::rangeChanged");
             });
     connect(&m_parameter, &QtNoid::App::Parameter::unitChanged, this,
             [&](QString val){
                 ui->txtUnit->setText((val));
+                updateStatusBar("QtNoid::App::Parameter::unitChanged");
             });
     connect(&m_parameter, &QtNoid::App::Parameter::valueChanged, this,
             [&](QVariant val){
                 ui->txtValue->setValue(val.toDouble());
+                updateStatusBar("QtNoid::App::Parameter::valueChanged");
             });
     connect(&m_parameter, &QtNoid::App::Parameter::readOnlyChanged, this,
             [&](bool val){
                 ui->optReadOnly->setChecked(val);
+                updateStatusBar("QtNoid::App::Parameter::readOnlyChanged");
+            });    
+    connect(&m_parameter, &QtNoid::App::Parameter::visibleChanged, this,
+            [&](bool val){
+                ui->optVisible->setChecked(val);
+                updateStatusBar("QtNoid::App::Parameter::visibleChanged");
             });
+
     connect(&m_parameter, &QtNoid::App::Parameter::presetsChanged, this,
             [&](const QVariantMap &presets){
                 QString txt;
@@ -72,7 +97,10 @@ MainWindow::MainWindow(QWidget *parent)
                     txt += QString("%1 %2\n").arg(key, value.toString());
                 }
                 ui->txtPresets->setPlainText(txt);
+                updateStatusBar("QtNoid::App::Parameter::presetsChanged");
             });
+
+    updateFromGui();
 }
 
 MainWindow::~MainWindow()
@@ -80,15 +108,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_cmdUpdate_clicked()
+void MainWindow::updateFromGui()
 {
     m_parameter.setName(ui->txtName->text());
     m_parameter.setDescription(ui->txtDescription->text());
-    m_parameter.setReadOnly(ui->optReadOnly->checkState());
+    m_parameter.setTooltip(ui->txtTooltip->text());
     setRangeFromText(ui->txtRange->text());
-    m_parameter.setValue(ui->txtValue->value());
     m_parameter.setUnit(ui->txtUnit->text());
+    m_parameter.setValue(ui->txtValue->value());
+    m_parameter.setReadOnly(ui->optReadOnly->checkState());
+    m_parameter.setVisible(ui->optVisible->checkState());
     setPresetsFromText(ui->txtPresets->toPlainText());
+}
+
+void MainWindow::on_cmdUpdate_clicked()
+{
+    updateFromGui();
     updateStatusBar(__func__);
 }
 
@@ -153,6 +188,6 @@ void MainWindow::setPresetsFromText(const QString &val)
 
 void MainWindow::updateStatusBar(const QString &msg)
 {
-    ui->txtStatusBar->setText(msg);
+    ui->txtLog->appendPlainText(msg);
 }
 

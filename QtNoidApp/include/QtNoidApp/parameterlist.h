@@ -15,6 +15,8 @@ class QTNOIDAPP_EXPORT ParameterList : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
+    Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
+    Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(int count READ count NOTIFY countChanged FINAL)
 
 public:
@@ -32,6 +34,16 @@ public:
     QString name() const;
     void setName(const QString& value);
     QBindable<QString> bindableName();
+
+    // Description
+    QString description() const;
+    void setDescription(const QString& value);
+    QBindable<QString> bindableDescription();
+
+    // Tooltip
+    QString tooltip() const;
+    void setTooltip(const QString& value);
+    QBindable<QString> bindableTooltip();
     
     // List management
     int count() const;
@@ -61,15 +73,23 @@ public:
     
 signals:
     void nameChanged(const QString& value);
+    void descriptionChanged(const QString& value);
+    void tooltipChanged(const QString& value);
     void countChanged(int count);
     void parameterAdded(QtNoid::App::Parameter* parameter);
     void parameterRemoved(QtNoid::App::Parameter* parameter);
+    void parameterRenameError(QtNoid::App::Parameter* parameter, const QString& oldName, const QString& newName);
+
 
 private slots:
     void onParameterDestroyed(QObject* parameter);
+    void onParameterNameEdited(const QString& oldName, const QString& newName);
+
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_name, &ParameterList::nameChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_description, &ParameterList::descriptionChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_tooltip, &ParameterList::tooltipChanged)
     QHash<int, Parameter*> m_parametersByUniqueId;
     QMap<int, Parameter*> m_parametersByIndex;
     QHash<Parameter*, int> m_parameterToIndex; // Parameter -> sortIndex

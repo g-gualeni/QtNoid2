@@ -22,31 +22,31 @@ QAtomicInt Parameter::getNextUniqueId()
 
 
 Parameter::Parameter(QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId())
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
     connectRangeChanged();
 }
 
 Parameter::Parameter(const QVariant &initialValue, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId()), m_value(initialValue)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_value(initialValue), m_visible(true)
 {
     connectRangeChanged();
 }
 
-Parameter::Parameter(const QString &name, const QVariant &initialValue, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_value(initialValue)
+Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject *parent)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_value(initialValue), m_visible(true)
 {
     connectRangeChanged();
 }
 
-Parameter::Parameter(const QString &name, const QString &description, const QVariant &initialValue, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_description(description), m_value(initialValue)
+Parameter::Parameter(const QVariant &initialValue, const QString &name, const QString &description, QObject *parent)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_description(description), m_value(initialValue), m_visible(true)
 {
     connectRangeChanged();
 }
 
 Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId())
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
     // Extract parameter name from schema (first key) or value (first key)
     QString paramName;
@@ -74,6 +74,9 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
             }
             if (schemaData.contains("readOnly")) {
                 m_readOnly = schemaData["readOnly"].toBool();
+            }
+            if (schemaData.contains("visible")) {
+                m_visible = schemaData["visible"].toBool();
             }
             if (schemaData.contains("min")) {
                 m_min = schemaData["min"].toVariant();
@@ -110,6 +113,7 @@ QJsonObject Parameter::toJsonSchema() const
     schema["unit"] = m_unit.value();
     schema["tooltip"] = m_tooltip.value();
     schema["readOnly"] = m_readOnly.value();
+    schema["visible"] = m_visible.value();
     schema["min"] = QJsonValue::fromVariant(m_min.value());
     schema["max"] = QJsonValue::fromVariant(m_max.value());
 
@@ -213,6 +217,12 @@ bool Parameter::schemaFromJson(const QJsonObject &json)
     }
     else {
         setReadOnly(false);
+    }
+    if (schemaData.contains("visible")) {
+        setVisible(schemaData["visible"].toBool());
+    }
+    else {
+        setVisible(true);
     }
     QVariant min;
     QVariant max;
@@ -394,9 +404,13 @@ QString Parameter::name() const
 {
     return m_name.value();
 }
-void Parameter::setName(const QString &value)
+void Parameter::setName(const QString &newName)
 {
-    m_name = value;
+    QString oldName = m_name;
+    if(oldName != newName) {
+        m_name = newName;
+        emit nameEdited(oldName, newName);
+    }
 }
 QBindable<QString> Parameter::bindableName()
 {
@@ -457,6 +471,19 @@ void Parameter::setReadOnly(bool value)
 QBindable<bool> Parameter::bindableReadOnly()
 {
     return QBindable<bool>(&m_readOnly);
+}
+
+bool Parameter::visible() const
+{
+    return m_visible.value();
+}
+void Parameter::setVisible(bool value)
+{
+    m_visible = value;
+}
+QBindable<bool> Parameter::bindableVisible()
+{
+    return QBindable<bool>(&m_visible);
 }
 
 bool Parameter::canModify() const

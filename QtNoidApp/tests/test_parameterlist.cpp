@@ -21,6 +21,7 @@ private slots:
     void testAppendingNoNameParametersShouldFail();
     void testAppendingParameterFromJsonObjects();
     void testAppendingParameterFromBadJsonObjectsShouldFail();
+    void testAppendingParameterFirstElementInTheListShouldBeNumber0();
     void testEmplaceWithNameDescriptionValue();
     void testEmplaceWithDefaultParameters();
     void testEmplaceWithJsonObjects();
@@ -31,6 +32,10 @@ private slots:
     void testParameterListSetValueConvenienceMethods();
     void testParameterDestruction();
     void testBindableNameProperty();
+    void testParameterListDescription();
+    void testBindableDescriptionProperty();
+    void testParameterListTooltip();
+    void testBindableTooltipProperty();
 
     void testToJsonValues();
     void testToJsonValuesNoName();
@@ -45,9 +50,10 @@ private slots:
     void testSchemaFromJsonWithWrongNameShouldFail();
     void testSchemaFromJsonWithCorrectName();
     void testSchemaFromDuplicatedJsonOverwriteAndNotFail();
+
     void testConstructorWithSchemaAndValueJsonObjects();
 
-
+    void testChangingParamterNameShouldUpdateTheParameterList();
 
 
 
@@ -76,10 +82,14 @@ void TestQtNoidAppParameterList::testCreatingParameterList()
     ParameterList list(this);
     QCOMPARE(list.count(), 0);
     QCOMPARE(list.name(), QString());
-    
+    QCOMPARE(list.description(), QString());
+    QCOMPARE(list.tooltip(), QString());
+
     ParameterList namedList("Application Configuration", this);
     QCOMPARE(namedList.count(), 0);
     QCOMPARE(namedList.name(), "Application Configuration");
+    QCOMPARE(namedList.description(), QString());
+    QCOMPARE(namedList.tooltip(), QString());
 }
 
 void TestQtNoidAppParameterList::testParameterListName()
@@ -106,7 +116,7 @@ void TestQtNoidAppParameterList::testAppendingParameters()
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
     
-    auto param1 = new Parameter("Param1", 100.0, this);   
+    auto param1 = new Parameter(100.0, "Param1", this);
     list.append(param1);
     QCOMPARE(list.count(), 1);
     QCOMPARE(countSpy.count(), 1);
@@ -117,7 +127,7 @@ void TestQtNoidAppParameterList::testAppendingParameters()
     QCOMPARE(list.contains(param1), true);
     QCOMPARE(list.contains("Param1"), true);
     
-    auto param2 = new Parameter("Param2", 200.0, this);
+    auto param2 = new Parameter(200.0, "Param2", this);
     list.append(param2);
     QCOMPARE(list.count(), 2);
     QCOMPARE(countSpy.count(), 2);
@@ -140,7 +150,7 @@ void TestQtNoidAppParameterList::testAppendingDuplicatedParametersShouldFail()
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
-    auto param1 = new Parameter("Param1", 100.0, this);
+    auto param1 = new Parameter(100.0, "Param1", this);
     list.append(param1);
 
     bool res = list.append(param1);
@@ -156,10 +166,10 @@ void TestQtNoidAppParameterList::testAppendingSameNameParametersShouldFail()
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
-    auto param1 = new Parameter("Param1", 100.0, this);
+    auto param1 = new Parameter(100.0, "Param1", this);
     list.append(param1);
 
-    auto sameNameParam1= new Parameter("Param1", 123, this);
+    auto sameNameParam1= new Parameter(123, "Param1", this);
     bool res = list.append(sameNameParam1);
 
     // qDebug() << list.toJsonValues() << list.toJsonSchema();
@@ -168,6 +178,15 @@ void TestQtNoidAppParameterList::testAppendingSameNameParametersShouldFail()
     QCOMPARE(list.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
+
+    // Try changing paramter1 name should fail anyway
+    param1->setName("Param1-Rename");
+    res = list.append(param1);
+    QCOMPARE(res, false);
+    QCOMPARE(list.count(), 1);
+
+
+
 }
 
 void TestQtNoidAppParameterList::testAppendingNoNameParametersShouldFail()
@@ -193,6 +212,7 @@ void TestQtNoidAppParameterList::testAppendingParameterFromJsonObjects()
     tempSchema["min"] = -50.0;
     tempSchema["max"] = 100.0;
     tempSchema["readOnly"] = true;
+    tempSchema["visible"] = true;
     schema["Temperature"] = tempSchema;
 
     QJsonObject value;
@@ -216,6 +236,14 @@ void TestQtNoidAppParameterList::testAppendingParameterFromBadJsonObjectsShouldF
     QJsonObject value;
     bool result = list.append(schema, value);
     QCOMPARE(result, false);
+}
+
+void TestQtNoidAppParameterList::testAppendingParameterFirstElementInTheListShouldBeNumber0()
+{
+    ParameterList list(this);
+    auto param0 = new Parameter(100.0, "Param0", this);
+    list.append(param0);
+    QCOMPARE(list.parameter(0), param0);
 }
 
 void TestQtNoidAppParameterList::testEmplaceWithNameDescriptionValue()
@@ -290,6 +318,7 @@ void TestQtNoidAppParameterList::testEmplaceWithJsonObjects()
     schemaObject["min"] = -50.0;
     schemaObject["max"] = 100.0;
     schemaObject["readOnly"] = true;
+    schemaObject["visible"] = true;
     schema["Temperature"] = schemaObject;
 
     QJsonObject value;
@@ -327,8 +356,8 @@ void TestQtNoidAppParameterList::testRemovingParameters()
 {
     ParameterList list(this);
     
-    auto param1 = new Parameter("Param1", 100.0, this);
-    auto param2 = new Parameter("Param2", 200.0, this);
+    auto param1 = new Parameter(100.0, "Param1", this);
+    auto param2 = new Parameter(200.0, "Param2", this);
     
     list.append(param1);
     list.append(param2);
@@ -353,9 +382,9 @@ void TestQtNoidAppParameterList::testParameterListClear()
 {
     ParameterList list(this);
 
-    auto param1 = new Parameter("Param1", 100.0, this);
-    auto param2 = new Parameter("Param2", 200.0, this);
-    auto param3 = new Parameter("Param3", 300.0, this);
+    auto param1 = new Parameter(100.0, "Param1", this);
+    auto param2 = new Parameter(200.0, "Param2", this);
+    auto param3 = new Parameter(300.0, "Param3", this);
 
     list.append(param1);
     list.append(param2);
@@ -388,9 +417,9 @@ void TestQtNoidAppParameterList::testParameterListClear()
 void TestQtNoidAppParameterList::testParameterAccess()
 {
     ParameterList list(this);
-    auto param1 = new Parameter("Temperature", 25.0, this);
-    auto param2 = new Parameter("Pressure", 1013.25, this);
-    auto param3 = new Parameter("Humidity", 60.0, this);
+    auto param1 = new Parameter(25.0, "Temperature", this);
+    auto param2 = new Parameter(1013.25, "Pressure", this);
+    auto param3 = new Parameter( 60.0, "Humidity",this);
     
     list.append(param1);
     list.append(param2);
@@ -427,8 +456,8 @@ void TestQtNoidAppParameterList::testParameterAccess()
 void TestQtNoidAppParameterList::testParameterListSetValueConvenienceMethods()
 {
     ParameterList list(this);
-    auto param1 = new Parameter("Temperature", 25.0, this);
-    auto param2 = new Parameter("Pressure", 1013.25, this);
+    auto param1 = new Parameter(25.0, "Temperature", this);
+    auto param2 = new Parameter(25.0, "Pressure", this);
     
     list.append(param1);
     list.append(param2);
@@ -450,7 +479,7 @@ void TestQtNoidAppParameterList::testParameterDestruction()
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy removedSpy(&list, &ParameterList::parameterRemoved);
     
-    auto param1 = new Parameter("Param1", 100.0);
+    auto param1 = new Parameter(100.0, "Param1", this);
     list.append(param1);
     countSpy.clear();
     removedSpy.clear();
@@ -674,6 +703,7 @@ void TestQtNoidAppParameterList::testSchemaFromJson()
     tempSchema["tooltip"] = "Temperature of the sensor ";
     tempSchema["unit"] = "°C";
     tempSchema["readOnly"] = true;
+    tempSchema["visible"] = true;
     tempSchema["min"] = -50.0;
     tempSchema["max"] = 100.0;
 
@@ -687,6 +717,7 @@ void TestQtNoidAppParameterList::testSchemaFromJson()
     pressSchema["tooltip"] = "This is the atmospheric pressure";
     pressSchema["unit"] = "hPa";
     pressSchema["readOnly"] = false;
+    pressSchema["visible"] = true;
     pressSchema["min"] = 800.0;
     pressSchema["max"] = 1100.0;
     QJsonObject expectedPress;
@@ -774,6 +805,7 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     tempSchema["tooltip"] = "Temperature of the sensor ";
     tempSchema["unit"] = "°C";
     tempSchema["readOnly"] = true;  // it should be possible initialize a read only!
+    tempSchema["visible"] = true;
     tempSchema["min"] = -50.0;
     tempSchema["max"] = 100.0;
     QJsonObject tempSchemaWrapper;
@@ -786,6 +818,7 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     pressSchema["tooltip"] = "This is the atmospheric pressure";
     pressSchema["unit"] = "hPa";
     pressSchema["readOnly"] = false;
+    pressSchema["visible"] = true;
     pressSchema["min"] = 800.0;
     pressSchema["max"] = 1100.0;
     QJsonObject pressSchemaWrapper;
@@ -838,6 +871,152 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     // Verify JSON serialization matches input
     QCOMPARE(list.toJsonSchema(), schemaList);
     QCOMPARE(list.toJsonValues(), valueList);
+}
+
+void TestQtNoidAppParameterList::testChangingParamterNameShouldUpdateTheParameterList()
+{
+    Parameter par("OriginalName", 123, this);
+    QCOMPARE(par.name(), "OriginalName");
+    ParameterList list;
+    list.append(&par);
+    QVERIFY(list.contains("OriginalName"));
+
+    par.setName("NewName");
+    QVERIFY(list.contains("NewName"));
+}
+
+void TestQtNoidAppParameterList::testParameterListDescription()
+{
+    ParameterList list(this);
+    QSignalSpy spy(&list, &ParameterList::descriptionChanged);
+
+    // Initial description should be empty
+    QCOMPARE(list.description(), QString());
+
+    // Set description and verify signal emission
+    list.setDescription("Configuration parameters for the application");
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(list.description(), "Configuration parameters for the application");
+
+    // Check signal argument
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "Configuration parameters for the application");
+
+    // Same value, no signal should be emitted
+    list.setDescription("Configuration parameters for the application");
+    QCOMPARE(spy.count(), 0);
+
+    // Change to different value
+    list.setDescription("Updated description");
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(list.description(), "Updated description");
+
+    // Clear description
+    list.setDescription("");
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(list.description(), QString());
+}
+
+void TestQtNoidAppParameterList::testBindableDescriptionProperty()
+{
+    // Create parameter list with initial description
+    ParameterList list(this);
+    list.setDescription("Initial description");
+
+    // Get the bindable property
+    auto bindableDescription = list.bindableDescription();
+    QVERIFY(bindableDescription.isValid());
+    QCOMPARE(bindableDescription.value(), "Initial description");
+
+    // Test binding to another property
+    QProperty<QString> externalProperty;
+    externalProperty.setBinding([&]() { return bindableDescription.value(); });
+    QCOMPARE(externalProperty.value(), "Initial description");
+
+    // Change parameter description and verify binding updates
+    list.setDescription("Updated description");
+    QCOMPARE(externalProperty.value(), "Updated description");
+
+    // Test setting description through bindable
+    bindableDescription.setValue("Final description");
+    QCOMPARE(list.description(), "Final description");
+    QCOMPARE(externalProperty.value(), "Final description");
+
+    // Create a reverse binding from externalProperty to list
+    QSignalSpy spy(&list, &ParameterList::descriptionChanged);
+    bindableDescription.setBinding([&]() { return externalProperty.value(); });
+    externalProperty.setValue("Externally set description");
+    QCOMPARE(bindableDescription.value(), "Externally set description");
+    QCOMPARE(list.description(), "Externally set description");
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().first().toString(), "Externally set description");
+}
+
+void TestQtNoidAppParameterList::testParameterListTooltip()
+{
+    ParameterList list(this);
+    QSignalSpy spy(&list, &ParameterList::tooltipChanged);
+
+    // Initial tooltip should be empty
+    QCOMPARE(list.tooltip(), QString());
+
+    // Set tooltip and verify signal emission
+    list.setTooltip("This is a helpful tooltip for the parameter list");
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(list.tooltip(), "This is a helpful tooltip for the parameter list");
+
+    // Check signal argument
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "This is a helpful tooltip for the parameter list");
+
+    // Same value, no signal should be emitted
+    list.setTooltip("This is a helpful tooltip for the parameter list");
+    QCOMPARE(spy.count(), 0);
+
+    // Change to different value
+    list.setTooltip("Updated tooltip text");
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(list.tooltip(), "Updated tooltip text");
+
+    // Clear tooltip
+    list.setTooltip("");
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(list.tooltip(), QString());
+}
+
+void TestQtNoidAppParameterList::testBindableTooltipProperty()
+{
+    // Create parameter list with initial tooltip
+    ParameterList list(this);
+    list.setTooltip("Initial tooltip");
+
+    // Get the bindable property
+    auto bindableTooltip = list.bindableTooltip();
+    QVERIFY(bindableTooltip.isValid());
+    QCOMPARE(bindableTooltip.value(), "Initial tooltip");
+
+    // Test binding to another property
+    QProperty<QString> externalProperty;
+    externalProperty.setBinding([&]() { return bindableTooltip.value(); });
+    QCOMPARE(externalProperty.value(), "Initial tooltip");
+
+    // Change parameter tooltip and verify binding updates
+    list.setTooltip("Updated tooltip");
+    QCOMPARE(externalProperty.value(), "Updated tooltip");
+
+    // Test setting tooltip through bindable
+    bindableTooltip.setValue("Final tooltip");
+    QCOMPARE(list.tooltip(), "Final tooltip");
+    QCOMPARE(externalProperty.value(), "Final tooltip");
+
+    // Create a reverse binding from externalProperty to list
+    QSignalSpy spy(&list, &ParameterList::tooltipChanged);
+    bindableTooltip.setBinding([&]() { return externalProperty.value(); });
+    externalProperty.setValue("Externally set tooltip");
+    QCOMPARE(bindableTooltip.value(), "Externally set tooltip");
+    QCOMPARE(list.tooltip(), "Externally set tooltip");
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().first().toString(), "Externally set tooltip");
 }
 
 

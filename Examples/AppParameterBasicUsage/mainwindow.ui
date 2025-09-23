@@ -76,6 +76,31 @@
          </widget>
         </item>
         <item row="2" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Tooltip</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="txtTooltip">
+          <property name="minimumSize">
+           <size>
+            <width>250</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>PT100 desired temperature tooltip</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
          <widget class="QLabel" name="label_4">
           <property name="font">
            <font>
@@ -87,14 +112,14 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="3" column="1">
          <widget class="QLineEdit" name="txtRange">
           <property name="text">
            <string>0 - 100</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="4" column="0">
          <widget class="QLabel" name="label_6">
           <property name="font">
            <font>
@@ -106,14 +131,14 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="4" column="1">
          <widget class="QLineEdit" name="txtUnit">
           <property name="text">
            <string>°C</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="5" column="0">
          <widget class="QLabel" name="label_5">
           <property name="font">
            <font>
@@ -125,7 +150,10 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="5" column="1">
+         <widget class="QDoubleSpinBox" name="txtValue"/>
+        </item>
+        <item row="6" column="0">
          <widget class="QLabel" name="label_7">
           <property name="font">
            <font>
@@ -137,17 +165,36 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
+        <item row="6" column="1">
          <widget class="QCheckBox" name="optReadOnly">
           <property name="text">
            <string/>
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
-         <widget class="QDoubleSpinBox" name="txtValue"/>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_12">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Visible</string>
+          </property>
+         </widget>
         </item>
-        <item row="6" column="0">
+        <item row="7" column="1">
+         <widget class="QCheckBox" name="optVisible">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
          <widget class="QLabel" name="label_10">
           <property name="font">
            <font>
@@ -159,7 +206,7 @@
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
+        <item row="8" column="1">
          <widget class="QPlainTextEdit" name="txtPresets">
           <property name="plainText">
            <string>Winter 10.5
@@ -206,11 +253,7 @@ Summer 25.6</string>
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="txtStatusBar">
-      <property name="text">
-       <string>Status Bar with last operation or error</string>
-      </property>
-     </widget>
+     <widget class="QPlainTextEdit" name="txtLog"/>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
