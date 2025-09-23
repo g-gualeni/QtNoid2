@@ -39,8 +39,8 @@
 - [x] Check the min and max are correct when we apply range
 - [x] Check the min and max are correct when we apply schema
 - [x] Test Parameter constructor using bad JSON objects
+- [x] Add tooltip parameter (remember test and schema)
 
-- [ ] Add tooltip parameter (remember test and schema)
 - [ ] Add the visible parameter (remember test and schema)
 
 - [ ] Test performance using bindings and using signal/slots
@@ -122,6 +122,7 @@ lo stesso oggetto con 2 nomi diversi.
 
 ### Test AppParameterBasicUsage
 Application that shows all elements and some feature for Paramter
+- [ ] Add tooltip parameter
 
 ### Test AppParameterListBenchmark
 - [x] Performance for Parameter and ParameterList using new and using JSON
