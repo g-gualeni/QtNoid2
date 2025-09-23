@@ -36,17 +36,14 @@
 
 - [x] Add test for UniqueID
 - [x] uniqueId should not be saved to JSON
-- [ ] Check the min and max are correct when we apply range
-- [ ] Check the min and max are correct when we apply schema
-    
-      In teoria posso creare dei Parameter non validi in questo modo  
-      --> Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, 
-      QObject *parent)
-- [ ] Test Parameter constructor using bad JSON objects
+- [x] Check the min and max are correct when we apply range
+- [x] Check the min and max are correct when we apply schema
+- [x] Test Parameter constructor using bad JSON objects
 
-- [ ] Test performance using bindings and using signal/slots
 - [ ] Add tooltip parameter (remember test and schema)
 - [ ] Add the visible parameter (remember test and schema)
+
+- [ ] Test performance using bindings and using signal/slots
 - [ ] Update documentation 
 
       

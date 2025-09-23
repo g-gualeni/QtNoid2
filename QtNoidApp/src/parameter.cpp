@@ -69,6 +69,9 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
             if (schemaData.contains("unit")) {
                 m_unit = schemaData["unit"].toString();
             }
+            if (schemaData.contains("tooltip")) {
+                m_tooltip = schemaData["tooltip"].toString();
+            }
             if (schemaData.contains("readOnly")) {
                 m_readOnly = schemaData["readOnly"].toBool();
             }
@@ -105,6 +108,7 @@ QJsonObject Parameter::toJsonSchema() const
     QJsonObject schema;
     schema["description"] = m_description.value();
     schema["unit"] = m_unit.value();
+    schema["tooltip"] = m_tooltip.value();
     schema["readOnly"] = m_readOnly.value();
     schema["min"] = QJsonValue::fromVariant(m_min.value());
     schema["max"] = QJsonValue::fromVariant(m_max.value());
@@ -198,24 +202,28 @@ bool Parameter::schemaFromJson(const QJsonObject &json)
     else {
         setUnit(QString());
     }
+    if (schemaData.contains("tooltip")) {
+        setTooltip(schemaData["tooltip"].toString());
+    }
+    else {
+        setTooltip(QString());
+    }
     if (schemaData.contains("readOnly")) {
         setReadOnly(schemaData["readOnly"].toBool());
     }
     else {
         setReadOnly(false);
     }
+    QVariant min;
+    QVariant max;
     if (schemaData.contains("min")) {
-        setMin(schemaData["min"].toVariant());
-    }
-    else {
-        setMin(QVariant());
+        min = schemaData["min"].toVariant();
     }
     if (schemaData.contains("max")) {
-        setMax(schemaData["max"].toVariant());
+        max=schemaData["max"].toVariant();
     }
-    else {
-        setMax(QVariant());
-    }
+    setRange(min, max);
+
     if (schemaData.contains("presets")) {
         const QJsonArray presetList = schemaData["presets"].toArray();
         for(auto it = presetList.constBegin(); it != presetList.constEnd(); ++it) {
@@ -300,13 +308,26 @@ std::pair<QVariant, QVariant> Parameter::range() const
 }
 void Parameter::setRange(const QVariant &min, const QVariant &max)
 {
+    if(min.isValid() && max.isValid()) {
+        if(compareVariants(min, max, -1)) {
+            m_min = min;
+            m_max = max;
+        }
+        else {
+            m_min = max;
+            m_max = min;
+        }
+        return;
+    }
+
+    // If one of the two is invalid, I have no compare terms
     m_min = min;
     m_max = max;
+    return;
 }
 void Parameter::setRange(const std::pair<QVariant, QVariant>& newRange)
 {
-    m_min = newRange.first;
-    m_max = newRange.second;
+    setRange(newRange.first, newRange.second);
 }
 
 
@@ -411,6 +432,20 @@ QBindable<QString> Parameter::bindableUnit()
 }
 
 
+QString Parameter::tooltip() const
+{
+    return m_tooltip.value();
+}
+void Parameter::setTooltip(const QString &value)
+{
+    m_tooltip = value;
+}
+QBindable<QString> Parameter::bindableTooltip()
+{
+    return QBindable<QString>(&m_tooltip);
+}
+
+
 bool Parameter::readOnly() const
 {
     return m_readOnly.value();
@@ -500,8 +535,6 @@ QVariant Parameter::clampValue(const QVariant &value) const
  * @param comparison -1 sa < sb, 0 sa == sb, +1 sa > sb
  * @return
  */
-
-
 bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int comparison) const
 {
     if (!a.isValid() || !b.isValid())

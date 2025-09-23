@@ -188,6 +188,7 @@ void TestQtNoidAppParameterList::testAppendingParameterFromJsonObjects()
     QJsonObject schema;
     QJsonObject tempSchema;
     tempSchema["description"] = "Temperature sensor";
+    tempSchema["tooltip"] = "Temperature of the sensor ";
     tempSchema["unit"] = "°C";
     tempSchema["min"] = -50.0;
     tempSchema["max"] = 100.0;
@@ -284,6 +285,7 @@ void TestQtNoidAppParameterList::testEmplaceWithJsonObjects()
     QJsonObject schema;
     QJsonObject schemaObject;
     schemaObject["description"] = "Temperature sensor";
+    schemaObject["tooltip"] = "Temperature of the sensor ";
     schemaObject["unit"] = "°C";
     schemaObject["min"] = -50.0;
     schemaObject["max"] = 100.0;
@@ -669,6 +671,7 @@ void TestQtNoidAppParameterList::testSchemaFromJson()
     // Temperature parameter schema
     QJsonObject tempSchema;
     tempSchema["description"] = "Current temperature";
+    tempSchema["tooltip"] = "Temperature of the sensor ";
     tempSchema["unit"] = "°C";
     tempSchema["readOnly"] = true;
     tempSchema["min"] = -50.0;
@@ -681,6 +684,7 @@ void TestQtNoidAppParameterList::testSchemaFromJson()
     // Pressure parameter schema
     QJsonObject pressSchema;
     pressSchema["description"] = "Atmospheric pressure";
+    pressSchema["tooltip"] = "This is the atmospheric pressure";
     pressSchema["unit"] = "hPa";
     pressSchema["readOnly"] = false;
     pressSchema["min"] = 800.0;
@@ -767,6 +771,7 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     // Temperature parameter schema
     QJsonObject tempSchema;
     tempSchema["description"] = "Current temperature";
+    tempSchema["tooltip"] = "Temperature of the sensor ";
     tempSchema["unit"] = "°C";
     tempSchema["readOnly"] = true;  // it should be possible initialize a read only!
     tempSchema["min"] = -50.0;
@@ -778,6 +783,7 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     // Pressure parameter schema
     QJsonObject pressSchema;
     pressSchema["description"] = "Atmospheric pressure";
+    pressSchema["tooltip"] = "This is the atmospheric pressure";
     pressSchema["unit"] = "hPa";
     pressSchema["readOnly"] = false;
     pressSchema["min"] = 800.0;

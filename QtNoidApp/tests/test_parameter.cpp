@@ -32,10 +32,11 @@ private slots:
     void testParameterApplyPresetReadOnlyShouldBeIneffective();
 
     void testParameterRange();
-    void testParameterRangeShouldBeConsistent();
+    void testParameterSetRangeShouldHandleFlippingMinAndMaxSoRangeWillBeConsistent();
     void testParameterName();
     void testParameterDescription();
     void testParameterUnit();
+    void testParameterTooltip();
     void testParameterReadOnly();
     
     // Bindable properties tests
@@ -48,6 +49,7 @@ private slots:
     void testBindableName();
     void testBindableDescription();
     void testBindableUnit();
+    void testBindableTooltip();
     void testBindableReadOnly();
 
     // ToJSON Schema tests
@@ -152,6 +154,7 @@ void TestQtNoidAppParameter::testConstructorWithNameDescriptionAndInitialValue()
     QCOMPARE(par.description(), __func__);
     QCOMPARE(par.value(), 789.123);
     QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.tooltip(), QString());
     QCOMPARE(par.readOnly(), false);
     QCOMPARE(par.min(), QVariant());
     QCOMPARE(par.max(), QVariant());
@@ -437,17 +440,25 @@ void TestQtNoidAppParameter::testParameterRange()
     QCOMPARE(par.value(), -10);
 }
 
-void TestQtNoidAppParameter::testParameterRangeShouldBeConsistent()
+void TestQtNoidAppParameter::testParameterSetRangeShouldHandleFlippingMinAndMaxSoRangeWillBeConsistent()
 {
     Parameter par("Par", 1000, this);
 
     par.setRange(1200, 10);
-    auto range = par.range();
-
     QVERIFY(par.isValid());
+    QCOMPARE(par.min(), 10);
+    QCOMPARE(par.max(), 1200);
 
+    auto range = par.range();
     QCOMPARE(range.first, 10);
-    QCOMPARE(range.second, 1000);
+    QCOMPARE(range.second, 1200);
+
+    // Setting Range using std::pair
+    std::pair<QVariant, QVariant> newRange({1300, 11});
+    par.setRange(newRange);
+    QVERIFY(par.isValid());
+    QCOMPARE(par.min(), 11);
+    QCOMPARE(par.max(), 1300);
 
     // Setting Range using schema
     QJsonObject schemaObj{{"min", 222}, {"max", 2}};
@@ -456,9 +467,6 @@ void TestQtNoidAppParameter::testParameterRangeShouldBeConsistent()
     range = par.range();
     QCOMPARE(range.first, 2);
     QCOMPARE(range.second, 222);
-
-
-
 }
 
 void TestQtNoidAppParameter::testParameterName()
@@ -510,6 +518,27 @@ void TestQtNoidAppParameter::testParameterUnit()
 
     // Same value, no activation
     par.setUnit("°C");
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppParameter::testParameterTooltip()
+{
+    Parameter par("Temperature", "Current temperature", 25.0);
+    QSignalSpy spy(&par, &Parameter::tooltipChanged);
+
+    // Test initial state (should be empty)
+    QCOMPARE(par.tooltip(), QString());
+
+    par.setTooltip("This shows the current temperature reading");
+    QCOMPARE(spy.count(), 1);
+
+    // check the value is the correct one
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "This shows the current temperature reading");
+    QCOMPARE(par.tooltip(), "This shows the current temperature reading");
+
+    // Same value, no activation
+    par.setTooltip("This shows the current temperature reading");
     QCOMPARE(spy.count(), 0);
 }
 
@@ -722,25 +751,49 @@ void TestQtNoidAppParameter::testBindableDescription()
 void TestQtNoidAppParameter::testBindableUnit()
 {
     Parameter par("Temperature", 25.0);
-    
+
     // Get bindable unit
     auto bindableUnit = par.bindableUnit();
     QVERIFY(bindableUnit.isValid());
     QCOMPARE(bindableUnit.value(), QString());
-    
+
     // Test binding to another QProperty
     QProperty<QString> externalProperty;
     externalProperty.setBinding([&]() { return par.bindableUnit().value(); });
     QCOMPARE(externalProperty.value(), QString());
-    
+
     // Change parameter unit and verify binding updates
     par.setUnit("°C");
     QCOMPARE(externalProperty.value(), "°C");
-    
+
     // Test setting unit through bindable
     bindableUnit.setValue("°F");
     QCOMPARE(par.unit(), "°F");
     QCOMPARE(externalProperty.value(), "°F");
+}
+
+void TestQtNoidAppParameter::testBindableTooltip()
+{
+    Parameter par("Temperature", 25.0);
+
+    // Get bindable tooltip
+    auto bindableTooltip = par.bindableTooltip();
+    QVERIFY(bindableTooltip.isValid());
+    QCOMPARE(bindableTooltip.value(), QString());
+
+    // Test binding to another QProperty
+    QProperty<QString> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableTooltip().value(); });
+    QCOMPARE(externalProperty.value(), QString());
+
+    // Change parameter tooltip and verify binding updates
+    par.setTooltip("Temperature sensor reading");
+    QCOMPARE(externalProperty.value(), "Temperature sensor reading");
+
+    // Test setting tooltip through bindable
+    bindableTooltip.setValue("Updated tooltip");
+    QCOMPARE(par.tooltip(), "Updated tooltip");
+    QCOMPARE(externalProperty.value(), "Updated tooltip");
 }
 
 void TestQtNoidAppParameter::testBindableReadOnly()
@@ -772,6 +825,7 @@ void TestQtNoidAppParameter::testParameterToJsonSchema()
     Parameter par("Log File Size", "Parameter description", 50.0);
 
     par.setUnit("kB");
+    par.setTooltip("Size of the log file on disk");
     par.setMin(0.0);
     par.setMax(100.0);
     par.setReadOnly(true);
@@ -785,6 +839,7 @@ void TestQtNoidAppParameter::testParameterToJsonSchema()
     
     QCOMPARE(paramSchema["description"].toString(), "Parameter description");
     QCOMPARE(paramSchema["unit"].toString(), "kB");
+    QCOMPARE(paramSchema["tooltip"].toString(), "Size of the log file on disk");
     QCOMPARE(paramSchema["readOnly"].toBool(), true);
     QCOMPARE(paramSchema["min"].toVariant(), QVariant(0.0));
     QCOMPARE(paramSchema["max"].toVariant(), QVariant(100.0));
@@ -815,6 +870,7 @@ void TestQtNoidAppParameter::testParameterToJsonSchemaWithNoNameAndEmptyParamete
     
     QCOMPARE(paramSchema["description"].toString(), QString());
     QCOMPARE(paramSchema["unit"].toString(), QString());
+    QCOMPARE(paramSchema["tooltip"].toString(), QString());
     QCOMPARE(paramSchema["readOnly"].toBool(), false);
     QVERIFY(paramSchema["min"].isNull());
     QVERIFY(paramSchema["max"].isNull());
@@ -978,6 +1034,7 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValue()
     QJsonObject temperatureSchema;
     temperatureSchema["description"] = "Current temperature";
     temperatureSchema["unit"] = "°C";
+    temperatureSchema["tooltip"] = "Temperature sensor reading in Celsius";
     temperatureSchema["readOnly"] = false;
     temperatureSchema["min"] = -273.15;
     temperatureSchema["max"] = 1000.0;
@@ -993,6 +1050,7 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValue()
     QCOMPARE(par.name(), "Temperature");
     QCOMPARE(par.description(), "Current temperature");
     QCOMPARE(par.unit(), "°C");
+    QCOMPARE(par.tooltip(), "Temperature sensor reading in Celsius");
     QCOMPARE(par.readOnly(), false);
     QCOMPARE(par.min().toDouble(), -273.15);
     QCOMPARE(par.max().toDouble(), 1000.0);
@@ -1042,6 +1100,7 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonValueOnly()
     // Other properties should be default values
     QCOMPARE(par.description(), QString());
     QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.tooltip(), QString());
     QCOMPARE(par.readOnly(), false);
     QVERIFY(!par.min().isValid());
     QVERIFY(!par.max().isValid());
@@ -1056,6 +1115,7 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonEmptyObjects()
     QCOMPARE(par.name(), QString());
     QCOMPARE(par.description(), QString());
     QCOMPARE(par.unit(), QString());
+    QCOMPARE(par.tooltip(), QString());
     QCOMPARE(par.readOnly(), false);
     QVERIFY(!par.min().isValid());
     QVERIFY(!par.max().isValid());
@@ -1071,6 +1131,7 @@ void TestQtNoidAppParameter::testParameterSchemaFromJson()
     QJsonObject temperatureSchema;
     temperatureSchema["description"] = "Current temperature";
     temperatureSchema["unit"] = "°C";
+    temperatureSchema["tooltip"] = "Displays the current temperature from the sensor";
     temperatureSchema["readOnly"] = true;
     temperatureSchema["min"] = -50.0;
     temperatureSchema["max"] = 100.0;
@@ -1089,6 +1150,7 @@ void TestQtNoidAppParameter::testParameterSchemaFromJson()
     QCOMPARE(par.name(), "Temperature");
     QCOMPARE(par.description(), "Current temperature");
     QCOMPARE(par.unit(), "°C");
+    QCOMPARE(par.tooltip(), "Displays the current temperature from the sensor");
     QCOMPARE(par.readOnly(), true);
     QCOMPARE(par.min().toDouble(), -50.0);
     QCOMPARE(par.max().toDouble(), 100.0);

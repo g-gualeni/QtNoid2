@@ -22,6 +22,7 @@ class QTNOIDAPP_EXPORT Parameter : public QObject
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString unit READ unit WRITE setUnit BINDABLE bindableUnit NOTIFY unitChanged FINAL)
+    Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
 
 public:
@@ -84,6 +85,11 @@ public:
     void setUnit(const QString& value);
     QBindable<QString> bindableUnit();
 
+    // Tooltip
+    QString tooltip() const;
+    void setTooltip(const QString& value);
+    QBindable<QString> bindableTooltip();
+
     // ReadOnly
     bool readOnly() const;
     void setReadOnly(bool value);
@@ -98,6 +104,7 @@ signals:
     void nameChanged(const QString &value);
     void descriptionChanged(const QString &value);
     void unitChanged(const QString &value);
+    void tooltipChanged(const QString &value);
     void readOnlyChanged(bool value);
     void writeAttemptedWhileReadOnly(const QString &parameterName);
 
@@ -109,6 +116,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_name, &Parameter::nameChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_description, &Parameter::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_unit, &Parameter::unitChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_tooltip, &Parameter::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_readOnly, &Parameter::readOnlyChanged)
 
     void enforceRange();
