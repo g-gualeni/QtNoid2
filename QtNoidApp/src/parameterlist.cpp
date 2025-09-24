@@ -396,6 +396,11 @@ bool ParameterList::setValue(const QString &name, const QVariant &value)
     return true;
 }
 
+void ParameterList::applyPreset(const QString &presetName)
+{
+
+}
+
 void ParameterList::onParameterDestroyed(QObject *parameter)
 {
     Parameter *param = static_cast<Parameter*>(parameter);
@@ -405,8 +410,12 @@ void ParameterList::onParameterDestroyed(QObject *parameter)
     }
     m_parameterToIndex.remove(param);
     m_parametersByIndex.remove(idx);
-    m_parametersByName.remove(param->name());
     m_parametersByUniqueId.remove(param->uniqueId());
+
+    // Remove from m_parametersByName using param
+    // because param->name() could be modified
+    QString key = m_parametersByName.key(param);
+    m_parametersByName.remove(key);
 
     emit parameterRemoved(param);
     emit countChanged(m_parametersByIndex.count());
@@ -414,17 +423,13 @@ void ParameterList::onParameterDestroyed(QObject *parameter)
 
 void ParameterList::onParameterNameEdited(const QString &oldName, const QString &newName)
 {
-    Parameter* parameter = qobject_cast<Parameter*>(sender());
-    if (!parameter) {
-        return;
-    }
     if(!m_parametersByName.contains(oldName)) {
-        emit parameterRenameError(parameter, oldName, newName);
+        emit parameterRenameError(oldName, newName);
         return;
     }
 
     if(m_parametersByName.contains(newName)) {
-        emit parameterRenameError(parameter, oldName, newName);
+        emit parameterRenameError(oldName, newName);
         return;
     }
 

@@ -1023,7 +1023,7 @@ void TestQtNoidAppParameter::testParameterToJsonWithDifferentValueTypes()
     QCOMPARE(jsonInt["IntParam"].toVariant(), QVariant(100));
     
     // Test with string
-    Parameter parString("StringParam", "Hello World");
+    Parameter parString("Hello World", "StringParam", this);
     QJsonObject jsonString = parString.toJsonValue();
     QVERIFY(jsonString.contains("StringParam"));
     QCOMPARE(jsonString["StringParam"].toVariant(), QVariant("Hello World"));
@@ -1103,7 +1103,7 @@ void TestQtNoidAppParameter::testParameterValueFromJsonWithDifferentTypes()
     QCOMPARE(parDouble.value().toDouble(), 100.5);
 
     // Test with string
-    Parameter parString("StringParam", "initial");
+    Parameter parString("initial", "StringParam", this);
     QJsonObject jsonString;
     jsonString["StringParam"] = "updated";
     QCOMPARE(parString.valueFromJson(jsonString), true);
@@ -1512,7 +1512,7 @@ void TestQtNoidAppParameter::testParameterFromJson()
 
 void TestQtNoidAppParameter::testParameterFromJsonShouldUpdateAnExistingParameter()
 {
-    Parameter par("ExistingName", "This is an existing paramter", "InitialValue", this);
+    Parameter par("InitialValue", "ExistingName", "This is an existing paramter", this);
     QCOMPARE(par.name(), "ExistingName");
     QCOMPARE(par.value().toString(), "InitialValue");
 

@@ -41,13 +41,10 @@
 - [x] Add tooltip parameter (remember test and schema)
 - [x] Add the visible parameter (remember test and schema)
 - [x] Parameter::nameEdited to track oldName and NewName
-- [ ] Test performance using bindings and using signal/slots
+- [x] Change argument position for the constructor because they are confusing
 
-- [ ] Change argument position for the constructor because they are confusing
 - [ ] Update documentation 
-
-
-
+- [ ] Test performance using bindings and using signal/slots
 
       
 
@@ -66,7 +63,9 @@
 - [x] addParameter(Parameter *parameter) should fail with same object renamed
 - [x] Add a description property
 - [x] Add a tooltip property
-
+- [x] Add a test for parameterRenameError
+- [x] Add a test for isEmpty()
+- [ ] Add the method applyPreset()
 
 -> Gestione dei preset di tutta la pagina
   Raccolgo i nomi e poi faccio una lista per applicarli?
@@ -74,41 +73,18 @@
 - [ ] Update documentation 
 
 
-
---- TEST COVERAGE REPORT
-  Untested ParameterList Methods:
-  2. indexOf(Parameter* parameter) - Line 47 in header - 
-      Only indexOf(const QString& name) is tested
-  3. contains(Parameter* parameter) - Line 49 in header - 
-      Only contains(const QString& name) is tested
-
-  Overloaded Methods:
-  4. removeParameter(Parameter* parameter) - Line 40 in header - 
-    Only removeParameter(const QString& name) is tested
-  5. addParameter(const QJsonObject& schema, const QJsonObject& value) - Line 39 in header - 
-  This method is tested, but could use more edge cases
-
-  Signal Testing:
-  While signals are tested in some cases, there could be more comprehensive signal testing for:
-  - countChanged signal in edge cases
-  - parameterAdded signal with different scenarios
-  - parameterRemoved signal with different scenarios
-
-  Edge Cases Not Fully Covered:
-  6. Boundary testing for parameter(int index) with invalid indices (partially tested)
-  7. Memory management scenarios when parameters are deleted externally
-  8. JSON constructor edge cases with malformed or empty JSON objects
-
-
-
 ### Test AppParameterBasicUsage
 - [x] Application that shows all elements and some feature for Paramter
 - [x] Add tooltip parameter
 - [x] Add the visible parameter
+- [ ] Add droplist to show how applyPreset()
 
 ### Test AppParameterListBenchmark
 - [x] Performance for Parameter and ParameterList using new and using JSON
-
+- [ ] Add a test for linking 2 paramters using binding. Consider also biderectional
+      linking.
+- [ ] Add a test for linking 2 paramters using signals and slot. Consider also bidirectional
+      linking.
 
 
 

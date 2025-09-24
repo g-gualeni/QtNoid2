@@ -89,7 +89,7 @@ quint64 MainWindow::benchmarkParameterUsingNewAndDelete(int iterations)
 
     for(int ii = 0; ii < iterations; ii++)
     {
-        auto param = new QtNoid::App::Parameter("Name", "test object creation", ii, this);
+        auto param = new QtNoid::App::Parameter(ii, "Name", "test object creation", this);
         param->setRange(-10000000, 10000000);
         param->setReadOnly(true);
         delete param;

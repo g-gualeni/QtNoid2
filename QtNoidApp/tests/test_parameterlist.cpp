@@ -54,6 +54,8 @@ private slots:
     void testConstructorWithSchemaAndValueJsonObjects();
 
     void testChangingParamterNameShouldUpdateTheParameterList();
+    void testParameterRenameError();
+    void testIsEmpty();
 
 
 
@@ -457,7 +459,7 @@ void TestQtNoidAppParameterList::testParameterListSetValueConvenienceMethods()
 {
     ParameterList list(this);
     auto param1 = new Parameter(25.0, "Temperature", this);
-    auto param2 = new Parameter(25.0, "Pressure", this);
+    auto param2 = new Parameter(1013.25, "Pressure", this);
     
     list.append(param1);
     list.append(param2);
@@ -528,9 +530,9 @@ void TestQtNoidAppParameterList::testToJsonValues()
 {
     // Create a parameter list with parameters
     ParameterList page("Configuration", this);
-    auto param1 = new Parameter("Temperature", 25.5, this);
+    auto param1 = new Parameter(25.5, "Temperature", this);
     page.append(param1);
-    auto param2 = new Parameter("Pressure", 1013.25, this);
+    auto param2 = new Parameter(1013.25, "Pressure", this);
     page.append(param2);
 
     QJsonObject json = page.toJsonValues();
@@ -555,14 +557,14 @@ void TestQtNoidAppParameterList::testToJsonValuesNoName()
 void TestQtNoidAppParameterList::TestToJsonSchema()
 {
     ParameterList page("Configuration", this);
-    auto param1 = new Parameter("Temperature", "temp", 25.5, this);
+    auto param1 = new Parameter(25.5, "Temperature", "temp", this);
     param1->setRange(0,100);
     param1->setUnit("°C");
     param1->setReadOnly(true);
     page.append(param1);
 
 
-    auto param2 = new Parameter("Pressure", "pres" , 1013.25, this);
+    auto param2 = new Parameter(1013.25, "Pressure", "pres" , this);
     param2->setRange(0,2000);
     param2->setUnit("hPa");
     param2->setReadOnly(true);
@@ -590,7 +592,7 @@ void TestQtNoidAppParameterList::TestToJsonSchemaNoName()
 void TestQtNoidAppParameterList::testToJsonSchemaWithPresets()
 {
     // Create a parameter with presets
-    Parameter param("Mode", "test", this);
+    Parameter param("test value", "Mode", this);
 
     // Add multiple presets
     param.setPreset("Auto", "auto");
@@ -875,7 +877,7 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
 
 void TestQtNoidAppParameterList::testChangingParamterNameShouldUpdateTheParameterList()
 {
-    Parameter par("OriginalName", 123, this);
+    Parameter par(123, "OriginalName", this);
     QCOMPARE(par.name(), "OriginalName");
     ParameterList list;
     list.append(&par);
@@ -1017,6 +1019,80 @@ void TestQtNoidAppParameterList::testBindableTooltipProperty()
     QCOMPARE(list.tooltip(), "Externally set tooltip");
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first().toString(), "Externally set tooltip");
+}
+
+void TestQtNoidAppParameterList::testParameterRenameError()
+{
+    ParameterList *list = new ParameterList("MyList", this);
+    QSignalSpy renameErrorSpy(list, &ParameterList::parameterRenameError);
+
+    // Create two parameters with different names
+    Parameter *param1 = new Parameter(100.0, "Param1", this);
+    Parameter *param2 = new Parameter(200.0, "Param2", this);
+
+    list->append(param1);
+    list->append(param2);
+
+    // Test case 1: Try to rename to an existing name (should emit error)
+    param1->setName("Param2");
+
+    QCOMPARE(renameErrorSpy.count(), 1);
+    QList<QVariant> arguments = renameErrorSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "Param1");  // oldName
+    QCOMPARE(arguments.at(1).toString(), "Param2");  // newName
+
+    // Verify the parameter name wasn't actually changed in the list
+    QVERIFY(list->contains("Param1"));
+    QVERIFY(list->contains("Param2"));
+    QCOMPARE(list->parameter("Param2"), param2);
+
+    // Test case 2: Create a scenario where oldName is not in the list
+    // (This is harder to trigger naturally, but we can simulate it)
+    // by removing a parameter from the list but keeping the object alive
+    list->removeParameter(param1);
+
+    // Now if param1 tries to rename itself, it should not trigger an error
+    // because "Param1" is no longer in the list
+    param1->setName("Param2");
+    QCOMPARE(renameErrorSpy.count(), 0);
+
+    delete param1;
+    delete param2;
+    delete list;
+}
+
+void TestQtNoidAppParameterList::testIsEmpty()
+{
+    ParameterList list(this);
+
+    // Test empty list
+    QVERIFY(list.isEmpty());
+    QCOMPARE(list.count(), 0);
+
+    // Add a parameter
+    Parameter* param1 = new Parameter(100.0, "Param1", this);
+    list.append(param1);
+
+    // Test non-empty list
+    QVERIFY(!list.isEmpty());
+    QCOMPARE(list.count(), 1);
+
+    // Remove one parameter
+    list.removeParameter(param1);
+    QVERIFY(list.isEmpty());
+
+    // Test clear() method
+    Parameter* param3 = new Parameter(300.0, "Param3", this);
+    Parameter* param4 = new Parameter(400.0, "Param4", this);
+    list.append(param3);
+    list.append(param4);
+
+    QVERIFY(!list.isEmpty());
+    QCOMPARE(list.count(), 2);
+
+    list.clear();
+    QVERIFY(list.isEmpty());
+    QCOMPARE(list.count(), 0);
 }
 
 

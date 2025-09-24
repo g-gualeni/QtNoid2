@@ -70,6 +70,7 @@ public:
     // Convenience methods
     QVariant value(const QString& name) const;
     bool setValue(const QString& name, const QVariant& value);
+    void applyPreset(const QString& presetName);
     
 signals:
     void nameChanged(const QString& value);
@@ -78,13 +79,11 @@ signals:
     void countChanged(int count);
     void parameterAdded(QtNoid::App::Parameter* parameter);
     void parameterRemoved(QtNoid::App::Parameter* parameter);
-    void parameterRenameError(QtNoid::App::Parameter* parameter, const QString& oldName, const QString& newName);
-
+    void parameterRenameError(const QString& oldName, const QString& newName);
 
 private slots:
     void onParameterDestroyed(QObject* parameter);
     void onParameterNameEdited(const QString& oldName, const QString& newName);
-
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_name, &ParameterList::nameChanged)
