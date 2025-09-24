@@ -5,7 +5,6 @@
 #include <QJsonValue>
 
 
-
 namespace QtNoid {
 namespace App {
 
@@ -589,6 +588,8 @@ bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int compar
 
     return false;
 }
+
+
 
 } // namespace App
 } // namespace QtNoid

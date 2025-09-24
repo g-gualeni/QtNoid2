@@ -49,12 +49,12 @@ public:
     int count() const;
     bool append(Parameter* parameter);
     bool append(const QJsonObject& schema, const QJsonObject& value);
-    Parameter* emplace(const QString& name, const QString& description = QString(), const QVariant& initialValue = QVariant());
+    Parameter* emplace(const QVariant& initialValue, const QString& name, const QString& description = {});
     Parameter* emplace(const QJsonObject& schema, const QJsonObject& value);
     void removeParameter(Parameter* parameter);
     void removeParameter(const QString& name);
     void clear();
-    bool isEmpty();
+    bool isEmpty() const;
     
     // Access methods
     Parameter* parameter(int index) const;
@@ -99,5 +99,36 @@ private:
 
 } // namespace App
 } // namespace QtNoid
+
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "ParameterList(\"" << list.name()
+                    << "\", count=" << list.count();
+
+    if (!list.isEmpty()) {
+        debug << ", parameters=[";
+        for (int i = 0; i < list.count(); ++i) {
+            if (i > 0) debug << ", ";
+            QtNoid::App::Parameter* param = list.parameter(i);
+            if (param) {
+                debug << param->name() << ":" << param->value();
+            }
+        }
+        debug << "]";
+    }
+    debug << ")";
+    return debug;
+}
+
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList *list)
+{
+    if (list) {
+        return ::operator<<(debug, *list);
+    } else {
+        return debug << "ParameterList(nullptr)";
+    }
+}
+
 
 #endif // QTNOID_APP_PARAMETERLIST_H

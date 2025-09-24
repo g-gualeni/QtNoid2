@@ -101,6 +101,9 @@ public:
     void setVisible(bool value);
     QBindable<bool> bindableVisible();
 
+    // friend QDebug operator<<(QDebug debug, const Parameter &param);
+    // friend QDebug operator<<(QDebug debug, const Parameter *param);
+
 signals:
     void valueChanged(const QVariant &newValue);
     void minChanged(const QVariant &min);
@@ -142,5 +145,52 @@ private:
 
 } // namespace App
 } // namespace QtNoid
+
+
+inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter &param)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "Parameter("
+                    << "id: " << param.uniqueId()
+                    << ", name: \"" << param.name() << "\""
+                    << ", value: " << param.value()
+                    << ", range: [" << param.min() << ", " << param.max() << "]"
+                    << ", readOnly: " << param.readOnly()
+                    << ", visible: " << param.visible();
+
+    if (!param.description().isEmpty()) {
+        debug << ", desc: \"" << param.description() << "\"";
+    }
+
+    if (!param.unit().isEmpty()) {
+        debug << ", unit: \"" << param.unit() << "\"";
+    }
+
+    if (!param.presets().isEmpty()) {
+        debug << ", presets: {";
+        const QVariantMap presets = param.presets();
+        bool first = true;
+        for (auto it = presets.constBegin(); it != presets.constEnd(); ++it) {
+            if (!first) debug << ", ";
+            debug << it.key() << ": " << it.value();
+            first = false;
+        }
+        debug << "}";
+    }
+
+    debug << ")";
+    return debug;
+}
+
+inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter *param)
+{
+    if (param) {
+        return ::operator<<(debug, *param);
+    } else {
+        return debug << "Parameter(nullptr)";
+    }
+}
+
+
 
 #endif // QTNOID_APP_PARAMETER_H

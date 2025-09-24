@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QJsonObject>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -189,5 +190,11 @@ void MainWindow::setPresetsFromText(const QString &val)
 void MainWindow::updateStatusBar(const QString &msg)
 {
     ui->txtLog->appendPlainText(msg);
+}
+
+
+void MainWindow::on_cmdQDebug_clicked()
+{
+    qDebug() << m_parameter;
 }
 

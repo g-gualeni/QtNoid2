@@ -56,6 +56,7 @@ private slots:
     void testChangingParamterNameShouldUpdateTheParameterList();
     void testParameterRenameError();
     void testIsEmpty();
+    void testApplyPreset();
 
 
 
@@ -254,7 +255,7 @@ void TestQtNoidAppParameterList::testEmplaceWithNameDescriptionValue()
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
-    Parameter* param = list.emplace("Temperature", "Ambient temperature", 25.5);
+    Parameter* param = list.emplace(25.5, "Temperature", "Ambient temperature");
 
     QVERIFY(param != nullptr);
     QCOMPARE(list.count(), 1);
@@ -268,7 +269,7 @@ void TestQtNoidAppParameterList::testEmplaceWithNameDescriptionValue()
     QCOMPARE(list.contains("Temperature"), true);
     QCOMPARE(list.parameter("Temperature"), param);
 
-    Parameter* duplicate = list.emplace("Temperature", "Another temperature", 30.0);
+    Parameter* duplicate = list.emplace(30.0, "Temperature", "Another temperature");
     QCOMPARE(duplicate, nullptr);
     QCOMPARE(list.count(), 1);
 }
@@ -279,22 +280,22 @@ void TestQtNoidAppParameterList::testEmplaceWithDefaultParameters()
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
-    Parameter* param0 = list.emplace({});
+    Parameter* param0 = list.emplace(0.0, {}, {});
     QVERIFY(param0 == nullptr);
 
-    Parameter* param1 = list.emplace("Param1");
+    Parameter* param1 = list.emplace({}, "Param1");
     QVERIFY(param1 != nullptr);
     QCOMPARE(param1->name(), "Param1");
     QCOMPARE(param1->description(), QString());
     QCOMPARE(param1->value(), QVariant());
 
-    Parameter* param2 = list.emplace("Param2", "A description");
+    Parameter* param2 = list.emplace({}, "Param2", "A description");
     QVERIFY(param2 != nullptr);
     QCOMPARE(param2->name(), "Param2");
     QCOMPARE(param2->description(), "A description");
     QCOMPARE(param2->value(), QVariant());
 
-    Parameter* param3 = list.emplace("Param3", QString(), 42);
+    Parameter* param3 = list.emplace( 42, "Param3", QString());
     QVERIFY(param3 != nullptr);
     QCOMPARE(param3->name(), "Param3");
     QCOMPARE(param3->description(), QString());
@@ -1093,6 +1094,79 @@ void TestQtNoidAppParameterList::testIsEmpty()
     list.clear();
     QVERIFY(list.isEmpty());
     QCOMPARE(list.count(), 0);
+}
+
+void TestQtNoidAppParameterList::testApplyPreset()
+{
+    ParameterList list(this);
+
+    // Create parameters with presets
+    Parameter param1(50.0, "Temperature", this);
+    param1.setPreset("Low", 10.0);
+    param1.setPreset("High", 80.0);
+
+    Parameter param2(1000.0, "Pressure", this);
+    param2.setPreset("Low", 900.0);
+    param2.setPreset("High", 1100.0);
+
+    Parameter param3(30.0, "Humidity", this);
+    param3.setPreset("Low", 20.0);
+    param3.setPreset("High", 90.0);
+
+    list.append(&param1);
+    list.append(&param2);
+    list.append(&param3);
+
+    // Test applying "Low" preset - all parameter should change
+    QSignalSpy spy1(&param1, &Parameter::valueChanged);
+    QSignalSpy spy2(&param2, &Parameter::valueChanged);
+    QSignalSpy spy3(&param3, &Parameter::valueChanged);
+
+    list.applyPreset("Low");
+
+    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy3.count(), 1);
+    QCOMPARE(param1.value().toDouble(), 10.0);
+    QCOMPARE(param2.value().toDouble(), 900.0);
+    QCOMPARE(param3.value().toDouble(), 20.0);
+
+    // Check all valueChangedSignals
+    auto currentRes = spy1.takeFirst();
+    double current = currentRes.first().toDouble();
+    QCOMPARE(current, 10);
+
+    currentRes = spy2.takeFirst();
+    current = currentRes.first().toDouble();
+    QCOMPARE(current, 900);
+
+    currentRes = spy3.takeFirst();
+    current = currentRes.first().toDouble();
+    QCOMPARE(current, 20);
+
+    // Test applying "High" preset
+    list.applyPreset("High");
+    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy3.count(), 1);
+
+    // Test applying non-existent preset - no parameters should change
+    spy1.clear();
+    spy2.clear();
+    spy3.clear();
+    list.applyPreset("NonExistent");
+    QCOMPARE(spy1.count(), 0);
+    QCOMPARE(spy2.count(), 0);
+    QCOMPARE(spy3.count(), 0);
+    // all should use High preset unchanged
+    QCOMPARE(param1.value().toDouble(), 80.0);
+    QCOMPARE(param2.value().toDouble(), 1100.0);
+    QCOMPARE(param3.value().toDouble(), 90.0);
+
+    // Test empty list
+    ParameterList emptyList(this);
+    emptyList.applyPreset("AnyPreset"); // Should not crash
+
 }
 
 

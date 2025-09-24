@@ -20,21 +20,15 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_cmdUpdate_clicked();
-    void on_cmdToJson_clicked();
-    void on_cmdFromJson_clicked();
-
     void on_cmdQDebug_clicked();
 
+
 private:
-    void setRangeFromText(const QString& val);
-    void setPresetsFromText(const QString& val);
-    void updateStatusBar(const QString& msg);
+    void createList();
 
 private:
     Ui::MainWindow *ui;
+    QtNoid::App::ParameterList m_list;
 
-    QtNoid::App::Parameter m_parameter;
-    void updateFromGui();
 };
 #endif // MAINWINDOW_H

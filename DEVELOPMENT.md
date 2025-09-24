@@ -42,10 +42,10 @@
 - [x] Add the visible parameter (remember test and schema)
 - [x] Parameter::nameEdited to track oldName and NewName
 - [x] Change argument position for the constructor because they are confusing
+- [x] Add the QDebug << operator to simplify debug
 
 - [ ] Update documentation 
 - [ ] Test performance using bindings and using signal/slots
-
       
 
 ### Todo ParameterList
@@ -65,11 +65,10 @@
 - [x] Add a tooltip property
 - [x] Add a test for parameterRenameError
 - [x] Add a test for isEmpty()
-- [ ] Add the method applyPreset()
+- [x] Add the method applyPreset()
+- [x] Add test for the method applyPreset()
+- [x] Add the QDebug << operator to simplify debug
 
--> Gestione dei preset di tutta la pagina
-  Raccolgo i nomi e poi faccio una lista per applicarli?
-   
 - [ ] Update documentation 
 
 
@@ -78,6 +77,12 @@
 - [x] Add tooltip parameter
 - [x] Add the visible parameter
 - [ ] Add droplist to show how applyPreset()
+
+### Test AppParameterListBasicUsage
+- [ ] Create the example with a list of 2 or more parameters
+- [ ] Add a save to JSON command
+- [ ] Add a load from JSON command
+- [ ] Add an example of the QDebug << operator 
 
 ### Test AppParameterListBenchmark
 - [x] Performance for Parameter and ParameterList using new and using JSON

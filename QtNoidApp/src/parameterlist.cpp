@@ -242,7 +242,7 @@ bool ParameterList::append(const QJsonObject& schema, const QJsonObject& value)
     return res;
 }
 
-Parameter* ParameterList::emplace(const QString& name, const QString& description, const QVariant& initialValue)
+Parameter* ParameterList::emplace(const QVariant& initialValue, const QString& name, const QString& description)
 {
     if(name.isEmpty()) {
         return {};
@@ -334,7 +334,7 @@ void ParameterList::clear()
     emit countChanged(0);
 }
 
-bool ParameterList::isEmpty()
+bool ParameterList::isEmpty() const
 {
     return m_parametersByIndex.isEmpty();
 }
@@ -398,7 +398,10 @@ bool ParameterList::setValue(const QString &name, const QVariant &value)
 
 void ParameterList::applyPreset(const QString &presetName)
 {
-
+    for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
+        Parameter* param = it.value();
+        param->applyPreset(presetName);
+    }
 }
 
 void ParameterList::onParameterDestroyed(QObject *parameter)
