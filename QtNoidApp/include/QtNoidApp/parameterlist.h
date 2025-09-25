@@ -47,7 +47,7 @@ public:
     
     // List management
     int count() const;
-    bool append(Parameter* parameter);
+    bool append(Parameter *parameter);
     bool append(const QJsonObject& schema, const QJsonObject& value);
     Parameter* emplace(const QVariant& initialValue, const QString& name, const QString& description = {});
     Parameter* emplace(const QJsonObject& schema, const QJsonObject& value);
@@ -71,13 +71,24 @@ public:
     QVariant value(const QString& name) const;
     bool setValue(const QString& name, const QVariant& value);
     void applyPreset(const QString& presetName);
-    
+
+public:
+    ParameterList &operator<<(Parameter& param){
+        append(&param);
+        return *this;
+    };
+    ParameterList &operator<<(Parameter* param){
+        if(param) append(param);
+        return *this;
+    };
+
+
 signals:
     void nameChanged(const QString& value);
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
     void countChanged(int count);
-    void parameterAdded(QtNoid::App::Parameter* parameter);
+    void parameterAdded(const QtNoid::App::Parameter* parameter);
     void parameterRemoved(QtNoid::App::Parameter* parameter);
     void parameterRenameError(const QString& oldName, const QString& newName);
 
@@ -103,8 +114,8 @@ private:
 inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace() << "ParameterList(\"" << list.name()
-                    << "\", count=" << list.count();
+    debug.nospace() << "ParameterList(" << list.name()
+                    << ", count=" << list.count();
 
     if (!list.isEmpty()) {
         debug << ", parameters=[";

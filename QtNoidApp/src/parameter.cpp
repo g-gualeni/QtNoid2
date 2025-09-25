@@ -339,6 +339,21 @@ void Parameter::setRange(const std::pair<QVariant, QVariant>& newRange)
     setRange(newRange.first, newRange.second);
 }
 
+bool Parameter::rangeIsValid() const
+{
+    if(!m_min.value().isValid())
+        return false;
+
+    if(!m_max.value().isValid())
+        return false;
+
+    if (compareVariants(m_min.value(), m_max.value(), 1)) {
+        return false;
+    }
+
+    return true;
+ }
+
 
 QVariantMap Parameter::presets() const
 {
@@ -587,6 +602,11 @@ bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int compar
     }
 
     return false;
+}
+
+void Parameter::onValueChanged(const QVariant& newValue)
+{
+    setValue(newValue);
 }
 
 

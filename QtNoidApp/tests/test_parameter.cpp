@@ -36,12 +36,17 @@ private slots:
 
     void testParameterRange();
     void testParameterSetRangeShouldHandleFlippingMinAndMaxSoRangeWillBeConsistent();
+    void testParameterRangeIsValid();
     void testParameterName();
     void testParameterDescription();
     void testParameterUnit();
     void testParameterTooltip();
     void testParameterReadOnly();
-    
+
+    // Slot tests
+    void testOnValueChangedSlot();
+    void testOnValueChangedSlotUsingConnect();
+
     // Bindable properties tests
     void testBindableValue();
     void testBindableValueUsingBidirectionalNotifier();
@@ -528,6 +533,66 @@ void TestQtNoidAppParameter::testParameterSetRangeShouldHandleFlippingMinAndMaxS
     QCOMPARE(range.second, 222);
 }
 
+void TestQtNoidAppParameter::testParameterRangeIsValid()
+{
+    Parameter par(50.0, "TestParam", this);
+
+    // Test case 1: No range set (both min and max are invalid) - should return false
+    QCOMPARE(par.rangeIsValid(), false);
+
+    // Test case 2: Only min set (max is invalid) - should return false
+    par.setMin(0.0);
+    QCOMPARE(par.rangeIsValid(), false);
+
+    // Test case 3: Only max set (min is invalid) - should return false
+    par.setMin(QVariant()); // Reset min to invalid
+    par.setMax(100.0);
+    QCOMPARE(par.rangeIsValid(), false);
+
+    // Test case 4: Valid range with min < max - should return true
+    par.setMin(0.0);
+    par.setMax(100.0);
+    QCOMPARE(par.rangeIsValid(), true);
+
+    // Test case 5: Valid range with min = max - should return true
+    par.setRange(50.0, 50.0);
+    QCOMPARE(par.rangeIsValid(), true);
+
+    // Test case 6: Invalid range with min > max - should return false
+    // because there is no control in consinstency
+    par.setMin(100.0);
+    par.setMax(0.0);
+    QCOMPARE(par.rangeIsValid(), false);
+
+
+    // Test case 7: Test with string ranges
+    Parameter parString("middle", "StringParam", this);
+    QCOMPARE(parString.rangeIsValid(), false); // No range set
+
+    parString.setRange("a", "z");
+    QCOMPARE(parString.rangeIsValid(), true); // Valid string range
+
+    QVERIFY(0);
+    parString.setRange("z", "a");
+    QCOMPARE(parString.rangeIsValid(), false); // Invalid string range (z > a)
+
+    // Test case 8: Test with negative numbers
+    Parameter parNegative(-50.0, "NegativeParam", this);
+    parNegative.setRange(-100.0, -10.0);
+    QCOMPARE(parNegative.rangeIsValid(), true);
+
+    parNegative.setRange(-10.0, -100.0);
+    QCOMPARE(parNegative.rangeIsValid(), false);
+
+    // Test case 9: Test edge case with zero
+    Parameter parZero(0.0, "ZeroParam", this);
+    parZero.setRange(-1.0, 1.0);
+    QCOMPARE(parZero.rangeIsValid(), true);
+
+    parZero.setRange(1.0, -1.0);
+    QCOMPARE(parZero.rangeIsValid(), false);
+}
+
 void TestQtNoidAppParameter::testParameterName()
 {
     Parameter par(12500, "EarthRadius");
@@ -642,6 +707,83 @@ void TestQtNoidAppParameter::testParameterReadOnly()
     QCOMPARE(writeAttemptSpy.count(), 0); // No additional signal
     QCOMPARE(valueChangeSpy.count(), 1);
     QCOMPARE(par.value(), 200.0);
+}
+
+void TestQtNoidAppParameter::testOnValueChangedSlot()
+{
+    Parameter par(100.0, "TestParam", this);
+    QCOMPARE(par.value(), 100.0);
+
+    QSignalSpy valueChangedSpy(&par, &Parameter::valueChanged);
+
+    // Directly Call the slot with a new value
+    QVariant newValue = 250.0;
+    par.onValueChanged(newValue);
+
+    // Verify the value was changed
+    QCOMPARE(par.value(), 250.0);
+    QCOMPARE(valueChangedSpy.count(), 1);
+
+    // Check that the signal was emitted with the correct argument
+    QList<QVariant> arguments = valueChangedSpy.takeFirst();
+    QCOMPARE(arguments.at(0), newValue);
+
+    // Test with a string value
+    QVariant stringValue = "TestString";
+    par.onValueChanged(stringValue);
+    QCOMPARE(par.value(), stringValue);
+    QCOMPARE(valueChangedSpy.count(), 1);
+    arguments = valueChangedSpy.takeFirst();
+    QCOMPARE(arguments.at(0), stringValue);
+
+    // Test with the same value should not fire valueChanged
+    par.onValueChanged(stringValue);
+    QCOMPARE(par.value(), stringValue);
+    QCOMPARE(valueChangedSpy.count(), 0);
+
+    // Test slot with range constraints
+    par.setValue(50.0);
+    par.setRange(0.0, 100.0);
+    valueChangedSpy.clear();
+
+    // Call slot with value that should be clamped
+    par.onValueChanged(150.0);
+    QCOMPARE(par.value(), 100.0); // Should be clamped to max
+    QCOMPARE(valueChangedSpy.count(), 1);
+
+
+    // Call slot with value below minimum
+    valueChangedSpy.clear();
+    par.onValueChanged(-10.0);
+    QCOMPARE(par.value(), 0.0); // Should be clamped to min
+    QCOMPARE(valueChangedSpy.count(), 1);
+
+    // Test slot behavior with read-only parameter
+    par.setReadOnly(true);
+    QSignalSpy writeAttemptSpy(&par, &Parameter::writeAttemptedWhileReadOnly);
+    valueChangedSpy.clear();
+    par.onValueChanged(75.0);
+    QCOMPARE(par.value(), 0.0); // Value should not change when read-only
+    QCOMPARE(valueChangedSpy.count(), 0);
+    QCOMPARE(writeAttemptSpy.count(), 1);
+    QList<QVariant> writeAttemptArgs = writeAttemptSpy.takeFirst();
+    // Verify the writeAttemptedWhileReadOnly signal contains the parameter name
+    QCOMPARE(writeAttemptArgs.at(0).toString(), "TestParam");
+}
+
+void TestQtNoidAppParameter::testOnValueChangedSlotUsingConnect()
+{
+    Parameter parLeader(100.0, this);
+    QCOMPARE(parLeader.value(), 100.0);
+
+    // Create a follower object and
+    Parameter parFollower(10.0, this);
+    QCOMPARE(parFollower.value(), 10.0);
+    QSignalSpy valueChangedSpy(&parFollower, &Parameter::valueChanged);
+    connect(&parLeader, &Parameter::valueChanged, &parFollower, &Parameter::onValueChanged);
+
+    parLeader.setValue(123.0);
+    QCOMPARE(parFollower.value(), 123.0);
 }
 
 void TestQtNoidAppParameter::testBindableValue()

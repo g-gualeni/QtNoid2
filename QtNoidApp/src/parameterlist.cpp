@@ -373,7 +373,12 @@ bool ParameterList::contains(const QString &name) const
 
 QList<Parameter *> ParameterList::parameters() const
 {
-    return m_parameterToIndex.keys();
+    // return m_parameterToIndex.keys(); -> this doesn't guarantee the sorting
+    QList<Parameter*> res;
+    for(auto it = m_parametersByIndex.cbegin(); it != m_parametersByIndex.cend(); ++it) {
+        res << it.value();
+    }
+    return res;
 }
 
 QVariant ParameterList::value(const QString &name) const
@@ -444,6 +449,8 @@ void ParameterList::onParameterNameEdited(const QString &oldName, const QString 
 
 void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
 {
+
+    // parameter->setParent(this);
     m_parametersByUniqueId.insert(parameter->uniqueId(), parameter);
     m_parameterToIndex.insert(parameter, m_nextParameterIndex);
     m_parametersByIndex.insert(m_nextParameterIndex, parameter);

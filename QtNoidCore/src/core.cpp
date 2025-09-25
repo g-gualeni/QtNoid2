@@ -13,10 +13,7 @@ QString Core::version()
 QString Core::buildInfo()
 {
     return QString(PROJECT_NAME " %1 - Built with Qt %2 on %3 %4 - " PROJECT_COPYRIGHT)
-           .arg(version())
-           .arg(QT_VERSION_STR)
-           .arg(__DATE__)
-           .arg(__TIME__);
+           .arg(version(), QT_VERSION_STR, __DATE__, __TIME__);
 }
 
 } // namespace QtNoid

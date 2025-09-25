@@ -3,7 +3,7 @@
 ## Current Sprint (Sprint-003)
 
 ### Sprint-003 Goals
-- Implementation of the QtNoid::App library and release of QtNoid2 version 2.0.2
+- Implementation of the QtNoid::App library and release of QtNoid2 version 2.1.0
 
 
 
@@ -20,7 +20,7 @@
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
-
+Finire il test su RangeIsValid
 
 
 ### Todo Parameter
@@ -43,7 +43,12 @@
 - [x] Parameter::nameEdited to track oldName and NewName
 - [x] Change argument position for the constructor because they are confusing
 - [x] Add the QDebug << operator to simplify debug
+- [ ] Add a slot onChanging value so it is simpler to connect to GUI
+- [ ] Add rangeIsValid and his test
 
+- [ ] Add a modified flag and a reset modification event to activate the bold
+      for each paramter changed and disable the bold when a preset is applied
+      
 - [ ] Update documentation 
 - [ ] Test performance using bindings and using signal/slots
       
@@ -68,6 +73,8 @@
 - [x] Add the method applyPreset()
 - [x] Add test for the method applyPreset()
 - [x] Add the QDebug << operator to simplify debug
+- [x] Test the ownership and the destruction
+- [ ] Create an iterator
 
 - [ ] Update documentation 
 
@@ -79,10 +86,10 @@
 - [ ] Add droplist to show how applyPreset()
 
 ### Test AppParameterListBasicUsage
-- [ ] Create the example with a list of 2 or more parameters
+- [x] Create the example with a list of 2 or more parameters
+- [x] Add an example of the QDebug << operator 
 - [ ] Add a save to JSON command
 - [ ] Add a load from JSON command
-- [ ] Add an example of the QDebug << operator 
 
 ### Test AppParameterListBenchmark
 - [x] Performance for Parameter and ParameterList using new and using JSON

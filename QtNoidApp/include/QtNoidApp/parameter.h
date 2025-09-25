@@ -60,6 +60,7 @@ public:
     std::pair<QVariant, QVariant> range() const;
     void setRange(const QVariant& min, const QVariant& max);
     void setRange(const std::pair<QVariant, QVariant>& newRange);
+    bool rangeIsValid() const;
 
     // Presets management
     QVariantMap presets() const;
@@ -118,6 +119,9 @@ signals:
     void readOnlyChanged(bool value);
     void visibleChanged(bool value);
     void writeAttemptedWhileReadOnly(const QString &parameterName);
+
+public slots:
+    void onValueChanged(const QVariant& newValue);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariant, m_value, &Parameter::valueChanged)

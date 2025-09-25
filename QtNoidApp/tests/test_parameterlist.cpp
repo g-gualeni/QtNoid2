@@ -4,6 +4,8 @@
 #include <QJsonArray>
 #include <QtNoidApp/QtNoidApp>
 
+using namespace QtNoid::App;
+
 class TestQtNoidAppParameterList : public QObject
 {
     Q_OBJECT
@@ -57,15 +59,12 @@ private slots:
     void testParameterRenameError();
     void testIsEmpty();
     void testApplyPreset();
+    void testOperatorLeftShiftWithParameterReference();
 
-
-
-
-private:
+    void testListOwnershipDeleteListDestroyParameters();
 
 };
 
-using namespace QtNoid::App;
 
 
 void TestQtNoidAppParameterList::initTestCase()
@@ -1169,9 +1168,73 @@ void TestQtNoidAppParameterList::testApplyPreset()
 
 }
 
+void TestQtNoidAppParameterList::testOperatorLeftShiftWithParameterReference()
+{
+    ParameterList list(this);
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
+    // Create parameters to add
+    Parameter param1(100.0, "Temperature", this);
+    Parameter param2(1013.25, "Pressure", this);
+    Parameter param3(60.0, "Humidity", this);
 
+    // Test chaining operator<< with parameter references
+    list << param1 << param2 << param3;
 
+    // Verify all parameters were added
+    QCOMPARE(list.count(), 3);
+    QCOMPARE(countSpy.count(), 3);
+    QCOMPARE(addedSpy.count(), 3);
+
+    // Verify parameters are accessible
+    QCOMPARE(list.contains("Temperature"), true);
+    QCOMPARE(list.contains("Pressure"), true);
+    QCOMPARE(list.contains("Humidity"), true);
+    QCOMPARE(list.parameter("Temperature"), &param1);
+    QCOMPARE(list.parameter("Pressure"), &param2);
+    QCOMPARE(list.parameter("Humidity"), &param3);
+
+    // Verify parameter values
+    QCOMPARE(list.value("Temperature").toDouble(), 100.0);
+    QCOMPARE(list.value("Pressure").toDouble(), 1013.25);
+    QCOMPARE(list.value("Humidity").toDouble(), 60.0);
+
+    // Test adding duplicate parameter with operator<< (should not add)
+    int originalCount = list.count();
+    list << param1;
+    QCOMPARE(list.count(), originalCount);
+    QCOMPARE(countSpy.count(), 3); // No new count change signal
+
+    // Test return value allows chaining
+    ParameterList& result = (list << param1);
+    QCOMPARE(&result, &list);
+
+    // Verify I can change paramter and see the changed value
+    param1.setValue(99);
+    QCOMPARE(list.value("Temperature"), 99);
+    list.setValue("Pressure", 1000);
+    QCOMPARE(param2.value(), 1000);
+
+}
+
+void TestQtNoidAppParameterList::testListOwnershipDeleteListDestroyParameters()
+{
+    // Create 2 objects and verify they are destroyed with the list
+    ParameterList *list = new ParameterList("MyBeautifullList");
+
+    Parameter *parameter1 = new Parameter(1, "Paramter1", list);
+    QSignalSpy parameter1Spy(parameter1, &QObject::destroyed);
+
+    Parameter *parameter2 = new Parameter(2, "Paramter2", list);
+    QSignalSpy parameter2Spy(parameter2, &QObject::destroyed);
+    *list << parameter1 << parameter2;
+
+    delete list;
+    QCOMPARE(parameter1Spy.count(), 1);
+    QCOMPARE(parameter2Spy.count(), 1);
+
+}
 
 
 QTEST_MAIN(TestQtNoidAppParameterList)

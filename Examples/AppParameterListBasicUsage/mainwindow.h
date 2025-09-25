@@ -11,6 +11,8 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,12 +25,20 @@ private slots:
     void on_cmdQDebug_clicked();
 
 
+    void on_cmdDefault_clicked();
+
 private:
     void createList();
+    void createUiFromList();
+    QWidget *createUiTabFromList();
+    QLayout *createUiParamterGroupFromParameter(QtNoid::App::Parameter* par, int width);
+    QWidget *createUiDescriptionFromParameter(QtNoid::App::Parameter* par);
 
 private:
     Ui::MainWindow *ui;
     QtNoid::App::ParameterList m_list;
+
+    QTabWidget* m_tabWidget;
 
 };
 #endif // MAINWINDOW_H

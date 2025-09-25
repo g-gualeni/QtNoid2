@@ -183,7 +183,7 @@ quint64 MainWindow::benchmarkParameterListToJSON(int paramtersCount)
 
     ET.start();
     for(int ii=0; ii < paramtersCount; ii++) {
-        paramList.emplace(QString::number(ii), {}, ii);
+        paramList.emplace(ii, QString::number(ii), {});
     }
     qDebug() << __func__ << "Creating ParameterList" << QtNoid::Common::Scale::nanoSecsUpToDays(ET.nsecsElapsed());
 
