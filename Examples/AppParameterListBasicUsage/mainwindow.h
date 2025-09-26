@@ -27,6 +27,10 @@ private slots:
 
     void on_cmdDefault_clicked();
 
+    void on_cmdSaveToJson_clicked();
+
+    void on_cmdLoadFromJson_clicked();
+
 private:
     void createList();
     void createUiFromList();

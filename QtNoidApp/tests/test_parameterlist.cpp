@@ -61,6 +61,9 @@ private slots:
     void testApplyPreset();
     void testOperatorLeftShiftWithParameterReference();
 
+    void testApplyJsonValuesToExistingParameterListShouldUpdateValues();
+    void testApplyJsonSchemaToExistingParameterListShouldUpdateSchema();
+
     void testListOwnershipDeleteListDestroyParameters();
 
 };
@@ -1233,6 +1236,136 @@ void TestQtNoidAppParameterList::testListOwnershipDeleteListDestroyParameters()
     delete list;
     QCOMPARE(parameter1Spy.count(), 1);
     QCOMPARE(parameter2Spy.count(), 1);
+
+}
+
+void TestQtNoidAppParameterList::testApplyJsonValuesToExistingParameterListShouldUpdateValues()
+{
+    // Create an existing ParameterList with some parameters
+    ParameterList list("SensorConfig", this);
+    list.emplace(20.0, "Temperature");
+    list.emplace(1000.0, "Pressure");
+
+    QCOMPARE(list.count(), 2);
+    QCOMPARE(list.value("Temperature").toDouble(), 20.0);
+    QCOMPARE(list.value("Pressure").toDouble(), 1000.0);
+
+    // Create JSON values to apply to the existing list
+    QJsonArray valuesArray;
+    QJsonObject tempValue;
+    tempValue["Temperature"] = 25.5;
+    valuesArray.append(tempValue);
+
+    QJsonObject pressValue;
+    pressValue["Pressure"] = 1013.25;
+    valuesArray.append(pressValue);
+
+    // Add a new parameter via JSON
+    QJsonObject humidityValue;
+    humidityValue["Humidity"] = 60.0;
+    valuesArray.append(humidityValue);
+
+    QJsonObject jsonValues;
+    jsonValues["SensorConfig"] = valuesArray;
+
+
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
+
+    // Apply JSON values to existing list
+    bool result = list.valuesFromJson(jsonValues);
+
+    // Verify the operation succeeded
+    QVERIFY(result);
+
+    // Verify existing parameters were updated
+    QCOMPARE(list.value("Temperature"), 25.5);
+    QCOMPARE(list.value("Pressure"), 1013.25);
+
+    // Verify new parameter was added
+    QCOMPARE(list.count(), 3);
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(addedSpy.count(), 1);
+    QCOMPARE(list.value("Humidity"), 60.0);
+
+}
+
+void TestQtNoidAppParameterList::testApplyJsonSchemaToExistingParameterListShouldUpdateSchema()
+{
+    // Create an existing ParameterList with some parameters
+    ParameterList list("DeviceConfig", this);
+    list.emplace(50.0, "Temperature", "Description");
+    QCOMPARE(list.count(), 1);
+
+    // Create JSON schema to apply to the existing list
+    QJsonArray schemaArray;
+
+    // Temperature parameter schema
+    QJsonObject temperatureObject;
+    temperatureObject["description"] = "Temperature sensor reading";
+    temperatureObject["tooltip"] = "Current ambient temperature";
+    temperatureObject["unit"] = "°C";
+    temperatureObject["min"] = -40.0;
+    temperatureObject["max"] = 85.0;
+    temperatureObject["readOnly"] = true;
+    temperatureObject["visible"] = true;
+
+    QJsonObject temperatureSchema;
+    temperatureSchema["Temperature"] = temperatureObject;
+    schemaArray.append(temperatureSchema);
+
+    // Pressure parameter schema
+    QJsonObject pressureObject;
+    pressureObject["description"] = "Atmospheric pressure";
+    pressureObject["tooltip"] = "Current atmospheric pressure reading";
+    pressureObject["unit"] = "hPa";
+    pressureObject["min"] = 800.0;
+    pressureObject["max"] = 1200.0;
+    pressureObject["readOnly"] = false;
+    pressureObject["visible"] = true;
+
+    QJsonObject pressureSchema;
+    pressureSchema["Pressure"] = pressureObject;
+    schemaArray.append(pressureSchema);
+
+    QJsonObject jsonSchema;
+    jsonSchema["DeviceConfig"] = schemaArray;
+
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+    QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
+
+    // Apply JSON schema to existing list
+    bool result = list.schemaFromJson(jsonSchema);
+
+    // Verify the operation succeeded
+    QVERIFY(result);
+
+    // Verify new parameters were added from schema
+    QCOMPARE(list.count(), 2);
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(addedSpy.count(), 1);
+
+    // Verify Temperature parameter was updated from schema
+    Parameter* tempParam = list.parameter("Temperature");
+    QVERIFY(tempParam != nullptr);
+    QCOMPARE(tempParam->description(), "Temperature sensor reading");
+    QCOMPARE(tempParam->tooltip(), "Current ambient temperature");
+    QCOMPARE(tempParam->unit(), "°C");
+    QCOMPARE(tempParam->min().toDouble(), -40.0);
+    QCOMPARE(tempParam->max().toDouble(), 85.0);
+    QCOMPARE(tempParam->readOnly(), true);
+    QCOMPARE(tempParam->visible(), true);
+
+    // Verify Pressure parameter was created correctly from schema
+    Parameter* pressParam = list.parameter("Pressure");
+    QVERIFY(pressParam != nullptr);
+    QCOMPARE(pressParam->description(), "Atmospheric pressure");
+    QCOMPARE(pressParam->tooltip(), "Current atmospheric pressure reading");
+    QCOMPARE(pressParam->unit(), "hPa");
+    QCOMPARE(pressParam->min().toDouble(), 800.0);
+    QCOMPARE(pressParam->max().toDouble(), 1200.0);
+    QCOMPARE(pressParam->readOnly(), false);
+    QCOMPARE(pressParam->visible(), true);
 
 }
 

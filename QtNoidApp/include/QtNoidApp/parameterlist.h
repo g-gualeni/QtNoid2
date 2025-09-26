@@ -123,7 +123,9 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
             if (i > 0) debug << ", ";
             QtNoid::App::Parameter* param = list.parameter(i);
             if (param) {
-                debug << param->name() << ":" << param->value();
+                QString changedFlag = param->isChanged()? ", changed" : ", notChanged";
+                debug << param->name() << ":{" << param->value() << changedFlag << "}";
+
             }
         }
         debug << "]";

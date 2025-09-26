@@ -274,7 +274,11 @@ void Parameter::setValue(const QVariant &val)
 {
     if (canModify()) {
         // No needs for checking if different or to manually emit value changed
-        m_value = clampValue(val);
+        auto newVal = clampValue(val);
+        if(newVal != m_value) {
+            setIsChanged();
+            m_value = newVal;
+        }
     }
 }
 QBindable<QVariant> Parameter::bindableValue()
@@ -339,6 +343,10 @@ void Parameter::setRange(const std::pair<QVariant, QVariant>& newRange)
     setRange(newRange.first, newRange.second);
 }
 
+/**
+ * @brief Parameter::rangeIsValid
+ * @return true if min, max are valid and if max > min (strictly)
+ */
 bool Parameter::rangeIsValid() const
 {
     if(!m_min.value().isValid())
@@ -347,7 +355,7 @@ bool Parameter::rangeIsValid() const
     if(!m_max.value().isValid())
         return false;
 
-    if (compareVariants(m_min.value(), m_max.value(), 1)) {
+    if (!compareVariants(m_max.value(), m_min.value(), 1)) {
         return false;
     }
 
@@ -396,7 +404,8 @@ bool Parameter::applyPreset(const QString &name)
 
     auto val = m_presets.value()[name];
     if(val == m_value) {
-        // No needs to trigger errors if the variable is locked
+        // No needs to trigger errors if the variable is the same
+        resetIsChanged();
         return true;
     }
     if (!canModify()) {
@@ -404,7 +413,13 @@ bool Parameter::applyPreset(const QString &name)
         return false;
     }
 
-    m_value = clampValue(val);
+    // Reset the flag only if the preset is in range
+    auto newVal = clampValue(val);
+    if(newVal == val) {
+        resetIsChanged();
+    }
+    m_value = newVal;
+
     return true;
 }
 
@@ -547,7 +562,11 @@ void Parameter::enforceRange()
     if(!m_value.value().isValid())
         return;
 
-    m_value = clampValue(m_value);
+    auto newVal = clampValue(m_value);
+    if(newVal != m_value) {
+        setIsChanged();
+        m_value = newVal;
+    }
 }
 
 QVariant Parameter::clampValue(const QVariant &value) const
@@ -556,12 +575,12 @@ QVariant Parameter::clampValue(const QVariant &value) const
     QVariant result = value;
 
     // Clamp to min value
-    if (m_min.value().isValid() && compareVariants(result, m_min, -1)) {
+    if (m_min.value().isValid() && compareVariants(value, m_min, -1)) {
         result = m_min.value();
     }
 
     // Clamp to max value
-    if (m_max.value().isValid() && compareVariants(result, m_max, 1)) {
+    if (m_max.value().isValid() && compareVariants(value, m_max, 1)) {
         result = m_max.value();
     }
 
@@ -581,8 +600,66 @@ bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int compar
     if (!a.isValid() || !b.isValid())
         return false;
 
-    // Try to convert to numbers
-    if (a.canConvert<double>() && b.canConvert<double>()) {
+    // qDebug() << __func__ << a.metaType() << b.metaType();
+
+    // Case 0: integer
+    QMetaType longLongType = QMetaType::fromType<long long>();
+    if(a.metaType() == longLongType && b.metaType() == longLongType) {
+        auto da = a.toLongLong();
+        auto db = b.toLongLong();
+        switch (comparison) {
+        case -1: return da < db;
+        case 0:  return da == db;
+        case 1:  return da > db;
+        }
+    }
+
+    // Case 1: integer
+    QMetaType intType = QMetaType::fromType<int>();
+    if(a.metaType() == intType && b.metaType() == intType) {
+        auto da = a.toInt();
+        auto db = b.toInt();
+        switch (comparison) {
+        case -1: return da < db;
+        case 0:  return da == db;
+        case 1:  return da > db;
+        }
+    }
+    // Case 2: double
+    QMetaType doubleType = QMetaType::fromType<double>();
+    if(a.metaType() == doubleType && b.metaType() == doubleType) {
+        auto da = a.toDouble();
+        auto db = b.toDouble();
+        switch (comparison) {
+        case -1: return da < db;
+        case 0:  return qFuzzyCompare(da, db);
+        case 1:  return da > db;
+        }
+    }
+
+    // Case 3: double and integer mixed
+    // If one of the 2 is an integer, or a double, then I process it as double
+    bool canBeDouble = false;
+    if(a.metaType() == longLongType) {
+        canBeDouble = true;
+    }
+    else if(b.metaType() == longLongType) {
+        canBeDouble = true;
+    }
+    else if(a.metaType() == doubleType) {
+        canBeDouble = true;
+    }
+    else if(b.metaType() == doubleType) {
+        canBeDouble = true;
+    }
+    else if(a.metaType() == intType) {
+        canBeDouble = true;
+    }
+    else if(b.metaType() == intType) {
+        canBeDouble = true;
+    }
+
+    if(canBeDouble) {
         double da = a.toDouble();
         double db = b.toDouble();
         switch (comparison) {
@@ -592,7 +669,7 @@ bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int compar
         }
     }
 
-    // Fallback to string comparison
+    // Case 4: Fallback to string comparison
     QString sa = a.toString();
     QString sb = b.toString();
     switch (comparison) {

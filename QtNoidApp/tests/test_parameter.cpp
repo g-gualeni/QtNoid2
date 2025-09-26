@@ -102,6 +102,10 @@ private slots:
     void testParameterFromJsonWithInvalidValueShouldLeaveValueUnchanged();
     void testParameterFromJsonWithIncompleteSchemaShouldOverrideExisitingSchema();
 
+    // isChanged flag tests
+    void testParameterIsChangedShouldBeFalseAfterConstructor();
+    void testParameterIsChangedOnlyAfterValueChanged();
+
 private:
 
 };
@@ -125,10 +129,15 @@ void TestQtNoidAppParameter::testCreatingParameter()
 {
     auto par = Parameter(this);
     par.setValue(123.456);
+    qDebug() << __func__ << par.value();
     par.setMin(-1000);
+    qDebug() << __func__ << par.value();
     par.setMax(1000);
+    qDebug() << __func__ << par.value();
     par.setName("ParameterName");
+    qDebug() << __func__ << par.value();
     par.setDescription("This is the first time");
+    qDebug() << __func__ << par.value();
 
     QCOMPARE(par.value(), 123.456);
     QCOMPARE(par.min(), -1000);
@@ -502,6 +511,29 @@ void TestQtNoidAppParameter::testParameterRange()
     // Apply a value and check it is clipped to the min
     par.setValue(-100);
     QCOMPARE(par.value(), -10);
+
+    // Set mixed numbers
+    par.setRange(-100LL, 100);
+    QCOMPARE(par.min(), -100);
+    QCOMPARE(par.max(), 100);
+
+    par.setRange(-100.123, 100);
+    QCOMPARE(par.min(), -100.123);
+    QCOMPARE(par.max(), 100);
+
+    // Set mixed numbers flipped
+    par.setRange(100LL, -100);
+    QCOMPARE(par.min(), -100);
+    QCOMPARE(par.max(), 100);
+
+    par.setRange(100, -100.123);
+    QCOMPARE(par.min(), -100.123);
+    QCOMPARE(par.max(), 100);
+
+    par.setRange(100.00, 100);
+    QCOMPARE(par.min(), 100);
+    QCOMPARE(par.max(), 100);
+
 }
 
 void TestQtNoidAppParameter::testParameterSetRangeShouldHandleFlippingMinAndMaxSoRangeWillBeConsistent()
@@ -555,8 +587,11 @@ void TestQtNoidAppParameter::testParameterRangeIsValid()
     QCOMPARE(par.rangeIsValid(), true);
 
     // Test case 5: Valid range with min = max - should return true
+    par.setRange(0, 0);
+    QCOMPARE(par.rangeIsValid(), false);
     par.setRange(50.0, 50.0);
-    QCOMPARE(par.rangeIsValid(), true);
+    QCOMPARE(par.rangeIsValid(), false);
+
 
     // Test case 6: Invalid range with min > max - should return false
     // because there is no control in consinstency
@@ -572,9 +607,9 @@ void TestQtNoidAppParameter::testParameterRangeIsValid()
     parString.setRange("a", "z");
     QCOMPARE(parString.rangeIsValid(), true); // Valid string range
 
-    QVERIFY(0);
+    // Range sequence is automatically adjusted by setRange()
     parString.setRange("z", "a");
-    QCOMPARE(parString.rangeIsValid(), false); // Invalid string range (z > a)
+    QCOMPARE(parString.rangeIsValid(), true);
 
     // Test case 8: Test with negative numbers
     Parameter parNegative(-50.0, "NegativeParam", this);
@@ -582,15 +617,18 @@ void TestQtNoidAppParameter::testParameterRangeIsValid()
     QCOMPARE(parNegative.rangeIsValid(), true);
 
     parNegative.setRange(-10.0, -100.0);
-    QCOMPARE(parNegative.rangeIsValid(), false);
+    QCOMPARE(parNegative.rangeIsValid(), true);
 
-    // Test case 9: Test edge case with zero
+
+    // Test case 9: Test edge case across zero
     Parameter parZero(0.0, "ZeroParam", this);
     parZero.setRange(-1.0, 1.0);
     QCOMPARE(parZero.rangeIsValid(), true);
 
+    // Range sequence is automatically adjusted by setRange()
     parZero.setRange(1.0, -1.0);
-    QCOMPARE(parZero.rangeIsValid(), false);
+    QCOMPARE(parZero.rangeIsValid(), true);
+
 }
 
 void TestQtNoidAppParameter::testParameterName()
@@ -1761,6 +1799,115 @@ void TestQtNoidAppParameter::testParameterFromJsonWithIncompleteSchemaShouldOver
     QCOMPARE(par.presets(), {});
 
 }
+
+void TestQtNoidAppParameter::testParameterIsChangedShouldBeFalseAfterConstructor()
+{
+    // Test that a newly created parameter has isChanged() = false
+    Parameter param1(this);
+    QCOMPARE(param1.isChanged(), false);
+
+    Parameter param2(42.0, this);
+    QCOMPARE(param2.isChanged(), false);
+
+    Parameter param3(100.0, "TestParam", this);
+    QCOMPARE(param3.isChanged(), false);
+
+    Parameter param4(25.5, "Temperature", "Temperature sensor", this);
+    QCOMPARE(param4.isChanged(), false);
+
+    // Test with JSON constructor
+    QJsonObject temperatureSchema;
+    QJsonObject temperatureObject;
+    temperatureObject["description"] = "Temperature";
+    temperatureObject["unit"] = "°C";
+    temperatureSchema["Temperature"] = temperatureObject;
+
+    QJsonObject valueJson;
+    valueJson["Temperature"] = 20.0;
+
+    Parameter param5(temperatureSchema, valueJson, this);
+    QCOMPARE(param5.isChanged(), false);
+
+}
+
+void TestQtNoidAppParameter::testParameterIsChangedOnlyAfterValueChanged()
+{
+    Parameter param(25.0, "TestParam", "Test parameter", this);
+    QCOMPARE(param.isChanged(), false);
+
+    // Test value change
+    param.setValue(25.0);               // Same value - no changes
+    QCOMPARE(param.isChanged(), false);
+    param.setValue(30.0);
+    QCOMPARE(param.isChanged(), true);
+
+    // min max range change should be false
+    Parameter paramMinMax(25.0, this);
+    paramMinMax.setMin(0);
+    QCOMPARE(paramMinMax.isChanged(), false);
+    paramMinMax.setMax(100);
+    QCOMPARE(paramMinMax.isChanged(), false);
+    paramMinMax.setRange(1, 99);
+    QCOMPARE(paramMinMax.isChanged(), false);
+
+    // min triggering value clamp
+    Parameter paramMin(25.0, this);
+    paramMin.setMin(26);
+    QCOMPARE(paramMin.value(), 26);
+    QCOMPARE(paramMin.isChanged(), true);
+
+    // max triggering value clamp
+    Parameter paramMax(25.0, this);
+    paramMax.setMax(24);
+    QCOMPARE(paramMax.value(), 24);
+    QCOMPARE(paramMax.isChanged(), true);
+
+    // Presets should not change
+    Parameter paramPreset(25.0, this);
+    paramPreset.setRange(0, 100);
+    paramPreset.setPreset("Hot", 50);
+    QCOMPARE(paramPreset.isChanged(), false);
+
+    // ApplyPreset should reset the flag
+    paramPreset.setValue(26);
+    QCOMPARE(paramPreset.isChanged(), true);
+    paramPreset.applyPreset("Hot");
+    QCOMPARE(paramPreset.isChanged(), false);
+
+    // Name change should not change
+    Parameter paramName(25.0, "MyName", this);
+    paramName.setName("NewName");
+    QCOMPARE(paramName.isChanged(), false);
+
+    // Description should not change
+    Parameter paramDescription(25.0, this);
+    paramDescription.setDescription("New description");
+    QCOMPARE(paramDescription.isChanged(), false);
+
+    // Unit should not change
+    Parameter paramUnit(25.0, this);
+    paramUnit.setUnit("kg");
+    QCOMPARE(paramUnit.isChanged(), false);
+
+    // Tooltip should not change
+    Parameter paramToolTip(25.0, this);
+    paramToolTip.setTooltip("New tooltip");
+    QCOMPARE(paramToolTip.isChanged(), false);
+
+    // readOnly should not change
+    Parameter paramReadOnly(25.0, this);
+    paramReadOnly.setReadOnly(true);
+    QCOMPARE(paramReadOnly.isChanged(), false);
+
+    // visible should not change
+    Parameter paramVisible(25.0, this);
+    paramVisible.setVisible(false);
+    QCOMPARE(paramVisible.isChanged(), false);
+    paramVisible.setVisible(true);
+    QCOMPARE(paramVisible.isChanged(), false);
+
+}
+
 
 
 QTEST_MAIN(TestQtNoidAppParameter)

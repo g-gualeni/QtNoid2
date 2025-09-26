@@ -35,6 +35,7 @@ public:
 
     int uniqueId() const { return m_uniqueId; }
     bool isValid() const;
+    bool isChanged() const{return m_isChanged;}
 
     // Serialization
     QJsonObject toJsonValue() const;
@@ -102,9 +103,6 @@ public:
     void setVisible(bool value);
     QBindable<bool> bindableVisible();
 
-    // friend QDebug operator<<(QDebug debug, const Parameter &param);
-    // friend QDebug operator<<(QDebug debug, const Parameter *param);
-
 signals:
     void valueChanged(const QVariant &newValue);
     void minChanged(const QVariant &min);
@@ -140,11 +138,14 @@ private:
     void connectRangeChanged();
     bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
     bool canModify() const; // Modification control
+    void resetIsChanged(){m_isChanged=false;}
+    void setIsChanged(){m_isChanged=true;}
 
 private:
     static QAtomicInt s_nextUniqueId;
     int m_uniqueId;
     QAtomicInt getNextUniqueId();
+    bool m_isChanged = false;
 };
 
 } // namespace App
@@ -158,6 +159,7 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter &param)
                     << "id: " << param.uniqueId()
                     << ", name: \"" << param.name() << "\""
                     << ", value: " << param.value()
+                    << ", isChanged: " << param.isChanged()
                     << ", range: [" << param.min() << ", " << param.max() << "]"
                     << ", readOnly: " << param.readOnly()
                     << ", visible: " << param.visible();

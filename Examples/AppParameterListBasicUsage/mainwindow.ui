@@ -31,6 +31,20 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="cmdSaveToJson">
+        <property name="text">
+         <string>SaveToJson</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cmdLoadFromJson">
+        <property name="text">
+         <string>LoadFromJson</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>

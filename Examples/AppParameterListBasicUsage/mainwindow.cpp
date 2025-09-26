@@ -3,6 +3,9 @@
 
 
 #include <QDoubleSpinBox>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
 #include <QTabWidget>
@@ -29,9 +32,11 @@ void MainWindow::createList()
 
     par = m_list.emplace(123, "Counter");
     par->setReadOnly(true);
+    par->setTooltip("This is a read only counter");
 
     par = m_list.emplace("test.ini", "FileName", "Configuration File Name");
     par->setPreset("Default", "test.ini");
+    par->setTooltip("This is an example of string containing a file name");
 
     par = m_list.emplace(10.5, "Light", "Current Light Intensity");
     par->setTooltip("Light Intensity tooltip");
@@ -39,10 +44,12 @@ void MainWindow::createList()
     par->setRange(0,100);
 
     par = m_list.emplace(11, "Dark", "Dark Light Intensity");
+    par->setTooltip("This is an example paramter");
     par->setPreset("Default", 11);
     par->setRange(0,100);
 
     par = m_list.emplace(12, "Bright", "Bright Light Intensity");
+    par->setTooltip("This is another example paramter");
     par->setPreset("Default", 12);
     par->setRange(10,200);
 }
@@ -107,7 +114,8 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         connect(spinInt, &QSpinBox::valueChanged, par, &QtNoid::App::Parameter::onValueChanged);
         connect(par, &QtNoid::App::Parameter::valueChanged, this,
                 [=](const QVariant &val){
-                    spinInt->setValue(val.toInt());   });
+                    spinInt->setValue(val.toInt());
+        });
         spin = spinInt;
     }
     else if(parType == QMetaType::fromType<double>()){
@@ -118,14 +126,15 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         }
         else {
             spinDouble->setRange(-std::numeric_limits<double>::infinity(),
-                              std::numeric_limits<double>::infinity());
+                                 std::numeric_limits<double>::infinity());
         }
         spinDouble->setValue(par->value().toDouble());
         spinDouble->setReadOnly(par->readOnly());
         connect(spinDouble, &QDoubleSpinBox::valueChanged, par, &QtNoid::App::Parameter::onValueChanged);
         connect(par, &QtNoid::App::Parameter::valueChanged, this,
                 [=](const QVariant &val){
-                    spinDouble->setValue(val.toDouble());  });
+                    spinDouble->setValue(val.toDouble());
+        });
         spin = spinDouble;
     }
     else {
@@ -135,9 +144,11 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         connect(text, &QLineEdit::textEdited, par, &QtNoid::App::Parameter::onValueChanged);
         connect(par, &QtNoid::App::Parameter::valueChanged, this,
                 [=](const QVariant &val){
-                    text->setText(val.toString());   });
+                    text->setText(val.toString());
+        });
         spin = text;
     }
+
     spin->setToolTip(par->tooltip());
 
     layout->addWidget(spin);
@@ -169,5 +180,67 @@ void MainWindow::on_cmdQDebug_clicked()
 void MainWindow::on_cmdDefault_clicked()
 {
     m_list.applyPreset("Default");
+}
+
+
+void MainWindow::on_cmdSaveToJson_clicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(
+        this, "Save values as JSON", "ParameterListValues.json",
+        "File JSON (*.json)"
+        );
+
+    if(fileName.isEmpty())
+        return;
+
+    QJsonObject val = m_list.toJsonValues();
+    QJsonDocument doc(val);
+    QFile file(fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(doc.toJson());
+        file.close();
+        QString msg = QString("Data saved to %1").arg(fileName);
+        QMessageBox::information(this, "Success", msg);
+    }
+    else {
+        QString msg = QString("Error writing to %1").arg(fileName);
+        QMessageBox::warning(this, "Error", msg);
+    }
+}
+
+
+void MainWindow::on_cmdLoadFromJson_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Load values from JSON",
+        "",
+        "File JSON (*.json);;Any file (*.*)"
+        );
+
+    if(fileName.isEmpty())
+        return;
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly)) {
+        QString msg = QString("Error reading to %1").arg(fileName);
+        QMessageBox::warning(this, "Error", msg);
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError) {
+        QMessageBox::warning(this, "Error",
+                             "Invalid JSON file: " + error.errorString());
+    }
+
+    bool res = m_list.valuesFromJson(doc.object());
+    if (!res) {
+        QMessageBox::warning(this, "Error", "Invalid JSON file");
+    }
+
 }
 

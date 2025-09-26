@@ -20,7 +20,6 @@
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
-Finire il test su RangeIsValid
 
 
 ### Todo Parameter
@@ -43,8 +42,10 @@ Finire il test su RangeIsValid
 - [x] Parameter::nameEdited to track oldName and NewName
 - [x] Change argument position for the constructor because they are confusing
 - [x] Add the QDebug << operator to simplify debug
-- [ ] Add a slot onChanging value so it is simpler to connect to GUI
-- [ ] Add rangeIsValid and his test
+- [x] Add a slot onChanging value so it is simpler to connect to GUI
+- [x] Add rangeIsValid and his test
+- [ ] Add the isChanged flag - rename to isValueChanged
+
 
 - [ ] Add a modified flag and a reset modification event to activate the bold
       for each paramter changed and disable the bold when a preset is applied
@@ -74,6 +75,7 @@ Finire il test su RangeIsValid
 - [x] Add test for the method applyPreset()
 - [x] Add the QDebug << operator to simplify debug
 - [x] Test the ownership and the destruction
+- [x] Test the update values from JSON capability
 - [ ] Create an iterator
 
 - [ ] Update documentation 
@@ -88,8 +90,9 @@ Finire il test su RangeIsValid
 ### Test AppParameterListBasicUsage
 - [x] Create the example with a list of 2 or more parameters
 - [x] Add an example of the QDebug << operator 
-- [ ] Add a save to JSON command
-- [ ] Add a load from JSON command
+- [x] Add a save to JSON command
+- [x] Add a load from JSON command
+- [ ] Set bold for modified paramters
 
 ### Test AppParameterListBenchmark
 - [x] Performance for Parameter and ParameterList using new and using JSON

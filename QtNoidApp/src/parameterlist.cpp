@@ -96,6 +96,11 @@ QJsonObject ParameterList::toJsonSchema() const
     return schema;
 }
 
+/**
+ * @brief ParameterList::valuesFromJson load or update values using an JSON file
+ * @param json
+ * @return
+ */
 bool ParameterList::valuesFromJson(const QJsonObject &json)
 {
     QString name = m_name.value();
@@ -111,20 +116,26 @@ bool ParameterList::valuesFromJson(const QJsonObject &json)
 
     // Load parameters
     const QJsonArray parametersArray = json[name].toArray();
+
+    // qDebug() << __func__ << parametersArray;
+
     for (const QJsonValue& value : parametersArray) {
         if (value.isObject()) {
             const QJsonObject valueObj = value.toObject();
             const auto valueName = valueObj.constBegin().key();
             const auto valueVal = valueObj.constBegin().value().toVariant();
-
-            auto newParam = new Parameter(valueVal, valueName, this);
-            auto res = append(newParam);
-            if(!res) {
-                delete newParam;
+            Parameter* par = m_parametersByName.value(valueName, nullptr);
+            if(par == nullptr) {
+                auto newParam = new Parameter(valueVal, valueName, this);
+                if(!append(newParam)) {
+                    delete newParam;
+                }
+            }
+            else {
+                par->setValue(valueVal);
             }
         }
     }
-
     return true;
 }
 
@@ -141,15 +152,21 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
         return false;
     }
 
-    // Load parameters from schema
+    // Load parameters from schema and update the object if present
     const QJsonArray schemaArray = json[name].toArray();
     for (const QJsonValue& schema : schemaArray) {
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
-            auto newParam = new Parameter(schemaObj, {}, this);
-            auto res = append(newParam);
-            if(!res) {
-                delete newParam;
+            const auto valueName = schemaObj.constBegin().key();
+            Parameter* par = m_parametersByName.value(valueName, nullptr);
+            if(par == nullptr) {
+                auto newParam = new Parameter(schemaObj, {}, this);
+                if(!append(newParam)) {
+                    delete newParam;
+                }
+            }
+            else {
+                par->schemaFromJson(schemaObj);
             }
         }
     }
