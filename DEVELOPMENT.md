@@ -48,9 +48,8 @@
 - [x] rename isChanged to isValueChanged
 - [x] handle the case where the value is back to default
       without triggering a preset or loading from json
-
 - [ ] Update documentation 
-- [ ] Test performance using bindings and using signal/slots
+
       
 
 ### Todo ParameterList
@@ -76,7 +75,8 @@
 - [x] Test the ownership and the destruction
 - [x] Test the update values from JSON capability
 
-- [ ] Create an iterator
+- [ ] Create iterators
+- [ ] Create Reverse Iterators
 
 - [ ] Update documentation 
 
@@ -100,7 +100,7 @@
       linking.
 - [ ] Add a test for linking 2 paramters using signals and slot. Consider also bidirectional
       linking.
-
+- [ ] Test performance using bindings and using signal/slots
 
 
 &nbsp;
