@@ -44,7 +44,7 @@ void TestQtNoidCore::testVersion()
 void TestQtNoidCore::testBuildInfo()
 {
     QString buildInfo = QtNoid::Core::buildInfo();
-    qDebug() << buildInfo;
+    // qDebug() << buildInfo;
     QVERIFY(!buildInfo.isEmpty());
     QVERIFY(buildInfo.contains("QtNoidCore"));
     QVERIFY(buildInfo.contains("2.0.1"));

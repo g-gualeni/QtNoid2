@@ -138,7 +138,6 @@ void TestQtNoidAppSettings::testGroupNameFromObjectOrClassUsingObjectName()
     auto actual = Settings::groupNameFromObjectOrClass(lbl);
     auto expected ="MyObjectIsBetter";
     QCOMPARE(actual, expected);
-
 }
 
 void TestQtNoidAppSettings::testUpdateMainWindowTitle_shouldFail()
@@ -157,7 +156,6 @@ void TestQtNoidAppSettings::testUpdateMainWindowTitle_data()
     QTest::addRow("Set Changed") <<"MoonApp" << true << "MoonApp*";
     QTest::addRow("With Space and Not Changed") <<"MoonApp " << false << "MoonApp";
     QTest::addRow("With Space and Set Changed") <<"MoonApp " << true << "MoonApp*";
-
 }
 
 
@@ -174,7 +172,6 @@ void TestQtNoidAppSettings::testUpdateMainWindowTitle()
     QCOMPARE(res, true);
 
     QCOMPARE(frm.windowTitle(), expected);
-
 }
 
 void TestQtNoidAppSettings::testUpdateMainWindowTitle_multipleChange()
@@ -191,7 +188,6 @@ void TestQtNoidAppSettings::testUpdateMainWindowTitle_multipleChange()
     QCOMPARE(res, true);
     auto expected = "We Are Ready*";
     QCOMPARE(frm.windowTitle(), expected);
-
 }
 
 void TestQtNoidAppSettings::testFullDialogGrab_shouldBeEmpty()

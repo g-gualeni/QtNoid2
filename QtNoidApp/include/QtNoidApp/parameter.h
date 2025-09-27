@@ -35,7 +35,7 @@ public:
 
     int uniqueId() const { return m_uniqueId; }
     bool isValid() const;
-    bool isChanged() const{return m_isChanged;}
+    bool isValueChanged() const{return m_isValueChanged;}
 
     // Serialization
     QJsonObject toJsonValue() const;
@@ -138,14 +138,15 @@ private:
     void connectRangeChanged();
     bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
     bool canModify() const; // Modification control
-    void resetIsChanged(){m_isChanged=false;}
-    void setIsChanged(){m_isChanged=true;}
+    void resetValueIsChanged(){m_isValueChanged=false;}
+    void setNewValIfChanged(const QVariant &newVal);
 
 private:
     static QAtomicInt s_nextUniqueId;
     int m_uniqueId;
     QAtomicInt getNextUniqueId();
-    bool m_isChanged = false;
+    bool m_isValueChanged = false;
+    QVariant m_initialValue;
 };
 
 } // namespace App
@@ -159,7 +160,7 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter &param)
                     << "id: " << param.uniqueId()
                     << ", name: \"" << param.name() << "\""
                     << ", value: " << param.value()
-                    << ", isChanged: " << param.isChanged()
+                    << ", isChanged: " << param.isValueChanged()
                     << ", range: [" << param.min() << ", " << param.max() << "]"
                     << ", readOnly: " << param.readOnly()
                     << ", visible: " << param.visible();

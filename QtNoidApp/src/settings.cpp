@@ -122,7 +122,5 @@ QPixmap Settings::fullDialogGrab(QWidget *ref)
 
 
 
-
-
 }   // namespace App
 }   // namespace QtNoid

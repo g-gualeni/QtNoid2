@@ -44,12 +44,11 @@
 - [x] Add the QDebug << operator to simplify debug
 - [x] Add a slot onChanging value so it is simpler to connect to GUI
 - [x] Add rangeIsValid and his test
-- [ ] Add the isChanged flag - rename to isValueChanged
+- [x] Add the isChanged flag 
+- [x] rename isChanged to isValueChanged
+- [x] handle the case where the value is back to default
+      without triggering a preset or loading from json
 
-
-- [ ] Add a modified flag and a reset modification event to activate the bold
-      for each paramter changed and disable the bold when a preset is applied
-      
 - [ ] Update documentation 
 - [ ] Test performance using bindings and using signal/slots
       
@@ -76,6 +75,7 @@
 - [x] Add the QDebug << operator to simplify debug
 - [x] Test the ownership and the destruction
 - [x] Test the update values from JSON capability
+
 - [ ] Create an iterator
 
 - [ ] Update documentation 
@@ -85,14 +85,14 @@
 - [x] Application that shows all elements and some feature for Paramter
 - [x] Add tooltip parameter
 - [x] Add the visible parameter
-- [ ] Add droplist to show how applyPreset()
+- [x] Add droplist to show how applyPreset()
 
 ### Test AppParameterListBasicUsage
 - [x] Create the example with a list of 2 or more parameters
 - [x] Add an example of the QDebug << operator 
 - [x] Add a save to JSON command
 - [x] Add a load from JSON command
-- [ ] Set bold for modified paramters
+- [x] Set bold for modified paramters
 
 ### Test AppParameterListBenchmark
 - [x] Performance for Parameter and ParameterList using new and using JSON

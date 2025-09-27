@@ -10,8 +10,6 @@
 namespace QtNoid {
 namespace Common {
 
-
-
 QString File::autoNamingNextName(const QString &currentName)
 {
     QFileInfo FI(currentName);
@@ -56,7 +54,6 @@ QString File::autoNamingNextName(const QString &currentName)
     return newFileName;
 }
 
-
 QString File::autoNaming(const QString &filePath)
 {
     QFileInfo fileInfo(filePath);
@@ -70,7 +67,6 @@ QString File::autoNaming(const QString &filePath)
 
     return newPath;
 }
-
 
 QFileInfo QtNoid::Common::File::autoNaming(const QFileInfo &fileInfo)
 {
@@ -90,7 +86,6 @@ bool File::compareIfEqual(const QString &filePath1, const QString &filePath2)
 {
     return compareIfEqual(QFileInfo(filePath1), QFileInfo(filePath2));
 }
-
 
 bool File::compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2)
 {
@@ -137,7 +132,6 @@ bool File::compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2
         return true;
     }
 
-
     return false;
 }
 
@@ -157,7 +151,6 @@ bool File::isTextFile(const QFileInfo &fileInfo)
     if(!fileInfo.isFile()) {
         return false;
     }
-
 
     // Read filesize or max 50.000 char and look for \0
     qint64 size = qMin(static_cast<qint64>(50000), fileInfo.size());
@@ -202,7 +195,6 @@ bool File::isTextFile(const QFileInfo &fileInfo)
     return false;
 }
 
-
 QFileInfo File::saveAsTextFileCreatePath(const QString &filePath, const QString &basePath, const QString &fileSuffix)
 {
     QString newPath = basePath + "/" + filePath;
@@ -230,7 +222,6 @@ QFileInfo File::saveAsTextFileCreatePath(const QString &filePath, const QString 
     return fileInfo;
 }
 
-
 QString File::saveAsTextFile(const QString &data, const QString &filePath, const QString &basePath, const QString &fileSuffix)
 {
     auto path = saveAsTextFileCreatePath(filePath, basePath, fileSuffix).absoluteFilePath();
@@ -245,7 +236,6 @@ QString File::saveAsTextFile(const QString &data, const QString &filePath, const
 
     return path;
 }
-
 
 QString File::saveAsTextFile(const QStringList &data, const QString &filePath, const QString &basePath, const QString &fileSuffix)
 {
@@ -279,7 +269,6 @@ QStringList File::readAsStringList(const QString &absoluteFilePath)
 
     return lines;
 }
-
 
 QStringList File::listPathRecursively(const QString &path, const QStringList &nameFilters)
 {
@@ -327,15 +316,6 @@ QStringList File::listPathRecursively(const QString &path, const QStringList &na
 
     return list;
 }
-
-
-
-
-
-
-
-
-
 
 
 } // namespace Common

@@ -85,7 +85,6 @@ void TestQtNoidCommonText::testIsValidUrl()
 
     auto result = Text::isValidUrl(url);
     QCOMPARE(result, expected);
-
 }
 
 void TestQtNoidCommonText::testIsValidEmail_data()
@@ -101,7 +100,6 @@ void TestQtNoidCommonText::testIsValidEmail_data()
     QTest::newRow("invalid_no_user") << "@domain.com" << false;
     QTest::newRow("invalid_no_tld") << "user@domain" << false;
     QTest::newRow("empty") << "" << false;
-
 }
 
 void TestQtNoidCommonText::testIsValidEmail()
@@ -111,7 +109,6 @@ void TestQtNoidCommonText::testIsValidEmail()
 
     auto result = Text::isValidEmail(email);
     QCOMPARE(result, expected);
-
 }
 
 void TestQtNoidCommonText::testSanitizeString_data()
@@ -126,7 +123,6 @@ void TestQtNoidCommonText::testSanitizeString_data()
     QTest::newRow("with_newlines") << "Hello\nWorld\r\n" << "Hello World";
     QTest::newRow("control_chars") << "Hello\x01\x02World" << "HelloWorld";
     QTest::newRow("multiple_spaces") << "Hello     World" << "Hello World";
-
 }
 
 void TestQtNoidCommonText::testSanitizeString()
@@ -137,7 +133,6 @@ void TestQtNoidCommonText::testSanitizeString()
     QString result = Text::sanitizeString(input);
     QCOMPARE(result, expected);
 }
-
 
 void TestQtNoidCommonText::testTokenizeSnakeCase_data()
 {
@@ -169,7 +164,6 @@ void TestQtNoidCommonText::testTokenizeSnakeCaseList()
 
     auto result = Text::tokenizeSnakeCase(list);
     QCOMPARE(result, expected);
-
 }
 
 void TestQtNoidCommonText::testTokenizeCamelCase_data()
@@ -386,7 +380,6 @@ void TestQtNoidCommonText::testConvertToCamelCase_data()
                                       << "ThisIsASnakeCase";
     QTest::newRow("snake123_turtle_") << "snake123_turtle_"
                                       << "Snake123Turtle";
-
 }
 
 void TestQtNoidCommonText::testConvertToCamelCase()
@@ -419,7 +412,6 @@ void TestQtNoidCommonText::testConvertToSnakeCase()
     auto result = Text::convertToSnakeCase(input, minNumBlockLen);
     QCOMPARE(result, expected);
 }
-
 
 
 

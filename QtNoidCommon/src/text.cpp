@@ -59,7 +59,6 @@ QString Text::sanitizeString(const QString &input)
     return result;
 }
 
-
 QStringList Text::tokenizeSnakeCase(const QString &list)
 {
     return list.split('_', Qt::SkipEmptyParts);
@@ -73,7 +72,6 @@ QStringList Text::tokenizeSnakeCase(const QStringList &list)
     }
     return out;
 }
-
 
 QStringList Text::tokenizeCamelCase(const QString &text)
 {
@@ -119,7 +117,6 @@ QStringList Text::tokenizeCamelCase(const QString &text)
     outTokenList.append(nextName + text.mid(readIndex));
     return outTokenList;
 }
-
 
 QStringList Text::tokenizeCamelCase(const QStringList &list)
 {
@@ -179,7 +176,6 @@ QStringList Text::tokenizeNumberBlocks(const QString &txt, int numberBlockLen)
     return outTokenList;
 }
 
-
 QStringList Text::tokenizeNumberBlocks(const QStringList &list, int numberBlockLen)
 {
     QStringList outTokenList;
@@ -188,7 +184,6 @@ QStringList Text::tokenizeNumberBlocks(const QStringList &list, int numberBlockL
     }
     return outTokenList;
 }
-
 
 /**
  * @brief tokenize tokenize using a list of splitters and contains instead
@@ -226,7 +221,6 @@ QStringList Text::tokenize(const QString &text, const QString &splittersString,
     return tokenList;
 }
 
-
 QString Text::convertToCamelCase(const QString &text)
 {
     QString camelCase;
@@ -245,7 +239,6 @@ QString Text::convertToCamelCase(const QString &text)
     return camelCase;
 }
 
-
 /**
  * @brief convertToSnakeCase: separate text blocks using _ character and convert the
  *                            resulting string to lower case
@@ -260,9 +253,6 @@ QString Text::convertToSnakeCase(const QString &text, int minNumBlockLen)
 
     return tokenList.join('_').toLower();
 }
-
-
-
 
 
 

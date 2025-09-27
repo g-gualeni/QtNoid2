@@ -10,43 +10,57 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("App Parameter Basic Usage");
 
+
+    // Listening to UI modifications
     connect(ui->txtName, &QLineEdit::textChanged, this,
-            [&](const QString& val){m_parameter.setName(val);
+            [&](const QString& val){
+                m_parameter.setName(val);
                 updateStatusBar("txtName::textChanged");
             });
     connect(ui->txtDescription, &QLineEdit::textChanged, this,
-            [&](const QString& val){m_parameter.setDescription(val);
+            [&](const QString& val){
+                m_parameter.setDescription(val);
                 updateStatusBar("txtDescription::textChanged");
             });
     connect(ui->txtTooltip, &QLineEdit::textChanged, this,
-            [&](const QString& val){m_parameter.setTooltip(val);
+            [&](const QString& val){
+                m_parameter.setTooltip(val);
                 updateStatusBar("txtTooltip::textChanged");
             });
     connect(ui->txtRange, &QLineEdit::textChanged, this,
-            [&](const QString& val){setRangeFromText(val);
+            [&](const QString& val){
+                setRangeFromText(val);
                 updateStatusBar("txtRange::textChanged");
             });
     connect(ui->txtUnit, &QLineEdit::textChanged, this,
-            [&](const QString& val){m_parameter.setUnit(val);
+            [&](const QString& val){
+                m_parameter.setUnit(val);
                 updateStatusBar("txtUnit::textChanged");
             });
     connect(ui->txtValue, &QDoubleSpinBox::valueChanged, this,
-            [&](double val){m_parameter.setValue(val);
+            [&](double val){
+                m_parameter.setValue(val);
                 updateStatusBar("txtValue::valueChanged");
             });
     connect(ui->optReadOnly, &QCheckBox::clicked, this,
-            [&](bool val){m_parameter.setReadOnly(val);
+            [&](bool val){
+                m_parameter.setReadOnly(val);
                 updateStatusBar("optReadOnly::clicked");
             });
     connect(ui->optVisible, &QCheckBox::clicked, this,
-            [&](bool val){m_parameter.setVisible(val);
+            [&](bool val){
+                m_parameter.setVisible(val);
                 updateStatusBar("optVisible::clicked");
             });
-    connect(ui->txtPresets, &QPlainTextEdit::textChanged, this,
-            [&](){setPresetsFromText(ui->txtPresets->toPlainText());
-                updateStatusBar("txtPresets::textChanged");
-            });
+    // connect(ui->txtPresets, &QPlainTextEdit::textChanged, this,
+    //         [&](){
+    //             setPresetsFromText(ui->txtPresets->toPlainText());
+    //             updateStatusBar("txtPresets::textChanged");
+    //         });
 
+
+
+    // Listening to m_paramter modifications
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
             [&](QString val){
                 ui->txtName->setText((val));
@@ -122,6 +136,13 @@ void MainWindow::updateFromGui()
     setPresetsFromText(ui->txtPresets->toPlainText());
 }
 
+void MainWindow::updatePresetList()
+{
+    ui->cboPresets->clear();
+    auto list = m_parameter.presets().keys();
+    ui->cboPresets->addItems(list);
+}
+
 void MainWindow::on_cmdUpdate_clicked()
 {
     updateFromGui();
@@ -195,6 +216,20 @@ void MainWindow::updateStatusBar(const QString &msg)
 
 void MainWindow::on_cmdQDebug_clicked()
 {
-    qDebug() << m_parameter;
+    qDebug() << __func__ << m_parameter;
 }
+
+void MainWindow::on_cmdUpdatePreset_clicked()
+{
+    setPresetsFromText(ui->txtPresets->toPlainText());
+    updatePresetList();
+}
+
+
+void MainWindow::on_cboPresets_currentTextChanged(const QString &arg1)
+{
+    m_parameter.applyPreset(arg1);
+}
+
+
 

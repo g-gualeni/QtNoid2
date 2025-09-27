@@ -51,7 +51,6 @@ void TestQtNoidCommonScale::testPrefixList()
     QCOMPARE(result.isEmpty(), false);
 }
 
-
 void TestQtNoidCommonScale::testMultiplier_data()
 {
     QTest::addColumn<QString>("prefix");
@@ -64,6 +63,7 @@ void TestQtNoidCommonScale::testMultiplier_data()
     QTest::newRow("Peta") << "P" << 1000LL * 1000 * 1000 * 1000 * 1000;
     QTest::newRow("Exa") << "E" << 1000LL * 1000 * 1000 * 1000 * 1000 * 1000;
 }
+
 void TestQtNoidCommonScale::testMultiplier()
 {
     QFETCH(QString, prefix);
@@ -72,7 +72,6 @@ void TestQtNoidCommonScale::testMultiplier()
     QCOMPARE(result, expected);
 
 }
-
 
 void TestQtNoidCommonScale::testMultiplierPrefix_data()
 {
@@ -88,8 +87,8 @@ void TestQtNoidCommonScale::testMultiplierPrefix_data()
     QTest::newRow("Exa") << 1000LL * 1000 * 1000 * 1000 * 1000 * 1000 << "E";
     QTest::newRow("1.001k") << 1001LL << "k";
     QTest::newRow("500k") << 500LL * 1000L << "k";
-
 }
+
 void TestQtNoidCommonScale::testMultiplierPrefix()
 {
     QFETCH(qint64, value);
@@ -97,7 +96,6 @@ void TestQtNoidCommonScale::testMultiplierPrefix()
     auto result = Scale::multiplierPrefix(value);
     QCOMPARE(result, expected);
 }
-
 
 void TestQtNoidCommonScale::testAutoUpToExaByte_data()
 {
@@ -113,8 +111,8 @@ void TestQtNoidCommonScale::testAutoUpToExaByte_data()
     QTest::newRow("1TB") << 1024LL * 1024 * 1024 * 1024 << "1.00 [TByte]";
     QTest::newRow("1PB") << 1024LL * 1024 * 1024 * 1024 * 1024 << "1.00 [PByte]";
     QTest::newRow("1EB") << 1024LL * 1024 * 1024 * 1024 * 1024 * 1024 << "1.00 [EByte]";
-
 }
+
 void TestQtNoidCommonScale::testAutoUpToExaByte()
 {
     QFETCH(qint64, value);
@@ -122,7 +120,6 @@ void TestQtNoidCommonScale::testAutoUpToExaByte()
     auto result = Scale::autoUpToExaByte(value);
     QCOMPARE(result, expected);
 }
-
 
 void TestQtNoidCommonScale::testAutoUpToExa_data()
 {
@@ -141,9 +138,8 @@ void TestQtNoidCommonScale::testAutoUpToExa_data()
                          << "2.50 [GJoule]";
     QTest::newRow("9EW") << 9156LL * 1000 * 1000 * 1000 * 1000 * 1000 << "Watt"
                          << "9.16 [EWatt]";
-
-
 }
+
 void TestQtNoidCommonScale::testAutoUpToExa()
 {
     QFETCH(qint64, value);
@@ -151,7 +147,6 @@ void TestQtNoidCommonScale::testAutoUpToExa()
     QFETCH(QString, expected);
     auto result = Scale::autoUpToExa(value, measUnit);
     QCOMPARE(result, expected);
-
 }
 
 void TestQtNoidCommonScale::testNanoSecsUpToDays_data()
@@ -167,7 +162,6 @@ void TestQtNoidCommonScale::testNanoSecsUpToDays_data()
     QTest::newRow("4 h") << 4LL * 60 * 60 * 1000 * 1000 * 1000 << "04:00:00";
     QTest::newRow("2 gg 2h") << 50LL * 60 * 60 * 1000 * 1000 * 1000 << "002 02:00:00";
     QTest::newRow("59.22 s") << 59LL * 1000 * 1000 * 1000 + 220 * 1000 * 1000 << "59.22 [s]";
-
 }
 
 void TestQtNoidCommonScale::testNanoSecsUpToDays()
@@ -176,7 +170,6 @@ void TestQtNoidCommonScale::testNanoSecsUpToDays()
     QFETCH(QString, expected);
     auto result = Scale::nanoSecsUpToDays(value);
     QCOMPARE(result, expected);
-
 }
 
 

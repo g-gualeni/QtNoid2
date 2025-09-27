@@ -27,19 +27,22 @@ Parameter::Parameter(QObject *parent)
 }
 
 Parameter::Parameter(const QVariant &initialValue, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId()), m_value(initialValue), m_visible(true)
+    : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
+    m_value(initialValue), m_visible(true)
 {
     connectRangeChanged();
 }
 
 Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_value(initialValue), m_visible(true)
+    : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
+    m_name(name), m_value(initialValue), m_visible(true)
 {
     connectRangeChanged();
 }
 
 Parameter::Parameter(const QVariant &initialValue, const QString &name, const QString &description, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_description(description), m_value(initialValue), m_visible(true)
+    : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
+    m_name(name), m_description(description), m_value(initialValue), m_visible(true)
 {
     connectRangeChanged();
 }
@@ -264,7 +267,6 @@ void Parameter::connectRangeChanged()
     });
 }
 
-
 QVariant Parameter::value() const
 {
     return m_value.value();
@@ -275,10 +277,7 @@ void Parameter::setValue(const QVariant &val)
     if (canModify()) {
         // No needs for checking if different or to manually emit value changed
         auto newVal = clampValue(val);
-        if(newVal != m_value) {
-            setIsChanged();
-            m_value = newVal;
-        }
+        setNewValIfChanged(newVal);
     }
 }
 QBindable<QVariant> Parameter::bindableValue()
@@ -286,20 +285,20 @@ QBindable<QVariant> Parameter::bindableValue()
     return QBindable<QVariant>(&m_value);
 }
 
-
 QVariant Parameter::min() const
 {
     return m_min.value();
 }
+
 void Parameter::setMin(const QVariant &val)
 {
     m_min = val;
 }
+
 QBindable<QVariant> Parameter::bindableMin()
 {
     return QBindable<QVariant>(&m_min);
 }
-
 
 QVariant Parameter::max() const
 {
@@ -309,16 +308,17 @@ void Parameter::setMax(const QVariant &val)
 {
     m_max = val;
 }
+
 QBindable<QVariant> Parameter::bindableMax()
 {
     return QBindable<QVariant>(&m_max);
 }
 
-
 std::pair<QVariant, QVariant> Parameter::range() const
 {
     return {m_min.value(), m_max.value()};
 }
+
 void Parameter::setRange(const QVariant &min, const QVariant &max)
 {
     if(min.isValid() && max.isValid()) {
@@ -367,14 +367,17 @@ QVariantMap Parameter::presets() const
 {
     return m_presets.value();
 }
+
 void Parameter::setPresets(const QVariantMap &presets)
 {
     m_presets = presets;
 }
+
 void Parameter::clearPresets()
 {
     m_presets = QVariantMap();
 }
+
 QVariant Parameter::preset(const QString &name) const
 {
     if(!m_presets.value().contains(name)) {
@@ -382,12 +385,14 @@ QVariant Parameter::preset(const QString &name) const
     }
     return m_presets.value()[name];
 }
+
 void Parameter::setPreset(const QString &name, const QVariant &value)
 {
     QVariantMap current = m_presets.value();
     current[name] = value;
     m_presets = current;
 }
+
 void Parameter::removePreset(const QString &name)
 {
     if(m_presets.value().contains(name)) {
@@ -396,6 +401,12 @@ void Parameter::removePreset(const QString &name)
         m_presets = currentPresets;
     }
 }
+
+/**
+ * @brief Parameter::applyPreset this override also read only but not range
+ * @param name
+ * @return
+ */
 bool Parameter::applyPreset(const QString &name)
 {
     if(!m_presets.value().contains(name)) {
@@ -403,21 +414,9 @@ bool Parameter::applyPreset(const QString &name)
     }
 
     auto val = m_presets.value()[name];
-    if(val == m_value) {
-        // No needs to trigger errors if the variable is the same
-        resetIsChanged();
-        return true;
-    }
-    if (!canModify()) {
-        // We have a different value but we cannot change
-        return false;
-    }
-
-    // Reset the flag only if the preset is in range
     auto newVal = clampValue(val);
-    if(newVal == val) {
-        resetIsChanged();
-    }
+    m_initialValue = newVal;
+    resetValueIsChanged();
     m_value = newVal;
 
     return true;
@@ -428,11 +427,11 @@ QBindable<QVariantMap> Parameter::bindablePresets()
     return QBindable<QVariantMap>(&m_presets);
 }
 
-
 QString Parameter::name() const
 {
     return m_name.value();
 }
+
 void Parameter::setName(const QString &newName)
 {
     QString oldName = m_name;
@@ -441,20 +440,22 @@ void Parameter::setName(const QString &newName)
         emit nameEdited(oldName, newName);
     }
 }
+
 QBindable<QString> Parameter::bindableName()
 {
     return QBindable<QString>(&m_name);
 }
 
-
 QString Parameter::description() const
 {
     return m_description.value();
 }
+
 void Parameter::setDescription(const QString &value)
 {
     m_description = value;
 }
+
 QBindable<QString> Parameter::bindableDescription()
 {
     return QBindable<QString>(&m_description);
@@ -465,29 +466,31 @@ QString Parameter::unit() const
 {
     return m_unit.value();
 }
+
 void Parameter::setUnit(const QString &value)
 {
     m_unit = value;
 }
+
 QBindable<QString> Parameter::bindableUnit()
 {
     return QBindable<QString>(&m_unit);
 }
 
-
 QString Parameter::tooltip() const
 {
     return m_tooltip.value();
 }
+
 void Parameter::setTooltip(const QString &value)
 {
     m_tooltip = value;
 }
+
 QBindable<QString> Parameter::bindableTooltip()
 {
     return QBindable<QString>(&m_tooltip);
 }
-
 
 bool Parameter::readOnly() const
 {
@@ -497,6 +500,7 @@ void Parameter::setReadOnly(bool value)
 {
     m_readOnly = value;
 }
+
 QBindable<bool> Parameter::bindableReadOnly()
 {
     return QBindable<bool>(&m_readOnly);
@@ -506,10 +510,12 @@ bool Parameter::visible() const
 {
     return m_visible.value();
 }
+
 void Parameter::setVisible(bool value)
 {
     m_visible = value;
 }
+
 QBindable<bool> Parameter::bindableVisible()
 {
     return QBindable<bool>(&m_visible);
@@ -524,6 +530,18 @@ bool Parameter::canModify() const
     return true;
 }
 
+void Parameter::setNewValIfChanged(const QVariant &newVal)
+{
+    if(newVal != m_value) {
+        if(newVal == m_initialValue) {
+            m_isValueChanged=false;
+        }
+        else {
+            m_isValueChanged=true;
+        }
+        m_value = newVal;
+    }
+}
 
 bool Parameter::isValid() const
 {
@@ -563,10 +581,7 @@ void Parameter::enforceRange()
         return;
 
     auto newVal = clampValue(m_value);
-    if(newVal != m_value) {
-        setIsChanged();
-        m_value = newVal;
-    }
+    setNewValIfChanged(newVal);
 }
 
 QVariant Parameter::clampValue(const QVariant &value) const
@@ -586,7 +601,6 @@ QVariant Parameter::clampValue(const QVariant &value) const
 
     return result;
 }
-
 
 /**
  * @brief Parameter::compareVariants
@@ -681,8 +695,13 @@ bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int compar
     return false;
 }
 
+/**
+ * @brief Parameter::onValueChanged is the slot for UI changed values.
+ * @param newValue
+ */
 void Parameter::onValueChanged(const QVariant& newValue)
 {
+    // qDebug() << __func__ << newValue;
     setValue(newValue);
 }
 

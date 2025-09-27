@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QTabWidget>
+#include <QStyle>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -32,25 +33,32 @@ void MainWindow::createList()
 
     par = m_list.emplace(123, "Counter");
     par->setReadOnly(true);
+    par->setPreset("Default01", 123);
+    par->setPreset("Default02", 223);
+
     par->setTooltip("This is a read only counter");
 
     par = m_list.emplace("test.ini", "FileName", "Configuration File Name");
-    par->setPreset("Default", "test.ini");
+    par->setPreset("Default01", "test.ini");
+    par->setPreset("Default02", "results.ini");
     par->setTooltip("This is an example of string containing a file name");
 
     par = m_list.emplace(10.5, "Light", "Current Light Intensity");
     par->setTooltip("Light Intensity tooltip");
-    par->setPreset("Default", 10.5);
+    par->setPreset("Default01", 10.5);
+    par->setPreset("Default02", 22.22);
     par->setRange(0,100);
 
     par = m_list.emplace(11, "Dark", "Dark Light Intensity");
     par->setTooltip("This is an example paramter");
-    par->setPreset("Default", 11);
+    par->setPreset("Default01", 11);
+    par->setPreset("Default02", 21);
     par->setRange(0,100);
 
     par = m_list.emplace(12, "Bright", "Bright Light Intensity");
     par->setTooltip("This is another example paramter");
-    par->setPreset("Default", 12);
+    par->setPreset("Default01", 12);
+    par->setPreset("Default02", 22);
     par->setRange(10,200);
 }
 
@@ -112,9 +120,11 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         spinInt->setValue(par->value().toInt());
         spinInt->setReadOnly(par->readOnly());
         connect(spinInt, &QSpinBox::valueChanged, par, &QtNoid::App::Parameter::onValueChanged);
-        connect(par, &QtNoid::App::Parameter::valueChanged, this,
-                [=](const QVariant &val){
-                    spinInt->setValue(val.toInt());
+        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
+            updateStyleSheet(spinInt, par);
+            if(spinInt->value() != val.toInt()){
+                spinInt->setValue(val.toInt());
+            }
         });
         spin = spinInt;
     }
@@ -131,9 +141,11 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         spinDouble->setValue(par->value().toDouble());
         spinDouble->setReadOnly(par->readOnly());
         connect(spinDouble, &QDoubleSpinBox::valueChanged, par, &QtNoid::App::Parameter::onValueChanged);
-        connect(par, &QtNoid::App::Parameter::valueChanged, this,
-                [=](const QVariant &val){
-                    spinDouble->setValue(val.toDouble());
+        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
+            updateStyleSheet(spinDouble, par);
+            if(spinDouble->value() != val.toDouble()) {
+                spinDouble->setValue(val.toDouble());
+            }
         });
         spin = spinDouble;
     }
@@ -142,9 +154,11 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         text->setText(par->value().toString());
         text->setReadOnly(par->readOnly());
         connect(text, &QLineEdit::textEdited, par, &QtNoid::App::Parameter::onValueChanged);
-        connect(par, &QtNoid::App::Parameter::valueChanged, this,
-                [=](const QVariant &val){
-                    text->setText(val.toString());
+        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
+            updateStyleSheet(text, par);
+            if(text->text() != val.toString()) {
+                text->setText(val.toString());
+            }
         });
         spin = text;
     }
@@ -166,6 +180,14 @@ QWidget *MainWindow::createUiDescriptionFromParameter(QtNoid::App::Parameter *pa
     return label;
 }
 
+void MainWindow::updateStyleSheet(QWidget *spinInt, QtNoid::App::Parameter *par)
+{
+    QString styleSheet = par->isValueChanged()? "font-weight: bold;" : "font-weight: normal;";
+    if(spinInt->styleSheet() != styleSheet){
+        spinInt->setStyleSheet(styleSheet);
+    }
+}
+
 
 
 
@@ -173,13 +195,18 @@ QWidget *MainWindow::createUiDescriptionFromParameter(QtNoid::App::Parameter *pa
 
 void MainWindow::on_cmdQDebug_clicked()
 {
-    qDebug() << m_list;
+    qDebug() << __func__ << m_list;
 }
 
 
-void MainWindow::on_cmdDefault_clicked()
+void MainWindow::on_cmdDefault01_clicked()
 {
-    m_list.applyPreset("Default");
+    m_list.applyPreset("Default01");
+}
+
+void MainWindow::on_cmdDefault02_clicked()
+{
+    m_list.applyPreset("Default02");
 }
 
 
@@ -243,4 +270,6 @@ void MainWindow::on_cmdLoadFromJson_clicked()
     }
 
 }
+
+
 

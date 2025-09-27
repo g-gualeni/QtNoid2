@@ -6,8 +6,6 @@
 #include <QObject>
 #include <QString>
 
-
-
 class QMainWindow;
 
 namespace QtNoid {
@@ -26,55 +24,6 @@ public:
 
 private:
 };
-
-
-
-/**
-
-
-
---> aggingere la classe bindableProperty
-*/
-
-
-
-
-
-
-
-/**
-
-    bool save();
-    bool load();
-    static bool isValid(const QJsonDocument& jsonDoc);
-
-    bool isEmpty();
-    void setValue(const QString& path, const QVariant& value);
-    void setValue(const QObject *sender, const QString& path, const QVariant& value);
-
-    QString value(const QObject *sender, const QString &path, const QString &defaultValue) const;
-    QString value(const QString &path, const QString &defaultValue) const;
-    QVariant valueAsVariant(const QString& path, const QVariant& defaultValue) const;
-    QVariant valueAsVariant(const QObject* sender, const QString& path, const QVariant& defaultValue) const;
-    QByteArray valueAsByteArray(const QString& path, const QByteArray& defaultValue) const;
-    QByteArray valueAsByteArray(const QObject* sender, const QString& path, const QByteArray& defaultValue) const;
-
-    std::shared_ptr<PreferencesModel> preferencesModel() const;
-
-protected:
-    QString senderName(const QObject *sender) const;
-    QJsonValue findValue(const QObject* sender, const QString& path) const;
-    QJsonObject findGroup(const QObject* sender) const;
-
-private:
-    QJsonObject m_configurations;
-    QJsonParseError m_jsonError;
-    QString m_appSettingsFilePath;
-    std::shared_ptr<PreferencesModel> m_preferencesModel;
-
-
-
- */
 
 
 } // namespace App

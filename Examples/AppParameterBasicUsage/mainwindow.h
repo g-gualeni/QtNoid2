@@ -23,8 +23,9 @@ private slots:
     void on_cmdUpdate_clicked();
     void on_cmdToJson_clicked();
     void on_cmdFromJson_clicked();
-
     void on_cmdQDebug_clicked();
+    void on_cmdUpdatePreset_clicked();
+    void on_cboPresets_currentTextChanged(const QString &arg1);
 
 private:
     void setRangeFromText(const QString& val);
@@ -36,5 +37,6 @@ private:
 
     QtNoid::App::Parameter m_parameter;
     void updateFromGui();
+    void updatePresetList();
 };
 #endif // MAINWINDOW_H

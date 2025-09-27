@@ -195,7 +195,6 @@ void TestQtNoidCommonFile::testAutoNaming()
     auto result = File::autoNaming(dir.absoluteFilePath(newFile));
 
     QCOMPARE(result, dir.absoluteFilePath(expected));
-
 }
 
 void TestQtNoidCommonFile::testAutoNamingFileInfo_data()
@@ -229,8 +228,6 @@ void TestQtNoidCommonFile::testAutoNamingFileInfo()
     auto result = File::autoNaming(dir.absoluteFilePath(newFile));
 
     QCOMPARE(result, dir.absoluteFilePath(expected));
-
-
 }
 
 void TestQtNoidCommonFile::testCompareIfEqual_data()
@@ -263,8 +260,6 @@ void TestQtNoidCommonFile::testCompareIfEqual()
 
     res = File::compareIfEqual(dir.absoluteFilePath(path1), dir.absoluteFilePath(path2));
     QCOMPARE(res, expected);
-
-
 }
 
 void TestQtNoidCommonFile::testIsTextFileShouldBeTrue_data()
@@ -353,7 +348,6 @@ void TestQtNoidCommonFile::testIsTextFile_ImagesShouldBeFalse()
 
     auto path = dir.absoluteFilePath( QTest::currentDataTag() + format);
 
-
     QSize size(640,480);
     QRect rect({0,0}, size);
     QPixmap pixmap(size);
@@ -372,13 +366,10 @@ void TestQtNoidCommonFile::testIsTextFile_ImagesShouldBeFalse()
     redRect.moveCenter(rect.center());
     painter.drawRect(redRect);
 
-
     // QImage::save() - guess the encoding using the file suffix
     QCOMPARE(pixmap.save(path), true);
 
-
     QCOMPARE(File::isTextFile(path), false);
-
 }
 
 void TestQtNoidCommonFile::testIsTextFile_PdfShouldBeFalse()
@@ -397,9 +388,7 @@ void TestQtNoidCommonFile::testIsTextFile_PdfShouldBeFalse()
     painter.drawText(100, 200, "automated test report");
     painter.end();
 
-
     QCOMPARE(File::isTextFile(path), false);
-
 }
 
 void TestQtNoidCommonFile::testIsTestFile_EmptyFileShouldBeFalse()
@@ -414,7 +403,6 @@ void TestQtNoidCommonFile::testIsTestFile_EmptyFileShouldBeFalse()
     file.close();
 
     QCOMPARE(File::isTextFile(path), false);
-
 }
 
 void TestQtNoidCommonFile::testSaveAsTextFile4String_data()
@@ -448,7 +436,6 @@ void TestQtNoidCommonFile::testSaveAsTextFile4String()
 
     QCOMPARE(out, expectedFileName);
 
-
     // Check there is the file
     QCOMPARE(fileInfo.exists(), true);
 
@@ -467,12 +454,10 @@ void TestQtNoidCommonFile::testSaveAsTextFile4StringList_data()
     QTest::addColumn<QString>("expectedFileName");
 
     QTest::newRow("TxtFile+DotDubleSuffix"  ) << "TxtFileDotSuffix.tar.ini" << ".txt" << "TxtFileDotSuffix.tar.txt";
-
 }
 
 void TestQtNoidCommonFile::testSaveAsTextFile4StringList()
 {
-
     QFETCH(QString, filePath);
     QFETCH(QString, fileSuffix);
     QFETCH(QString, expectedFileName);
@@ -486,7 +471,6 @@ void TestQtNoidCommonFile::testSaveAsTextFile4StringList()
 
     QCOMPARE(out, expectedFileName);
 
-
     // Check there is the file
     QCOMPARE(fileInfo.exists(), true);
 
@@ -499,7 +483,6 @@ void TestQtNoidCommonFile::testSaveAsTextFile4StringList()
     outText << f.readLine();
 
     QCOMPARE(outText, data);
-
 }
 
 void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder_data()
@@ -510,7 +493,6 @@ void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder_data()
 
     QTest::newRow("TxtFileWithSubFolder"  ) << "a/TxtFileWithSubFolder" << "" << "a/TxtFileWithSubFolder";
     QTest::newRow("IniFile+SubFolderNo"  ) << "a/IniFile+SubFolder.txt" << ".ini" << "a/IniFile+SubFolder.ini";
-
 }
 
 void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder()
@@ -525,10 +507,7 @@ void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder()
 
     auto relPath = dir.relativeFilePath(resPath);
     QCOMPARE(relPath, expectedRelativePath);
-
-    // QTest::newRow("TxtFileWithSubFolder"  ) << "/a/TxtFileWithSubFolder" << "" << "TxtFileWithSubFolderNo";
 }
-
 
 void TestQtNoidCommonFile::testReadAsStringList()
 {
@@ -547,8 +526,6 @@ void TestQtNoidCommonFile::testReadAsStringList()
     auto out = File::readAsStringList(path);
 
     QCOMPARE(out, data);
-
-
 }
 
 void TestQtNoidCommonFile::testListPathRecursively_data()
@@ -609,7 +586,6 @@ void TestQtNoidCommonFile::testListPathRecursively_InvalidPath_data()
 
     QTest::addRow("Empty Path") << QString();
     QTest::addRow("Crazy Path") << "./asqwetqxcxz";
-
 }
 
 void TestQtNoidCommonFile::testListPathRecursively_InvalidPath()
@@ -634,7 +610,6 @@ void TestQtNoidCommonFile::testListPathRecursively_UsingFiltes_data()
     QTest::newRow("MultipleFiles+Filter") << QStringList({"lst1.txt", "lst2.txt"})<< QStringList() << QStringList(".txt");;
     QTest::newRow("NestedDirs+Filters"  ) << QStringList({"lst1.txt", "lst2.txt", "a/lst1.txt", "a/lst2.txt"})
                                         << QStringList({"lst1.ini", "lst2.ini", "a/lst1.ini", "a/lst2.ini"}) << QStringList("TXT");
-
 }
 
 void TestQtNoidCommonFile::testListPathRecursively_UsingFiltes()

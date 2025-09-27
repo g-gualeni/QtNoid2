@@ -25,9 +25,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="cmdDefault">
+       <widget class="QPushButton" name="cmdDefault01">
         <property name="text">
-         <string>Apply Default</string>
+         <string>Apply Default 1</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cmdDefault02">
+        <property name="text">
+         <string>Apply Default 2</string>
         </property>
        </widget>
       </item>

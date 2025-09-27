@@ -173,8 +173,6 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
     return true;
 }
 
-
-
 QString ParameterList::name() const
 {
     return m_name.value();
@@ -330,7 +328,6 @@ void ParameterList::removeParameter(const QString &name)
     disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
     emit parameterRemoved(parameter);
     emit countChanged(m_parametersByIndex.count());
-
 }
 
 void ParameterList::clear()
@@ -466,8 +463,6 @@ void ParameterList::onParameterNameEdited(const QString &oldName, const QString 
 
 void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
 {
-
-    // parameter->setParent(this);
     m_parametersByUniqueId.insert(parameter->uniqueId(), parameter);
     m_parameterToIndex.insert(parameter, m_nextParameterIndex);
     m_parametersByIndex.insert(m_nextParameterIndex, parameter);
@@ -475,7 +470,6 @@ void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
     m_parametersByName.insert(parameter->name(), parameter);
     connect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
     connect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
-
 
     emit parameterAdded(parameter);
     emit countChanged(m_parametersByIndex.count());

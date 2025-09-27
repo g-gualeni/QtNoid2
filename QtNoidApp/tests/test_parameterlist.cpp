@@ -65,7 +65,6 @@ private slots:
     void testApplyJsonSchemaToExistingParameterListShouldUpdateSchema();
 
     void testListOwnershipDeleteListDestroyParameters();
-
 };
 
 
@@ -127,8 +126,6 @@ void TestQtNoidAppParameterList::testAppendingParameters()
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 
-    qDebug() << list.contains(param1);
-
     QCOMPARE(list.contains(param1), true);
     QCOMPARE(list.contains("Param1"), true);
     
@@ -189,9 +186,6 @@ void TestQtNoidAppParameterList::testAppendingSameNameParametersShouldFail()
     res = list.append(param1);
     QCOMPARE(res, false);
     QCOMPARE(list.count(), 1);
-
-
-
 }
 
 void TestQtNoidAppParameterList::testAppendingNoNameParametersShouldFail()
@@ -231,7 +225,6 @@ void TestQtNoidAppParameterList::testAppendingParameterFromJsonObjects()
 
     QCOMPARE(list.parameter(0)->toJsonSchema(), schema);
     QCOMPARE(list.parameter(0)->toJsonValue(), value);
-
 }
 
 void TestQtNoidAppParameterList::testAppendingParameterFromBadJsonObjectsShouldFail()
@@ -302,7 +295,6 @@ void TestQtNoidAppParameterList::testEmplaceWithDefaultParameters()
     QCOMPARE(param3->name(), "Param3");
     QCOMPARE(param3->description(), QString());
     QCOMPARE(param3->value().toInt(), 42);
-
 
     QCOMPARE(list.count(), 3);
     QCOMPARE(countSpy.count(), 3);
@@ -694,7 +686,6 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithCorrectName()
     QCOMPARE(list.valuesFromJson(json), true);
 }
 
-
 void TestQtNoidAppParameterList::testSchemaFromJson()
 {
     // Create JSON schema with multiple parameters and use it
@@ -743,12 +734,10 @@ void TestQtNoidAppParameterList::testSchemaFromJson()
 
     // Verify Temperature in list
     QJsonObject actualTemp = list.parameter("Temperature")->toJsonSchema();
-    qDebug() << actualTemp;
     QCOMPARE(actualTemp, expectedTemp);
 
     // Verify Pressure in list
     QJsonObject actualPress = list.parameter("Pressure")->toJsonSchema();
-    qDebug() << actualPress;
     QCOMPARE(actualPress, expectedPress);
 }
 
@@ -790,13 +779,10 @@ void TestQtNoidAppParameterList::testSchemaFromDuplicatedJsonOverwriteAndNotFail
     QJsonObject schema;
     schema["LIST"] = schemaList;
 
-    qDebug() << __func__ << schema;
-
     ParameterList list(this);
     QCOMPARE(list.schemaFromJson(schema), true);
     QCOMPARE(list.schemaFromJson(schema), true);
     QCOMPARE(list.count(), 1);
-
 }
 
 void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
@@ -1168,7 +1154,6 @@ void TestQtNoidAppParameterList::testApplyPreset()
     // Test empty list
     ParameterList emptyList(this);
     emptyList.applyPreset("AnyPreset"); // Should not crash
-
 }
 
 void TestQtNoidAppParameterList::testOperatorLeftShiftWithParameterReference()
@@ -1218,7 +1203,6 @@ void TestQtNoidAppParameterList::testOperatorLeftShiftWithParameterReference()
     QCOMPARE(list.value("Temperature"), 99);
     list.setValue("Pressure", 1000);
     QCOMPARE(param2.value(), 1000);
-
 }
 
 void TestQtNoidAppParameterList::testListOwnershipDeleteListDestroyParameters()
@@ -1236,7 +1220,6 @@ void TestQtNoidAppParameterList::testListOwnershipDeleteListDestroyParameters()
     delete list;
     QCOMPARE(parameter1Spy.count(), 1);
     QCOMPARE(parameter2Spy.count(), 1);
-
 }
 
 void TestQtNoidAppParameterList::testApplyJsonValuesToExistingParameterListShouldUpdateValues()
@@ -1268,7 +1251,6 @@ void TestQtNoidAppParameterList::testApplyJsonValuesToExistingParameterListShoul
     QJsonObject jsonValues;
     jsonValues["SensorConfig"] = valuesArray;
 
-
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
@@ -1287,7 +1269,6 @@ void TestQtNoidAppParameterList::testApplyJsonValuesToExistingParameterListShoul
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
     QCOMPARE(list.value("Humidity"), 60.0);
-
 }
 
 void TestQtNoidAppParameterList::testApplyJsonSchemaToExistingParameterListShouldUpdateSchema()
@@ -1366,7 +1347,6 @@ void TestQtNoidAppParameterList::testApplyJsonSchemaToExistingParameterListShoul
     QCOMPARE(pressParam->max().toDouble(), 1200.0);
     QCOMPARE(pressParam->readOnly(), false);
     QCOMPARE(pressParam->visible(), true);
-
 }
 
 
