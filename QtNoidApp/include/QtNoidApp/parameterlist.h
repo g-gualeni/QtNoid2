@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QList>
 #include <QProperty>
+#include <iterator>
 
 namespace QtNoid {
 namespace App {
@@ -18,6 +19,88 @@ class QTNOIDAPP_EXPORT ParameterList : public QObject
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(int count READ count NOTIFY countChanged FINAL)
+
+public:
+
+    // Iterator classes
+    class iterator {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Parameter*;
+        using difference_type = std::ptrdiff_t;
+        using pointer = Parameter**;
+        using reference = Parameter*&;
+
+        iterator() = default;
+        iterator(QMap<int, Parameter*>::iterator it, const ParameterList* container)
+            : m_it(it), m_container(container) {}
+
+        Parameter* operator*() const { return m_it.value(); }
+        Parameter* operator->() const { return m_it.value(); }
+
+        iterator& operator++() { ++m_it; return *this; }
+        iterator operator++(int) { iterator tmp = *this; ++m_it; return tmp; }
+
+        bool operator==(const iterator& other) const {
+            Q_ASSERT(m_container == other.m_container);
+            return m_it == other.m_it;
+        }
+        bool operator!=(const iterator& other) const {
+            Q_ASSERT(m_container == other.m_container);
+            return m_it != other.m_it;
+        }
+
+        // Conversion to const_iterator
+        operator QMap<int, Parameter*>::const_iterator() const { return m_it; }
+        const ParameterList* container() const { return m_container; }
+
+    private:
+        QMap<int, Parameter*>::iterator m_it;
+        const ParameterList* m_container = nullptr;
+        friend class const_iterator;
+    };
+
+    class const_iterator {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Parameter*;
+        using difference_type = std::ptrdiff_t;
+        using pointer = Parameter* const*;
+        using reference = Parameter* const&;
+
+        const_iterator() = default;
+        const_iterator(QMap<int, Parameter*>::const_iterator it, const ParameterList* container)
+            : m_it(it), m_container(container) {}
+        const_iterator(const iterator& it) : m_it(it), m_container(it.container()) {}
+
+        Parameter* operator*() const { return m_it.value(); }
+        Parameter* operator->() const { return m_it.value(); }
+
+        const_iterator& operator++() { ++m_it; return *this; }
+        const_iterator operator++(int) { const_iterator tmp = *this; ++m_it; return tmp; }
+
+        bool operator==(const const_iterator& other) const {
+            Q_ASSERT(m_container == other.m_container);
+            return m_it == other.m_it;
+        }
+        bool operator!=(const const_iterator& other) const {
+            Q_ASSERT(m_container == other.m_container);
+            return m_it != other.m_it;
+        }
+
+    private:
+        QMap<int, Parameter*>::const_iterator m_it;
+        const ParameterList* m_container = nullptr;
+        friend class iterator;
+    };
+
+    // Iterator methods
+    iterator begin() { return iterator(m_parametersByIndex.begin(), this); }
+    iterator end() { return iterator(m_parametersByIndex.end(), this); }
+    const_iterator begin() const { return const_iterator(m_parametersByIndex.cbegin(), this); }
+    const_iterator end() const { return const_iterator(m_parametersByIndex.cend(), this); }
+    const_iterator cbegin() const { return const_iterator(m_parametersByIndex.cbegin(), this); }
+    const_iterator cend() const { return const_iterator(m_parametersByIndex.cend(), this); }
 
 public:
     explicit ParameterList(QObject *parent = nullptr);

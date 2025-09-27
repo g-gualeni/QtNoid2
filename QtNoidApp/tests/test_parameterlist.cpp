@@ -65,6 +65,13 @@ private slots:
     void testApplyJsonSchemaToExistingParameterListShouldUpdateSchema();
 
     void testListOwnershipDeleteListDestroyParameters();
+
+    // Iterator tests
+    void testIteratorBasicUsage();
+    void testConstIteratorBasicUsage();
+    void testRangeBasedForLoop();
+    void testIteratorWithEmptyList();
+    void testIteratorSafety();
 };
 
 
@@ -1347,6 +1354,158 @@ void TestQtNoidAppParameterList::testApplyJsonSchemaToExistingParameterListShoul
     QCOMPARE(pressParam->max().toDouble(), 1200.0);
     QCOMPARE(pressParam->readOnly(), false);
     QCOMPARE(pressParam->visible(), true);
+}
+
+void TestQtNoidAppParameterList::testIteratorBasicUsage()
+{
+    ParameterList list("TestList", this);
+    // Add some parameters
+    list.emplace(10.0, "Param1", "First parameter");
+    list.emplace(20.0, "Param2", "Second parameter");
+    list.emplace(30.0, "Param3", "Third parameter");
+
+
+    // Test iterator increment and dereferencing
+    auto it = list.begin();
+    QVERIFY(it != list.end());
+
+
+    Parameter* firstParam = *it;
+    QVERIFY(firstParam != nullptr);
+    QCOMPARE(firstParam->name(), "Param1");
+    QCOMPARE(firstParam->value().toDouble(), 10.0);
+
+    // Test iterator increment
+    ++it;
+    QVERIFY(it != list.end());
+    Parameter* secondParam = *it;
+    QVERIFY(secondParam != nullptr);
+    QCOMPARE(secondParam->name(), "Param2");
+    QCOMPARE(secondParam->value().toDouble(), 20.0);
+
+    // Test post-increment
+    auto prevIt = it++;
+    QVERIFY(it != list.end());
+    QVERIFY(prevIt != it);
+    Parameter* thirdParam = *it;
+    QVERIFY(thirdParam != nullptr);
+    QCOMPARE(thirdParam->name(), "Param3");
+    QCOMPARE(thirdParam->value().toDouble(), 30.0);
+
+    // Test reaching end
+    ++it;
+    QVERIFY(it == list.end());
+
+}
+
+void TestQtNoidAppParameterList::testConstIteratorBasicUsage()
+{
+    ParameterList list("TestList", this);
+    list.emplace(100.0, "Alpha", "Alpha parameter");
+    list.emplace(200.0, "Beta", "Beta parameter");
+
+    const ParameterList& constList = list;
+
+    // Test const iterator
+    auto cit = constList.begin();
+    QVERIFY(cit != constList.end());
+
+    Parameter* param = *cit;
+    QVERIFY(param != nullptr);
+    QCOMPARE(param->name(), "Alpha");
+    QCOMPARE(param->value().toDouble(), 100.0);
+
+    ++cit;
+    param = *cit;
+    QVERIFY(param != nullptr);
+    QCOMPARE(param->name(), "Beta");
+    QCOMPARE(param->value().toDouble(), 200.0);
+
+    ++cit;
+    QVERIFY(cit == constList.end());
+
+    // Test cbegin/cend
+    auto cit2 = constList.cbegin();
+    QVERIFY(cit2 != constList.cend());
+    QCOMPARE((*cit2)->name(), "Alpha");
+
+
+}
+
+void TestQtNoidAppParameterList::testRangeBasedForLoop()
+{
+    ParameterList list("TestList", this);
+    list.emplace(1.0, "One", "First");
+    list.emplace(2.0, "Two", "Second");
+    list.emplace(3.0, "Three", "Third");
+
+    QStringList names;
+    QList<double> values;
+
+    // Test range-based for loop
+    for (Parameter* param : list) {
+        QVERIFY(param != nullptr);
+        names << param->name();
+        values << param->value().toDouble();
+    }
+
+    QCOMPARE(names.size(), 3);
+    QCOMPARE(names, QStringList({"One", "Two", "Three"}));
+    QCOMPARE(values, QList<double>({1.0, 2.0, 3.0}));
+
+    // Test const range-based for loop
+    const ParameterList& constList = list;
+    QStringList constNames;
+    for (const Parameter* param : constList) {
+        QVERIFY(param != nullptr);
+        constNames << param->name();
+    }
+    QCOMPARE(constNames, names);
+}
+
+void TestQtNoidAppParameterList::testIteratorWithEmptyList()
+{
+    ParameterList list("EmptyList", this);
+
+    // Test empty list iterators
+    QVERIFY(list.begin() == list.end());
+    QVERIFY(list.cbegin() == list.cend());
+
+    // Test range-based for loop with empty list (should not iterate)
+    int count = 0;
+    for ([[maybe_unused]] Parameter* param : list) {
+        count++;
+    }
+    QCOMPARE(count, 0);
+}
+
+void TestQtNoidAppParameterList::testIteratorSafety()
+{
+    ParameterList list1("List1", this);
+    ParameterList list2("List2", this);
+
+    list1.emplace(10.0, "Param1");
+    list2.emplace(20.0, "Param2");
+
+    auto it1 = list1.begin();
+    auto it2 = list2.begin();
+
+    // Note: In debug builds, comparing iterators from different containers
+    // should trigger Q_ASSERT. In release builds, this might not be caught.
+    // The test documents the expected behavior but may pass in release mode.
+
+    // Test that iterators correctly identify their own container
+    QVERIFY(it1 != list1.end());  // Valid comparison (same container)
+    QVERIFY(it2 != list2.end());  // Valid comparison (same container)
+
+    // The following would trigger Q_ASSERT in debug mode:
+    // QVERIFY(it1 != it2);  // This should assert - different containers!
+
+    // Test const iterator conversion preserves container safety
+    ParameterList::const_iterator cit1 = it1;  // Convert to const_iterator
+    QVERIFY(cit1 != list1.cend());  // Should work (same container)
+
+    qDebug() << "Iterator safety test completed - assertions active in debug builds only";
 }
 
 
