@@ -8,6 +8,7 @@
 
 
 ### Completed
+- [ ] CLOC Report page
 - [x] QtNoid:::App::Settings::fullDialogGrab() ✅ (commit: 9adac1b, 2025-08-15)
 - [x] Parameter class foundation ✅ (commit: 7ebdc55, 2025-08-15)
 - [x] Parameter class tests ✅ (commit: c464f08, 2025-08-16)
@@ -20,6 +21,12 @@
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
+Finire report CLOC aggiungendo un batch file per fare il tutto
+-> Test con i link per vedere la velocità
+-> Scrivere la documentazione
+
+
+
 
 
 ### Todo Parameter

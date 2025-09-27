@@ -69,7 +69,8 @@ private slots:
     // Iterator tests
     void testParameterListBeginAndEndAndRangeLoop();
     void testParameterListConstIteratorsAndConstRangeLoop();
-    void testParameterListReverseIterators();
+    void testParameterListReverseIteratorsAndRangeLoop();
+    void testParameterListConstReverseIterators();
 };
 
 
@@ -1553,7 +1554,7 @@ void TestQtNoidAppParameterList::testParameterListConstIteratorsAndConstRangeLoo
     QCOMPARE(constCount, 0);
 }
 
-void TestQtNoidAppParameterList::testParameterListReverseIterators()
+void TestQtNoidAppParameterList::testParameterListReverseIteratorsAndRangeLoop()
 {
     ParameterList list("TestList", this);
 
@@ -1676,6 +1677,198 @@ void TestQtNoidAppParameterList::testParameterListReverseIterators()
     auto postDecRit = rLastIt--;
     QCOMPARE((*postDecRit)->name(), "Second");
     QCOMPARE((*rLastIt)->name(), "Third");
+}
+
+void TestQtNoidAppParameterList::testParameterListConstReverseIterators()
+{
+    ParameterList list("TestList", this);
+
+    // Add some parameters
+    list.emplace(100.0, "First", "First parameter");
+    list.emplace(200.0, "Second", "Second parameter");
+    list.emplace(300.0, "Third", "Third parameter");
+    list.emplace(400.0, "Fourth", "Fourth parameter");
+
+    // Create a const reference to the list
+    const ParameterList& constList = list;
+
+    // ===== Test rbegin() const and rend() const =====
+
+    // Test that const rbegin() != rend() for non-empty list
+    QVERIFY(constList.rbegin() != constList.rend());
+
+    // Test const reverse iterator dereferencing - should start from last element
+    ParameterList::const_reverse_iterator crit = constList.rbegin();
+    QVERIFY(crit != constList.rend());
+
+    const Parameter* lastParam = *crit;
+    QVERIFY(lastParam != nullptr);
+    QCOMPARE(lastParam->name(), "Fourth");  // Should be the last element
+    QCOMPARE(lastParam->value().toDouble(), 400.0);
+
+    // ===== Test const reverse iterator increment (moves backward through list) =====
+
+    // Test pre-increment (moves to previous element in normal order)
+    ++crit;
+    QVERIFY(crit != constList.rend());
+    const Parameter* thirdParam = *crit;
+    QVERIFY(thirdParam != nullptr);
+    QCOMPARE(thirdParam->name(), "Third");
+    QCOMPARE(thirdParam->value().toDouble(), 300.0);
+
+    // Test post-increment
+    auto prevCrit = crit++;
+    QVERIFY(crit != constList.rend());
+    QVERIFY(prevCrit != crit);
+    const Parameter* secondParam = *crit;
+    QVERIFY(secondParam != nullptr);
+    QCOMPARE(secondParam->name(), "Second");
+    QCOMPARE(secondParam->value().toDouble(), 200.0);
+
+    // Continue to first element
+    ++crit;
+    QVERIFY(crit != constList.rend());
+    const Parameter* firstParam = *crit;
+    QVERIFY(firstParam != nullptr);
+    QCOMPARE(firstParam->name(), "First");
+    QCOMPARE(firstParam->value().toDouble(), 100.0);
+
+    // Test reaching rend()
+    ++crit;
+    QVERIFY(crit == constList.rend());
+
+    // ===== Test crbegin() and crend() =====
+
+    // Test that crbegin() != crend() for non-empty list
+    QVERIFY(constList.crbegin() != constList.crend());
+
+    // Test crbegin() dereferencing - should start from last element
+    ParameterList::const_reverse_iterator crbit = constList.crbegin();
+    QVERIFY(crbit != constList.crend());
+
+    const Parameter* crbParam = *crbit;
+    QVERIFY(crbParam != nullptr);
+    QCOMPARE(crbParam->name(), "Fourth");
+    QCOMPARE(crbParam->value().toDouble(), 400.0);
+
+    // Test crbegin() increment
+    ++crbit;
+    QVERIFY(crbit != constList.crend());
+    const Parameter* crbSecondParam = *crbit;
+    QVERIFY(crbSecondParam != nullptr);
+    QCOMPARE(crbSecondParam->name(), "Third");
+    QCOMPARE(crbSecondParam->value().toDouble(), 300.0);
+
+    // ===== Test const reverse iterator range-based for loop simulation =====
+
+    QStringList constReverseNames;
+    QList<double> constReverseValues;
+
+    // Manually iterate through const reverse iterators using rbegin() const
+    for (auto constRevIt = constList.rbegin(); constRevIt != constList.rend(); ++constRevIt) {
+        const Parameter* param = *constRevIt;
+        QVERIFY(param != nullptr);
+        constReverseNames << param->name();
+        constReverseValues << param->value().toDouble();
+    }
+
+    // Verify const reverse order
+    QCOMPARE(constReverseNames.size(), 4);
+    QCOMPARE(constReverseNames, QStringList({"Fourth", "Third", "Second", "First"}));
+    QCOMPARE(constReverseValues, QList<double>({400.0, 300.0, 200.0, 100.0}));
+
+    // ===== Test const reverse iterator range-based for loop with crbegin/crend =====
+
+    QStringList crNames;
+    QList<double> crValues;
+
+    // Manually iterate through const reverse iterators using crbegin()/crend()
+    for (auto crIt = constList.crbegin(); crIt != constList.crend(); ++crIt) {
+        const Parameter* param = *crIt;
+        QVERIFY(param != nullptr);
+        crNames << param->name();
+        crValues << param->value().toDouble();
+    }
+
+    // Verify crbegin/crend produces same result as rbegin/rend const
+    QCOMPARE(crNames, constReverseNames);
+    QCOMPARE(crValues, constReverseValues);
+
+    // ===== Test const reverse iterator arrow operator =====
+
+    auto crbeginIt = constList.crbegin();
+    QCOMPARE((*crbeginIt)->name(), "Fourth");
+    QCOMPARE((*crbeginIt)->value().toDouble(), 400.0);
+
+    auto rbeginConstIt = constList.rbegin();
+    QCOMPARE((*rbeginConstIt)->name(), "Fourth");
+    QCOMPARE((*rbeginConstIt)->value().toDouble(), 400.0);
+
+    // ===== Test relationship between const normal and const reverse iterators =====
+
+    // rbegin() const should correspond to the element before end() const
+    auto constNormalEnd = constList.end();
+    --constNormalEnd;
+    auto constReverseBegin = constList.rbegin();
+
+    QCOMPARE((*constNormalEnd)->name(), (*constReverseBegin)->name());
+    QCOMPARE((*constNormalEnd)->value(), (*constReverseBegin)->value());
+
+    // Same test for crbegin() and cend()
+    auto constCEnd = constList.cend();
+    --constCEnd;
+    auto constCRBegin = constList.crbegin();
+
+    QCOMPARE((*constCEnd)->name(), (*constCRBegin)->name());
+    QCOMPARE((*constCEnd)->value(), (*constCRBegin)->value());
+
+    // ===== Test empty const list reverse iterators =====
+
+    ParameterList emptyList("EmptyTest", this);
+    const ParameterList& constEmptyList = emptyList;
+
+    QVERIFY(constEmptyList.rbegin() == constEmptyList.rend());
+    QVERIFY(constEmptyList.crbegin() == constEmptyList.crend());
+
+    // Test const reverse iteration over empty list
+    int constReverseCount = 0;
+    for (auto constRevIt = constEmptyList.rbegin(); constRevIt != constEmptyList.rend(); ++constRevIt) {
+        constReverseCount++;
+    }
+    QCOMPARE(constReverseCount, 0);
+
+    // Test crbegin/crend with empty list
+    int crCount = 0;
+    for (auto crIt = constEmptyList.crbegin(); crIt != constEmptyList.crend(); ++crIt) {
+        crCount++;
+    }
+    QCOMPARE(crCount, 0);
+
+    // ===== Test const correctness =====
+
+    // This should compile (reading from const iterator)
+    auto constIt = constList.crbegin();
+    QString paramName = (*constIt)->name();
+    QCOMPARE(paramName, "Fourth");
+
+    // This would NOT compile if we tried (const Parameter* cannot call non-const methods):
+    // (*constIt)->setValue(999.0);  // Compilation error - good!
+
+    // ===== Test bidirectional const reverse iterator operations =====
+
+    // Test decrement operations on const reverse iterators
+    auto constLastRevIt = constList.rbegin();
+    ++constLastRevIt; ++constLastRevIt; ++constLastRevIt; // Move to "First"
+    QCOMPARE((*constLastRevIt)->name(), "First");
+
+    // Test pre-decrement (should move to "Second")
+    --constLastRevIt;
+    QCOMPARE((*constLastRevIt)->name(), "Second");
+
+    // Test post-decrement
+    auto postDecConstRevIt = constLastRevIt--;
+    QCOMPARE((*postDecConstRevIt)->name(), "Second");
+    QCOMPARE((*constLastRevIt)->name(), "Third");
 }
 
 

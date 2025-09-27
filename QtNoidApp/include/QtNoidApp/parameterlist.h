@@ -146,8 +146,13 @@ public:
     const_iterator end() const { return const_iterator(m_parametersByIndex.constEnd()); }
     const_iterator cbegin() const { return const_iterator(m_parametersByIndex.constBegin()); }
     const_iterator cend() const { return const_iterator(m_parametersByIndex.constEnd()); }
+
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const { return const_reverse_iterator(cend()); }
+    const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
 
 public:
     ParameterList &operator<<(Parameter& param){
