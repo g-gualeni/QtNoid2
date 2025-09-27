@@ -7,7 +7,6 @@
 #include <QObject>
 #include <QList>
 #include <QProperty>
-#include <iterator>
 
 namespace QtNoid {
 namespace App {
@@ -22,87 +21,72 @@ class QTNOIDAPP_EXPORT ParameterList : public QObject
 
 public:
 
-    // Iterator classes
+    // ===== ITERATOR CLASSES =====
     class iterator {
     public:
-        using iterator_category = std::forward_iterator_tag;
+        using iterator_category = std::bidirectional_iterator_tag;
         using value_type = Parameter*;
         using difference_type = std::ptrdiff_t;
         using pointer = Parameter**;
         using reference = Parameter*&;
 
         iterator() = default;
-        iterator(QMap<int, Parameter*>::iterator it, const ParameterList* container)
-            : m_it(it), m_container(container) {}
+        explicit iterator(QMap<int, Parameter*>::iterator it) : m_it(it) {}
 
         Parameter* operator*() const { return m_it.value(); }
         Parameter* operator->() const { return m_it.value(); }
 
         iterator& operator++() { ++m_it; return *this; }
         iterator operator++(int) { iterator tmp = *this; ++m_it; return tmp; }
+        iterator& operator--() { --m_it; return *this; }
+        iterator operator--(int) { iterator tmp = *this; --m_it; return tmp; }
 
-        bool operator==(const iterator& other) const {
-            Q_ASSERT(m_container == other.m_container);
-            return m_it == other.m_it;
-        }
-        bool operator!=(const iterator& other) const {
-            Q_ASSERT(m_container == other.m_container);
-            return m_it != other.m_it;
-        }
+        bool operator==(const iterator& other) const { return m_it == other.m_it; }
+        bool operator!=(const iterator& other) const { return m_it != other.m_it; }
 
-        // Conversion to const_iterator
-        operator QMap<int, Parameter*>::const_iterator() const { return m_it; }
-        const ParameterList* container() const { return m_container; }
+        int index() const { return m_it.key(); }
 
     private:
         QMap<int, Parameter*>::iterator m_it;
-        const ParameterList* m_container = nullptr;
         friend class const_iterator;
+        friend class ParameterList;
     };
 
     class const_iterator {
     public:
-        using iterator_category = std::forward_iterator_tag;
-        using value_type = Parameter*;
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = const Parameter*;
         using difference_type = std::ptrdiff_t;
-        using pointer = Parameter* const*;
-        using reference = Parameter* const&;
+        using pointer = const Parameter**;
+        using reference = const Parameter*&;
 
         const_iterator() = default;
-        const_iterator(QMap<int, Parameter*>::const_iterator it, const ParameterList* container)
-            : m_it(it), m_container(container) {}
-        const_iterator(const iterator& it) : m_it(it), m_container(it.container()) {}
+        explicit const_iterator(QMap<int, Parameter*>::const_iterator it) : m_it(it) {}
+        const_iterator(const iterator& it) : m_it(it.m_it) {}  // Conversione da non-const
 
-        Parameter* operator*() const { return m_it.value(); }
-        Parameter* operator->() const { return m_it.value(); }
+        const Parameter* operator*() const { return m_it.value(); }
+        const Parameter* operator->() const { return m_it.value(); }
 
         const_iterator& operator++() { ++m_it; return *this; }
         const_iterator operator++(int) { const_iterator tmp = *this; ++m_it; return tmp; }
+        const_iterator& operator--() { --m_it; return *this; }
+        const_iterator operator--(int) { const_iterator tmp = *this; --m_it; return tmp; }
 
-        bool operator==(const const_iterator& other) const {
-            Q_ASSERT(m_container == other.m_container);
-            return m_it == other.m_it;
-        }
-        bool operator!=(const const_iterator& other) const {
-            Q_ASSERT(m_container == other.m_container);
-            return m_it != other.m_it;
-        }
+        bool operator==(const const_iterator& other) const { return m_it == other.m_it; }
+        bool operator!=(const const_iterator& other) const { return m_it != other.m_it; }
+
+        int index() const { return m_it.key(); }
 
     private:
         QMap<int, Parameter*>::const_iterator m_it;
-        const ParameterList* m_container = nullptr;
-        friend class iterator;
     };
 
-    // Iterator methods
-    iterator begin() { return iterator(m_parametersByIndex.begin(), this); }
-    iterator end() { return iterator(m_parametersByIndex.end(), this); }
-    const_iterator begin() const { return const_iterator(m_parametersByIndex.cbegin(), this); }
-    const_iterator end() const { return const_iterator(m_parametersByIndex.cend(), this); }
-    const_iterator cbegin() const { return const_iterator(m_parametersByIndex.cbegin(), this); }
-    const_iterator cend() const { return const_iterator(m_parametersByIndex.cend(), this); }
+    // Reverse iterators
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-public:
+    // ===== END ITERATOR CLASSES =====
+
     explicit ParameterList(QObject *parent = nullptr);
     explicit ParameterList(const QString& name, QObject *parent = nullptr);
     explicit ParameterList(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr);
@@ -154,6 +138,16 @@ public:
     QVariant value(const QString& name) const;
     bool setValue(const QString& name, const QVariant& value);
     void applyPreset(const QString& presetName);
+
+    // ===== ITERATOR METHODS =====
+    iterator begin() { return iterator(m_parametersByIndex.begin()); }
+    iterator end() { return iterator(m_parametersByIndex.end()); }
+    const_iterator begin() const { return const_iterator(m_parametersByIndex.constBegin()); }
+    const_iterator end() const { return const_iterator(m_parametersByIndex.constEnd()); }
+    const_iterator cbegin() const { return const_iterator(m_parametersByIndex.constBegin()); }
+    const_iterator cend() const { return const_iterator(m_parametersByIndex.constEnd()); }
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    reverse_iterator rend() { return reverse_iterator(begin()); }
 
 public:
     ParameterList &operator<<(Parameter& param){

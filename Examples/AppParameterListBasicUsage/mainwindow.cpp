@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-
 #include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -86,8 +85,8 @@ QWidget* MainWindow::createUiTabFromList()
     QWidget* tab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(tab);
 
-    const auto& parameters = m_list.parameters();
-    for(const auto par : parameters) {
+    // const auto& parameters = m_list.parameters();
+    for(const auto par : m_list) {
         layout->addLayout(createUiParamterGroupFromParameter(par, 120));
         auto desc = createUiDescriptionFromParameter(par);
         if(desc != nullptr)
@@ -187,11 +186,6 @@ void MainWindow::updateStyleSheet(QWidget *spinInt, QtNoid::App::Parameter *par)
         spinInt->setStyleSheet(styleSheet);
     }
 }
-
-
-
-
-
 
 void MainWindow::on_cmdQDebug_clicked()
 {
