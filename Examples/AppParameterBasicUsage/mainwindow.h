@@ -34,6 +34,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
+    QShortcut *m_screenshotShortcut = nullptr;
 
     QtNoid::App::Parameter m_parameter;
     void updateFromGui();

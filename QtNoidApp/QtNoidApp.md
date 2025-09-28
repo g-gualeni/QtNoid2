@@ -37,10 +37,21 @@ using namespace QtNoid::App;
 &nbsp;
 
 ## Examples
-- **AppSettingsBasicUsage:** This a rough application that showcases most of the methods
-of the class App::Settings.
-- **AppParameterBasicUsage:** use this example to visualize properties of the class
-Parameter and to see how conversion to and from JSON works.
+- **[AppSettingsBasicUsage:](doc/AppSettingsBasicUsage.md)** 
+This a rough application that showcases most of the methods of the 
+class [**Settings**](#class-settings).
+
+- **[AppParameterBasicUsage:](doc/AppParameterBasicUsage.md)** 
+use this example to visualize properties of the class
+[**Parameter**](#class-parameter) and to see how conversion to and from JSON works.
+
+- **[AppParameterListBasicUsage:](doc/AppParameterListBasicUsage.md)** 
+This example showcase how a [**ParameterList**](#class-parameterlist) class can be use to create an
+application configuration page, linking the form content to ParameterList.
+
+- **[AppParameterListBenchmark:](doc/AppParameterListBenchmark.md)** 
+This example can be used to understand the cost of the creation of a Parameter 
+object and the cost of linking multiple objects.
 
 
 &nbsp;

@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>AppParameterBasicUsage-Win11.png</file>
+        <file>AppParameterListBasicUsage-Win11.png</file>
+        <file>AppParameterListBenchmark-Win11.png</file>
+        <file>AppSettingsBasicUsage-Win11.png</file>
+    </qresource>
+</RCC>

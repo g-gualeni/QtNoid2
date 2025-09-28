@@ -46,6 +46,7 @@ private:
     QtNoid::App::ParameterList m_list;
 
     QTabWidget* m_tabWidget;
-    
+    QShortcut *m_screenshotShortcut = nullptr;
+
 };
 #endif // MAINWINDOW_H

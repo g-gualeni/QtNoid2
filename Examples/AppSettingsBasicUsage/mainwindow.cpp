@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->txtGroupName->setText(Settings::groupNameFromObjectOrClass(this));
 
-    m_screenshotShortcut = Settings::initFullDialogGrabShortcut(this, "Ctrl+Shift+S", "C:/temp", false);
+    m_screenshotShortcut = Settings::initFullDialogGrabShortcut(this);
 }
 
 MainWindow::~MainWindow()

@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("App Parameter Basic Usage");
 
+    m_screenshotShortcut = QtNoid::App::Settings::initFullDialogGrabShortcut(this);
 
     // Listening to UI modifications
     connect(ui->txtName, &QLineEdit::textChanged, this,

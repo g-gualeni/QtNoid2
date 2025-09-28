@@ -4,6 +4,8 @@
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
+
+class QShortcut;
 namespace Ui {
 class MainWindow;
 }
@@ -35,5 +37,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
+    QShortcut *m_screenshotShortcut = nullptr;
+
 };
 #endif // MAINWINDOW_H
