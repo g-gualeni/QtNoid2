@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QScreen>
+#include <QShortcut>
+#include <QClipboard>
 #include <QtNoidCommon/QtNoidCommon>
 
 namespace QtNoid {
@@ -119,6 +121,32 @@ QPixmap Settings::fullDialogGrab(QWidget *ref)
 
     return pixMap;
 }
+
+
+QShortcut *Settings::initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence, QString destinationPath, bool saveToClipboard)
+{
+    QShortcut* shortCut = new QShortcut(QKeySequence("Ctrl+Shift+S"), parent);
+    parent->connect(shortCut, &QShortcut::activated, parent, [=](){
+        QPixmap screenshot =  fullDialogGrab(parent);
+
+        auto mainWindow = mainWindowFromWidget(parent);
+        QString fileName = destinationPath;
+        if(!fileName.isEmpty()) {
+            fileName += "/";
+        }
+        fileName += mainWindow->windowTitle() + ".png";
+        bool res = screenshot.save(fileName);
+        if(saveToClipboard) {
+            QClipboard *clipboard = QApplication::clipboard();
+            clipboard->setPixmap(screenshot);
+        }
+        qDebug() << "saveToClipboard:" << saveToClipboard <<
+            "Destination:" << fileName << "Res:" << res;
+    } );
+
+    return shortCut;
+}
+
 
 
 

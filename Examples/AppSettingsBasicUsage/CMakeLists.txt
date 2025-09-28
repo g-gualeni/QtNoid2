@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 cmake_minimum_required(VERSION 3.16)
 
-project(AppBasicUsage VERSION 2.0.0 LANGUAGES CXX)
+project(AppSettingsBasicUsage VERSION 2.0.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -28,7 +28,7 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(AppBasicUsage
+    qt_add_executable(AppSettingsBasicUsage
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
@@ -38,19 +38,19 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(AppBasicUsage SHARED
+        add_library(AppSettingsBasicUsage SHARED
             ${PROJECT_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        add_executable(AppBasicUsage
+        add_executable(AppSettingsBasicUsage
             ${PROJECT_SOURCES}
         )
     endif()
 endif()
 
-target_link_libraries(AppBasicUsage
+target_link_libraries(AppSettingsBasicUsage
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     QtNoid::QtNoidApp
 )
@@ -59,9 +59,9 @@ target_link_libraries(AppBasicUsage
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.AppBasicUsage)
+  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.AppSettingsBasicUsage)
 endif()
-set_target_properties(AppBasicUsage PROPERTIES
+set_target_properties(AppSettingsBasicUsage PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -70,12 +70,12 @@ set_target_properties(AppBasicUsage PROPERTIES
 )
 
 include(GNUInstallDirs)
-install(TARGETS AppBasicUsage
+install(TARGETS AppSettingsBasicUsage
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(AppBasicUsage)
+    qt_finalize_executable(AppSettingsBasicUsage)
 endif()

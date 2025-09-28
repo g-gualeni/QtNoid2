@@ -7,6 +7,8 @@
 #include <QString>
 
 class QMainWindow;
+class QShortcut;
+
 
 namespace QtNoid {
 namespace App {
@@ -21,6 +23,8 @@ public:
     static QString groupNameFromObjectOrClass(const QObject* ref);
     static bool updateMainWindowTitle(bool changed, QWidget *ref);
     static QPixmap fullDialogGrab(QWidget *ref);
+    static QShortcut *initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence = "Ctrl+Shift+S",
+                                                 QString destinationPath = {}, bool saveToClipboard = true);
 
 private:
 };

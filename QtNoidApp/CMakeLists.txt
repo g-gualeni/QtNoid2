@@ -146,5 +146,7 @@ endif()
 # =============================================================================
 set(PROJECT_DOCS
     QtNoidApp.md
+    doc/AppSettingsBasicUsage.md
+
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

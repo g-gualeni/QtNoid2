@@ -9,6 +9,8 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class QShortcut;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -24,5 +26,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QShortcut *m_screenshotShortcut = nullptr;
 };
 #endif // MAINWINDOW_H

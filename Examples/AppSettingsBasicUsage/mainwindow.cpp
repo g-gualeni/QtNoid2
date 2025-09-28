@@ -2,20 +2,25 @@
 #include "./ui_mainwindow.h"
 #include "QtNoidApp/QtNoidApp"
 
+#include <QShortcut>
+
 using namespace QtNoid::App;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
     QString appBundle = Settings::appExeOrAppBundlePath();
     ui->txtAppBundle->setText(appBundle);
-    qApp->setApplicationDisplayName("This Is App Basic Usage");
+    qApp->setApplicationDisplayName("This Is App Settings Basic Usage");
     QString config = Settings::filePathAsAppSibling();
     ui->txtConfigPath->setText(config);
 
     ui->txtGroupName->setText(Settings::groupNameFromObjectOrClass(this));
+
+    m_screenshotShortcut = Settings::initFullDialogGrabShortcut(this, "Ctrl+Shift+S", "C:/temp", false);
 }
 
 MainWindow::~MainWindow()
@@ -25,17 +30,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_cmdGroupName_clicked()
 {
-    this->setObjectName("AppBasicUsage");
+    this->setObjectName("AppSettingsBasicUsage");
     ui->txtGroupName->setText(Settings::groupNameFromObjectOrClass(this));
 }
-
 
 void MainWindow::on_optUpdateWindowTitle_clicked(bool checked)
 {
     // I use the central widget as the simplest way to get the main window.
     Settings::updateMainWindowTitle(checked, ui->centralwidget);
 }
-
 
 void MainWindow::on_cmdFullDialogGrab_clicked()
 {
@@ -53,8 +56,4 @@ void MainWindow::on_cmdFullDialogGrab_clicked()
         ui->txtFullDialogGrab->setPixmap(pixMap);
         ui->cmdFullDialogGrab->setText("Clear " + text);
     }
-
-
-
 }
-

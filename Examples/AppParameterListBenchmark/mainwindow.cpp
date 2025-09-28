@@ -79,6 +79,34 @@ void MainWindow::on_cmdGOToJson_clicked()
 
 }
 
+void MainWindow::on_cmdGOBinding_clicked()
+{
+    int iterations = ui->txtIterationsCountBinding->text().toInt();
+    auto ns = benchmarkBindings(iterations);
+    auto singleRunTime = ns / iterations;
+    auto txt = QString("Total Time: %1, AverageTime: %2")
+                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
+                        QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
+
+    ui->txtElapsedTimeBinding->setText(txt);
+    ui->txtElapsedTimeBinding->setEnabled(true);
+
+}
+
+void MainWindow::on_cmdGOSignalAndSlots_clicked()
+{
+    int iterations = ui->txtIterationsSignalsAndSlots->text().toInt();
+    auto ns = benchmarkSignalsAndSlot(iterations);
+    auto singleRunTime = ns / iterations;
+    auto txt = QString("Total Time: %1, AverageTime: %2")
+                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
+                        QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
+
+    ui->txtElapsedTimeSignalsAndSlot->setText(txt);
+    ui->txtElapsedTimeSignalsAndSlot->setEnabled(true);
+
+}
+
 
 
 
@@ -194,6 +222,46 @@ quint64 MainWindow::benchmarkParameterListToJSON(int paramtersCount)
 
     return ET.nsecsElapsed();
 }
+
+quint64 MainWindow::benchmarkBindings(int iterations)
+{
+    QElapsedTimer ET;
+    QtNoid::App::Parameter leader(0, "leader", this);
+    QtNoid::App::Parameter follower(0, "follower", this);
+
+    auto bindableLeader = leader.bindableValue();
+    // externalProperty.setBinding([&]() { return par.bindableValue().value(); });
+    follower.bindableValue().setBinding([&]() { return bindableLeader.value(); });
+    // qDebug() << __func__ << "\n" << leader << "\n" << follower;
+
+    ET.start();
+    for(int ii=0; ii<iterations; ++ii) {
+        leader.setValue(ii);
+        // Check the value
+        // if(follower.value() != ii) break;
+    }
+    return ET.nsecsElapsed();
+}
+
+quint64 MainWindow::benchmarkSignalsAndSlot(int iterations)
+{
+    QElapsedTimer ET;
+    QtNoid::App::Parameter leader(0, "leader", this);
+    QtNoid::App::Parameter follower(0, "follower", this);
+
+    connect(&leader, &QtNoid::App::Parameter::valueChanged, &follower, &QtNoid::App::Parameter::onValueChanged);
+
+    ET.start();
+    for(int ii=0; ii<iterations; ++ii) {
+        leader.setValue(ii);
+        // if(follower.value() != ii) break;
+    }
+    return ET.nsecsElapsed();
+}
+
+
+
+
 
 
 

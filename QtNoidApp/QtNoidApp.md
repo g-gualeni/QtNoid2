@@ -36,6 +36,16 @@ using namespace QtNoid::App;
 
 &nbsp;
 
+## Examples
+- **AppSettingsBasicUsage:** This a rough application that showcases most of the methods
+of the class App::Settings.
+- **AppParameterBasicUsage:** use this example to visualize properties of the class
+Parameter and to see how conversion to and from JSON works.
+
+
+&nbsp;
+
+
 ## Class: Settings
 This class contains a set of helper methods to work with the application settings
 

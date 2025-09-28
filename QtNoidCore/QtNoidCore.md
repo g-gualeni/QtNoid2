@@ -27,6 +27,12 @@ using namespace QtNoid;
 
 &nbsp;
 
+## Examples
+- **CoreBasicUsage:** use this example to understand how the library can be integrated in 
+  your project
+
+&nbsp;
+
 ## Class: Core
 
 ### Static Methods

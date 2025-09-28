@@ -7,6 +7,8 @@
 
 ### Release Process
 [ ] Update CLOC Report
+[ ] Create a ZIP with the artifacts
+
 
 
 ### Completed
@@ -23,7 +25,6 @@
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
--> Test con i link per vedere la velocità
 -> Scrivere la documentazione
 
 
@@ -82,9 +83,8 @@
 - [x] Add the QDebug << operator to simplify debug
 - [x] Test the ownership and the destruction
 - [x] Test the update values from JSON capability
-
-- [ ] Create iterators
-- [ ] Create Reverse Iterators
+- [x] Create iterators
+- [x] Create Reverse Iterators
 
 - [ ] Update documentation 
 
@@ -104,11 +104,8 @@
 
 ### Test AppParameterListBenchmark
 - [x] Performance for Parameter and ParameterList using new and using JSON
-- [ ] Add a test for linking 2 paramters using binding. Consider also biderectional
-      linking.
-- [ ] Add a test for linking 2 paramters using signals and slot. Consider also bidirectional
-      linking.
-- [ ] Test performance using bindings and using signal/slots
+- [x] Add a test for linking 2 paramters using binding
+- [x] Add a test for linking 2 paramters using signals and slot. 
 
 
 &nbsp;

@@ -18,10 +18,10 @@ the first public release.
 &nbsp;
 
 ## Modules in the library
-* **[QtNoidCore](./Core/QtNoidCore.md)**:
+* **[QtNoidCore](./QtNoidCore/QtNoidCore.md)**:
   This is a simple class to control the library life cycle.
   
-* **[QtNoidCommon](./Common/QtNoidCommon.md)**:
+* **[QtNoidCommon](./QtNoidCommon/QtNoidCommon.md)**:
   This is a collection of class (Text, Scale, 
   File) to help on general tasks.
 
