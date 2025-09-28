@@ -79,6 +79,8 @@ set(PROJECT_DOCS
     README.md
     DEVELOPMENT.md
     BUILD-INSTRUCTIONS.md
+    CLOC-REPORT.md
+    CLOC-Report.bat
     LICENSE
     UserStories/QtNoid.odp
 	UserStories/QtNoidCommon_UserStories.odp

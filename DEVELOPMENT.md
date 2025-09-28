@@ -5,6 +5,8 @@
 ### Sprint-003 Goals
 - Implementation of the QtNoid::App library and release of QtNoid2 version 2.1.0
 
+### Release Process
+[ ] Update CLOC Report
 
 
 ### Completed
@@ -21,7 +23,6 @@
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
-Finire report CLOC aggiungendo un batch file per fare il tutto
 -> Test con i link per vedere la velocità
 -> Scrivere la documentazione
 
