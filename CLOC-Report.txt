@@ -1,10 +1,9 @@
-# QtNoid Library 2.1.0 CLOC Report 
-(see https://github.com/AlDanial/cloc)
-
-&nbsp;
-## QtNoidCore  
-
-&nbsp;
+CLOC Report - Generated on 29/09/2025 21:08:25,40 
+ 
+ 
+QtNoidCore 
+cloc|github.com/AlDanial/cloc v 2.06  T=0.02 s (423.8 files/s, 19863.4 lines/s)
+--- | ---
 
 Language|files|blank|comment|code
 :-------|-------:|-------:|-------:|-------:
@@ -14,12 +13,11 @@ Markdown|1|17|0|33
 C/C++ Header|2|9|0|23
 --------|--------|--------|--------|--------
 SUM:|8|90|51|234
-
-&nbsp;
-
-## QtNoidCommon
-
-&nbsp;
+ 
+ 
+QtNoidCommon 
+cloc|github.com/AlDanial/cloc v 2.06  T=0.03 s (484.9 files/s, 86210.9 lines/s)
+--- | ---
 
 Language|files|blank|comment|code
 :-------|-------:|-------:|-------:|-------:
@@ -29,27 +27,25 @@ CMake|3|49|52|118
 C/C++ Header|4|37|0|90
 --------|--------|--------|--------|--------
 SUM:|14|504|162|1823
-
-&nbsp;
-
-## QtNoidApp 
-
-&nbsp;
+ 
+ 
+QtNoidApp 
+cloc|github.com/AlDanial/cloc v 2.06  T=0.04 s (402.1 files/s, 146358.1 lines/s)
+--- | ---
 
 Language|files|blank|comment|code
 :-------|-------:|-------:|-------:|-------:
 C++|6|979|555|3852
 C/C++ Header|4|92|22|366
-Markdown|5|97|0|269
+Markdown|5|115|0|350
 CMake|3|47|52|122
 --------|--------|--------|--------|--------
-SUM:|18|1215|629|4609
-
-&nbsp;
-
-## Examples  
-
-&nbsp;
+SUM:|18|1233|629|4690
+ 
+ 
+Examples 
+cloc|github.com/AlDanial/cloc v 2.06  T=0.05 s (585.5 files/s, 67529.7 lines/s)
+--- | ---
 
 Language|files|blank|comment|code
 :-------|-------:|-------:|-------:|-------:
@@ -60,4 +56,3 @@ CMake|7|76|68|345
 C/C++ Header|5|47|0|145
 --------|--------|--------|--------|--------
 SUM:|27|284|92|2738
-
