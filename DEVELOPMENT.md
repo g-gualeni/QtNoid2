@@ -12,7 +12,7 @@
 
 
 ### Completed
-- [ ] CLOC Report page
+- [x] CLOC Report page
 - [x] QtNoid:::App::Settings::fullDialogGrab() ✅ (commit: 9adac1b, 2025-08-15)
 - [x] Parameter class foundation ✅ (commit: 7ebdc55, 2025-08-15)
 - [x] Parameter class tests ✅ (commit: c464f08, 2025-08-16)
@@ -28,6 +28,11 @@
 -> Scrivere la documentazione
 
 
+### Doc
+- [x] Doc update for examples
+- [x] Doc update for the new method of settings
+- [ ] Doc update for the Parameter
+- [ ] Doc update for the ParameterList
 
 
 
@@ -57,7 +62,6 @@
 - [x] rename isChanged to isValueChanged
 - [x] handle the case where the value is back to default
       without triggering a preset or loading from json
-- [ ] Update documentation 
 
       
 
@@ -86,7 +90,6 @@
 - [x] Create iterators
 - [x] Create Reverse Iterators
 
-- [ ] Update documentation 
 
 
 ### Test AppParameterBasicUsage

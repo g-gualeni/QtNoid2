@@ -1,6 +1,9 @@
 # AppParameterListBasicUsage
 
 &nbsp;
+[QtNoidApp](../QtNoidApp.md)
+&nbsp;
+
 
 ## Windows 11
 

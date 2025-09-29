@@ -56,7 +56,6 @@ set(HEADERS
 add_library(${PROJECT_NAME} SHARED
     ${SOURCES}
     ${HEADERS}
-    doc/doc.qrc
 )
 
 # Define l'export control symbol
@@ -147,7 +146,6 @@ endif()
 # =============================================================================
 set(PROJECT_DOCS
     QtNoidApp.md
-    doc/doc.qrc
     doc/AppParameterBasicUsage.md
     doc/AppParameterListBasicUsage.md
     doc/AppParameterListBenchmark.md
