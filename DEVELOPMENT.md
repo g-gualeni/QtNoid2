@@ -25,15 +25,14 @@
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
 ### In Progress
--> Scrivere la documentazione
+-> Fare il rilascio
 
 
 ### Doc
 - [x] Doc update for examples
 - [x] Doc update for the new method of settings
-- [ ] Doc update for the Parameter
-- [ ] Doc update for the ParameterList
-
+- [*] Doc update for the Parameter
+- [*] Doc update for the ParameterList
 
 
 ### Todo Parameter
