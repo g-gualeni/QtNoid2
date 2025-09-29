@@ -17,3 +17,13 @@ This configuration is saved in the CMakeLists.txt.user file and it is not part o
 tracked files.
 
 
+
+# Publication on GitHub
+Close the project, clear the build folder and reopen the project
+Build the project in release
+Run the test (they must be successfull)
+Run the CLOC-Report.bat and update CLOC-REPORT.md
+## Artifact Preparation
+Remove all exe files from the library
+7Zip the library adding -Win or -macOS
+
