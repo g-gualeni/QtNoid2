@@ -76,6 +76,7 @@ include(CMakePackageConfigHelpers)
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
+    ReleaseNotes.txt
     README.md
     DEVELOPMENT.md
     BUILD-INSTRUCTIONS.md

@@ -17,6 +17,7 @@ This configuration is saved in the CMakeLists.txt.user file and it is not part o
 tracked files.
 
 
+Update the release notes
 
 # Publication on GitHub
 Close the project, clear the build folder and reopen the project

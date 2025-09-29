@@ -1,0 +1,4 @@
+2.1.0
+New QtNodidApp library with Settings, Paramters, ParamterList
+
+
