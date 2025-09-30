@@ -88,10 +88,11 @@ set(PROJECT_DOCS
     CLOC-REPORT.md
     CLOC-Report.bat
     LICENSE
-    UserStories/QtNoid.odp
+    UserStories/QtNoid2.odp
     UserStories/QtNoidCore_UserStories.odp
     UserStories/QtNoidCommon_UserStories.odp
     UserStories/QtNoidApp_UserStories.odp
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})
+
 

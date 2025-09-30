@@ -7,4 +7,5 @@ add_subdirectory(AppSettingsBasicUsage)
 add_subdirectory(AppParameterBasicUsage)
 add_subdirectory(AppParameterListBasicUsage)
 add_subdirectory(AppParameterListBenchmark)
+add_subdirectory(JsonTxt2JsonBasicUsage)
 
