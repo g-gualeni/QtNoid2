@@ -1,6 +1,6 @@
 2.1.0
 October 1st, 2025
-New QtNodidApp library with Settings, Paramters, ParamterList
+New QtNodidApp library with Settings, Parameters, Parameters
 on top of the existing QtNoidCore, QtNoidCommon
 The release has been compiled using Qt 6.9.2
 
