@@ -1,6 +1,7 @@
 
 # Release
-Build in release without examples. You can disable examples in the main CMakeLists.txt
+First build in release without examples. 
+You can disable examples in the main CMakeLists.txt
 
     option(BUILD_EXAMPLES "Build examples" OFF)
 
@@ -21,12 +22,13 @@ Remove all exe files from the library
 7Zip the library adding -Win or -macOS
 
 
-
 # Publication on GitHub
-- [x] Close the project, clear the build folder and reopen the project
-- [x] Build the project in release
-- [x] Copy the Win and macOS binary to Releases (remember to remove the executable)
-- [x] Run the test (they must be successfull - or notify it in release notes)
-- [x] Run the CLOC-Report.bat and update CLOC-REPORT.md
-- [x] Draft the ReleaseNotes.txt doc
+**Sanity check:**
+- [ ] Close the project, clear the build folder and reopen the project
+- [ ] Build the project in release
+- [ ] Run the test (they must be successfull - or notify it in release notes)
+
+**Artifacts**:
+- [ ] Copy the Win binary in a 7zip file into the release folder
+- [ ] Copy macOS binary to Releases (remember to remove the executable)
 
