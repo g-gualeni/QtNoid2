@@ -1,0 +1,20 @@
+2.1.0
+October 1st, 2025
+New QtNodidApp library with Settings, Paramters, ParamterList
+on top of the existing QtNoidCore, QtNoidCommon
+The release has been compiled using Qt 6.9.2
+
+WARNING: there is a problem with ParamterList reverse iterators
+that cannot compile with macOS.
+
+
+2.0.1
+June 10st, 2025
+This release expands the library, adding QtNoidCommon.
+The library has been compiled using Qt 6.9.1
+
+
+2.0.0
+June 1st, 2025
+This is just QtNoid::Core library
+The library has been compiled using Qt 6.9.0

@@ -1,0 +1,58 @@
+CLOC Report - Generated on 29/09/2025 21:20:22,61 
+ 
+ 
+QtNoidCore 
+cloc|github.com/AlDanial/cloc v 2.06  T=0.02 s (417.6 files/s, 19576.1 lines/s)
+--- | ---
+
+Language|files|blank|comment|code
+:-------|-------:|-------:|-------:|-------:
+CMake|3|48|50|119
+C++|2|16|1|59
+Markdown|1|17|0|33
+C/C++ Header|2|9|0|23
+--------|--------|--------|--------|--------
+SUM:|8|90|51|234
+ 
+ 
+QtNoidCommon 
+cloc|github.com/AlDanial/cloc v 2.06  T=0.03 s (487.7 files/s, 86712.9 lines/s)
+--- | ---
+
+Language|files|blank|comment|code
+:-------|-------:|-------:|-------:|-------:
+C++|6|362|110|1473
+Markdown|1|56|0|142
+CMake|3|49|52|118
+C/C++ Header|4|37|0|90
+--------|--------|--------|--------|--------
+SUM:|14|504|162|1823
+ 
+ 
+QtNoidApp 
+cloc|github.com/AlDanial/cloc v 2.06  T=0.04 s (402.4 files/s, 147213.7 lines/s)
+--- | ---
+
+Language|files|blank|comment|code
+:-------|-------:|-------:|-------:|-------:
+C++|6|979|555|3852
+Markdown|5|118|0|380
+C/C++ Header|4|92|22|366
+CMake|3|47|52|122
+--------|--------|--------|--------|--------
+SUM:|18|1236|629|4720
+ 
+ 
+Examples 
+cloc|github.com/AlDanial/cloc v 2.06  T=0.05 s (571.6 files/s, 65930.0 lines/s)
+--- | ---
+
+Language|files|blank|comment|code
+:-------|-------:|-------:|-------:|-------:
+XML (Qt/GTK)|6|0|0|1072
+C++|8|161|23|714
+XML|1|0|1|462
+CMake|7|76|68|345
+C/C++ Header|5|47|0|145
+--------|--------|--------|--------|--------
+SUM:|27|284|92|2738
