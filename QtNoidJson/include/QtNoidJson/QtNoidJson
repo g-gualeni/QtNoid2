@@ -1,0 +1,7 @@
+
+// QtNoidJson - Main convenience header
+// Include this to get all QtNoid::Json functionality
+
+#include "txt2json.h" // IWYU pragma: export
+
+

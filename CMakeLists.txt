@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(QtNoid
-    VERSION 2.1.0
+    VERSION 2.2.0
     DESCRIPTION "${PROJECT_NAME} - Modular Qt Library version 2"
     LANGUAGES CXX
 )
@@ -13,6 +13,7 @@ set(LEGAL_COPYRIGHT "(C) 2025 Gianbattista Gualeni")
 option(BUILD_CORE "Build QtNoidCore library" ON)
 option(BUILD_COMMON "Build QtNoidCommon library" ON)
 option(BUILD_APP "Build QtNoidApp library" ON)
+option(BUILD_JSON "Build QtNoidJson library" ON)
 
 option(BUILD_TESTS "Build tests" ON)
 
@@ -59,6 +60,10 @@ endif()
 
 if(BUILD_APP)
     add_subdirectory(QtNoidApp)
+endif()
+
+if(BUILD_JSON)
+    add_subdirectory(QtNoidJson)
 endif()
 
 if(BUILD_EXAMPLES)
