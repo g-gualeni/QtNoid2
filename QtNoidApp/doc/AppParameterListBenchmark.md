@@ -9,6 +9,10 @@
 
 ![AppParameterListBenchmark-Win11](AppParameterListBenchmark-Win11.png)
 
+## macOS
+
+![AppParameterListBenchmark-macOS](AppParameterListBenchmark-macOS.png)
+
 
 &nbsp;
 

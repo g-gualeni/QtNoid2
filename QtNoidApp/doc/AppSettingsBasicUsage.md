@@ -9,6 +9,10 @@
 ![AppSettingsBasicUsage-Win11](AppSettingsBasicUsage-Win11.png)
 
 
+## macOS
+
+![AppSettingsBasicUsage-macOS](AppSettingsBasicUsage-macOS.png)
+
 
 
 &nbsp;

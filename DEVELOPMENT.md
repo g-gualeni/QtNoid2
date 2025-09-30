@@ -5,9 +5,14 @@
 ### Sprint-003 Goals
 - Implementation of the QtNoid::App library and release of QtNoid2 version 2.1.0
 
+
+### Progress Status
+-> Fare il rilascio
+
+
 ### Release Process
-[ ] Update CLOC Report
-[ ] Create a ZIP with the artifacts
+[x] Update CLOC Report
+[x] Create a ZIP with the artifacts
 
 
 
@@ -24,8 +29,6 @@
 - [x] Test and Review of Parameter List ✅ (commit: 180c86f, 2025-09-11)
 - [x] Parameter Serialization ✅ (commit: 92c9638, 2025-09-12)
 
-### In Progress
--> Fare il rilascio
 
 
 ### Doc
