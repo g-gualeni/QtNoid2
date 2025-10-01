@@ -30,6 +30,8 @@ private slots:
     void testPlainTextFromJson();
 
     void textPlainTextToJosnCornerCases();
+
+    void testPlainTextToJsonFromListOfObjects_data();
     void testPlainTextToJsonFromListOfObjects();
 
 
@@ -86,12 +88,14 @@ void TestQtNoidJsonTxt2Json::testPlainTextIsArray_data()
     QTest::addColumn<QString>("in");
     QTest::addColumn<bool>("expected");
     QTest::newRow("Object end afterArray") << "[0 1 2 3]}" << true;
+    QTest::newRow("Object end afterArray2") << "[0 1 2 3] } " << true;
     QTest::newRow("Space Separated Array") << "[0 1 2 3]" << true;
     QTest::newRow("String Array") << "[\"AA\", BB, CC]" << true;
     QTest::newRow("Null Array") << "[null, null, null]" << true;
     QTest::newRow("Bool Array") << "[true, false, true]" << true;
     QTest::newRow("Int Array") << "[1, -100, +1000]" << true;
     QTest::newRow("Real Array") << "[-1.0, 1.23, +1000]" << true;
+    QTest::newRow("Mixed Array") << "[-1.0, 1, \"+1000\"]" << true;
 }
 
 void TestQtNoidJsonTxt2Json::testPlainTextIsArray()
@@ -104,26 +108,24 @@ void TestQtNoidJsonTxt2Json::testPlainTextIsArray()
 
 void TestQtNoidJsonTxt2Json::testTextArrayToJson_data()
 {
-
-    QVERIFY(0);
-
     QTest::addColumn<QString>("in");
-    QTest::addColumn<QStringList>("res");
-    QTest::newRow("Space Separated Array") << "[0 1 2 3]" << QStringList({"0", "1", "2", "3"});
-    QTest::newRow("String Array") << "[\"AA\", BB, CC]" << QStringList({"AA", "BB", "CC"});
+    QTest::addColumn<QStringList>("expected");
+    QTest::newRow("Space Separated Array") << "[0 +1 -2 3]" << QStringList({"0", "1", "-2", "3"});
+    QTest::newRow("String Array") << "[\"AA\", BB, CC]" << QStringList({"\"AA\"", "\"BB\"", "\"CC\""});
     QTest::newRow("Null Array") << "[null, null, null]" << QStringList({"null", "null", "null"});
     QTest::newRow("Bool Array") << "[true, false, true]" << QStringList({"true", "false", "true"});
-    QTest::newRow("Int Array") << "[1, -100, +1000]" << QStringList({"1", "-100", "+1000"});
-    QTest::newRow("Real Array") << "[-1.0, 1.23, +1000]" << QStringList({"-1.0", "1.23", "+1000"});
+    QTest::newRow("Int Array") << "[1, -100, +1000]" << QStringList({"1", "-100", "1000"});
+    QTest::newRow("Real Array") << "[-1.0, 1.23, +1000.2]" << QStringList({"-1.0", "1.23", "1000.2"});
+    QTest::newRow("Mixed String") << R"(["AA", BB, "CC])" << QStringList({"\"AA\"", "\"BB\"", "\"CC\""});
 }
 
 void TestQtNoidJsonTxt2Json::testTextArrayToJson()
 {
-    QVERIFY(0);
-
     QFETCH(QString, in);
-    QFETCH(QStringList, res);
-    QCOMPARE(QtNoid::Json::Txt2Json::textArrayToJson(in), res);
+    QFETCH(QStringList, expected);
+    QStringList actual = QtNoid::Json::Txt2Json::textArrayToJson(in);
+    qDebug() << __func__ << actual;
+    QCOMPARE(actual, expected);
 }
 
 void TestQtNoidJsonTxt2Json::testPlainTextIsNumber_data()
@@ -171,18 +173,37 @@ void TestQtNoidJsonTxt2Json::textPlainTextToJosnCornerCases()
     QVERIFY(jj.isEmpty());
 }
 
+void TestQtNoidJsonTxt2Json::testPlainTextToJsonFromListOfObjects_data()
+{
+    QTest::addColumn<QStringList>("in");
+    QTest::addColumn<QString>("expected");
+
+    // "Simple Child Object"
+    // ObjName:
+    //     Child01: 01
+    //     Child01: 02
+    QTest::newRow("Simple Child Object") << QStringList({"ObjName:", "Child01: 1", "Child01: 2", ""}) << "{}";
+
+    QTest::newRow("Simple Child with leading 0") << QStringList({"ObjName:", "Child01: 001", "Child01: 002", ""}) << "{}";
+
+    // def << "ObjName:";
+    // def << "{Array01: [ 1  2  3 ],";
+    // def << "Array02: [ 10  20  30 ]}";
+}
+
 void TestQtNoidJsonTxt2Json::testPlainTextToJsonFromListOfObjects()
 {
-    QStringList def;
-    def << "ObjName:";
-    def << "{Array01: [ 1  2  3 ],";
-    def << "Array02: [ 10  20  30 ]}";
+    QFETCH(QStringList, in);
+    QFETCH(QString, expected);
 
-    QJsonObject jj = QtNoid::Json::Txt2Json::plainTextToJson(def);
+    QJsonObject jj = QtNoid::Json::Txt2Json::plainTextToJson(in);
+    QJsonDocument doc(jj);
+    QString actual = doc.toJson();
 
-    qDebug() << jj;
+    qDebug() << __func__ << in;
+    qDebug() << __func__ << actual;
 
-    QVERIFY(0);
+    QCOMPARE(actual, expected);
 
 }
 

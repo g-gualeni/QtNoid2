@@ -37,6 +37,7 @@ private slots:
     void testTokenize_data();
     void testTokenize();
 
+    void testTokenizeJsonArray_data();
     void testTokenizeJsonArray();
 
     void testConvertToCamelCase_data();
@@ -373,15 +374,27 @@ void TestQtNoidCommonText::testTokenize()
     QCOMPARE(result, expected);
 }
 
+void TestQtNoidCommonText::testTokenizeJsonArray_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QStringList>("expected");
+
+    QTest::newRow("integer array comma separated") << "[0, 1, 2, 3]" << QStringList({"0","1", "2", "3"});
+    QTest::newRow("integer array space separated") << "[0 1 2 3]" << QStringList({"0","1", "2", "3"});
+    QTest::newRow("String array comma separated") << R"(["A0", "A1", "A2", "A3"])" << QStringList({"\"A0\"","\"A1\"", "\"A2\"", "\"A3\""});
+    QTest::newRow("String array space separated") << R"(["A0" "A1" "A2" "A3"])" << QStringList({"\"A0\"","\"A1\"", "\"A2\"", "\"A3\""});
+    QTest::newRow("real array comma separated") << "[0.1, 1.1, 2.1, 3.1]" << QStringList({"0.1","1.1", "2.1", "3.1"});
+    QTest::newRow("real array double space separated") << "[0.1  1.1  2.1  3.1]" << QStringList({"0.1","1.1", "2.1", "3.1"});
+    QTest::newRow("Mixed array space and comma separated") << "[0.1,  1  \"K2.1\",  \"AA\"]" << QStringList({"0.1","1", "\"K2.1\"", "\"AA\""});
+}
+
 void TestQtNoidCommonText::testTokenizeJsonArray()
 {
-    QString input = "[0, 1, 2 3]";
-    auto result = Text::tokenize(input, ", ", false, 0);
-
-    qDebug() << result;
-
-    QVERIFY(0);
-
+    QFETCH(QString, input);
+    QFETCH(QStringList, expected);
+    auto result = Text::tokenize(input, "[], ", false, 0);
+    // qDebug() << result;
+    QCOMPARE(result, expected);
 }
 
 void TestQtNoidCommonText::testConvertToCamelCase_data()

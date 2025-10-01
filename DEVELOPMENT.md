@@ -1,10 +1,12 @@
 # QtNoid Development Status
-
+&nbsp;
 ## Current Sprint (Sprint-004)
 
 ### Sprint Goals
-- Implementation of the QtNoid::Txt2Json library and release of QtNoid2 version 2.2.0
+Implementation of the QtNoid::Txt2Json library and release of 
+QtNoid2 version 2.2.0
 
+&nbsp;
 
 ### Progress Status
 Improving library text to json for multilevel JSON Docs
@@ -73,14 +75,15 @@ Readings: [
 
 
 ### Test Common Text
-- [ ] check the TestQtNoidCommonText::testTokenizeJsonArray() addining
+- [x] check the TestQtNoidCommonText::testTokenizeJsonArray() addining
      more test cases with string or a mixture of strings and numbers (
      mixed types array)
 
 
 ### Test Txt2Json
-- [ ] update and verify void testPlainTextIsArray();
-- [ ] void testTextArrayToJson();
+- [x] update and verify void testPlainTextIsArray();
+- [x] update testTextArrayToJson()
+- [ ] update testPlainTextToJsonFromListOfObjects();
 
 
 &nbsp;

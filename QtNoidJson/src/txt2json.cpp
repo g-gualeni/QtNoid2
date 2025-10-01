@@ -10,6 +10,7 @@ QJsonObject Txt2Json::plainTextToJson(const QStringList &plainText)
 {
     // Translate from text to JSON syntax
     QStringList jStrList;
+    int openBrace = 0;
     for(const QString &line : plainText){
         // Dismantle
         QString key = line.section(':',0,0).trimmed();
@@ -36,10 +37,22 @@ QJsonObject Txt2Json::plainTextToJson(const QStringList &plainText)
                 newLine = "{ ";
             }
             newLine += QString("\"%1\":").arg(key);
-            if(!val.isEmpty()) {
+            if(val.isEmpty()) {
+                // val empty Mark the start of a child object
+                newLine += "{";
+                ++openBrace;
+            }
+            else {
                 newLine += QString("%1,").arg(val);
             }
             jStrList.append(newLine);
+        }
+        else if(openBrace > 0){
+            if(!jStrList.isEmpty() && jStrList.last().endsWith(',')) {
+                jStrList.last().chop(1);
+            }
+            jStrList.append("}");
+            --openBrace;
         }
     }
 
@@ -119,31 +132,24 @@ bool Txt2Json::plainTextIsArray(const QString &val)
 
 QStringList Txt2Json::textArrayToJson(const QString &val)
 {
-    QString txt = val.section('[', 1).section(']', 0, 0);
-
     QStringList res;
-    QStringList elements = QtNoid::Common::Text::tokenize(txt, ", ", false, 0);
+    QStringList elements = QtNoid::Common::Text::tokenize(val, "[], ", false, 0);
     for(QString &element : elements){
-        if (plainTextIsNumber(element) && element.startsWith('+')) {
+        if (plainTextIsNumber(element)) {
             element.remove('+');
         }
-        res.append(element.trimmed());
+        else if(plainTextIsString(element)) {
+            if(!element.startsWith('"')) {
+                element = R"(")" + element;
+            }
+            if(!element.endsWith('"')) {
+                element += R"(")";
+            }
+        }
+        res.append(element);
     }
 
     return res;
-
-    // txt = txt.remove(0,1);
-    // txt.chop(1);
-    // auto list = texArrayToJson(val);
-    // // list.size() > 0
-    // QStringList jArrayList;
-    // for (QString &element : list) {
-    //     if (plainTextIsNumber(element) && element.startsWith("+")) {
-    //         element.remove("+");
-    //     }
-    //     jArrayList << element;
-    // }
-    // val = QString("[%1]").arg(jArrayList.join(","));
 }
 
 QString Txt2Json::plainTextJsonValToString(const QJsonValue &jVal)
