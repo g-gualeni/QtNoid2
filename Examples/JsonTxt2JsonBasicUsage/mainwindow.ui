@@ -20,14 +20,29 @@
       <item row="1" column="0">
        <widget class="QPlainTextEdit" name="txtText">
         <property name="plainText">
-         <string>Focus: 9
-Size: 1
-Reading Distance: [100, 200, 400]
-Horizontal FOV: 
-   WD: 1000   
-   H:500
-   WD: 2000   
-   H:1000</string>
+         <string>ApertureAngleHdeg: 30
+ApertureAngleVdeg: 19
+FocalLength: 10.8
+HFOV: 
+     {&quot;FOV&quot;: [ 0  36  900 ]
+      &quot;WD&quot;: [0  80  1700 ]}
+
+MinimumFocusDistance: 80
+Readings: [
+    {CodeName: Code128             
+     CodeSize: [ &quot;5 Mils&quot; &quot;8 Mils&quot; &quot;10 Mils&quot; &quot;12 Mils&quot; &quot;15 Mils&quot;  &quot;20 Mils&quot;]
+     WDLimit: [382  611 763 916 1144 1525]}
+
+     {CodeName: &quot;ECC 200&quot;
+       CodeSize: [ &quot;5 Mils&quot; &quot;8 Mils&quot; &quot;10 Mils&quot; &quot;12 Mils&quot; &quot;15 Mils&quot; &quot;20 Mils&quot;]
+       WDLimit: [ 230 367 458 550 687 916  ]}
+
+Title: FS40/VS40 2MP SR
+VFOV: 
+    {FOV: [ 0 23 563]
+     WD: [  0  80  1700  ] }
+
+Version: 1.05.000</string>
         </property>
        </widget>
       </item>

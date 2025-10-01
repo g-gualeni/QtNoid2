@@ -8,12 +8,16 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+class TestQtNoidJsonTxt2Json;
+
 namespace QtNoid {
 namespace Json {
-	
+
 
 class QTNOIDJSON_EXPORT Txt2Json
 {
+    friend class ::TestQtNoidJsonTxt2Json;
+
 public:
     Txt2Json() = default;
     static QJsonObject plainTextToJson(const QStringList &plainText);
@@ -22,7 +26,9 @@ public:
 private:
     static bool plainTextIsString(const QString &val);
     static bool plainTextIsNumber(const QString &val);
-    static QStringList plainTextIsArray(const QString &val);
+    static bool plainTextIsArray(const QString &val);
+
+    static QStringList textArrayToJson(const QString &val);
     static QString plainTextJsonValToString(const QJsonValue &jVal);
 
 };

@@ -11,20 +11,26 @@ private slots:
     void init();
     void cleanup();
 
-    // void testPlainTextIsString_data();
-    // void testPlainTextIsString();
+    void testPlainTextIsString_data();
+    void testPlainTextIsString();
 
-    // void testPlainTextIsArray_data();
-    // void testPlainTextIsArray();
+    void testPlainTextIsArray_data();
+    void testPlainTextIsArray();
 
-    // void testPlainTextIsNumber_data();
-    // void testPlainTextIsNumber();
+    void testPlainTextIsNumber_data();
+    void testPlainTextIsNumber();
+
+    void testTextArrayToJson_data();
+    void testTextArrayToJson();
 
     void testPlainTextToJson_data();
     void testPlainTextToJson();
 
     void testPlainTextFromJson_data();
     void testPlainTextFromJson();
+
+    void textPlainTextToJosnCornerCases();
+    void testPlainTextToJsonFromListOfObjects();
 
 
 private:
@@ -44,6 +50,140 @@ void TestQtNoidJsonTxt2Json::init()
 
 void TestQtNoidJsonTxt2Json::cleanup()
 {
+}
+
+void TestQtNoidJsonTxt2Json::testPlainTextIsString_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<bool>("res");
+
+    QTest::newRow("Empty String") << "" << false;
+    QTest::newRow("String") << "This is the end" << true;
+    QTest::newRow("IP String1") << "0.0.0.0" << true;
+    QTest::newRow("IP String2") << "192.168.0.100" << true;
+    QTest::newRow("bool-1") << "true" << false;
+    QTest::newRow("bool-2") << "false" << false;
+    QTest::newRow("null") << "null" << false;
+    QTest::newRow("Array") << "[1,2,3]" << false;
+    QTest::newRow("Integer") << "255" << false;
+    QTest::newRow("Integer+") << "+1000" << false;
+    QTest::newRow("Integer-") << "-255" << false;
+    QTest::newRow("Real+") << "2.55" << false;
+    QTest::newRow("Real-") << "-2.55" << false;
+}
+
+void TestQtNoidJsonTxt2Json::testPlainTextIsString()
+{
+    QFETCH(QString, in);
+    QFETCH(bool, res);
+
+    QCOMPARE(QtNoid::Json::Txt2Json::plainTextIsString(in), res);
+
+}
+
+void TestQtNoidJsonTxt2Json::testPlainTextIsArray_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<bool>("expected");
+    QTest::newRow("Object end afterArray") << "[0 1 2 3]}" << true;
+    QTest::newRow("Space Separated Array") << "[0 1 2 3]" << true;
+    QTest::newRow("String Array") << "[\"AA\", BB, CC]" << true;
+    QTest::newRow("Null Array") << "[null, null, null]" << true;
+    QTest::newRow("Bool Array") << "[true, false, true]" << true;
+    QTest::newRow("Int Array") << "[1, -100, +1000]" << true;
+    QTest::newRow("Real Array") << "[-1.0, 1.23, +1000]" << true;
+}
+
+void TestQtNoidJsonTxt2Json::testPlainTextIsArray()
+{
+    QFETCH(QString, in);
+    QFETCH(bool, expected);
+
+    QCOMPARE(QtNoid::Json::Txt2Json::plainTextIsArray(in), expected);
+}
+
+void TestQtNoidJsonTxt2Json::testTextArrayToJson_data()
+{
+
+    QVERIFY(0);
+
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QStringList>("res");
+    QTest::newRow("Space Separated Array") << "[0 1 2 3]" << QStringList({"0", "1", "2", "3"});
+    QTest::newRow("String Array") << "[\"AA\", BB, CC]" << QStringList({"AA", "BB", "CC"});
+    QTest::newRow("Null Array") << "[null, null, null]" << QStringList({"null", "null", "null"});
+    QTest::newRow("Bool Array") << "[true, false, true]" << QStringList({"true", "false", "true"});
+    QTest::newRow("Int Array") << "[1, -100, +1000]" << QStringList({"1", "-100", "+1000"});
+    QTest::newRow("Real Array") << "[-1.0, 1.23, +1000]" << QStringList({"-1.0", "1.23", "+1000"});
+}
+
+void TestQtNoidJsonTxt2Json::testTextArrayToJson()
+{
+    QVERIFY(0);
+
+    QFETCH(QString, in);
+    QFETCH(QStringList, res);
+    QCOMPARE(QtNoid::Json::Txt2Json::textArrayToJson(in), res);
+}
+
+void TestQtNoidJsonTxt2Json::testPlainTextIsNumber_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<bool>("res");
+
+    QTest::newRow("String") << "This is the end" << false;
+    QTest::newRow("IP String1") << "0.0.0.0" << false;
+    QTest::newRow("IP String2") << "192.168.0.100" << false;
+    QTest::newRow("bool-1") << "true" << false;
+    QTest::newRow("bool-2") << "false" << false;
+    QTest::newRow("null") << "null" << false;
+    QTest::newRow("Array") << "[1,2,3]" << false;
+    QTest::newRow("Integer") << "100" << true;
+    QTest::newRow("Integer+") << "+255" << true;
+    QTest::newRow("Integer-") << "-255" << true;
+    QTest::newRow("Real") << "2.55" << true;
+    QTest::newRow("Real+") << "+12.13" << true;
+    QTest::newRow("Real-") << "-2.55" << true;
+
+}
+
+void TestQtNoidJsonTxt2Json::testPlainTextIsNumber()
+{
+    QFETCH(QString, in);
+    QFETCH(bool, res);
+    QCOMPARE(QtNoid::Json::Txt2Json::plainTextIsNumber(in), res);
+}
+
+void TestQtNoidJsonTxt2Json::textPlainTextToJosnCornerCases()
+{
+    // Empty String
+    QString emtpyLine = "";
+    QJsonObject jj = QtNoid::Json::Txt2Json::plainTextToJson({emtpyLine});
+    QVERIFY(jj.isEmpty());
+
+    // Empty Lines
+    QString crLine = "\n";
+    jj = QtNoid::Json::Txt2Json::plainTextToJson({crLine});
+    QVERIFY(jj.isEmpty());
+
+    // Multiple Empty Lines
+    jj = QtNoid::Json::Txt2Json::plainTextToJson({crLine, crLine});
+    QVERIFY(jj.isEmpty());
+}
+
+void TestQtNoidJsonTxt2Json::testPlainTextToJsonFromListOfObjects()
+{
+    QStringList def;
+    def << "ObjName:";
+    def << "{Array01: [ 1  2  3 ],";
+    def << "Array02: [ 10  20  30 ]}";
+
+    QJsonObject jj = QtNoid::Json::Txt2Json::plainTextToJson(def);
+
+    qDebug() << jj;
+
+    QVERIFY(0);
+
 }
 
 void TestQtNoidJsonTxt2Json::testPlainTextToJson_data()

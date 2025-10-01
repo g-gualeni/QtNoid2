@@ -37,6 +37,8 @@ private slots:
     void testTokenize_data();
     void testTokenize();
 
+    void testTokenizeJsonArray();
+
     void testConvertToCamelCase_data();
     void testConvertToCamelCase();
 
@@ -369,6 +371,17 @@ void TestQtNoidCommonText::testTokenize()
 
     // qDebug() << QtNoidCommon::fastTokenize(input, splittersString, splitCamelCase, numberBlockLen);
     QCOMPARE(result, expected);
+}
+
+void TestQtNoidCommonText::testTokenizeJsonArray()
+{
+    QString input = "[0, 1, 2 3]";
+    auto result = Text::tokenize(input, ", ", false, 0);
+
+    qDebug() << result;
+
+    QVERIFY(0);
+
 }
 
 void TestQtNoidCommonText::testConvertToCamelCase_data()
