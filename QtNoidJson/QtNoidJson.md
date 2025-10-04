@@ -47,10 +47,13 @@ using namespace QtNoid::Json;
 
 # YAML IS THE FUTURE
 
+Latest version for YAML is 1.2.2 on Oct 1, 2021
+https://github.com/yaml/yaml-spec/tags
+
+
 Test Suite to validate the translator:
 https://github.com/yaml/yaml-test-suite
 -> To have a data set for test, checkout the latest branch data
-
 
 
 This is the YAML test matrix
@@ -100,5 +103,7 @@ Caratteristiche chiave:
 
 DSL Text → [LEXER] → Tokens → [PARSER] → AST → [GENERATOR] → JSON
 
+DSL: 
+AST: Abstract Syntax Tree
 &nbsp;
 

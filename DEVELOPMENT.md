@@ -12,6 +12,22 @@ QtNoid2 version 2.2.0
 Improving library text to json for multilevel JSON Docs
 --> txt2Json need rework
 
+# YAML to JSON test suite example
+[ ] Scaffolding
+[ ] Configuration management using ParamterList
+
+[ ] Create a subclass of ParamterList that create a global element
+[ ] maybe I can create some specific save and read method for:
+     Windows position
+     Splitter configuration
+     
+more?
+
+# App Confg
+can I add the debug menu that can save data to resoureces?
+can I store all the yaml suite in a config file and add a method to
+generate in the installation folder?
+
 
 ### Release Drafting
 - [ ] Run the CLOC-Report.bat and update CLOC-REPORT.md
