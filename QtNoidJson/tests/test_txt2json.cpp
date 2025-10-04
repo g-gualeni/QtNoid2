@@ -20,6 +20,9 @@ private slots:
     void testPlainTextIsNumber_data();
     void testPlainTextIsNumber();
 
+    void testTextNumberToJson_data();
+    void testTextNumberToJson();
+
     void testTextArrayToJson_data();
     void testTextArrayToJson();
 
@@ -110,13 +113,14 @@ void TestQtNoidJsonTxt2Json::testTextArrayToJson_data()
 {
     QTest::addColumn<QString>("in");
     QTest::addColumn<QStringList>("expected");
-    QTest::newRow("Space Separated Array") << "[0 +1 -2 3]" << QStringList({"0", "1", "-2", "3"});
-    QTest::newRow("String Array") << "[\"AA\", BB, CC]" << QStringList({"\"AA\"", "\"BB\"", "\"CC\""});
-    QTest::newRow("Null Array") << "[null, null, null]" << QStringList({"null", "null", "null"});
-    QTest::newRow("Bool Array") << "[true, false, true]" << QStringList({"true", "false", "true"});
-    QTest::newRow("Int Array") << "[1, -100, +1000]" << QStringList({"1", "-100", "1000"});
-    QTest::newRow("Real Array") << "[-1.0, 1.23, +1000.2]" << QStringList({"-1.0", "1.23", "1000.2"});
-    QTest::newRow("Mixed String") << R"(["AA", BB, "CC])" << QStringList({"\"AA\"", "\"BB\"", "\"CC\""});
+    QTest::newRow("Space Separated Array")  << "[0 +1 -2 3]" << QStringList({"0", "1", "-2", "3"});
+    QTest::newRow("String Array")           << "[\"AA\", BB, CC]" << QStringList({"\"AA\"", "\"BB\"", "\"CC\""});
+    QTest::newRow("Null Array")             << "[null, null, null]" << QStringList({"null", "null", "null"});
+    QTest::newRow("Bool Array")             << "[true, false, true]" << QStringList({"true", "false", "true"});
+    QTest::newRow("Int Array")              << "[1, -100, +1000]" << QStringList({"1", "-100", "1000"});
+    QTest::newRow("Real Array")             << "[-1.0, 1.23, +1000.2]" << QStringList({"-1.0", "1.23", "1000.2"});
+    QTest::newRow("Mixed String")           << R"(["AA", BB, "CC])" << QStringList({"\"AA\"", "\"BB\"", "\"CC\""});
+    QTest::newRow("Array ending with }")    << R"([AA, BB, "CC]})" << QStringList({"\"AA\"", "\"BB\"", "\"CC\""});
 }
 
 void TestQtNoidJsonTxt2Json::testTextArrayToJson()
@@ -156,6 +160,31 @@ void TestQtNoidJsonTxt2Json::testPlainTextIsNumber()
     QCOMPARE(QtNoid::Json::Txt2Json::plainTextIsNumber(in), res);
 }
 
+void TestQtNoidJsonTxt2Json::testTextNumberToJson_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("Zero")       << "0"      << "0";
+    QTest::newRow("Leading 0")  << "00001"  << "1";
+    QTest::newRow("Leading +0") << "+001"   << "1";
+    QTest::newRow("Leading -0") << "-01"    << "-1";
+    QTest::newRow("Double +0.") << "+0.123" << "0.123";
+    QTest::newRow("Double +00.")<< "+00.123"<< "0.123";
+    QTest::newRow("Double -0.") << "-0.321" << "-0.321";
+    QTest::newRow("Double -00.")<< "-00.321"<< "-0.321";
+    QTest::newRow("int +10")    << "+10"    << "10";
+    QTest::newRow("int -10")    << "-10"    << "-10";
+
+}
+
+void TestQtNoidJsonTxt2Json::testTextNumberToJson()
+{
+    QFETCH(QString, in);
+    QFETCH(QString, expected);
+    QCOMPARE(QtNoid::Json::Txt2Json::textNumberToJson(in), expected);
+}
+
 void TestQtNoidJsonTxt2Json::textPlainTextToJosnCornerCases()
 {
     // Empty String
@@ -182,13 +211,50 @@ void TestQtNoidJsonTxt2Json::testPlainTextToJsonFromListOfObjects_data()
     // ObjName:
     //     Child01: 01
     //     Child01: 02
-    QTest::newRow("Simple Child Object") << QStringList({"ObjName:", "Child01: 1", "Child01: 2", ""}) << "{}";
+    QTest::newRow("Simple Child Object") << QStringList({"ObjName:", "Child01: 1", "Child02: 2", ""})
+                                         << R"({"ObjName":{"Child01":1,"Child02":2}})";
 
-    QTest::newRow("Simple Child with leading 0") << QStringList({"ObjName:", "Child01: 001", "Child01: 002", ""}) << "{}";
+    QTest::newRow("Simple Child with leading 0") << QStringList({"ObjName:", "Child01: 001", "Child02: 002", ""})
+                                            << R"({"ObjName":{"Child01":1,"Child02":2}})";
 
-    // def << "ObjName:";
-    // def << "{Array01: [ 1  2  3 ],";
-    // def << "Array02: [ 10  20  30 ]}";
+    QTest::newRow("Simple Child with {}") << QStringList({"ObjName:", "{Child01: 1.1", "Child02: 2.2}", ""})
+                                                 << R"({"ObjName":{"Child01":1.1,"Child02":2.2}})";
+
+    QTest::newRow("Simple Child {} + spaces") << QStringList({"ObjName:", "{    Child01: 3.3", "   Child02: 4.4   }", ""})
+                                          << R"({"ObjName":{"Child01":3.3,"Child02":4.4}})";
+
+    QTest::newRow("Simple Child Name With Spaces") << QStringList({R"("Obj Name":)", R"({    "Child 01": 3.3)", R"(   "Child 02": 4.4   })", ""})
+                                              << R"({"Obj Name":{"Child 01":3.3,"Child 02":4.4}})";
+
+
+    // 2 Child Arrays
+    // ObjName:
+    //      Array01: [ 1  2  3 ]
+    //      Array02: [ 10  20  30 ]
+    //
+    QTest::newRow("2 Child Arrays") << QStringList({R"(ObjName:)", R"(    Array01: [ 1  2  3 ])", R"(   Array02: [ AA  BB  CC ])", ""})
+                                    << R"({"ObjName":{"Array01":[1,2,3],"Array02":["AA","BB","CC"]}})";
+
+    QTest::newRow("2 Child Arrays with comma") << QStringList({R"(ObjName:)", R"(    Array01: [ 1  2  3 ],)", R"(   Array02: [ AA  BB  CC ])", ""})
+                                               << R"({"ObjName":{"Array01":[1,2,3],"Array02":["AA","BB","CC"]}})";
+    QTest::newRow("2 Child Arrays with {}") << QStringList({R"(ObjName:{)", R"(    Array01: [ 1  2  3 ])", R"(   Array02: [ AA  BB  CC ]})", ""})
+                                    << R"({"ObjName":{"Array01":[1,2,3],"Array02":["AA","BB","CC"]}})";
+    QTest::newRow("2 Child Arrays with {} 2") << QStringList({R"(ObjName:)", R"(    {Array01: [ 1  2  3 ])", R"(   Array02: [ AA  BB  CC ]})", ""})
+                                            << R"({"ObjName":{"Array01":[1,2,3],"Array02":["AA","BB","CC"]}})";
+    // Child Array of objects
+    // Readings: [
+    //      CodeName: Code128
+    //      CodeName: CodeEAN]
+    QTest::newRow("Child Array of objects") << QStringList({R"("Readings": [)", R"(    "CodeName": "Code128")", R"(    "CodeName": "CodeEAN"])"})
+                                              << R"({"Readings":[{"CodeName":"Code128"},{"CodeName":"CodeEAN"}]})";
+
+
+    // CodeSize: [ "5 Mils" "8 Mils" "10 Mils" "12 Mils" "15 Mils"  "20 Mils"]
+    // WDLimit: [382  611 763 916 1144 1525]}
+    // {CodeName: "ECC 200"
+    //   CodeSize: [ "5 Mils" "8 Mils" "10 Mils" "12 Mils" "15 Mils" "20 Mils"]
+    //   WDLimit: [ 230 367 458 550 687 916  ]}
+
 }
 
 void TestQtNoidJsonTxt2Json::testPlainTextToJsonFromListOfObjects()
@@ -198,10 +264,10 @@ void TestQtNoidJsonTxt2Json::testPlainTextToJsonFromListOfObjects()
 
     QJsonObject jj = QtNoid::Json::Txt2Json::plainTextToJson(in);
     QJsonDocument doc(jj);
-    QString actual = doc.toJson();
+    QString actual = doc.toJson(QJsonDocument::Compact);
 
-    qDebug() << __func__ << in;
-    qDebug() << __func__ << actual;
+    // qDebug() << __func__ << in;
+    // qDebug() << __func__ << actual;
 
     QCOMPARE(actual, expected);
 

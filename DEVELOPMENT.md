@@ -10,6 +10,7 @@ QtNoid2 version 2.2.0
 
 ### Progress Status
 Improving library text to json for multilevel JSON Docs
+--> txt2Json need rework
 
 
 ### Release Drafting
@@ -23,8 +24,37 @@ Improving library text to json for multilevel JSON Docs
 ### Doc
 - [ ] Doc update
 
+### Todo Txt2Json Parser
+these are the use case
+
+Key-value
+key: value
+
+Key-child objects
+key:
+        obj1:value
+        obj2:value
+
+Key-child array
+key:
+        obj1:[value1 value2]
+        obj2:[value1 value2]
+
+Key-array of objects
+key: [
+        obj1:value
+        obj2:value]
+
+
 
 ### Todo Txt2Json
+- [x] textNumberToJson: to parse numbers and convert to Json valid numbers
+- [x] testTextNumberToJson: test for textNumberToJson
+- [x] testTextArrayToJson: test the case with [AA BB]}
+- [ ] test for plainTextIsKeyValuePair
+- [ ] test for QString Txt2Json::textStringToJson(const QString &val)
+- [ ] testPlainTextToJsonFromListOfObjects: finire con gli array
+
 - [ ] Trigger the sub-object using key+emptyValue or {}
 - [ ] Conversion of an objet with multiple sub-object
      S:

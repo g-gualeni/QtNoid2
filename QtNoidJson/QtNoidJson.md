@@ -8,6 +8,54 @@ a simple plain text description.
 
 This is an example with almost all combinations
 
+## CMake
+```
+find_package: QtNoidJson
+
+target_link_libraries: QtNoid::QtNoidJson
+```
+
+&nbsp;
+
+## Header
+
+```cpp
+#include "QtNoidJson/QtNoidJson"
+```
+
+&nbsp;
+
+## Namespace
+
+```cpp
+using namespace QtNoid::Json;
+```
+
+&nbsp;
+
+## Examples
+
+
+&nbsp;
+## Class: Txt2Json
+
+&nbsp;
+
+&nbsp;
+
+
+
+# YAML IS THE FUTURE
+
+Test Suite to validate the translator:
+https://github.com/yaml/yaml-test-suite
+-> To have a data set for test, checkout the latest branch data
+
+
+
+This is the YAML test matrix
+https://github.com/perlpunk/yaml-test-matrix
+
 Notice the - YAML style to create an array of objects
 
 
@@ -54,33 +102,3 @@ DSL Text → [LEXER] → Tokens → [PARSER] → AST → [GENERATOR] → JSON
 
 &nbsp;
 
-## CMake
-```
-find_package: QtNoidJson
-
-target_link_libraries: QtNoid::QtNoidJson
-```
-
-&nbsp;
-
-## Header
-
-```cpp
-#include "QtNoidJson/QtNoidJson"
-```
-
-&nbsp;
-
-## Namespace
-
-```cpp
-using namespace QtNoid::Json;
-```
-
-&nbsp;
-
-## Examples
-
-
-&nbsp;
-## Class: Txt2Json

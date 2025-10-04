@@ -27,8 +27,12 @@ private:
     static bool plainTextIsString(const QString &val);
     static bool plainTextIsNumber(const QString &val);
     static bool plainTextIsArray(const QString &val);
+    static bool plainTextIsKeyValuePair(const QString key, const QString &val);
 
     static QStringList textArrayToJson(const QString &val);
+    static QString textNumberToJson(const QString &val);
+    static QString textStringToJson(const QString &val);
+
     static QString plainTextJsonValToString(const QJsonValue &jVal);
 
 };
