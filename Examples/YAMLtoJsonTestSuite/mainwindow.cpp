@@ -5,7 +5,19 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QDir>
+#include <QFileInfo>
+#include <QCoreApplication>
 
+/*
+
+:/yaml-test-suite/data-2022-01-17/yaml-test-suite/data-2022-01-17/2AUY/===
+
+:/yaml-test-suite/data-2022-01-17/TestSuite-2022-01-17
+
+
+
+*/
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -110,4 +122,81 @@ void MainWindow::on_actionLoadYAML_triggered()
     } else {
         ui->txtTokensExpected->clear();
     }
+}
+
+void MainWindow::on_actionTestSuite_2022_01_17_triggered()
+{
+    generateTestDataFromResource();
+    QMessageBox::information(this, tr("Test Suite"),
+        tr("Test data generated successfully!"));
+}
+
+void MainWindow::generateTestDataFromResource()
+{
+    // Read the file list from resources
+    QFile fileListResource(":/yaml-test-suite/data-2022-01-17/TestSuite-2022-01-17");
+    if (!fileListResource.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Error"),
+            tr("Cannot read resource file list"));
+        return;
+    }
+
+    QTextStream in(&fileListResource);
+    QString baseOutputPath = QCoreApplication::applicationDirPath() + "/TestSuite-2022-01-17";
+
+    int fileCount = 0;
+    int errorCount = 0;
+
+    while (!in.atEnd()) {
+        QString resourcePath = in.readLine().trimmed();
+        if (resourcePath.isEmpty())
+            continue;
+
+        // Open the resource file
+        QFile resourceFile(resourcePath);
+        if (!resourceFile.open(QIODevice::ReadOnly)) {
+            errorCount++;
+            continue;
+        }
+
+        // Read the content
+        QByteArray content = resourceFile.readAll();
+        resourceFile.close();
+
+        // Extract the relative path (remove the :/yaml-test-suite/data-2022-01-17/yaml-test-suite/data-2022-01-17/ prefix)
+        QString relativePath = resourcePath;
+        relativePath.remove(":/yaml-test-suite/data-2022-01-17/yaml-test-suite/data-2022-01-17/");
+
+        // Create full output path
+        QString outputPath = baseOutputPath + "/" + relativePath;
+
+        // Create directories if needed
+        QFileInfo fileInfo(outputPath);
+        QDir dir;
+        if (!dir.mkpath(fileInfo.absolutePath())) {
+            errorCount++;
+            continue;
+        }
+
+        // Write the file
+        QFile outputFile(outputPath);
+        if (!outputFile.open(QIODevice::WriteOnly)) {
+            errorCount++;
+            continue;
+        }
+
+        outputFile.write(content);
+        outputFile.close();
+        fileCount++;
+    }
+
+    fileListResource.close();
+
+    // Show summary in status bar
+    ui->statusbar->showMessage(
+        tr("Generated %1 files (%2 errors) in %3")
+        .arg(fileCount)
+        .arg(errorCount)
+        .arg(baseOutputPath)
+    );
 }

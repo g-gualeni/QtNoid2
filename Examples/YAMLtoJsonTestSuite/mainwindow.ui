@@ -88,7 +88,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidgetOutput">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tabOutputJson">
            <attribute name="title">
@@ -118,6 +118,15 @@
             <string>Output Tokens</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
              <widget class="QPlainTextEdit" name="txtTokensOutput">
               <property name="placeholderText">
@@ -147,6 +156,12 @@
          <string>JSON Expected</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
          <property name="bottomMargin">
           <number>0</number>
          </property>
@@ -193,7 +208,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -202,12 +217,30 @@
     </property>
     <addaction name="actionLoadYAML"/>
    </widget>
+   <widget class="QMenu" name="menuTest">
+    <property name="title">
+     <string>Test</string>
+    </property>
+    <widget class="QMenu" name="menuGenerateTestData">
+     <property name="title">
+      <string>Generate Test Data</string>
+     </property>
+     <addaction name="actionTestSuite_2022_01_17"/>
+    </widget>
+    <addaction name="menuGenerateTestData"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuTest"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoadYAML">
    <property name="text">
     <string>Load YAML...</string>
+   </property>
+  </action>
+  <action name="actionTestSuite_2022_01_17">
+   <property name="text">
+    <string>TestSuite-2022-01-17</string>
    </property>
   </action>
  </widget>

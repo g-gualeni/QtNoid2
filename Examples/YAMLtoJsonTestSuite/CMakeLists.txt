@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        yaml-test-suite.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
