@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "QtNoidJson/QtNoidJson"
+#include "QtNoidCommon/QtNoidCommon"
+#include "QtNoidApp/QtNoidApp"
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
@@ -8,6 +10,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+
 
 /*
 
@@ -126,23 +129,30 @@ void MainWindow::on_actionLoadYAML_triggered()
 
 void MainWindow::on_actionTestSuite_2022_01_17_triggered()
 {
-    generateTestDataFromResource();
-    QMessageBox::information(this, tr("Test Suite"),
-        tr("Test data generated successfully!"));
+    if(generateTestDataFromResource("://yaml-test-suite/TestSuite-2022-01-17")) {
+        QMessageBox::information(this, tr("Test Suite"),
+                                 tr("Test data generated successfully!"));
+    }
+    else {
+        QMessageBox::information(this, tr("Test Suite"),
+                                 tr("Error generating test data"));
+    }
 }
 
-void MainWindow::generateTestDataFromResource()
+bool MainWindow::generateTestDataFromResource(const QString &resPath)
 {
     // Read the file list from resources
-    QFile fileListResource(":/yaml-test-suite/data-2022-01-17/TestSuite-2022-01-17");
+    QFile fileListResource(resPath);
     if (!fileListResource.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"),
-            tr("Cannot read resource file list"));
-        return;
+        return false;
     }
 
     QTextStream in(&fileListResource);
-    QString baseOutputPath = QCoreApplication::applicationDirPath() + "/TestSuite-2022-01-17";
+
+    QString baseOutputPath = QtNoid::App::Settings::filePathAsAppSibling();
+    qDebug() << baseOutputPath;
+    baseOutputPath += QDir::separator() + QString("TestSuite-2022-01-17");
+    // QCoreApplication::applicationDirPath() + "/TestSuite-2022-01-17";
 
     int fileCount = 0;
     int errorCount = 0;
@@ -151,6 +161,8 @@ void MainWindow::generateTestDataFromResource()
         QString resourcePath = in.readLine().trimmed();
         if (resourcePath.isEmpty())
             continue;
+
+        // qDebug() << resourcePath;
 
         // Open the resource file
         QFile resourceFile(resourcePath);
@@ -199,4 +211,6 @@ void MainWindow::generateTestDataFromResource()
         .arg(errorCount)
         .arg(baseOutputPath)
     );
+
+    return true;
 }

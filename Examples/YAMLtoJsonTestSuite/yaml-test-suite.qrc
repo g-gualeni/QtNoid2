@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/yaml-test-suite/data-2022-01-17">
-        <file>yaml-test-suite/data-2022-01-17/TestSuite-2022-01-17</file>
         <file>yaml-test-suite/data-2022-01-17/HU3P/===</file>
         <file>yaml-test-suite/data-2022-01-17/HU3P/error</file>
         <file>yaml-test-suite/data-2022-01-17/HU3P/in.yaml</file>
@@ -1888,5 +1887,8 @@
         <file>yaml-test-suite/data-2022-01-17/9SHH/in.json</file>
         <file>yaml-test-suite/data-2022-01-17/9SHH/in.yaml</file>
         <file>yaml-test-suite/data-2022-01-17/9SHH/test.event</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>yaml-test-suite/TestSuite-2022-01-17</file>
     </qresource>
 </RCC>

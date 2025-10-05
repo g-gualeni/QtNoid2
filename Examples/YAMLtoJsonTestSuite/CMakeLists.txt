@@ -14,6 +14,9 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 find_package(QtNoidCommon REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 find_package(QtNoidJson REQUIRED HINTS "../../../ExtLibs/QtNoid2")
+find_package(QtNoidApp REQUIRED HINTS "../../../ExtLibs/QtNoid2")
+
+
 
 
 
@@ -51,7 +54,12 @@ endif()
 target_link_libraries(YAMLtoJsonTestSuite
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     QtNoid::QtNoidJson
+    QtNoid::QtNoidCommon
+    QtNoid::QtNoidApp
+
 )
+
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

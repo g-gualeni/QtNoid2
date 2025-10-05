@@ -24,7 +24,7 @@ private slots:
     void on_actionTestSuite_2022_01_17_triggered();
 
 private:
-    void generateTestDataFromResource();
+    bool generateTestDataFromResource(const QString &resPath);
 
     Ui::MainWindow *ui;
 };
