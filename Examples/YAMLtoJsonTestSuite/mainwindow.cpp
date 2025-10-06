@@ -10,6 +10,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <QDesktopServices>
+#include <QUrl>
 
 
 /*
@@ -129,7 +131,7 @@ void MainWindow::on_actionLoadYAML_triggered()
 
 void MainWindow::on_actionTestSuite_2022_01_17_triggered()
 {
-    if(generateTestDataFromResource("://yaml-test-suite/TestSuite-2022-01-17")) {
+    if(generateTestDataFromResource("TestSuite-2022-01-17")) {
         QMessageBox::information(this, tr("Test Suite"),
                                  tr("Test data generated successfully!"));
     }
@@ -142,17 +144,16 @@ void MainWindow::on_actionTestSuite_2022_01_17_triggered()
 bool MainWindow::generateTestDataFromResource(const QString &resPath)
 {
     // Read the file list from resources
-    QFile fileListResource(resPath);
+    QString root = "://yaml-test-suite/";
+    QFile fileListResource(root + resPath);
     if (!fileListResource.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
     }
 
     QTextStream in(&fileListResource);
-
-    QString baseOutputPath = QtNoid::App::Settings::filePathAsAppSibling();
+    QString baseOutputPath = QtNoid::App::Settings::exeOrAppBundleDirPath();
     qDebug() << baseOutputPath;
-    baseOutputPath += QDir::separator() + QString("TestSuite-2022-01-17");
-    // QCoreApplication::applicationDirPath() + "/TestSuite-2022-01-17";
+    baseOutputPath += QDir::separator() + resPath;
 
     int fileCount = 0;
     int errorCount = 0;
@@ -161,8 +162,6 @@ bool MainWindow::generateTestDataFromResource(const QString &resPath)
         QString resourcePath = in.readLine().trimmed();
         if (resourcePath.isEmpty())
             continue;
-
-        // qDebug() << resourcePath;
 
         // Open the resource file
         QFile resourceFile(resourcePath);
@@ -212,5 +211,15 @@ bool MainWindow::generateTestDataFromResource(const QString &resPath)
         .arg(baseOutputPath)
     );
 
+    if(errorCount) {
+        return false;
+    }
     return true;
+}
+
+void MainWindow::on_actionTestDataFolder_triggered()
+{
+    QString appPath = QtNoid::App::Settings::exeOrAppBundleDirPath();
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(appPath));
 }

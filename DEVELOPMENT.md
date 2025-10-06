@@ -12,12 +12,21 @@ QtNoid2 version 2.2.0
 Improving library text to json for multilevel JSON Docs
 --> txt2Json need rework
 
-# YAML to JSON test suite example
-[ ] Scaffolding
-[ ] Configuration management using ParamterList
+# QtNoidApp
+- [ ] exeOrAppBundleFolder: returning the folder
+- [ ] test for exeOrAppBundleFolder
+- [ ] doc for exeOrAppBundleFolder
 
-[ ] Create a subclass of ParamterList that create a global element
-[ ] maybe I can create some specific save and read method for:
+
+- [ ] appExeOrAppBundlePath: return the file of the exe need to be renamed for
+      clarity
+
+# YAML to JSON test suite example
+- [ ] Scaffolding
+- [ ] Configuration management using ParamterList
+
+- [ ] Create a subclass of ParamterList that create a global element
+- [ ] maybe I can create some specific save and read method for:
      Windows position
      Splitter configuration
      

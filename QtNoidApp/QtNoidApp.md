@@ -37,6 +37,7 @@ using namespace QtNoid::App;
 &nbsp;
 
 ## Examples
+
 - **[AppSettingsBasicUsage:](doc/AppSettingsBasicUsage.md)** 
 This a rough application that showcases most of the methods of the 
 class [**Settings**](#class-settings).
@@ -63,8 +64,12 @@ This class contains a set of helper methods to work with the application setting
 
 ### Static Methods
 
-- `QString appExeOrAppBundlePath()`: returns the path of the application executable
+- `QString exeOrAppBundleFolder()`: returns the folder of the application executable
 file or of the Application Bundle on macOS.
+
+- `QString appExeOrAppBundlePath()`: returns the path of the application executable
+file or of the Application Bundle on macOS, including the exe file name or the .app 
+folder
 
 - `QString filePathAsAppSibling(const QString &fileName = {})`: calulates the 
 absolute file path for fileName, as an application or bundle sibling. If fileName 

@@ -18,6 +18,7 @@ class QTNOIDAPP_EXPORT Settings
 {
 public:
     static QString appExeOrAppBundlePath();
+    static QString exeOrAppBundleDirPath();
     static QString filePathAsAppSibling(const QString& fileName={});
     static QMainWindow *mainWindowFromWidget(QWidget *ref);
     static QString groupNameFromObjectOrClass(const QObject* ref);

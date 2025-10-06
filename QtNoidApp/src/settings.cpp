@@ -27,6 +27,21 @@ QString Settings::appExeOrAppBundlePath()
     }
 }
 
+QString Settings::exeOrAppBundleDirPath()
+{
+    auto appFilePath = qApp->applicationDirPath();
+    if(appFilePath.contains(".app/Contents/MacOS")){
+        // This is a bundle for macOS
+        QFileInfo FI(appFilePath);
+        QDir dir;
+        FI.setFile(dir.cleanPath(FI.filePath() + "/../../../"));
+        return FI.filePath();
+    }
+    else {
+        return appFilePath;
+    }
+}
+
 QString Settings::filePathAsAppSibling(const QString &fileName)
 {
 

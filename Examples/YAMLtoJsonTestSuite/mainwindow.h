@@ -22,6 +22,7 @@ private slots:
     void on_cmdConvertToYAML_clicked();
     void on_actionLoadYAML_triggered();
     void on_actionTestSuite_2022_01_17_triggered();
+    void on_actionTestDataFolder_triggered();
 
 private:
     bool generateTestDataFromResource(const QString &resPath);

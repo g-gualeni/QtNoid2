@@ -88,7 +88,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidgetOutput">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tabOutputJson">
            <attribute name="title">
@@ -149,7 +149,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tabJsonExpected">
         <attribute name="title">
@@ -208,7 +208,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -228,6 +228,7 @@
      <addaction name="actionTestSuite_2022_01_17"/>
     </widget>
     <addaction name="menuGenerateTestData"/>
+    <addaction name="actionTestDataFolder"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTest"/>
@@ -241,6 +242,11 @@
   <action name="actionTestSuite_2022_01_17">
    <property name="text">
     <string>TestSuite-2022-01-17</string>
+   </property>
+  </action>
+  <action name="actionTestDataFolder">
+   <property name="text">
+    <string>TestDataFolder</string>
    </property>
   </action>
  </widget>
