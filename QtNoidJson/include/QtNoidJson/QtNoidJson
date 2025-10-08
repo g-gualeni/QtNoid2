@@ -3,5 +3,6 @@
 // Include this to get all QtNoid::Json functionality
 
 #include "txt2json.h" // IWYU pragma: export
+#include "yaml2json.h" // IWYU pragma: export
 
 

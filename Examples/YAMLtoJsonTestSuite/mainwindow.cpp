@@ -102,7 +102,7 @@ void MainWindow::on_actionLoadYAML_triggered()
         if (errorFile.exists()) {
             ui->txtJsonExpected->setPlainText("ERROR");
         } else {
-            ui->txtJsonExpected->clear();
+            ui->txtJsonExpected->setPlainText("NO JSON EXPECTED");;
         }
     }
 

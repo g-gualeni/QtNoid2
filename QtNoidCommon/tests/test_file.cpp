@@ -94,9 +94,10 @@ private:
             FI.setFile(dir, fName);
             dir.mkpath(FI.path());
             QFile f(FI.absoluteFilePath());
-            f.open(QIODevice::WriteOnly | QIODevice::Text);
-            f.write(QString(fName + " - test file").toLatin1());
-            f.close();
+            if(f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                f.write(QString(fName + " - test file").toLatin1());
+                f.close();
+            }
         }
         return true;
     }

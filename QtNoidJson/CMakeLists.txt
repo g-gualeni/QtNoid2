@@ -36,6 +36,13 @@ set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # =============================================================================
 set(SOURCES
     ${SOURCES_DIR}/txt2json.cpp
+    ${SOURCES_DIR}/yaml2json.cpp
+    ${SOURCES_DIR}/yaml_token.h
+    ${SOURCES_DIR}/yaml_token.cpp
+    ${SOURCES_DIR}/yaml_astnode.h
+    ${SOURCES_DIR}/yaml_astnode.cpp
+    ${SOURCES_DIR}/yaml_lexer.h
+    ${SOURCES_DIR}/yaml_lexer.cpp
 )
 
 # File header
@@ -43,6 +50,7 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
     ${HEADERS_DIR}/${PROJECT_NAME}/txt2json.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/yaml2json.h
 )
 
 
