@@ -43,6 +43,10 @@ set(SOURCES
     ${SOURCES_DIR}/yaml_astnode.cpp
     ${SOURCES_DIR}/yaml_lexer.h
     ${SOURCES_DIR}/yaml_lexer.cpp
+    ${SOURCES_DIR}/yaml_parser.h
+    ${SOURCES_DIR}/yaml_parser.cpp
+    ${SOURCES_DIR}/yaml_generator.h
+    ${SOURCES_DIR}/yaml_generator.cpp
 )
 
 # File header

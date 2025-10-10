@@ -27,13 +27,16 @@ public:
     explicit Yaml2Json(QObject *parent = nullptr) : QObject(parent){}
     explicit Yaml2Json(const QString yaml, QObject *parent = nullptr);
 
-    bool isValid() const;
+    bool isValid() const {return m_isValid;}
+    QString errorString() const { return m_error; }
 
-    QString yaml() const;
+    QString yaml() const   { return m_yaml; }
     void setYaml(const QString &newYaml);
 
-    QJsonObject json() const;
+    QJsonObject json() const { return m_json; }
 
+signals:
+    void errorOccurred(const QString& error);
 
 private:
     QString m_yaml;
@@ -41,9 +44,8 @@ private:
     bool m_isValid = true;
     QString m_error;
 
-    // QVector<Token> tokenize(const QString& yaml);
-    // ASTNode parse(const QVector<Token>& tokens);
-    // QJsonObject generate(const ASTNode& ast);
+    void setError(const QString& error);
+    void convert();
 
 };
 

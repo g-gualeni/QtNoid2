@@ -62,6 +62,11 @@ https://github.com/perlpunk/yaml-test-matrix
 Notice the - YAML style to create an array of objects
 
 
+Online converter YAML to JSON
+https://jsonformatter.org/yaml-to-json
+
+
+
 ```
 person:
     name: "Mario Rossi"
