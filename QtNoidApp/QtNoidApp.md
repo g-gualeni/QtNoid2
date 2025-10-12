@@ -64,10 +64,11 @@ This class contains a set of helper methods to work with the application setting
 
 ### Static Methods
 
-- `QString exeOrAppBundleFolder()`: returns the folder of the application executable
-file or of the Application Bundle on macOS.
+- `QString appExeOrAppBundleDirPath()`: returns the folder of the application executable
+file or of the Application Bundle on macOS. This is used to manage configuration files
+or resource files.
 
-- `QString appExeOrAppBundlePath()`: returns the path of the application executable
+- `QString appExeOrAppBundleFilePath()`: returns the path of the application executable
 file or of the Application Bundle on macOS, including the exe file name or the .app 
 folder
 

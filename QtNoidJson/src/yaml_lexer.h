@@ -21,6 +21,9 @@ public:
     QString errorString() const { return m_error; }
     bool hasError() const { return !m_error.isEmpty(); }
 
+    QString source() const;
+    void setSource(const QString &newSource);
+
 private:
     // Input source
     QString m_source;

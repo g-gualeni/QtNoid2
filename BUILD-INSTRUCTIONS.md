@@ -21,12 +21,23 @@ tracked files.
 Remove all exe files from the library
 7Zip the library adding -Win or -macOS
 
+&nbsp;
+# Publication Check List for GitHub
 
-# Publication on GitHub
 **Sanity check:**
 - [ ] Close the project, clear the build folder and reopen the project
 - [ ] Build the project in release
 - [ ] Run the test (they must be successfull - or notify it in release notes)
+- [ ] Build and Run all the examples in the examples folder, for all supported OS
+- [ ] Update screenshot for examples
+- [ ] Update screenshot for old examples
+
+**Documentation:**
+- [ ] Update old documentation
+- [ ] Create doc for the new libraries
+- [ ] Add a section to the release notes
+- [ ] Update the CLOC Report
+
 
 **Artifacts**:
 - [ ] Copy the Win binary in a 7zip file into the release folder

@@ -151,7 +151,7 @@ bool MainWindow::generateTestDataFromResource(const QString &resPath)
     }
 
     QTextStream in(&fileListResource);
-    QString baseOutputPath = QtNoid::App::Settings::exeOrAppBundleDirPath();
+    QString baseOutputPath = QtNoid::App::Settings::appExeOrAppBundleDirPath();
     qDebug() << baseOutputPath;
     baseOutputPath += QDir::separator() + resPath;
 
@@ -219,7 +219,7 @@ bool MainWindow::generateTestDataFromResource(const QString &resPath)
 
 void MainWindow::on_actionTestDataFolder_triggered()
 {
-    QString appPath = QtNoid::App::Settings::exeOrAppBundleDirPath();
+    QString appPath = QtNoid::App::Settings::appExeOrAppBundleDirPath();
 
     QDesktopServices::openUrl(QUrl::fromLocalFile(appPath));
 }

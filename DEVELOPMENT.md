@@ -3,23 +3,29 @@
 ## Current Sprint (Sprint-004)
 
 ### Sprint Goals
-Implementation of the QtNoid::Txt2Json library and release of 
+Implementation of the QtNoid::Yaml2Json library and release of 
 QtNoid2 version 2.2.0
 
 &nbsp;
 
 ### Progress Status
-Improving library text to json for multilevel JSON Docs
---> txt2Json need rework
+Implementation of Yaml2Json library 
+Is there a reason to keep Txt2Json? Maybe it is faster?
+
 
 # QtNoidApp
-- [ ] exeOrAppBundleFolder: returning the folder
-- [ ] test for exeOrAppBundleFolder
-- [ ] doc for exeOrAppBundleFolder
+- [x] appExeOrAppBundleDirPath();
+- [x] appExeOrAppBundleFilePath();
+- [x] doc appExeOrAppBundleDirPath
+- [x] doc update for appExeOrAppBundleFilePath
+- [x] test for appExeOrAppBundleDirPath
+- [x] test update for appExeOrAppBundleFilePath
 
+# Older Examples
+- [ ] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
+- [ ] AppSettingsBasicUsage Win11 screenshot update AppSettingsBasicUsage-Win11.png
+- [ ] AppSettingsBasicUsage macOS screenshot update AppSettingsBasicUsage-macOS.png
 
-- [ ] appExeOrAppBundlePath: return the file of the exe need to be renamed for
-      clarity
 
 # YAML to JSON test suite example
 - [ ] Scaffolding

@@ -12,8 +12,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
     ui->setupUi(this);
-    QString appBundle = Settings::appExeOrAppBundlePath();
-    ui->txtAppBundle->setText(appBundle);
+
+    QString appBundleFolderPath = Settings::appExeOrAppBundleDirPath();
+    ui->txtAppBundleDirPath->setText(appBundleFolderPath);
+
+    QString appBundleFilePath = Settings::appExeOrAppBundleFilePath();
+    ui->txtAppBundleFilePath->setText(appBundleFilePath);
+
     qApp->setApplicationDisplayName("This Is App Settings Basic Usage");
     QString config = Settings::filePathAsAppSibling();
     ui->txtConfigPath->setText(config);

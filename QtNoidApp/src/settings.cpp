@@ -12,7 +12,29 @@
 namespace QtNoid {
 namespace App {
 
-QString Settings::appExeOrAppBundlePath()
+/**
+ * @brief Settings::appExeOrAppBundlePath is used to manage files into the
+ * application exectuion folder or the Application Bundle folder.
+ * This is helpful to save cunfiguration files or resources for the application.
+ * @return the Application Executable or the Application Boundle folder
+ */
+QString Settings::appExeOrAppBundleDirPath()
+{
+    auto appFilePath = qApp->applicationDirPath();
+    if(appFilePath.contains(".app/Contents/MacOS")){
+        // This is a bundle for macOS
+        QFileInfo FI(appFilePath);
+        QDir dir;
+        FI.setFile(dir.cleanPath(FI.filePath() + "/../../../"));
+        return FI.filePath();
+    }
+    else {
+        return appFilePath;
+    }
+}
+
+
+QString Settings::appExeOrAppBundleFilePath()
 {
     auto appFilePath = qApp->applicationFilePath();
     if(appFilePath.contains(".app/Contents/MacOS")){
@@ -27,20 +49,6 @@ QString Settings::appExeOrAppBundlePath()
     }
 }
 
-QString Settings::exeOrAppBundleDirPath()
-{
-    auto appFilePath = qApp->applicationDirPath();
-    if(appFilePath.contains(".app/Contents/MacOS")){
-        // This is a bundle for macOS
-        QFileInfo FI(appFilePath);
-        QDir dir;
-        FI.setFile(dir.cleanPath(FI.filePath() + "/../../../"));
-        return FI.filePath();
-    }
-    else {
-        return appFilePath;
-    }
-}
 
 QString Settings::filePathAsAppSibling(const QString &fileName)
 {

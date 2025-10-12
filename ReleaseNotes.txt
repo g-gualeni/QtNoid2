@@ -1,3 +1,19 @@
+2.2.0
+
+Rename and split of appExeOrAppBundlePath() into 2 methods:
+- QtNoid::App::Settings::appExeOrAppBundleDirPath();
+- QtNoid::App::Settings::appExeOrAppBundleFilePath();
+The first one return the execution of the app bundle folder (macOS).
+
+WARNING: there is a problem with ParamterList reverse iterators since
+it requires a newer version of macOS that supports a newer version of
+XCode to implement C++23 Code.
+
+WARNING: there is a problem with ParamterList reverse iterators since
+it requires a newer version of macOS that supports a newer version of
+XCode to implement C++23 Code.
+
+
 2.1.0
 October 1st, 2025
 New QtNodidApp library with Settings, Parameters, Parameters

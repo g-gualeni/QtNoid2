@@ -18,8 +18,8 @@ private slots:
     void cleanupTestCase();
     void init();
     void cleanup();
-    void testAppExeOrAppBundlePath();
-    void testExeOrAppBundleDirPath();
+    void testAppExeOrAppBundleFilePath();
+    void testAppExeOrAppBundleDirPath();
     void testFilePathAsAppSibling_data();
     void testFilePathAsAppSibling();
     void testFilePathAsAppSiblingWithEmptyFileName();
@@ -54,18 +54,17 @@ void TestQtNoidAppSettings::init()
 void TestQtNoidAppSettings::cleanup()
 {}
 
-void TestQtNoidAppSettings::testAppExeOrAppBundlePath()
+void TestQtNoidAppSettings::testAppExeOrAppBundleFilePath()
 {
-    auto actual = Settings::appExeOrAppBundlePath();
+    auto actual = QtNoid::App::Settings::appExeOrAppBundleFilePath();
     auto expected = qApp->applicationFilePath();
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testExeOrAppBundleDirPath()
+void TestQtNoidAppSettings::testAppExeOrAppBundleDirPath()
 {
-    auto actual = Settings::exeOrAppBundleDirPath();
+    auto actual = Settings::appExeOrAppBundleDirPath();
     auto expected = qApp->applicationDirPath();
-    qDebug() << __func__ << actual;
     QCOMPARE(actual, expected);
 }
 

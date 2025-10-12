@@ -28,12 +28,22 @@
     <item>
      <widget class="QLabel" name="label_2">
       <property name="text">
-       <string>Application or Application Bundle path</string>
+       <string>Application or Application Bundle folder path</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="txtAppBundle"/>
+     <widget class="QLineEdit" name="txtAppBundleDirPath"/>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>Application or Application Bundle File Path</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="txtAppBundleFilePath"/>
     </item>
     <item>
      <widget class="QLabel" name="label_3">

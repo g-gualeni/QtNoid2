@@ -83,6 +83,18 @@ QVector<Token> Lexer::tokenize()
 
 }
 
+QString Lexer::source() const
+{
+    return m_source;
+}
+
+void Lexer::setSource(const QString &newSource)
+{
+    if(m_source == newSource) {
+        return;
+    }
+}
+
 QChar Lexer::current() const
 {
     if (isAtEnd()) return QChar();
