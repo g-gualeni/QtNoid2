@@ -156,7 +156,7 @@ R"(User:
     - City: Salcapperovo
 )");
 
-
+    qDebug() << converter.tokens();
     qDebug() << converter.yaml();
     qDebug() << converter.errorString();
 

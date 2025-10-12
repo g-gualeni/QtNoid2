@@ -5,30 +5,34 @@ namespace QtNoid {
 namespace Json {
 namespace Internal {
 
+Lexer::Lexer()
+{
+}
+
 Lexer::Lexer(const QString &source)
-    : m_source(source)
+    : m_yaml(source)
 {
 
 }
 
 QVector<Token> Lexer::tokenize()
 {
-    QVector<Token> tokens;
-
     // Reset state
     m_pos = 0;
     m_line = 1;
     m_column = 1;
     m_error.clear();
     m_atLineStart = true;
+    m_tokens.clear();
 
     // Emit stream and document start
-    tokens.append(makeToken(TokenType::STREAM_START));
-    tokens.append(makeToken(TokenType::DOC_START));
+    m_tokens.append(makeToken(TokenType::STREAM_START));
+    m_tokens.append(makeToken(TokenType::DOC_START));
 
     // Initialize indent stack with root level
-    m_indentStack.push(0);
-    m_contextStack.push(ROOT);
+    m_indentStack.clear();
+    m_contextStack.clear();
+    m_indentStack.push(-1);
 
     // Main parsing loop
     while (!isAtEnd() && !hasError()) {
@@ -39,73 +43,165 @@ QVector<Token> Lexer::tokenize()
             continue;
         }
 
-        // Skip whitespace at line start (will be measured as indent)
-        if (m_atLineStart && current() == ' ') {
-            handleNewLine(tokens);
-            continue;
-        }
-
-        // Skip comments
         if (current() == '#') {
             skipComment();
             continue;
         }
 
-        // Skip inline whitespace
-        if (current() == ' ' || current() == '\t') {
-            skipWhitespace();
-            continue;
-        }
+        // Handle indentation at line start
+        if (m_atLineStart && (current() == ' ' || !current().isNull())) {
+            int indent = measureIndent();
 
-        // Parse content
-        m_atLineStart = false;
-        parseContent(tokens);
+            // Skip whitespace
+            while (!isAtEnd() && current() == ' ') {
+                advance();
+            }
+
+            // Check if line is empty or comment after spaces
+            if (isAtEnd() || current() == '\n' || current() == '#') {
+                if (current() == '#') {
+                    skipComment();
+                }
+                continue;
+            }
+
+            m_atLineStart = false;
+
+            // Handle dedent (closing structures)
+            int currentIndent = m_indentStack.top();
+            if (indent < currentIndent) {
+                emitDedentTokens(indent);
+            }
+
+            // Parse content at this indent level
+            parseContent(indent);
+
+        } else {
+            m_atLineStart = false;
+            skipWhitespace();
+        }
     }
 
     // Close all open contexts
-    while (m_indentStack.size() > 1) {
-        m_indentStack.pop();
-        if (!m_contextStack.isEmpty()) {
-            Context ctx = m_contextStack.pop();
-            if (ctx == MAP) {
-                emitMapEnd(tokens);
-            } else if (ctx == SEQ) {
-                emitSeqEnd(tokens);
-            }
+    while (!m_contextStack.isEmpty()) {
+        if(!m_indentStack.isEmpty()) {
+            m_indentStack.pop();
+        }
+        Context ctx = m_contextStack.pop();
+        if (ctx == MAP) {
+            emitMapEnd();
+        } else if (ctx == SEQ) {
+            emitSeqEnd();
         }
     }
 
+    // Verify stacks are properly synchronized (only sentinel should remain)
+    if (m_indentStack.size() > 1) {
+        setError("Stack synchronization error at end: unclosed indent levels");
+    }
+
     // Emit document and stream end
-    tokens.append(makeToken(TokenType::DOC_END));
-    tokens.append(makeToken(TokenType::STREAM_END));
+    m_tokens.append(makeToken(TokenType::DOC_END));
+    m_tokens.append(makeToken(TokenType::STREAM_END));
 
-    return tokens;
+    return m_tokens;
 
 }
 
-QString Lexer::source() const
+QString Lexer::yaml() const
 {
-    return m_source;
+    return m_yaml;
 }
 
-void Lexer::setSource(const QString &newSource)
+void Lexer::setYaml(const QString &newYaml)
 {
-    if(m_source == newSource) {
+    if(m_yaml == newYaml) {
         return;
     }
+}
+
+QVector<Token> Lexer::tokens() const
+{
+    return m_tokens;
+}
+
+QStringList Lexer::tokensAsStringList() const
+{
+    QStringList res;
+
+    for (const auto& token : m_tokens) {
+        QString tokenStr;
+
+        // Convert token type to string
+        switch (token.type) {
+        case Internal::TokenType::STREAM_START:
+            tokenStr = "+STR";
+            break;
+        case Internal::TokenType::STREAM_END:
+            tokenStr = "-STR";
+            break;
+        case Internal::TokenType::DOC_START:
+            tokenStr = "+DOC";
+            break;
+        case Internal::TokenType::DOC_END:
+            tokenStr = "-DOC";
+            break;
+        case Internal::TokenType::MAP_START:
+            tokenStr = "+MAP";
+            break;
+        case Internal::TokenType::MAP_END:
+            tokenStr = "-MAP";
+            break;
+        case Internal::TokenType::SEQ_START:
+            tokenStr = "+SEQ";
+            break;
+        case Internal::TokenType::SEQ_END:
+            tokenStr = "-SEQ";
+            break;
+        case Internal::TokenType::SCALAR:
+            tokenStr = QString("=VAL ");
+            if (!token.tag.isEmpty()) {
+                tokenStr += token.tag + " ";
+            }
+            tokenStr += ":" + token.value;
+            break;
+        case Internal::TokenType::KEY:
+            tokenStr = "?";
+            break;
+        case Internal::TokenType::VALUE:
+            tokenStr = ":";
+            break;
+        case Internal::TokenType::ALIAS:
+            tokenStr = "*" + token.value;
+            break;
+        case Internal::TokenType::ANCHOR:
+            tokenStr = "&" + token.value;
+            break;
+        case Internal::TokenType::EOF_TOKEN:
+            tokenStr = "EOF";
+            break;
+        case Internal::TokenType::INVALID:
+            tokenStr = "INVALID";
+            break;
+        }
+
+        res.append(tokenStr);
+    }
+
+    return res;
 }
 
 QChar Lexer::current() const
 {
     if (isAtEnd()) return QChar();
-    return m_source.at(m_pos);
+    return m_yaml.at(m_pos);
 }
 
 QChar Lexer::peek(int offset) const
 {
     int pos = m_pos + offset;
-    if (pos >= m_source.length()) return QChar();
-    return m_source.at(pos);
+    if (pos >= m_yaml.length()) return QChar();
+    return m_yaml.at(pos);
 }
 
 void Lexer::advance()
@@ -123,7 +219,7 @@ void Lexer::advance()
 
 bool Lexer::isAtEnd() const
 {
-    return m_pos >= m_source.length();
+    return m_pos >= m_yaml.length();
 }
 
 
@@ -132,7 +228,7 @@ int Lexer::measureIndent()
     int indent = 0;
     int pos = m_pos;
 
-    while (pos < m_source.length() && m_source.at(pos) == ' ') {
+    while (pos < m_yaml.length() && m_yaml.at(pos) == ' ') {
         indent++;
         pos++;
     }
@@ -175,67 +271,87 @@ void Lexer::handleNewLine(QVector<Token>& tokens)
 
     // Handle indent changes
     if (newIndent > currentIndent) {
-        emitIndentTokens(tokens, newIndent);
+        emitIndentTokens(newIndent);
     } else if (newIndent < currentIndent) {
-        emitDedentTokens(tokens, newIndent);
+        emitDedentTokens(newIndent);
     }
 }
 
-void Lexer::emitIndentTokens(QVector<Token>& tokens, int newIndent)
+void Lexer::emitIndentTokens(int newIndent)
 {
-    m_indentStack.push(newIndent);
-    // Context will be determined when we see '-' or ':'
+    // NOTE: This method is not used in the current implementation
+    // Indent handling is done directly in parseContent()
+    // Kept for API compatibility but does nothing to avoid stack desynchronization
+    // m_indentStack.push(newIndent);
 }
 
-void Lexer::emitDedentTokens(QVector<Token>& tokens, int newIndent)
+void Lexer::emitDedentTokens(int newIndent)
 {
-    while (m_indentStack.size() > 1 && m_indentStack.top() > newIndent) {
+    while (!m_indentStack.isEmpty() && m_indentStack.top() > newIndent) {
         m_indentStack.pop();
 
+        // CRITICAL: Always pop context when we pop indent to keep them synchronized
         if (!m_contextStack.isEmpty()) {
             Context ctx = m_contextStack.pop();
             if (ctx == MAP) {
-                emitMapEnd(tokens);
+                emitMapEnd();
             } else if (ctx == SEQ) {
-                emitSeqEnd(tokens);
+                emitSeqEnd();
             }
+        }
+        else {
+            // This should never happen if stacks are synchronized
+            setError("Stack synchronization error: indent stack larger than context stack");
+            break;
         }
     }
 }
 
-void Lexer::emitMapStart(QVector<Token>& tokens)
+void Lexer::emitMapStart()
 {
-    tokens.append(makeToken(TokenType::MAP_START));
+    m_tokens.append(makeToken(TokenType::MAP_START));
     m_contextStack.push(MAP);
 }
 
 
-void Lexer::emitMapEnd(QVector<Token>& tokens)
+void Lexer::emitMapEnd()
 {
-    tokens.append(makeToken(TokenType::MAP_END));
+    m_tokens.append(makeToken(TokenType::MAP_END));
 }
 
-void Lexer::emitSeqStart(QVector<Token>& tokens)
+void Lexer::emitSeqStart()
 {
-    tokens.append(makeToken(TokenType::SEQ_START));
+    m_tokens.append(makeToken(TokenType::SEQ_START));
     m_contextStack.push(SEQ);
 }
 
-void Lexer::emitSeqEnd(QVector<Token>& tokens)
+void Lexer::emitSeqEnd()
 {
-    tokens.append(makeToken(TokenType::SEQ_END));
+    m_tokens.append(makeToken(TokenType::SEQ_END));
 }
 
-void Lexer::parseContent(QVector<Token>& tokens)
+void Lexer::parseContent(int currentIndent)
 {
-    // Check for sequence item
+    // Check for sequence item (dash)
     if (current() == '-' && (peek() == ' ' || peek() == '\n' || peek().isNull())) {
         advance(); // skip '-'
         skipWhitespace();
 
-        // Start sequence if not already in one at this level
-        if (m_contextStack.isEmpty() || m_contextStack.top() != SEQ) {
-            emitSeqStart(tokens);
+        // If not in a sequence at this level, start one
+        if (m_contextStack.isEmpty() || m_indentStack.top() < currentIndent) {
+            emitSeqStart();  // Pushes to contextStack
+            m_indentStack.push(currentIndent);  // Push to indentStack - now synchronized
+
+            // Verify synchronization (contextStack size should equal indentStack size - 1 due to sentinel)
+            if (m_contextStack.size() != m_indentStack.size() - 1) {
+                setError("Stack synchronization error in sequence start");
+                return;
+            }
+        }
+
+        // Parse the item value (could be on same line or next)
+        if (!isAtEnd() && current() != '\n') {
+            parseContent(currentIndent + 2);  // Item content indented
         }
 
         // The value after '-' will be parsed in next iteration
@@ -245,7 +361,7 @@ void Lexer::parseContent(QVector<Token>& tokens)
     // Check for flow sequence [...]
     if (current() == '[') {
         advance(); // skip '['
-        emitSeqStart(tokens);
+        emitSeqStart();
 
         // Parse items
         while (!isAtEnd() && current() != ']') {
@@ -259,13 +375,13 @@ void Lexer::parseContent(QVector<Token>& tokens)
 
             QString value = readScalar();
             QString tag = inferScalarTag(value);
-            tokens.append(makeToken(TokenType::SCALAR, value));
+            m_tokens.append(Token(TokenType::SCALAR, value, tag, m_line, m_column));
         }
 
         if (current() == ']') {
             advance(); // skip ']'
         }
-        emitSeqEnd(tokens);
+        emitSeqEnd();
         return;
     }
 
@@ -284,31 +400,41 @@ void Lexer::parseContent(QVector<Token>& tokens)
         skipWhitespace();
 
         // Start map if not already in one at this level
-        if (m_contextStack.isEmpty() || m_contextStack.top() != MAP) {
-            emitMapStart(tokens);
+        if (m_contextStack.isEmpty() || m_indentStack.top() < currentIndent) {
+            emitMapStart();  // Pushes to contextStack
+            m_indentStack.push(currentIndent);  // Push to indentStack - now synchronized
+
+            // Verify synchronization
+            if (m_contextStack.size() != m_indentStack.size() - 1) {
+                setError("Stack synchronization error in map start");
+                return;
+            }
         }
 
         // Emit key
         QString tag = inferScalarTag(scalar);
-        tokens.append(Token(TokenType::SCALAR, scalar, tag, m_line, m_column));
+        m_tokens.append(Token(TokenType::SCALAR, scalar, tag, m_line, m_column));
 
         // Check if value is on same line
         if (!isAtEnd() && current() != '\n' && current() != '#') {
             // Inline value
             if (current() == '[') {
                 // Flow sequence - will be handled in next iteration
-                return;
+                parseContent(currentIndent);
             }
-
-            QString value = readScalar();
-            QString valueTag = inferScalarTag(value);
-            tokens.append(Token(TokenType::SCALAR, value, valueTag, m_line, m_column));
+            else {
+                // Scalar value
+                QString value = readScalar();
+                QString valueTag = inferScalarTag(value);
+                m_tokens.append(Token(TokenType::SCALAR, value, valueTag, m_line, m_column));
+            }
         }
         // If no value on same line, it will be on next line (nested structure)
-    } else {
+    }
+    else {
         // Just a scalar value (in sequence or as value)
         QString tag = inferScalarTag(scalar);
-        tokens.append(Token(TokenType::SCALAR, scalar, tag, m_line, m_column));
+        m_tokens.append(Token(TokenType::SCALAR, scalar, tag, m_line, m_column));
     }
 }
 
@@ -321,7 +447,6 @@ QString Lexer::readScalar()
     }
 
     QString result;
-    int startColumn = m_column;
 
     // Read until special character or end of line
     while (!isAtEnd() && isScalarChar(current())) {

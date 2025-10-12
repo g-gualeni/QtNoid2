@@ -40,7 +40,69 @@ void Yaml2Json::setYaml(const QString &newYaml)
 
 QStringList Yaml2Json::tokens()
 {
-    return m_lexer->tokensAsStringList();
+    QStringList result;
+    QVector<Internal::Token> tokenVec = m_lexer->tokens();
+
+    for (const auto& token : tokenVec) {
+        QString tokenStr;
+
+        // Convert token type to string
+        switch (token.type) {
+            case Internal::TokenType::STREAM_START:
+                tokenStr = "+STR";
+                break;
+            case Internal::TokenType::STREAM_END:
+                tokenStr = "-STR";
+                break;
+            case Internal::TokenType::DOC_START:
+                tokenStr = "+DOC";
+                break;
+            case Internal::TokenType::DOC_END:
+                tokenStr = "-DOC";
+                break;
+            case Internal::TokenType::MAP_START:
+                tokenStr = "+MAP";
+                break;
+            case Internal::TokenType::MAP_END:
+                tokenStr = "-MAP";
+                break;
+            case Internal::TokenType::SEQ_START:
+                tokenStr = "+SEQ";
+                break;
+            case Internal::TokenType::SEQ_END:
+                tokenStr = "-SEQ";
+                break;
+            case Internal::TokenType::SCALAR:
+                tokenStr = QString("=VAL ");
+                if (!token.tag.isEmpty()) {
+                    tokenStr += token.tag + " ";
+                }
+                tokenStr += ":" + token.value;
+                break;
+            case Internal::TokenType::KEY:
+                tokenStr = "?";
+                break;
+            case Internal::TokenType::VALUE:
+                tokenStr = ":";
+                break;
+            case Internal::TokenType::ALIAS:
+                tokenStr = "*" + token.value;
+                break;
+            case Internal::TokenType::ANCHOR:
+                tokenStr = "&" + token.value;
+                break;
+            case Internal::TokenType::EOF_TOKEN:
+                tokenStr = "EOF";
+                break;
+            case Internal::TokenType::INVALID:
+                tokenStr = "INVALID";
+                break;
+        }
+
+        result.append(tokenStr);
+    }
+
+    return result;
 }
 
 QSharedPointer<Internal::Lexer> Yaml2Json::lexer() const

@@ -12,6 +12,7 @@ namespace Internal {
 
 class Lexer {
 public:
+    explicit Lexer();
     explicit Lexer(const QString& source);
 
     // Main tokenization method
@@ -21,15 +22,21 @@ public:
     QString errorString() const { return m_error; }
     bool hasError() const { return !m_error.isEmpty(); }
 
-    QString source() const;
-    void setSource(const QString &newSource);
+    QString yaml() const;
+    void setYaml(const QString &newYaml);
+
+    QVector<Token> tokens() const;
+    QStringList tokensAsStringList() const;
 
 private:
     // Input source
-    QString m_source;
+    QString m_yaml;
     int m_pos = 0;
     int m_line = 1;
     int m_column = 1;
+
+    QVector<Token> m_tokens;
+
 
     // Context tracking
     enum Context { ROOT, MAP, SEQ };
@@ -54,15 +61,16 @@ private:
     void handleNewLine(QVector<Token>& tokens);
 
     // Token emission
-    void emitIndentTokens(QVector<Token>& tokens, int newIndent);
-    void emitDedentTokens(QVector<Token>& tokens, int newIndent);
-    void emitMapStart(QVector<Token>& tokens);
-    void emitMapEnd(QVector<Token>& tokens);
-    void emitSeqStart(QVector<Token>& tokens);
-    void emitSeqEnd(QVector<Token>& tokens);
+    void emitIndentTokens(int newIndent);
+    void emitDedentTokens(int newIndent);
+    void emitMapStart();
+    void emitMapEnd();
+    void emitSeqStart();
+    void emitSeqEnd();
 
     // Content parsing
-    void parseContent(QVector<Token>& tokens);
+    void parseContent(int currentIndent);
+
     QString readScalar();
     QString readQuotedString(QChar quote);
     bool isScalarChar(QChar c) const;
