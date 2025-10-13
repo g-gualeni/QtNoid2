@@ -19,6 +19,7 @@ QVector<Token> Lexer::tokenize()
 {
     // Reset state
     m_pos = 0;
+    m_current = current(); // Pre-Calculation
     m_line = 1;
     m_column = 1;
     m_error.clear();
@@ -36,30 +37,30 @@ QVector<Token> Lexer::tokenize()
 
     // Main parsing loop
     while (!isAtEnd() && !hasError()) {
-        // Handle newlines
-        if (current() == '\n') {
+        // Handle newlines        
+        if (m_current == '\n') {
             advance();
             m_atLineStart = true;
             continue;
         }
 
-        if (current() == '#') {
+        if (m_current == '#') {
             skipComment();
             continue;
         }
 
         // Handle indentation at line start
-        if (m_atLineStart && (current() == ' ' || !current().isNull())) {
+        if (m_atLineStart && (m_current == ' ' || !m_current.isNull())) {
             int indent = measureIndent();
 
             // Skip whitespace
-            while (!isAtEnd() && current() == ' ') {
+            while (!isAtEnd() && m_current == ' ') {
                 advance();
             }
 
             // Check if line is empty or comment after spaces
-            if (isAtEnd() || current() == '\n' || current() == '#') {
-                if (current() == '#') {
+            if (isAtEnd() || m_current == '\n' || m_current == '#') {
+                if (m_current == '#') {
                     skipComment();
                 }
                 continue;
@@ -191,11 +192,13 @@ QStringList Lexer::tokensAsStringList() const
     return res;
 }
 
+
 QChar Lexer::current() const
 {
     if (isAtEnd()) return QChar();
     return m_yaml.at(m_pos);
 }
+
 
 QChar Lexer::peek(int offset) const
 {
@@ -208,13 +211,14 @@ void Lexer::advance()
 {
     if (isAtEnd()) return;
 
-    if (current() == '\n') {
+    if (m_current == '\n') {
         m_line++;
         m_column = 1;
     } else {
         m_column++;
     }
     m_pos++;
+    m_current = current();
 }
 
 bool Lexer::isAtEnd() const
@@ -239,7 +243,7 @@ int Lexer::measureIndent()
 
 void Lexer::skipWhitespace()
 {
-    while (!isAtEnd() && (current() == ' ' || current() == '\t')) {
+    while (!isAtEnd() && (m_current == ' ' || m_current == '\t')) {
         advance();
     }
 }
@@ -247,7 +251,7 @@ void Lexer::skipWhitespace()
 void Lexer::skipComment()
 {
     // Skip until end of line
-    while (!isAtEnd() && current() != '\n') {
+    while (!isAtEnd() && m_current != '\n') {
         advance();
     }
 }
@@ -265,7 +269,7 @@ void Lexer::handleNewLine(QVector<Token>& tokens)
     m_atLineStart = false;
 
     // Check if line is empty or comment
-    if (isAtEnd() || current() == '\n' || current() == '#') {
+    if (isAtEnd() || m_current == '\n' || m_current == '#') {
         return;
     }
 
@@ -333,14 +337,18 @@ void Lexer::emitSeqEnd()
 void Lexer::parseContent(int currentIndent)
 {
     // Check for sequence item (dash)
-    if (current() == '-' && (peek() == ' ' || peek() == '\n' || peek().isNull())) {
+    if (m_current == '-' && (peek() == ' ' || peek() == '\n' || peek().isNull())) {
         advance(); // skip '-'
         skipWhitespace();
 
         // If not in a sequence at this level, start one
-        if (m_contextStack.isEmpty() || m_indentStack.top() < currentIndent) {
-            emitSeqStart();  // Pushes to contextStack
-            m_indentStack.push(currentIndent);  // Push to indentStack - now synchronized
+        bool needNewSequence = m_contextStack.isEmpty() ||
+                               m_indentStack.top() < currentIndent ||
+                               (m_indentStack.top() == currentIndent && m_contextStack.top() != SEQ);
+
+        if (needNewSequence) {
+            emitSeqStart();
+            m_indentStack.push(currentIndent);
 
             // Verify synchronization (contextStack size should equal indentStack size - 1 due to sentinel)
             if (m_contextStack.size() != m_indentStack.size() - 1) {
@@ -350,7 +358,7 @@ void Lexer::parseContent(int currentIndent)
         }
 
         // Parse the item value (could be on same line or next)
-        if (!isAtEnd() && current() != '\n') {
+        if (!isAtEnd() && m_current != '\n') {
             parseContent(currentIndent + 2);  // Item content indented
         }
 
@@ -359,26 +367,26 @@ void Lexer::parseContent(int currentIndent)
     }
 
     // Check for flow sequence [...]
-    if (current() == '[') {
+    if (m_current == '[') {
         advance(); // skip '['
         emitSeqStart();
 
         // Parse items
-        while (!isAtEnd() && current() != ']') {
+        while (!isAtEnd() && m_current != ']') {
             skipWhitespace();
-            if (current() == ',') {
+            if (m_current == ',') {
                 advance();
                 skipWhitespace();
                 continue;
             }
-            if (current() == ']') break;
+            if (m_current == ']') break;
 
             QString value = readScalar();
             QString tag = inferScalarTag(value);
             m_tokens.append(Token(TokenType::SCALAR, value, tag, m_line, m_column));
         }
 
-        if (current() == ']') {
+        if (m_current == ']') {
             advance(); // skip ']'
         }
         emitSeqEnd();
@@ -395,7 +403,7 @@ void Lexer::parseContent(int currentIndent)
     skipWhitespace();
 
     // Check if this is a key (followed by ':')
-    if (current() == ':') {
+    if (m_current == ':') {
         advance(); // skip ':'
         skipWhitespace();
 
@@ -416,9 +424,9 @@ void Lexer::parseContent(int currentIndent)
         m_tokens.append(Token(TokenType::SCALAR, scalar, tag, m_line, m_column));
 
         // Check if value is on same line
-        if (!isAtEnd() && current() != '\n' && current() != '#') {
+        if (!isAtEnd() && m_current != '\n' && m_current != '#') {
             // Inline value
-            if (current() == '[') {
+            if (m_current == '[') {
                 // Flow sequence - will be handled in next iteration
                 parseContent(currentIndent);
             }
@@ -442,15 +450,15 @@ void Lexer::parseContent(int currentIndent)
 QString Lexer::readScalar()
 {
     // Check for quoted string
-    if (current() == '"' || current() == '\'') {
-        return readQuotedString(current());
+    if (m_current == '"' || m_current == '\'') {
+        return readQuotedString(m_current);
     }
 
     QString result;
 
     // Read until special character or end of line
-    while (!isAtEnd() && isScalarChar(current())) {
-        result.append(current());
+    while (!isAtEnd() && isScalarChar(m_current)) {
+        result.append(m_current);
         advance();
     }
 
@@ -462,18 +470,18 @@ QString Lexer::readQuotedString(QChar quote)
     advance(); // skip opening quote
     QString result;
 
-    while (!isAtEnd() && current() != quote) {
-        if (current() == '\\' && peek() == quote) {
+    while (!isAtEnd() && m_current != quote) {
+        if (m_current == '\\' && peek() == quote) {
             advance(); // skip backslash
-            result.append(current());
+            result.append(m_current);
             advance();
         } else {
-            result.append(current());
+            result.append(m_current);
             advance();
         }
     }
 
-    if (current() == quote) {
+    if (m_current == quote) {
         advance(); // skip closing quote
     }
 

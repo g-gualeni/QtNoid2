@@ -19,6 +19,7 @@ namespace Json {
 
 namespace Internal {
     class Lexer;
+    class Parser;
 }
 
 
@@ -52,6 +53,7 @@ private:
     bool m_isValid = true;
     QString m_error;
     QSharedPointer<Internal::Lexer> m_lexer;
+    QSharedPointer<Internal::Parser> m_parser;
 
     QSharedPointer<Internal::Lexer> lexer() const;
     void setError(const QString& error);

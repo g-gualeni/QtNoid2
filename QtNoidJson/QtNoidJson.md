@@ -61,12 +61,19 @@ https://github.com/perlpunk/yaml-test-matrix
 
 Notice the - YAML style to create an array of objects
 
-
 Online converter YAML to JSON
 https://jsonformatter.org/yaml-to-json
 
+## YAML Lexer Naming
+ - STR: (+STR / -STR) this is the start and stop of the stream
+ - DOC: (+DOC / -DOC) this is the start and stop of a YAML doc. A YAML stream can 
+    contains multiple docs.
+ - MAP: this is key value structure
+ - VAL (=VAL): this is the key or the value in a key value pair
+ - SEQ (+SEQ / -SEQ): this mark the start or end of a sequence in a list or an array
 
 
+## Example
 ```
 person:
     name: "Mario Rossi"

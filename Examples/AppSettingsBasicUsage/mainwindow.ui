@@ -27,6 +27,9 @@
     </item>
     <item>
      <widget class="QLabel" name="label_2">
+      <property name="styleSheet">
+       <string notr="true">font-weight: bold</string>
+      </property>
       <property name="text">
        <string>Application or Application Bundle folder path</string>
       </property>
@@ -37,6 +40,9 @@
     </item>
     <item>
      <widget class="QLabel" name="label_6">
+      <property name="styleSheet">
+       <string notr="true">font-weight: bold</string>
+      </property>
       <property name="text">
        <string>Application or Application Bundle File Path</string>
       </property>
@@ -47,6 +53,9 @@
     </item>
     <item>
      <widget class="QLabel" name="label_3">
+      <property name="styleSheet">
+       <string notr="true">font-weight: bold</string>
+      </property>
       <property name="text">
        <string>Config.json file path using filePathAsAppSibling</string>
       </property>
@@ -57,6 +66,9 @@
     </item>
     <item>
      <widget class="QLabel" name="label_4">
+      <property name="styleSheet">
+       <string notr="true">font-weight: bold</string>
+      </property>
       <property name="text">
        <string>groupNameFromObjectOrClass</string>
       </property>
@@ -70,14 +82,7 @@
       <item>
        <widget class="QPushButton" name="cmdGroupName">
         <property name="text">
-         <string>Set MainWindow Name to AppTest</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="cmdFullDialogGrab">
-        <property name="text">
-         <string>fullDialogGrab</string>
+         <string>Set MainWindow Name to AppSettingsBasicUsage</string>
         </property>
        </widget>
       </item>
@@ -85,17 +90,41 @@
     </item>
     <item>
      <widget class="QRadioButton" name="optUpdateWindowTitle">
+      <property name="styleSheet">
+       <string notr="true">font-weight: bold</string>
+      </property>
       <property name="text">
        <string>UpdateWindowsTitle (Changed* / Unchanged)</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>FullDialogGrab Result</string>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="styleSheet">
+         <string notr="true">font-weight: bold</string>
+        </property>
+        <property name="text">
+         <string>FullDialogGrab Result</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cmdFullDialogGrab">
+        <property name="text">
+         <string>-&gt;fullDialogGrab</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QLabel" name="txtFullDialogGrab">

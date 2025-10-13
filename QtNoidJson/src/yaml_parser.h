@@ -13,6 +13,7 @@ namespace Internal {
 class Parser {
 
 public:
+    explicit Parser();
     explicit Parser(const QVector<Token> &tokens);
 
     // Parse tokens into AST
@@ -21,6 +22,9 @@ public:
     // Get last error (if any)
     QString errorString() const { return m_error; }
     bool hasError() const { return !m_error.isEmpty(); }
+
+    QVector<Token> tokens() const;
+    void setTokens(const QVector<Token> &newTokens);
 
 private:
     // Token stream
@@ -39,7 +43,7 @@ private:
     bool match(TokenType type);
 
     // Parsing methods
-    std::shared_ptr<ASTNode> parseDocument();
+    // std::shared_ptr<ASTNode> parseDocument();
     std::shared_ptr<ASTNode> parseValue();
     std::shared_ptr<ASTNode> parseMap();
     std::shared_ptr<ASTNode> parseSeq();

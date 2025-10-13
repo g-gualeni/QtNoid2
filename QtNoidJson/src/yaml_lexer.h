@@ -32,6 +32,7 @@ private:
     // Input source
     QString m_yaml;
     int m_pos = 0;
+    QChar m_current = QChar(); // Current char m_yaml[m_pos]
     int m_line = 1;
     int m_column = 1;
 

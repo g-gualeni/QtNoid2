@@ -13,12 +13,14 @@ Yaml2Json::Yaml2Json(QObject *parent)
     : QObject(parent)
 {
     m_lexer = QSharedPointer<Internal::Lexer>::create();
+    m_parser = QSharedPointer<Internal::Parser>::create();
 }
 
 Yaml2Json::Yaml2Json(const QString yaml, QObject *parent)
     : QObject(parent)
 {
     m_lexer = QSharedPointer<Internal::Lexer>::create(yaml);
+    m_parser = QSharedPointer<Internal::Parser>::create();
     // Proactive approach: convert immediately in constructor
     convert();
 }
@@ -72,11 +74,12 @@ void Yaml2Json::convert()
     }
 
     // Step 2: PARSER - Build AST from tokens
-    Internal::Parser parser(m_lexer->tokens());
-    auto ast = parser.parse();
+    // qDebug() << tokens();
+    m_parser->setTokens(m_lexer->tokens());
+    auto ast = m_parser->parse();
 
-    if (parser.hasError()) {
-        setError(QString("Parser error: %1").arg(parser.errorString()));
+    if (m_parser->hasError()) {
+        setError(QString("Parser error: %1").arg(m_parser->errorString()));
         return;
     }
 

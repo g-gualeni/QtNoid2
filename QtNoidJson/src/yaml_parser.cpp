@@ -4,6 +4,10 @@ namespace QtNoid {
 namespace Json {
 namespace Internal {
 
+Parser::Parser()
+{
+}
+
 Parser::Parser(const QVector<Token> &tokens)
     : m_tokens(tokens)
 {
@@ -24,9 +28,17 @@ std::shared_ptr<ASTNode> QtNoid::Json::Internal::Parser::parse()
     }
 
     // Parse the main document
-    auto result = parseDocument();
+    return parseValue();
+}
 
-    return result;
+QVector<Token> Parser::tokens() const
+{
+    return m_tokens;
+}
+
+void Parser::setTokens(const QVector<Token> &newTokens)
+{
+    m_tokens = newTokens;
 }
 
 const Token &Parser::current() const
@@ -78,10 +90,10 @@ bool Parser::match(TokenType type)
     return false;
 }
 
-std::shared_ptr<ASTNode> Parser::parseDocument()
-{
-    return parseValue();
-}
+// std::shared_ptr<ASTNode> Parser::parseDocument()
+// {
+//     return parseValue();
+// }
 
 std::shared_ptr<ASTNode> Parser::parseValue()
 {
@@ -107,6 +119,7 @@ std::shared_ptr<ASTNode> Parser::parseValue()
     case TokenType::STREAM_END:
         // End markers - return null
         return std::make_shared<ASTNode>(ScalarNode("", "!!null"));
+        advance();
 
     default:
         setError("Unexpected token type", current());
@@ -161,9 +174,12 @@ std::shared_ptr<ASTNode> Parser::parseSeq()
     SeqNode seq;
 
     // Parse sequence items
-    while (!isAtEnd() && !check(TokenType::SEQ_END)) {
+    while (!isAtEnd() && !check(TokenType::SEQ_END)) {        
         auto item = parseValue();
         seq.items.append(item);
+        if(!m_error.isEmpty()) {
+            break;
+        }
     }
 
     // Consume SEQ_END

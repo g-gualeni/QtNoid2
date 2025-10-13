@@ -12,6 +12,10 @@ QtNoid2 version 2.2.0
 Implementation of Yaml2Json library 
 Is there a reason to keep Txt2Json? Maybe it is faster?
 
+Finire
+void TestQtNoidJsonYaml2Json::testMixedStructures()
+
+Fare un metodo statico per la conversione YAML to JSON
 
 # QtNoidApp
 - [x] appExeOrAppBundleDirPath();
@@ -20,28 +24,32 @@ Is there a reason to keep Txt2Json? Maybe it is faster?
 - [x] doc update for appExeOrAppBundleFilePath
 - [x] test for appExeOrAppBundleDirPath
 - [x] test update for appExeOrAppBundleFilePath
+- [ ] singletone with configuration file management
+- [ ] method that load current configuration file into resources
 
 # Older Examples
-- [ ] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
+- [x] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
+- [x] AppSettingsBasicUsage update labels using bold 
 - [ ] AppSettingsBasicUsage Win11 screenshot update AppSettingsBasicUsage-Win11.png
 - [ ] AppSettingsBasicUsage macOS screenshot update AppSettingsBasicUsage-macOS.png
 
 
 # YAML to JSON test suite example
-- [ ] Scaffolding
-- [ ] Configuration management using ParamterList
-
+- [x] Scaffolding
+- [x] Store all the yaml suite in a config file and add a method to
+          generate in the installation folder
+- [ ] App Configuration management using ParamterList
 - [ ] Create a subclass of ParamterList that create a global element
 - [ ] maybe I can create some specific save and read method for:
      Windows position
      Splitter configuration
-     
-more?
+     more?
+- [ ] Add the debug menu that can save current config to app resoureces?
+- [ ] Restore app config file from resources, the first time.
 
-# App Confg
-can I add the debug menu that can save data to resoureces?
-can I store all the yaml suite in a config file and add a method to
-generate in the installation folder?
+
+# App Config
+
 
 
 ### Release Drafting
