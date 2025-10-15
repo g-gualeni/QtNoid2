@@ -3,8 +3,9 @@
 ## Current Sprint (Sprint-004)
 
 ### Sprint Goals
-Implementation of the QtNoid::Yaml2Json library and release of 
-QtNoid2 version 2.2.0
+- Implementation of the QtNoid::Yaml2Json library 
+- Implementaton o QtNoid::App::Config class
+- Release of QtNoid2 version 2.2.0
 
 &nbsp;
 
@@ -14,8 +15,8 @@ Is there a reason to keep Txt2Json? Maybe it is faster?
 
 Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
-
 Fare un metodo statico per la conversione YAML to JSON
+
 
 # QtNoidApp
 - [x] appExeOrAppBundleDirPath();
@@ -24,8 +25,22 @@ Fare un metodo statico per la conversione YAML to JSON
 - [x] doc update for appExeOrAppBundleFilePath
 - [x] test for appExeOrAppBundleDirPath
 - [x] test update for appExeOrAppBundleFilePath
-- [ ] singletone with configuration file management
-- [ ] method that load current configuration file into resources
+- [ ] class Config as a container for ParamterList
+- [ ] class Config Test
+- [ ] class Config Documentation
+- [x] class GlobalConfig as static wrapper for a singletone Config
+- [x] appConfig macro for easy access
+- [x] class GlobalConfig test
+- [ ] class GlobalConfig Documentation
+- [ ] appConfig load / save configuration of current application
+- [ ] Settings: appConfigFileToProjectRes(): load current configuration file into 
+          project resources
+- [ ] appConfigFileFromRes: init application config file from project resources
+- [ ] QtNoid::App::Config create some specific save and restore method for:
+     * [ ] Windows position
+     * [ ] Splitter configuration
+
+
 
 # Older Examples
 - [x] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
@@ -38,13 +53,8 @@ Fare un metodo statico per la conversione YAML to JSON
 - [x] Scaffolding
 - [x] Store all the yaml suite in a config file and add a method to
           generate in the installation folder
-- [ ] App Configuration management using ParamterList
-- [ ] Create a subclass of ParamterList that create a global element
-- [ ] maybe I can create some specific save and read method for:
-     Windows position
-     Splitter configuration
-     more?
-- [ ] Add the debug menu that can save current config to app resoureces?
+- [ ] App Configuration management using QtNoid::App::Config (appConfig)
+- [ ] Add the debug menu that can save current config to app resources?
 - [ ] Restore app config file from resources, the first time.
 
 

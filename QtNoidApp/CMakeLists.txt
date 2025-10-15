@@ -38,6 +38,8 @@ set(SOURCES
     ${SOURCES_DIR}/settings.cpp
     ${SOURCES_DIR}/parameter.cpp
     ${SOURCES_DIR}/parameterlist.cpp
+    ${SOURCES_DIR}/config.cpp
+    ${SOURCES_DIR}/configglobal.cpp
 )
 
 # File header
@@ -47,6 +49,8 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/settings.h
     ${HEADERS_DIR}/${PROJECT_NAME}/parameter.h
     ${HEADERS_DIR}/${PROJECT_NAME}/parameterlist.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/config.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/configglobal.h
 )
 
 
@@ -56,6 +60,7 @@ set(HEADERS
 add_library(${PROJECT_NAME} SHARED
     ${SOURCES}
     ${HEADERS}
+    src/configglobal.cpp
 )
 
 # Define l'export control symbol
