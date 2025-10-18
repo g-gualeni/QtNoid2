@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -28,5 +29,9 @@ private:
     bool generateTestDataFromResource(const QString &resPath);
 
     Ui::MainWindow *ui;
+    void addRecentFileList(QAction *recentFilesParent, QStringList &recentFiles,
+                           std::function<void(const QString&)> onFileSelected);
+
+    void loadYamlFile(const QString &filePath);
 };
 #endif // MAINWINDOW_H

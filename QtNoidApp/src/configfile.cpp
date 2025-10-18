@@ -25,7 +25,7 @@ ConfigFile::ConfigFile(const QString &fileName, QObject *parent)
 
 ConfigFile::~ConfigFile()
 {
-    qDebug() << __func__;
+    // qDebug() << __func__;
     save();
 }
 
@@ -87,7 +87,7 @@ bool ConfigFile::save()
     QTextStream text(&file);
     text << doc.toJson();
 
-    qDebug() << __func__;
+    // qDebug() << __func__;
     return true;
 }
 

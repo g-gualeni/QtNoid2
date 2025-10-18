@@ -428,7 +428,7 @@ Parameter* Config::parameter(const QString& paramName, const QString& listName) 
 
 bool Config::saveValuePrivate(const QString &paramName, const QVariant &value, const QString &listName)
 {
-    qDebug() << __func__ << value;
+    // qDebug() << __func__ << value;
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list != nullptr) {
         return list->setValue(paramName, value);
@@ -449,7 +449,7 @@ bool Config::saveValuePrivate(const QString &paramName, const QVariant &value, c
 }
 
 
-bool Config::valueAsBool(const QString &paramName, bool defaultValue, const QString &listName) const
+bool Config::restoreAsBool(const QString &paramName, bool defaultValue, const QString &listName) const
 {
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list == nullptr)
@@ -473,7 +473,7 @@ bool Config::saveValue(const QString &paramName, bool value, const QString &list
 }
 
 
-int Config::valueAsInt(const QString &paramName, int defaultValue, const QString &listName) const
+int Config::restoreAsInt(const QString &paramName, int defaultValue, const QString &listName) const
 {
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list == nullptr)
@@ -489,7 +489,7 @@ bool Config::saveValue(const QString &paramName, int value, const QString &listN
 }
 
 
-double Config::valueAsDouble(const QString &paramName, double defaultValue, const QString &listName) const
+double Config::restoreAsDouble(const QString &paramName, double defaultValue, const QString &listName) const
 {
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list == nullptr)
@@ -505,7 +505,7 @@ bool Config::saveValue(const QString &paramName, double value, const QString &li
 }
 
 
-QString Config::valueAsString(const QString &paramName, const QString &defaultValue, const QString &listName) const
+QString Config::restoreAsString(const QString &paramName, const QString &defaultValue, const QString &listName) const
 {
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list == nullptr)
@@ -521,7 +521,7 @@ bool Config::saveValue(const QString &paramName, const QString &value, const QSt
 }
 
 
-QStringList Config::valueAsStringList(const QString &paramName, const QStringList &defaultValue, const QString &listName) const
+QStringList Config::restoreAsStringList(const QString &paramName, const QStringList &defaultValue, const QString &listName) const
 {
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list == nullptr)
@@ -537,7 +537,7 @@ bool Config::saveValue(const QString &paramName, const QStringList &value, const
 }
 
 
-QVariant Config::valueAsVariant(const QString& paramName, const QVariant &defaultValue, const QString& listName) const
+QVariant Config::restoreAsVariant(const QString& paramName, const QVariant &defaultValue, const QString& listName) const
 {
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list == nullptr)
@@ -553,7 +553,7 @@ bool Config::saveValue(const QString& paramName, const QVariant& value, const QS
 }
 
 
-QByteArray Config::valueAsByteArray(const QString &paramName, const QByteArray defaultValue, const QString &listName) const
+QByteArray Config::restoreAsByteArray(const QString &paramName, const QByteArray defaultValue, const QString &listName) const
 {
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list == nullptr)
@@ -561,8 +561,8 @@ QByteArray Config::valueAsByteArray(const QString &paramName, const QByteArray d
 
     auto valueAsString = list->value(paramName).toString();
 
-    qDebug() << __func__ << valueAsString;
-    qDebug() << __func__ << QByteArray::fromBase64(valueAsString.toUtf8());
+    // qDebug() << __func__ << valueAsString;
+    // qDebug() << __func__ << QByteArray::fromBase64(valueAsString.toUtf8());
 
     return QByteArray::fromBase64(valueAsString.toUtf8());
 }

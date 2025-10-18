@@ -65,25 +65,25 @@ public:
     // Convenience methods for nested access
     Parameter* parameter(const QString& paramName, const QString& listName = "Settings") const;
 
-    bool valueAsBool(const QString& paramName, bool defaultValue, const QString& listName = "Settings") const;
+    bool restoreAsBool(const QString& paramName, bool defaultValue, const QString& listName = "Settings") const;
     bool saveValue(const QString& paramName, bool value, const QString& listName = "Settings");
 
-    int valueAsInt(const QString& paramName, int defaultValue, const QString& listName = "Settings") const;
+    int restoreAsInt(const QString& paramName, int defaultValue, const QString& listName = "Settings") const;
     bool saveValue(const QString& paramName, int value, const QString& listName = "Settings");
 
-    double valueAsDouble(const QString& paramName, double defaultValue, const QString& listName = "Settings") const;
+    double restoreAsDouble(const QString& paramName, double defaultValue, const QString& listName = "Settings") const;
     bool saveValue(const QString& paramName, double value, const QString& listName = "Settings");
 
-    QString valueAsString(const QString& paramName, const QString& defaultValue, const QString& listName = "Settings") const;
+    QString restoreAsString(const QString& paramName, const QString& defaultValue, const QString& listName = "Settings") const;
     bool saveValue(const QString& paramName, const QString& value, const QString& listName = "Settings");
 
-    QStringList valueAsStringList(const QString& paramName, const QStringList& defaultValue, const QString& listName = "Settings") const;
+    QStringList restoreAsStringList(const QString& paramName, const QStringList& defaultValue, const QString& listName = "Settings") const;
     bool saveValue(const QString& paramName, const QStringList& value, const QString& listName = "Settings");
 
-    QVariant valueAsVariant(const QString &paramName, const QVariant &defaultValue, const QString &listName = "Settings") const;
+    QVariant restoreAsVariant(const QString &paramName, const QVariant &defaultValue, const QString &listName = "Settings") const;
     bool saveValue(const QString& paramName, const QVariant& value, const QString& listName = "Settings");
 
-    QByteArray valueAsByteArray(const QString& paramName, const QByteArray defaultValue, const QString& listName = "Settings") const;
+    QByteArray restoreAsByteArray(const QString& paramName, const QByteArray defaultValue, const QString& listName = "Settings") const;
     bool saveValue(const QString& paramName, const QByteArray& value, const QString& listName = "Settings");
 
 public:

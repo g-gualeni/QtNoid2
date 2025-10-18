@@ -14,15 +14,48 @@
 #include <QUrl>
 
 
-/*
+void MainWindow::addRecentFileList(QAction *recentFilesParent, QStringList &recentFiles,
+                                   std::function<void(const QString&)> onFileSelected)
+{
+    if(recentFilesParent == nullptr)
+        return;
 
-:/yaml-test-suite/data-2022-01-17/yaml-test-suite/data-2022-01-17/2AUY/===
+    QMenu *recentFilesMenu = recentFilesParent->menu();
+    if (!recentFilesMenu) {
+        // Se non esiste ancora, crealo
+        recentFilesMenu = new QMenu(this);
+        recentFilesParent->setMenu(recentFilesMenu);
+    }
 
-:/yaml-test-suite/data-2022-01-17/TestSuite-2022-01-17
+    for (int ii = 0; ii < recentFiles.size() && ii < 10; ++ii) {
+        QString fileName = recentFiles[ii];
+        QString displayName = QString("%1| %2").arg(ii + 1).arg(QFileInfo(fileName).fileName());
 
+        QAction *fileAction = recentFilesMenu->addAction(displayName);
+        fileAction->setData(fileName); // salva il path completo
 
+        // Connetti all'apertura del file
+        connect(fileAction, &QAction::triggered, this, [fileName, onFileSelected](){
+                onFileSelected(fileName);
+        });
+    }
 
-*/
+    // Aggiungi separatore e opzione per pulire
+    if (!recentFiles.isEmpty()) {
+        recentFilesMenu->addSeparator();
+        QAction *clearAction = recentFilesMenu->addAction(tr("Clear Recent Files"));
+        connect(clearAction, &QAction::triggered, this, [this, recentFilesMenu]() {
+            recentFilesMenu->clear();
+            qDebug() << "clearRecentFiles()";
+        });
+    }
+}
+
+void MainWindow::loadYamlFile(const QString &filePath)
+{
+    qDebug() << __func__ << filePath;
+}
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,7 +63,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->lblDescription->clear();
-    restoreGeometry(appConfig->valueAsByteArray("Geometry", saveGeometry()));
+    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+    QStringList recentFiles({"AA", "BB", "CC", "DD", "EE"});
+    addRecentFileList(ui->actionRecent_Files, recentFiles, [this](const QString &file) {
+        loadYamlFile(file);});
 }
 
 MainWindow::~MainWindow()

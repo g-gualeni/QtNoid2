@@ -99,12 +99,12 @@ void TestQtNoidAppConfigGlobal::testAppConfigSaveAndLoad()
 
     // Modify value
     appConfig->saveValue("TestParam", 99.0);
-    QCOMPARE(appConfig->valueAsVariant("TestParam", "DefValue").toDouble(), 99.0);
+    QCOMPARE(appConfig->restoreAsVariant("TestParam", "DefValue").toDouble(), 99.0);
 
     // Load - should restore original value
     bool loadResult = appConfig->load();
     QVERIFY(loadResult);
-    QCOMPARE(appConfig->valueAsVariant("TestParam", "DefVal").toDouble(), 42.0);
+    QCOMPARE(appConfig->restoreAsVariant("TestParam", "DefVal").toDouble(), 42.0);
 }
 
 
