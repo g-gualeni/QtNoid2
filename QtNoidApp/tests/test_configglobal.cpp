@@ -20,27 +20,11 @@ private slots:
     void testConfigGlobalInstanceIsNotNull();
     void testConfigGlobalInstanceIsSingleton();
     void testAppConfigMacro();
-
-    // Config access tests
     void testConfigGlobalProvidesAccessToConfig();
-    // void testConfigGlobalCanAddParameterLists();
-    // void testConfigGlobalCanAccessParameterLists();
-    // void testConfigGlobalCanRemoveParameterLists();
 
-    // // Nested parameter access tests
-    // void testConfigGlobalNestedParameterAccess();
-    // void testConfigGlobalNestedValueAccess();
-
-    // // JSON serialization tests
-    // void testConfigGlobalJsonSerialization();
-    // void testConfigGlobalJsonDeserialization();
-
-    // // Persistence across calls
-    // void testConfigGlobalPersistsAcrossMultipleCalls();
-    // void testConfigGlobalModificationsArePersistent();
-
-    // // Signal forwarding tests
-    // void testConfigGlobalSignals();
+    // More
+    void testAppConfigFileName();
+    void testAppConfigSaveAndLoad();
 };
 
 
@@ -92,6 +76,35 @@ void TestQtNoidAppConfigGlobal::testConfigGlobalProvidesAccessToConfig()
     // Test that we can access Config methods
     QVERIFY(appConfig->isEmpty());
     QCOMPARE(appConfig->count(), 0);
+}
+
+void TestQtNoidAppConfigGlobal::testAppConfigFileName()
+{
+    QString expected = Settings::filePathAsAppSibling();
+    // qDebug() << appConfig->fileName();
+    QCOMPARE(appConfig->fileName(), expected);
+}
+
+void TestQtNoidAppConfigGlobal::testAppConfigSaveAndLoad()
+{
+    // Set config name and add a parameter
+    qDebug() << __func__ << qAppName();
+    appConfig->setName(qAppName());
+    ParameterList* paramList = appConfig->emplace("Settings", "Settings");
+    paramList->emplace(42.0, "TestParam", "Test parameter");
+
+    // Save
+    bool saveResult = appConfig->save();
+    QVERIFY(saveResult);
+
+    // Modify value
+    appConfig->saveValue("TestParam", 99.0);
+    QCOMPARE(appConfig->valueAsVariant("TestParam", "DefValue").toDouble(), 99.0);
+
+    // Load - should restore original value
+    bool loadResult = appConfig->load();
+    QVERIFY(loadResult);
+    QCOMPARE(appConfig->valueAsVariant("TestParam", "DefVal").toDouble(), 42.0);
 }
 
 

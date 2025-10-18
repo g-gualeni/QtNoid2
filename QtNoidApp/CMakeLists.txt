@@ -40,6 +40,7 @@ set(SOURCES
     ${SOURCES_DIR}/parameterlist.cpp
     ${SOURCES_DIR}/config.cpp
     ${SOURCES_DIR}/configglobal.cpp
+    ${SOURCES_DIR}/configfile.cpp
 )
 
 # File header
@@ -51,6 +52,7 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/parameterlist.h
     ${HEADERS_DIR}/${PROJECT_NAME}/config.h
     ${HEADERS_DIR}/${PROJECT_NAME}/configglobal.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/configfile.h
 )
 
 

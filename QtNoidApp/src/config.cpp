@@ -403,6 +403,7 @@ bool Config::contains(const QString &name) const
     return m_parameterListsByName.contains(name);
 }
 
+
 QList<ParameterList *> Config::parameterLists() const
 {
     QList<ParameterList*> res;
@@ -412,7 +413,8 @@ QList<ParameterList *> Config::parameterLists() const
     return res;
 }
 
-Parameter* Config::parameter(const QString& listName, const QString& paramName) const
+
+Parameter* Config::parameter(const QString& paramName, const QString& listName) const
 {
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list == nullptr)
@@ -421,24 +423,157 @@ Parameter* Config::parameter(const QString& listName, const QString& paramName) 
     return list->parameter(paramName);
 }
 
-QVariant Config::value(const QString& listName, const QString& paramName) const
-{
-    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
-    if(list == nullptr)
-        return {};
 
-    return list->value(paramName);
-}
 
-bool Config::setValue(const QString& listName, const QString& paramName, const QVariant& value)
+
+bool Config::saveValuePrivate(const QString &paramName, const QVariant &value, const QString &listName)
 {
+    qDebug() << __func__ << value;
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list != nullptr) {
+        return list->setValue(paramName, value);
+    }
+
+    // Create the list and the parameter
+    list = emplace(listName);
     if(list == nullptr) {
         return false;
     }
 
-    return list->setValue(paramName, value);
+    auto param = list->emplace(value, paramName);
+    if(param == nullptr) {
+        return false;
+    }
+
+    return true;
 }
+
+
+bool Config::valueAsBool(const QString &paramName, bool defaultValue, const QString &listName) const
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return defaultValue;
+
+    return list->value(paramName).toBool();
+
+}
+
+
+/**
+ * @brief Config::setValue: save and create if not exists
+ * @param paramName
+ * @param value
+ * @param listName
+ * @return
+ */
+bool Config::saveValue(const QString &paramName, bool value, const QString &listName)
+{
+    return saveValuePrivate(paramName, value, listName);
+}
+
+
+int Config::valueAsInt(const QString &paramName, int defaultValue, const QString &listName) const
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return defaultValue;
+
+    return list->value(paramName).toInt();
+}
+
+
+bool Config::saveValue(const QString &paramName, int value, const QString &listName)
+{
+    return saveValuePrivate(paramName, value, listName);
+}
+
+
+double Config::valueAsDouble(const QString &paramName, double defaultValue, const QString &listName) const
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return defaultValue;
+
+    return list->value(paramName).toDouble();
+}
+
+
+bool Config::saveValue(const QString &paramName, double value, const QString &listName)
+{
+    return saveValuePrivate(paramName, value, listName);
+}
+
+
+QString Config::valueAsString(const QString &paramName, const QString &defaultValue, const QString &listName) const
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return defaultValue;
+
+    return list->value(paramName).toString();
+}
+
+
+bool Config::saveValue(const QString &paramName, const QString &value, const QString &listName)
+{
+    return saveValuePrivate(paramName, value, listName);
+}
+
+
+QStringList Config::valueAsStringList(const QString &paramName, const QStringList &defaultValue, const QString &listName) const
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return defaultValue;
+
+    return list->value(paramName).toStringList();
+}
+
+
+bool Config::saveValue(const QString &paramName, const QStringList &value, const QString &listName)
+{
+    return saveValuePrivate(paramName, value, listName);
+}
+
+
+QVariant Config::valueAsVariant(const QString& paramName, const QVariant &defaultValue, const QString& listName) const
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return defaultValue;
+
+    return list->value(paramName);
+}
+
+
+bool Config::saveValue(const QString& paramName, const QVariant& value, const QString& listName)
+{
+    return saveValuePrivate(paramName, value, listName);
+}
+
+
+QByteArray Config::valueAsByteArray(const QString &paramName, const QByteArray defaultValue, const QString &listName) const
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return defaultValue;
+
+    auto valueAsString = list->value(paramName).toString();
+
+    qDebug() << __func__ << valueAsString;
+    qDebug() << __func__ << QByteArray::fromBase64(valueAsString.toUtf8());
+
+    return QByteArray::fromBase64(valueAsString.toUtf8());
+}
+
+
+bool Config::saveValue(const QString &paramName, const QByteArray &value, const QString &listName)
+{
+    auto valueString = QString::fromUtf8(value.toBase64());
+    return saveValuePrivate(paramName, valueString, listName);
+}
+
 
 void Config::onParameterListDestroyed(QObject *parameterList)
 {
@@ -501,6 +636,7 @@ void Config::appendParameterListAndUpdateIndexs(ParameterList *parameterList)
     emit parameterListAdded(parameterList);
     emit countChanged(m_parameterListsByIndex.count());
 }
+
 
 int Config::generateUniqueId()
 {

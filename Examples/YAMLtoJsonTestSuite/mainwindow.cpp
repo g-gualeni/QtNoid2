@@ -29,10 +29,13 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->lblDescription->clear();
+    restoreGeometry(appConfig->valueAsByteArray("Geometry", saveGeometry()));
 }
 
 MainWindow::~MainWindow()
 {
+    appConfig->saveValue("Geometry", saveGeometry());
     delete ui;
 }
 

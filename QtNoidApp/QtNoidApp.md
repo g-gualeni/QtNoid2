@@ -1,11 +1,21 @@
 # QtNoidApp
 This module contains:
+
 - [**Settings**](#class-settings): collection of methods to simplify the management of 
 the application settings.
+
 - [**Parameter**](#class-parameter): Generic application parameter class with 
-value storage, range validation, presets, and Qt property binding.
+value storage, range validation, presets, description, tooltip and Qt property binding.
+
 - [**ParameterList**](#class-parameterlist): Container class for managing multiple 
 Parameter instances with binding support and serialization.
+
+- [**Config**](#class-config): Container class for managing multiple 
+ParameterList instances with binding support and serialization.
+
+- [**ConfigGlobal**](#class-configglobal): this is a singletone class that create 
+the unique instance for appConfig that can be used to save and restore application
+configuration.
 
 
 
@@ -426,6 +436,20 @@ a parameter rename operation fails due to name conflicts
 
 
 &nbsp;
+
+
+[⬆ Back to top](#qtnoidapp)
+
+
+
+&nbsp;
+## Class: Config
+
+[⬆ Back to top](#qtnoidapp)
+
+
+&nbsp;
+## Class: ConfigGlobal
 
 
 [⬆ Back to top](#qtnoidapp)

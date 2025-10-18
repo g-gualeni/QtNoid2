@@ -25,21 +25,41 @@ Fare un metodo statico per la conversione YAML to JSON
 - [x] doc update for appExeOrAppBundleFilePath
 - [x] test for appExeOrAppBundleDirPath
 - [x] test update for appExeOrAppBundleFilePath
-- [ ] class Config as a container for ParamterList
+- [ ] class **Config** as a container for ParamterList
+     - [ ] check implementation of class Config
+     - [ ] move s_nextUniqueId to ParameterList starting from 0
+     - [x] uniqueId for Parameter starts from 1000
+     - [x] Add valueAsInt
+     - [x] Add valueAsDouble
+     - [x] Add valueAsString
+     - [x] Add valueAsStringList
+     - [x] Add valueAsBool
+     - [x] change value to restore (restoreAsBool) 
+     
+     
 - [ ] class Config Test
 - [ ] class Config Documentation
-- [x] class GlobalConfig as static wrapper for a singletone Config
+
+- [x] class **GlobalConfig** as static wrapper for a singletone Config
 - [x] appConfig macro for easy access
 - [x] class GlobalConfig test
 - [ ] class GlobalConfig Documentation
-- [ ] appConfig load / save configuration of current application
+
+- [x] class **ConfigFile** load / save configuration of current application
+- [x] class ConfigFile test
+- [ ] class ConfigFile documentation
+
+More:
+
+- [ ] Settings::initFullDialogGrabShortcut fix keySequence usage
+     - Add a test that verify the keysequence are correct
+     
 - [ ] Settings: appConfigFileToProjectRes(): load current configuration file into 
           project resources
 - [ ] appConfigFileFromRes: init application config file from project resources
 - [ ] QtNoid::App::Config create some specific save and restore method for:
-     * [ ] Windows position
+     * [ ] Windows position - QByteArray is enough
      * [ ] Splitter configuration
-
 
 
 # Older Examples
@@ -54,11 +74,13 @@ Fare un metodo statico per la conversione YAML to JSON
 - [x] Store all the yaml suite in a config file and add a method to
           generate in the installation folder
 - [ ] App Configuration management using QtNoid::App::Config (appConfig)
+     - [x] Save/Restore Geometry
+     - [ ] Save restore recent file
+     
 - [ ] Add the debug menu that can save current config to app resources?
 - [ ] Restore app config file from resources, the first time.
+- [ ] Add the screenshot command
 
-
-# App Config
 
 
 

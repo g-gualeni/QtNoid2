@@ -2,7 +2,7 @@
 #define QTNOID_APP_CONFIGGLOBAL_H
 
 #include "global.h"
-#include "config.h"
+#include "configfile.h"
 
 namespace QtNoid {
 namespace App {
@@ -10,7 +10,7 @@ namespace App {
 class QTNOIDAPP_EXPORT ConfigGlobal
 {
 public:
-    static Config* instance();
+    static ConfigFile* instance();
 
 private:
     ConfigGlobal() = delete;
