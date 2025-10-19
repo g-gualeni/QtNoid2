@@ -157,7 +157,9 @@ QShortcut *Settings::initFullDialogGrabShortcut(QWidget *parent, const QString &
         if(!fileName.isEmpty()) {
             fileName += "/";
         }
-        fileName += mainWindow->windowTitle() + ".png";
+        QString os = QSysInfo::productType();
+
+        fileName += mainWindow->windowTitle() + "-" + os + ".png";
         bool res = screenshot.save(fileName);
         if(saveToClipboard) {
             QClipboard *clipboard = QApplication::clipboard();

@@ -46,13 +46,19 @@ create_qt_test(test_parameter)
 create_qt_test(test_parameterlist)
 
 # =============================================================================
-# Tesing QtNoid::App::ConfigGlobal
+# Tesing QtNoid::App::ConfigFile
 # =============================================================================
-create_qt_test(test_configglobal)
+create_qt_test(test_config)
 
 # =============================================================================
 # Tesing QtNoid::App::ConfigFile
 # =============================================================================
 create_qt_test(test_configfile)
+
+# =============================================================================
+# Tesing QtNoid::App::ConfigGlobal
+# =============================================================================
+create_qt_test(test_configglobal)
+
 
 

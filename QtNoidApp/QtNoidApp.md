@@ -123,7 +123,8 @@ copied to the system clipboard for immediate use.
    if empty the default value "Ctrl+Shift+S" will be used.
    - **destinationPath**: file path where the screenshot will be saved. If empty
    it will be in the application execution folder. The File Name will be the 
-   application window title.
+   application window title followed by -windows or by -macOs depending on the 
+   operating system.
    - **saveToClipboard** - If true, copies the captured image to clipboard in addition
    to saving to file.
  

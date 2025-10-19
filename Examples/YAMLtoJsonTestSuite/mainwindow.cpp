@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "recentfilesmanager.h"
 #include "QtNoidJson/QtNoidJson"
 #include "QtNoidCommon/QtNoidCommon"
 #include "QtNoidApp/QtNoidApp"
@@ -14,48 +15,6 @@
 #include <QUrl>
 
 
-void MainWindow::addRecentFileList(QAction *recentFilesParent, QStringList &recentFiles,
-                                   std::function<void(const QString&)> onFileSelected)
-{
-    if(recentFilesParent == nullptr)
-        return;
-
-    QMenu *recentFilesMenu = recentFilesParent->menu();
-    if (!recentFilesMenu) {
-        // Se non esiste ancora, crealo
-        recentFilesMenu = new QMenu(this);
-        recentFilesParent->setMenu(recentFilesMenu);
-    }
-
-    for (int ii = 0; ii < recentFiles.size() && ii < 10; ++ii) {
-        QString fileName = recentFiles[ii];
-        QString displayName = QString("%1| %2").arg(ii + 1).arg(QFileInfo(fileName).fileName());
-
-        QAction *fileAction = recentFilesMenu->addAction(displayName);
-        fileAction->setData(fileName); // salva il path completo
-
-        // Connetti all'apertura del file
-        connect(fileAction, &QAction::triggered, this, [fileName, onFileSelected](){
-                onFileSelected(fileName);
-        });
-    }
-
-    // Aggiungi separatore e opzione per pulire
-    if (!recentFiles.isEmpty()) {
-        recentFilesMenu->addSeparator();
-        QAction *clearAction = recentFilesMenu->addAction(tr("Clear Recent Files"));
-        connect(clearAction, &QAction::triggered, this, [this, recentFilesMenu]() {
-            recentFilesMenu->clear();
-            qDebug() << "clearRecentFiles()";
-        });
-    }
-}
-
-void MainWindow::loadYamlFile(const QString &filePath)
-{
-    qDebug() << __func__ << filePath;
-}
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -64,14 +23,23 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->lblDescription->clear();
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
-    QStringList recentFiles({"AA", "BB", "CC", "DD", "EE"});
-    addRecentFileList(ui->actionRecent_Files, recentFiles, [this](const QString &file) {
-        loadYamlFile(file);});
+
+    m_screenshotShortcut = QtNoid::App::Settings::initFullDialogGrabShortcut(this);
+
+    // Recent files management
+    m_recentFilesManager = new recentFilesManager(ui->actionRecent_Files, this);
+    connect(m_recentFilesManager, &recentFilesManager::fileSelected, this, [this](const QString& fileName){
+        updateUI_loadYamlFile(fileName);
+    });
+    connect(m_recentFilesManager, &recentFilesManager::listCleared, this, [this](){
+        appConfig->clearRecentFiles();
+    });
+    updateUI_recentFiles(QString());
 }
 
 MainWindow::~MainWindow()
 {
-    appConfig->saveValue("Geometry", saveGeometry());
+    appConfig->saveValue("Geometry", saveGeometry());    
     delete ui;
 }
 
@@ -92,6 +60,12 @@ void MainWindow::on_cmdConvertToYAML_clicked()
     // ui->txtYAML->setPlainText(yamlText);
 }
 
+void MainWindow::updateUI_recentFiles(QString fileName)
+{
+    appConfig->addRecentFile(fileName);
+    m_recentFilesManager->updateRecentFilesMenu(appConfig->restoreRecentFiles());
+}
+
 void MainWindow::on_actionLoadYAML_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -101,71 +75,13 @@ void MainWindow::on_actionLoadYAML_triggered()
     if (fileName.isEmpty())
         return;
 
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if(!updateUI_loadYamlFile(fileName)) {
         QMessageBox::warning(this, tr("Error"),
-            tr("Cannot read file %1:\n%2.").arg(fileName, file.errorString()));
+                             tr("Cannot read the file %1:").arg(fileName));
         return;
-    }
+    };
 
-    QTextStream in(&file);
-    QString yamlContent = in.readAll();
-    file.close();
-
-    ui->txtYAML->setPlainText(yamlContent);
-
-    // Update status bar with file path
-    ui->statusbar->showMessage(fileName);
-
-    // Look for corresponding .json file
-    QFileInfo FI(fileName);
-
-    QString jsonFileName = FI.absolutePath() + QDir::separator() +
-                      FI.baseName() + ".json";
-    QString errorFileName = FI.absolutePath() + QDir::separator() +
-                            "error";
-    QString descriptionFileName = FI.absolutePath() + QDir::separator() +
-                                  "===";
-    QString tokensFileName = FI.absolutePath() + QDir::separator() +
-                             "test.event";
-
-    QFile jsonFile(jsonFileName);
-    if (jsonFile.exists() && jsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream jsonIn(&jsonFile);
-        QString jsonContent = jsonIn.readAll();
-        jsonFile.close();
-        ui->txtJsonExpected->setPlainText(jsonContent);
-    } else {
-        // Look for "error" file in the same folder
-        QFile errorFile(errorFileName);
-        if (errorFile.exists()) {
-            ui->txtJsonExpected->setPlainText("ERROR");
-        } else {
-            ui->txtJsonExpected->setPlainText("NO JSON EXPECTED");;
-        }
-    }
-
-    // Look for "===" description file
-    QFile descriptionFile(descriptionFileName);
-    if (descriptionFile.exists() && descriptionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream descIn(&descriptionFile);
-        QString descContent = descIn.readAll();
-        descriptionFile.close();
-        ui->lblDescription->setText(descContent);
-    } else {
-        ui->lblDescription->clear();
-    }
-
-    // Look for "test.event" tokens file
-    QFile tokensFile(tokensFileName);
-    if (tokensFile.exists() && tokensFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream tokensIn(&tokensFile);
-        QString tokensContent = tokensIn.readAll();
-        tokensFile.close();
-        ui->txtTokensExpected->setPlainText(tokensContent);
-    } else {
-        ui->txtTokensExpected->clear();
-    }
+    updateUI_recentFiles(fileName);
 }
 
 void MainWindow::on_actionTestSuite_2022_01_17_triggered()
@@ -262,3 +178,76 @@ void MainWindow::on_actionTestDataFolder_triggered()
 
     QDesktopServices::openUrl(QUrl::fromLocalFile(appPath));
 }
+
+
+bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    QTextStream in(&file);
+    QString yamlContent = in.readAll();
+    file.close();
+
+    ui->txtYAML->setPlainText(yamlContent);
+
+    // Update status bar with file path
+    ui->statusbar->showMessage(filePath);
+
+    // Look for corresponding .json file
+    QFileInfo FI(filePath);
+
+    QString jsonFileName = FI.absolutePath() + QDir::separator() +
+                           FI.baseName() + ".json";
+    QString errorFileName = FI.absolutePath() + QDir::separator() +
+                            "error";
+    QString descriptionFileName = FI.absolutePath() + QDir::separator() +
+                                  "===";
+    QString tokensFileName = FI.absolutePath() + QDir::separator() +
+                             "test.event";
+
+    QFile jsonFile(jsonFileName);
+    if (jsonFile.exists() && jsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream jsonIn(&jsonFile);
+        QString jsonContent = jsonIn.readAll();
+        jsonFile.close();
+        ui->txtJsonExpected->setPlainText(jsonContent);
+    } else {
+        // Look for "error" file in the same folder
+        QFile errorFile(errorFileName);
+        if (errorFile.exists()) {
+            ui->txtJsonExpected->setPlainText("ERROR");
+        } else {
+            ui->txtJsonExpected->setPlainText("NO JSON EXPECTED");;
+        }
+    }
+
+    // Look for "===" description file
+    QFile descriptionFile(descriptionFileName);
+    if (descriptionFile.exists() && descriptionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream descIn(&descriptionFile);
+        QString descContent = descIn.readAll();
+        descriptionFile.close();
+        ui->lblDescription->setText(descContent);
+    } else {
+        ui->lblDescription->clear();
+    }
+
+    // Look for "test.event" tokens file
+    QFile tokensFile(tokensFileName);
+    if (tokensFile.exists() && tokensFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream tokensIn(&tokensFile);
+        QString tokensContent = tokensIn.readAll();
+        tokensFile.close();
+        ui->txtTokensExpected->setPlainText(tokensContent);
+    } else {
+        ui->txtTokensExpected->clear();
+    }
+
+    return true;
+}
+
+
+

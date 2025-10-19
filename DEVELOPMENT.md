@@ -35,7 +35,9 @@ Fare un metodo statico per la conversione YAML to JSON
      - [x] Add valueAsStringList
      - [x] Add valueAsBool
      - [x] change value to restore (restoreAsBool) 
-     
+     - [x] addRecentFile
+     - [x] clearRecentFiles
+     - [x] restoreRecentFiles
      
 - [ ] class Config Test
 - [ ] class Config Documentation
@@ -53,6 +55,7 @@ More:
 
 - [ ] Settings::initFullDialogGrabShortcut fix keySequence usage
      - Add a test that verify the keysequence are correct
+     - [x] Add -windows and -macOs to the screenshot
      
 - [ ] Settings: appConfigFileToProjectRes(): load current configuration file into 
           project resources
@@ -75,11 +78,11 @@ More:
           generate in the installation folder
 - [ ] App Configuration management using QtNoid::App::Config (appConfig)
      - [x] Save/Restore Geometry
-     - [ ] Save restore recent file
+     - [x] Save restore recent file
      
 - [ ] Add the debug menu that can save current config to app resources?
 - [ ] Restore app config file from resources, the first time.
-- [ ] Add the screenshot command
+- [x] Add the screenshot command
 
 
 

@@ -86,6 +86,10 @@ public:
     QByteArray restoreAsByteArray(const QString& paramName, const QByteArray defaultValue, const QString& listName = "Settings") const;
     bool saveValue(const QString& paramName, const QByteArray& value, const QString& listName = "Settings");
 
+    QStringList restoreRecentFiles(const QStringList defaultValue = {}, const QString& paramName="RecentFiles", const QString& listName = "Settings") const;
+    void clearRecentFiles(const QString& paramName="RecentFiles", const QString& listName = "Settings");
+    bool addRecentFile(QString filePath, int max = 10, const QString& paramName = "RecentFiles", const QString& listName = "Settings");
+
 public:
     Config &operator<<(ParameterList& paramList){
         append(&paramList);

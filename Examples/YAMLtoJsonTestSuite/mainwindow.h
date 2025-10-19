@@ -2,9 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <functional>
+#include "recentfilesmanager.h"
 
 QT_BEGIN_NAMESPACE
+
+class QShortcut;
 namespace Ui {
 class MainWindow;
 }
@@ -26,12 +28,14 @@ private slots:
     void on_actionTestDataFolder_triggered();
 
 private:
+    Ui::MainWindow *ui;
+    QShortcut* m_screenshotShortcut;
+    recentFilesManager* m_recentFilesManager;
+private:
     bool generateTestDataFromResource(const QString &resPath);
 
-    Ui::MainWindow *ui;
-    void addRecentFileList(QAction *recentFilesParent, QStringList &recentFiles,
-                           std::function<void(const QString&)> onFileSelected);
+    bool updateUI_loadYamlFile(const QString &filePath);
 
-    void loadYamlFile(const QString &filePath);
+    void updateUI_recentFiles(QString fileName);
 };
 #endif // MAINWINDOW_H

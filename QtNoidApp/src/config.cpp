@@ -431,7 +431,16 @@ bool Config::saveValuePrivate(const QString &paramName, const QVariant &value, c
     // qDebug() << __func__ << value;
     ParameterList* list = m_parameterListsByName.value(listName, nullptr);
     if(list != nullptr) {
-        return list->setValue(paramName, value);
+        if(list->contains(paramName)) {
+            // Update the existing value
+            return list->setValue(paramName, value);
+        }
+        // Create the new value
+        auto newParam = list->emplace(value, paramName);
+        if(newParam == nullptr) {
+            return false;
+        }
+        return true;
     }
 
     // Create the list and the parameter
@@ -439,7 +448,6 @@ bool Config::saveValuePrivate(const QString &paramName, const QVariant &value, c
     if(list == nullptr) {
         return false;
     }
-
     auto param = list->emplace(value, paramName);
     if(param == nullptr) {
         return false;
@@ -573,6 +581,69 @@ bool Config::saveValue(const QString &paramName, const QByteArray &value, const 
     auto valueString = QString::fromUtf8(value.toBase64());
     return saveValuePrivate(paramName, valueString, listName);
 }
+
+QStringList Config::restoreRecentFiles(const QStringList defaultValue, const QString &paramName, const QString &listName) const
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return defaultValue;
+
+    return list->value(paramName).toStringList();
+}
+
+void Config::clearRecentFiles(const QString &paramName, const QString &listName)
+{
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+    if(list == nullptr)
+        return;
+
+    if(list->contains(paramName)){
+        list->setValue(paramName, QStringList());
+    }
+}
+
+bool Config::addRecentFile(QString filePath, int max, const QString &paramName, const QString &listName)
+{
+    // qDebug() << __func__ << filePath << max << paramName << listName;
+
+    if(filePath.isEmpty())
+        return false;
+
+    ParameterList* list = m_parameterListsByName.value(listName, nullptr);
+
+    // Create the list and the parameter
+    QStringList filePathList;
+    if(list == nullptr) {
+        list = emplace(listName);
+        if(list == nullptr) {
+            return false;
+        }
+        filePathList << filePath;
+        list->emplace(filePathList, paramName);
+        return true;
+    }
+
+    // Expand the list or create if not available
+    if(!list->contains(paramName)) {
+        filePathList << filePath;
+        list->emplace(filePathList, paramName);
+        return true;
+    }
+
+    filePathList = list->value(paramName).toStringList();
+    // Remove the file if it already exists to avoid duplicates
+    filePathList.removeAll(filePath);
+    filePathList.prepend(filePath);
+    // Enforce maximum limit
+    if(filePathList.size() > max) {
+        filePathList.resize(max);
+    }
+
+    list->setValue(paramName, filePathList);
+
+    return true;
+}
+
 
 
 void Config::onParameterListDestroyed(QObject *parameterList)

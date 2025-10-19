@@ -40,7 +40,7 @@ private slots:
     void testConfigFileSaveWithEmptyConfig();
     void testConfigFileLoadNonExistentFile();
     void testConfigFileLoadInvalidJson();
-    void testConfigFileLoadAndModifyAndSave();
+    void testConfigFileInit_Load_Modify_Save();
 
     void testConfigFileShouldLoadFileOnCreation();
     void testConfigFileShouldSaveFileOnDestruction();
@@ -170,7 +170,9 @@ void TestQtNoidAppConfigFile::testConfigFileBindableFileName()
 
 void TestQtNoidAppConfigFile::testConfigFileInheritsFromConfig()
 {
-    QString testFileName = "test.json";
+    QString testFileName = __func__ + QString(".json");
+    QFile::remove(testFileName);
+
     ConfigFile configFile(testFileName, this);
 
     // Test that ConfigFile can use Config methods
@@ -216,6 +218,7 @@ void TestQtNoidAppConfigFile::testConfigFileIsNotValidWithEmptyFileName()
 void TestQtNoidAppConfigFile::testConfigFileSaveAndLoad()
 {
     QString testFileName = __func__ + QString(".json");
+    QFile::remove(testFileName);
 
     // Create a ConfigFile and populate it with data
     ConfigFile configFile(testFileName, this);
@@ -319,64 +322,42 @@ void TestQtNoidAppConfigFile::testConfigFileLoadInvalidJson()
 
 }
 
-void TestQtNoidAppConfigFile::testConfigFileLoadAndModifyAndSave()
+void TestQtNoidAppConfigFile::testConfigFileInit_Load_Modify_Save()
 {
     QString testFileName = __func__ + QString(".json");
+    QFile::remove(testFileName);
 
     // Create initial config and save
     ConfigFile configFile1(testFileName, this);
     configFile1.setName("ModifyTest");
 
-    ParameterList* paramList1 = configFile1.emplace("Settings", "Settings");
-    Parameter* param1 = paramList1->emplace(50.0, "Brightness", "Screen brightness");
-    param1->setMin(0.0);
-    param1->setMax(100.0);
+    auto res = configFile1.saveValue("Brightness", 50.00);
+    QVERIFY(res);
+    res = configFile1.save();
+    QVERIFY(res);
 
-    bool saveResult1 = configFile1.save();
-    QVERIFY(saveResult1);
 
-    // Load the config
+    // Load the config and verify brightness
     ConfigFile configFile2(testFileName, this);
-    configFile2.setName("ModifyTest");
-    bool loadResult = configFile2.load();
-    QVERIFY(loadResult);
+    QCOMPARE(configFile2.name(), "ModifyTest");
+    QCOMPARE(configFile2.restoreAsDouble("Brightness", 0.0), 50.00);
 
-    // Modify the loaded config
-    ParameterList* loadedParamList = configFile2.parameterList("Settings");
-    QVERIFY(loadedParamList != nullptr);
-
-    Parameter* loadedParam = loadedParamList->parameter("Brightness");
-    QVERIFY(loadedParam != nullptr);
-    QCOMPARE(loadedParam->value().toDouble(), 50.0);
-
-    // Change the value
-    loadedParam->setValue(75.0);
+    // Modify configFile2
+    configFile2.saveValue("Brightness", 100.00);
+    QCOMPARE(configFile2.restoreAsDouble("Brightness", 0.0), 100.00);
 
     // Add a new parameter
-    Parameter* newParam = loadedParamList->emplace(true, "DarkMode", "Enable dark mode");
-    QVERIFY(newParam != nullptr);
+    res = configFile2.saveValue("DarkMode", true);
+    QVERIFY(res);
 
     // Save the modified config
-    bool saveResult2 = configFile2.save();
-    QVERIFY(saveResult2);
+    res = configFile2.save();
+    QVERIFY(res);
 
     // Load again and verify modifications were saved
     ConfigFile configFile3(testFileName, this);
-    configFile3.setName("ModifyTest");
-    bool loadResult2 = configFile3.load();
-    QVERIFY(loadResult2);
-
-    ParameterList* finalParamList = configFile3.parameterList("Settings");
-    QVERIFY(finalParamList != nullptr);
-    QCOMPARE(finalParamList->count(), 2);
-
-    Parameter* finalBrightness = finalParamList->parameter("Brightness");
-    QVERIFY(finalBrightness != nullptr);
-    QCOMPARE(finalBrightness->value().toDouble(), 75.0);
-
-    Parameter* finalDarkMode = finalParamList->parameter("DarkMode");
-    QVERIFY(finalDarkMode != nullptr);
-    QCOMPARE(finalDarkMode->value().toBool(), true);
+    QCOMPARE(configFile3.restoreAsDouble("Brightness", 0.0), 100.00);
+    QCOMPARE(configFile3.restoreAsBool("DarkMode", false), true);
 
 }
 
