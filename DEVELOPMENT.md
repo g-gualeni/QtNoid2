@@ -54,22 +54,32 @@ Fare un metodo statico per la conversione YAML to JSON
 More:
 
 - [ ] Settings::initFullDialogGrabShortcut fix keySequence usage
-     - Add a test that verify the keysequence are correct
-     - [x] Add -windows and -macOs to the screenshot
+     - [ ] Add a test that verify the keysequence are correct
+     - [x] Add -windows and -macOs to the screenshot and update doc
      
 - [ ] Settings: appConfigFileToProjectRes(): load current configuration file into 
           project resources
 - [ ] appConfigFileFromRes: init application config file from project resources
-- [ ] QtNoid::App::Config create some specific save and restore method for:
-     * [ ] Windows position - QByteArray is enough
-     * [ ] Splitter configuration
 
 
 # Older Examples
 - [x] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
 - [x] AppSettingsBasicUsage update labels using bold 
-- [ ] AppSettingsBasicUsage Win11 screenshot update AppSettingsBasicUsage-Win11.png
-- [ ] AppSettingsBasicUsage macOS screenshot update AppSettingsBasicUsage-macOS.png
+- [ ] Update all examples with the new auto identification of os in the screenshot name
+     - [ ] CoreBasicUsage
+     - [ ] CommonBasicUsage
+     - [ ] AppSettingsBasicUsage
+     - [ ] AppParameterBasicUsage
+     - [ ] AppParameterListBasicUsage
+     - [ ] AppParameterListBenchmark
+     - [ ] JsonTxt2JsonBasicUsage
+     - [ ] YAMLtoJsonTestSuite
+     
+# appConfig basic example
+Create a basic example the shows how to:
+ - restore geometry
+ - restore recent files
+
 
 
 # YAML to JSON test suite example
