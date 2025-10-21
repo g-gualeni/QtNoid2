@@ -15,6 +15,7 @@ private slots:
     void cleanupTestCase();
     void init();
     void cleanup();
+    void testParamterListUniqueId();
     void testCreatingParameterList();
     void testParameterListName();
     void testAppendingParameters();
@@ -86,6 +87,61 @@ void TestQtNoidAppParameterList::init()
 
 void TestQtNoidAppParameterList::cleanup()
 {}
+
+void TestQtNoidAppParameterList::testParamterListUniqueId()
+{
+    // Test that each ParameterList instance gets a unique ID
+    ParameterList list1(this);
+    ParameterList list2(QJsonObject(), QJsonObject(), this);
+    ParameterList list3("NamedList", this);
+
+    int id1 = list1.uniqueId();
+    int id2 = list2.uniqueId();
+    int id3 = list3.uniqueId();
+
+    // Verify that IDs are different
+    QVERIFY(id1 != id2);
+    QVERIFY(id2 != id3);
+    QVERIFY(id1 != id3);
+
+    // Verify that ID doesn't change for the same instance
+    QCOMPARE(list1.uniqueId(), id1);
+    QCOMPARE(list2.uniqueId(), id2);
+    QCOMPARE(list3.uniqueId(), id3);
+
+    // Test that IDs are sequential (based on the implementation)
+    QCOMPARE(id2, id1 + 1);
+    QCOMPARE(id3, id2 + 1);
+
+    // Test with constructor that takes schema and value JSON objects
+    QJsonArray schemaArray;
+    QJsonObject tempSchema;
+    tempSchema["description"] = "Temperature";
+    tempSchema["tooltip"] = "Temperature of the sensor ";
+    QJsonObject tempSchemaWrapper;
+    tempSchemaWrapper["Temperature"] = tempSchema;
+    schemaArray.append(tempSchemaWrapper);
+
+    QJsonObject schemaList;
+    schemaList["TestConfig"] = schemaArray;
+
+    QJsonArray valuesArray;
+    QJsonObject tempValue;
+    tempValue["Temperature"] = 25.5;
+    valuesArray.append(tempValue);
+
+    QJsonObject valueList;
+    valueList["TestConfig"] = valuesArray;
+
+    ParameterList list4(schemaList, valueList, this);
+    int id4 = list4.uniqueId();
+
+    // Verify that this constructor also assigns a unique ID
+    QVERIFY(id4 != id1);
+    QVERIFY(id4 != id2);
+    QVERIFY(id4 != id3);
+    QCOMPARE(id4, id3 + 1);
+}
 
 void TestQtNoidAppParameterList::testCreatingParameterList()
 {
@@ -558,6 +614,8 @@ void TestQtNoidAppParameterList::testToJsonValuesNoName()
 void TestQtNoidAppParameterList::TestToJsonSchema()
 {
     ParameterList page("Configuration", this);
+    page.setTooltip("Set the app configuration");
+    page.setDescription("This is your's app config page");
     auto param1 = new Parameter(25.5, "Temperature", "temp", this);
     param1->setRange(0,100);
     param1->setUnit("°C");
@@ -572,14 +630,18 @@ void TestQtNoidAppParameterList::TestToJsonSchema()
     page.append(param2);
 
     QJsonObject jsonSchema = page.toJsonSchema();
-    // qDebug() << __func__ << jsonSchema;
+    qDebug() << __func__ << jsonSchema;
 
     QVERIFY(jsonSchema.contains("Configuration"));
+
+
     QJsonArray parametersArray = jsonSchema["Configuration"].toArray();
     QCOMPARE(parametersArray.size(), 2);
 
     QVERIFY(parametersArray.contains(param1->toJsonSchema()));
     QVERIFY(parametersArray.contains(param2->toJsonSchema()));
+
+    QVERIFY(0);
 }
 
 void TestQtNoidAppParameterList::TestToJsonSchemaNoName()
@@ -1877,6 +1939,7 @@ void TestQtNoidAppParameterList::testParameterListConstReverseIterators()
     QVERIFY(0);
 #endif
 }
+
 
 
 QTEST_MAIN(TestQtNoidAppParameterList)

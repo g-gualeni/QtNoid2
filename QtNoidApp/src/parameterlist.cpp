@@ -9,18 +9,29 @@
 namespace QtNoid {
 namespace App {
 
+QAtomicInt ParameterList::s_nextUniqueId(1);  // Inizializzazione thread-safe
+
+QAtomicInt ParameterList::getNextUniqueId()
+{
+    if (s_nextUniqueId == INT_MAX) {
+        s_nextUniqueId = 0;  // Reset if overflow
+    }
+    return s_nextUniqueId++;
+}
+
+
 ParameterList::ParameterList(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), m_uniqueId(getNextUniqueId())
 {
 }
 
 ParameterList::ParameterList(const QString &name, QObject *parent)
-    : QObject(parent), m_name(name)
+    : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId())
 {
 }
 
 ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
-    : QObject(parent)
+    : QObject(parent), m_uniqueId(getNextUniqueId())
 {
     // Scan schemaList and valueList to recreate the page
     QString name = m_name.value();
@@ -228,7 +239,7 @@ bool ParameterList::append(Parameter *parameter)
     if (parameter == nullptr) {
         return false;
     }
-    int paramterId = parameter->uniqueId();
+    // int paramterId = parameter->uniqueId();
     if (m_parametersByUniqueId.contains(parameter->uniqueId())) {
         return false;
     }
@@ -474,6 +485,7 @@ void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
     emit parameterAdded(parameter);
     emit countChanged(m_parametersByIndex.count());
 }
+
 
 
 } // namespace App

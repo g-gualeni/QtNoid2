@@ -4,7 +4,8 @@
 
 ### Sprint Goals
 - Implementation of the QtNoid::Yaml2Json library 
-- Implementaton o QtNoid::App::Config class
+- Implementaton of QtNoid::App::Config class
+- Implementaton of appConfig global instance 
 - Release of QtNoid2 version 2.2.0
 
 &nbsp;
@@ -25,9 +26,55 @@ Fare un metodo statico per la conversione YAML to JSON
 - [x] doc update for appExeOrAppBundleFilePath
 - [x] test for appExeOrAppBundleDirPath
 - [x] test update for appExeOrAppBundleFilePath
+- [ ] class **ParameterList** update
+     - [ ] test description in schema
+     - [ ] test description from schema
+     - [ ] test tooltip in schema
+     - [ ] test tooltip from schema
+     - [ ] test tooltip in Debug()
+     - [ ] test description in Debug()
+     - [ ] add uniqueId
+     - [ ] test uniqueId
+     - [ ] count should be bindable
+--------------
+Rivedere la struttura dello schema creato per ParameterList
+{
+    "Configuration": {
+        "description": "",
+        "tooltip": "",
+        "paramters": [
+            {
+                "Temperature": {
+                    "description": "temp",
+                    "max": 100,
+                    "min": 0,
+                    "readOnly": true,
+                    "tooltip": "",
+                    "unit": "Â°C",
+                    "visible": true
+                }
+            },
+            {
+                "Pressure": {
+                    "description": "pres",
+                    "max": 2000,
+                    "min": 0,
+                    "readOnly": true,
+                    "tooltip": "",
+                    "unit": "hPa",
+                    "visible": true
+                }
+            }
+        ]
+    }
+}
+
+Rivedere la struttura dello schema creato per Config
+anche questo gli mancherà la struttura corretta per mettere tooltip e descrizione
+
+
+---------------------
 - [ ] class **Config** as a container for ParamterList
-     - [ ] check implementation of class Config
-     - [ ] move s_nextUniqueId to ParameterList starting from 0
      - [x] uniqueId for Parameter starts from 1000
      - [x] Add valueAsInt
      - [x] Add valueAsDouble
@@ -38,6 +85,13 @@ Fare un metodo statico per la conversione YAML to JSON
      - [x] addRecentFile
      - [x] clearRecentFiles
      - [x] restoreRecentFiles
+     - [ ] check implementation of class Config
+     - [ ] move s_nextUniqueId to ParameterList starting from 0
+     - [ ] add iterator and reverse iterator for Config
+     - [ ] cound should be bindable
+     - [ ] add tooltip
+     - [ ] test tooltip in schema
+     - [ ] test description in schema
      
 - [ ] class Config Test
 - [ ] class Config Documentation
@@ -75,26 +129,18 @@ More:
      - [ ] JsonTxt2JsonBasicUsage
      - [ ] YAMLtoJsonTestSuite
      
-# appConfig basic example
-Create a basic example the shows how to:
- - restore geometry
- - restore recent files
-
-
 
 # YAML to JSON test suite example
 - [x] Scaffolding
 - [x] Store all the yaml suite in a config file and add a method to
           generate in the installation folder
-- [ ] App Configuration management using QtNoid::App::Config (appConfig)
+- [x] App Configuration management using QtNoid::App::Config (appConfig)
      - [x] Save/Restore Geometry
      - [x] Save restore recent file
      
 - [ ] Add the debug menu that can save current config to app resources?
 - [ ] Restore app config file from resources, the first time.
 - [x] Add the screenshot command
-
-
 
 
 ### Release Drafting

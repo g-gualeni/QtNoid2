@@ -91,6 +91,8 @@ public:
     explicit ParameterList(const QString& name, QObject *parent = nullptr);
     explicit ParameterList(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr);
 
+    int uniqueId() const { return m_uniqueId; }
+
     // JSON Serialization / Deserialization
     QJsonObject toJsonValues() const;
     QJsonObject toJsonSchema() const;
@@ -188,6 +190,10 @@ private:
     QHash<QString, Parameter*> m_parametersByName;
     int m_nextParameterIndex = 0;
     void appendParameterAndUpdateIndexs(Parameter *parameter);
+
+    static QAtomicInt s_nextUniqueId;
+    int m_uniqueId;
+    QAtomicInt getNextUniqueId();
 };
 
 } // namespace App
@@ -198,6 +204,14 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
     QDebugStateSaver saver(debug);
     debug.nospace() << "ParameterList(" << list.name()
                     << ", count=" << list.count();
+    QString str = list.description();
+    if(!str.isEmpty()){
+        debug.nospace() << ", description:" << str;
+    }
+    str = list.tooltip();
+    if(!str.isEmpty()){
+        debug.nospace() << ", tooltip:" << str;
+    }
 
     if (!list.isEmpty()) {
         debug << ", parameters=[";

@@ -13,6 +13,9 @@ Parameter instances with binding support and serialization.
 - [**Config**](#class-config): Container class for managing multiple 
 ParameterList instances with binding support and serialization.
 
+- [**ConfigFile**](#class-configfile): Wrapper around Config with methods to support
+the automation of read and write of a configuration file.
+
 - [**ConfigGlobal**](#class-configglobal): this is a singletone class that create 
 the unique instance for appConfig that can be used to save and restore application
 configuration.
@@ -447,6 +450,15 @@ a parameter rename operation fails due to name conflicts
 ## Class: Config
 
 [⬆ Back to top](#qtnoidapp)
+
+
+
+&nbsp;
+## Class: ConfigFile
+
+[⬆ Back to top](#qtnoidapp)
+
+
 
 
 &nbsp;

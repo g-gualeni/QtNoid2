@@ -28,12 +28,12 @@ Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, 
     // Scan schemaConfig and valueConfig to recreate the config
     QString name = m_name.value();
     if(name.isEmpty() && (schemaConfig.count() == 1)) {
-        // Get the unique JSON object and use it to set the name
+        // Get the unique JSON object in Schema and use it to set the name
         name = schemaConfig.constBegin().key();
         setName(name);
     }
     else if(name.isEmpty() && (valueConfig.count() == 1)) {
-        // Get the unique JSON object and use it to set the name
+        // Get the unique top JSON object in value and use it to set the name
         name = valueConfig.constBegin().key();
         setName(name);
     }
