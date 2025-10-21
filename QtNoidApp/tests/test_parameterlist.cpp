@@ -622,7 +622,6 @@ void TestQtNoidAppParameterList::TestToJsonSchema()
     param1->setReadOnly(true);
     page.append(param1);
 
-
     auto param2 = new Parameter(1013.25, "Pressure", "pres" , this);
     param2->setRange(0,2000);
     param2->setUnit("hPa");
@@ -634,14 +633,13 @@ void TestQtNoidAppParameterList::TestToJsonSchema()
 
     QVERIFY(jsonSchema.contains("Configuration"));
 
+    QJsonObject jsonLowLevel = jsonSchema["Configuration"].toObject();
 
-    QJsonArray parametersArray = jsonSchema["Configuration"].toArray();
+    QJsonArray parametersArray = jsonLowLevel["Parameters"].toArray();
     QCOMPARE(parametersArray.size(), 2);
 
     QVERIFY(parametersArray.contains(param1->toJsonSchema()));
     QVERIFY(parametersArray.contains(param2->toJsonSchema()));
-
-    QVERIFY(0);
 }
 
 void TestQtNoidAppParameterList::TestToJsonSchemaNoName()

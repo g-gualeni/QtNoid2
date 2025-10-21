@@ -102,8 +102,14 @@ QJsonObject ParameterList::toJsonSchema() const
         parametersArray.append(param->toJsonSchema());
     }
 
+    QJsonObject schemaObject;
+    schemaObject["Description"] = m_description.value();
+    schemaObject["Tooltop"] = m_tooltip.value();
+    schemaObject["Parameters"] = parametersArray;
+
     QJsonObject schema;
-    schema[name] = parametersArray;
+    schema[name] = schemaObject;
+
     return schema;
 }
 
