@@ -22,6 +22,10 @@ private slots:
     void testRestoreRecentFiles();
     void testClearRecentFiles();
 
+    // Debug output test
+    void testConfigDebugOutput();
+
+
 };
 
 void TestQtNoidAppConfig::initTestCase()
@@ -296,6 +300,76 @@ void TestQtNoidAppConfig::testClearRecentFiles()
     QCOMPARE(filesAfterClear.size(), 2);
     QCOMPARE(filesAfterClear.at(0), "C:/test/file4.txt");
     QCOMPARE(filesAfterClear.at(1), "C:/test/file3.txt");
+}
+
+
+void TestQtNoidAppConfig::testConfigDebugOutput()
+{
+    // Test with empty config
+    Config emptyConfig(this);
+    emptyConfig.setName("EmptyConfig");
+
+    QString emptyOutput;
+    QDebug emptyDebug(&emptyOutput);
+    emptyDebug << emptyConfig;
+    // qDebug() << __func__ << emptyConfig;
+
+    // Verify output contains the config name and count
+    QVERIFY(!emptyOutput.isEmpty());
+    QVERIFY(emptyOutput.contains("Config("));
+    QVERIFY(emptyOutput.contains("EmptyConfig"));
+    QVERIFY(emptyOutput.contains("Count: 0"));
+
+
+    // Test with populated config
+    Config config;
+    config.setName("DebugTest");
+    config.setDescription("Test config for debug output");
+
+    // Add multiple parameter lists
+    config.saveValue("Volume", 75.0);
+    config.saveValue("Theme", "light");
+
+    // Capture debug output
+    QString debugOutput;
+    QDebug debug(&debugOutput);
+    debug << config;
+
+    // qDebug() << __func__ << configFile;
+
+    // Verify output contains expected information
+    QVERIFY(!debugOutput.isEmpty());
+    QVERIFY(debugOutput.contains("Config("));
+    QVERIFY(debugOutput.contains("DebugTest"));
+    QVERIFY(debugOutput.contains("Count: 2"));
+    QVERIFY(debugOutput.contains("ParameterLists:"));
+    QVERIFY(debugOutput.contains("Settings"));
+    QVERIFY(debugOutput.contains("Count: 2"));
+    QVERIFY(debugOutput.contains("Count: 1"));
+
+    // Test pointer version
+    Config* ptrConfig = new Config(this);
+    ptrConfig->setName("PtrTest");
+
+    QString ptrOutput;
+    QDebug ptrDebug(&ptrOutput);
+    ptrDebug << ptrConfig;
+
+    QVERIFY(!ptrOutput.isEmpty());
+    QVERIFY(ptrOutput.contains("Config("));
+    QVERIFY(ptrOutput.contains("PtrTest"));
+
+    delete ptrConfig;
+
+    // Test nullptr
+    Config* nullConfig = nullptr;
+    QString nullOutput;
+    QDebug nullDebug(&nullOutput);
+    nullDebug << nullConfig;
+
+    QVERIFY(!nullOutput.isEmpty());
+    QVERIFY(nullOutput.contains("Config(nullptr)"));
+
 }
 
 QTEST_MAIN(TestQtNoidAppConfig)

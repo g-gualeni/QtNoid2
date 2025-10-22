@@ -21,17 +21,17 @@ QAtomicInt ParameterList::getNextUniqueId()
 
 
 ParameterList::ParameterList(QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId())
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
 }
 
 ParameterList::ParameterList(const QString &name, QObject *parent)
-    : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId())
+    : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
 }
 
 ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId())
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
     // Scan schemaList and valueList to recreate the page
     QString name = m_name.value();
@@ -46,9 +46,14 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
         setName(name);
     }
 
+
     // Prepare a QHash map for values so I can get them fast from their name
+    const QJsonObject valueMain = valueList[name].toObject();
     QHash<QString, QJsonObject> valueMap;
-    const QJsonArray valueArray = valueList[name].toArray();
+    const QJsonArray valueArray = valueMain["Parameters"].toArray();
+
+    // qDebug() << __func__ << valueArray;
+
     for (const QJsonValue& value : valueArray) {
         if (value.isObject()) {
             const QJsonObject valueObj = value.toObject();
@@ -58,7 +63,18 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
     }
 
     // Load parameters from schemaList and merge with values in valueList
-    const QJsonArray schemaArray = schemaList[name].toArray();
+    const QJsonObject schemaMain = schemaList[name].toObject();
+    if(schemaMain.contains("Visible")) {
+        setVisible(schemaMain["Visible"].toBool());
+    }
+    if(schemaMain.contains("Description")) {
+        setDescription(schemaMain["Description"].toString());
+    }
+    if(schemaMain.contains("Tooltip")) {
+        setTooltip(schemaMain["Tooltip"].toString());
+    }
+
+    const QJsonArray schemaArray = schemaMain["Parameters"].toArray();
     for (const QJsonValue& schema : schemaArray) {
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
@@ -84,8 +100,8 @@ QJsonObject ParameterList::toJsonValues() const
         parametersArray.append(param->toJsonValue());
     }
 
-    QJsonObject json;
-    json[name] = parametersArray;
+    QJsonObject main({{"Parameters", parametersArray}});
+    QJsonObject json({{name, main}});
     return json;
 }
 
@@ -104,8 +120,9 @@ QJsonObject ParameterList::toJsonSchema() const
 
     QJsonObject schemaObject;
     schemaObject["Description"] = m_description.value();
-    schemaObject["Tooltop"] = m_tooltip.value();
+    schemaObject["Tooltip"] = m_tooltip.value();
     schemaObject["Parameters"] = parametersArray;
+    schemaObject["Visible"] = m_visible.value();
 
     QJsonObject schema;
     schema[name] = schemaObject;
@@ -233,6 +250,21 @@ void ParameterList::setTooltip(const QString &value)
 QBindable<QString> ParameterList::bindableTooltip()
 {
     return QBindable<QString>(&m_tooltip);
+}
+
+bool ParameterList::visible() const
+{
+    return m_visible.value();
+}
+
+void ParameterList::setVisible(bool value)
+{
+    m_visible = value;
+}
+
+QBindable<bool> ParameterList::bindableVisible()
+{
+    return QBindable<bool>(&m_visible);
 }
 
 int ParameterList::count() const

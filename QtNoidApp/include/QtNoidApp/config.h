@@ -136,15 +136,17 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Config &config)
 {
     QDebugStateSaver saver(debug);
     debug.nospace() << "Config(" << config.name()
-                    << ", count=" << config.count();
+                    << ", Count: " << config.count();
 
     if (!config.isEmpty()) {
-        debug << ", parameterLists=[";
+        debug << ", ParameterLists: [";
         for (int i = 0; i < config.count(); ++i) {
             if (i > 0) debug << ", ";
             QtNoid::App::ParameterList* list = config.parameterList(i);
             if (list) {
-                debug << list->name() << ":{count=" << list->count() << "}";
+                debug <<   " {";
+                debug << list;
+                debug <<  "}";
             }
         }
         debug << "]";

@@ -597,7 +597,8 @@ void TestQtNoidAppParameterList::testToJsonValues()
 
     // Verify JSON structure
     QVERIFY(json.contains("Configuration"));
-    QJsonArray parametersArray = json["Configuration"].toArray();
+    QJsonObject main = json["Configuration"].toObject();
+    QJsonArray parametersArray = main["Parameters"].toArray();
     QCOMPARE(parametersArray.size(), 2);
     QVERIFY(parametersArray.contains(param1->toJsonValue()));
     QVERIFY(parametersArray.contains(param2->toJsonValue()));
@@ -629,24 +630,29 @@ void TestQtNoidAppParameterList::TestToJsonSchema()
     page.append(param2);
 
     QJsonObject jsonSchema = page.toJsonSchema();
-    qDebug() << __func__ << jsonSchema;
+    // qDebug() << __func__ << jsonSchema;
 
     QVERIFY(jsonSchema.contains("Configuration"));
 
     QJsonObject jsonLowLevel = jsonSchema["Configuration"].toObject();
+
+    QCOMPARE(jsonLowLevel["Tooltip"], "Set the app configuration");
+    QCOMPARE(jsonLowLevel["Description"], "This is your's app config page");
+    QCOMPARE(jsonLowLevel["Visible"], true);
 
     QJsonArray parametersArray = jsonLowLevel["Parameters"].toArray();
     QCOMPARE(parametersArray.size(), 2);
 
     QVERIFY(parametersArray.contains(param1->toJsonSchema()));
     QVERIFY(parametersArray.contains(param2->toJsonSchema()));
+
 }
 
 void TestQtNoidAppParameterList::TestToJsonSchemaNoName()
 {
     ParameterList page(this);
     QJsonObject json = page.toJsonSchema();
-    // qDebug() << __func__ << json;
+    qDebug() << __func__ << json;
     QVERIFY(json.contains("PageName"));
 }
 
@@ -882,8 +888,16 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     pressSchemaWrapper["Pressure"] = pressSchema;
     schemaArray.append(pressSchemaWrapper);
 
+    QJsonObject schemaMain;
+    schemaMain["Visible"] = false;
+    schemaMain["Description"] = "Desc";
+    schemaMain["Tooltip"] = "toollllllttiiiipp";
+    schemaMain["Parameters"] = schemaArray;
+
     QJsonObject schemaList;
-    schemaList["SensorConfiguration"] = schemaArray;
+    schemaList["SensorConfiguration"] = schemaMain;
+
+    // qDebug() << __func__ << schemaList;
 
     // Create values JSON
     QJsonArray valuesArray;
@@ -895,8 +909,11 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     pressValue["Pressure"] = 1013.25;
     valuesArray.append(pressValue);
 
+    QJsonObject valueMain({{"Parameters", valuesArray}});
     QJsonObject valueList;
-    valueList["SensorConfiguration"] = valuesArray;
+    valueList["SensorConfiguration"] = valueMain;
+
+    qDebug() << __func__ << valueList;
 
     // Test constructor
     ParameterList list(schemaList, valueList, this);
@@ -904,6 +921,12 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     // Verify the list was created correctly
     QCOMPARE(list.name(), "SensorConfiguration");
     QCOMPARE(list.count(), 2);
+
+    QCOMPARE(list.description(), "Desc");
+    QCOMPARE(list.tooltip(), "toollllllttiiiipp");
+    QCOMPARE(list.visible(), false);
+
+    // qDebug() << __func__ << list;
 
     // Verify Temperature parameter
     Parameter* tempParam = list.parameter("Temperature");

@@ -105,6 +105,8 @@ void TestQtNoidAppConfigGlobal::testAppConfigSaveAndLoad()
     bool loadResult = appConfig->load();
     QVERIFY(loadResult);
     QCOMPARE(appConfig->restoreAsVariant("TestParam", "DefVal").toDouble(), 42.0);
+
+    QVERIFY(0);
 }
 
 

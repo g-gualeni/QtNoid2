@@ -18,6 +18,7 @@ class QTNOIDAPP_EXPORT ParameterList : public QObject
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(int count READ count NOTIFY countChanged FINAL)
+    Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
 
 public:
 
@@ -113,7 +114,12 @@ public:
     QString tooltip() const;
     void setTooltip(const QString& value);
     QBindable<QString> bindableTooltip();
-    
+
+    // Visible
+    bool visible() const;
+    void setVisible(bool value);
+    QBindable<bool> bindableVisible();
+
     // List management
     int count() const;
     bool append(Parameter *parameter);
@@ -175,6 +181,7 @@ signals:
     void parameterAdded(const QtNoid::App::Parameter* parameter);
     void parameterRemoved(QtNoid::App::Parameter* parameter);
     void parameterRenameError(const QString& oldName, const QString& newName);
+    void visibleChanged(bool value);
 
 private slots:
     void onParameterDestroyed(QObject* parameter);
@@ -184,6 +191,8 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_name, &ParameterList::nameChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_description, &ParameterList::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_tooltip, &ParameterList::tooltipChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_visible, &ParameterList::visibleChanged)
+
     QHash<int, Parameter*> m_parametersByUniqueId;
     QMap<int, Parameter*> m_parametersByIndex;
     QHash<Parameter*, int> m_parameterToIndex; // Parameter -> sortIndex
@@ -202,24 +211,25 @@ private:
 inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace() << "ParameterList(" << list.name()
-                    << ", count=" << list.count();
+    debug.nospace() << list.name()
+                    << ", Count: " << list.count()
+                    << ", Visible: " << list.visible();
     QString str = list.description();
     if(!str.isEmpty()){
-        debug.nospace() << ", description:" << str;
+        debug.nospace() << ", Description: " << str;
     }
     str = list.tooltip();
     if(!str.isEmpty()){
-        debug.nospace() << ", tooltip:" << str;
+        debug.nospace() << ", Tooltip: " << str;
     }
 
     if (!list.isEmpty()) {
-        debug << ", parameters=[";
+        debug << ", Parameters: [";
         for (int i = 0; i < list.count(); ++i) {
             if (i > 0) debug << ", ";
             QtNoid::App::Parameter* param = list.parameter(i);
             if (param) {
-                QString changedFlag = param->isValueChanged()? ", changed" : ", notChanged";
+                QString changedFlag = param->isValueChanged()? ", Changed" : ", notChanged";
                 debug << param->name() << ":{" << param->value() << changedFlag << "}";
 
             }

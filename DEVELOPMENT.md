@@ -18,6 +18,9 @@ Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
 Fare un metodo statico per la conversione YAML to JSON
 
+Finire di sistemare i test dopo la revisione dello schema per paramterList
+
+
 
 # QtNoidApp
 - [x] appExeOrAppBundleDirPath();
@@ -27,53 +30,18 @@ Fare un metodo statico per la conversione YAML to JSON
 - [x] test for appExeOrAppBundleDirPath
 - [x] test update for appExeOrAppBundleFilePath
 - [ ] class **ParameterList** update
-     - [ ] test description in schema
-     - [ ] test description from schema
-     - [ ] test tooltip in schema
-     - [ ] test tooltip from schema
+     - [x] add the visible flag
+     - [x] test description in schema
+     - [x] test description from schema
+     - [x] test tooltip in schema
+     - [x] test tooltip from schema
      - [ ] test tooltip in Debug()
      - [ ] test description in Debug()
      - [ ] add uniqueId
      - [ ] test uniqueId
      - [ ] count should be bindable
---------------
-Rivedere la struttura dello schema creato per ParameterList
-{
-    "Configuration": {
-        "description": "",
-        "tooltip": "",
-        "paramters": [
-            {
-                "Temperature": {
-                    "description": "temp",
-                    "max": 100,
-                    "min": 0,
-                    "readOnly": true,
-                    "tooltip": "",
-                    "unit": "Â°C",
-                    "visible": true
-                }
-            },
-            {
-                "Pressure": {
-                    "description": "pres",
-                    "max": 2000,
-                    "min": 0,
-                    "readOnly": true,
-                    "tooltip": "",
-                    "unit": "hPa",
-                    "visible": true
-                }
-            }
-        ]
-    }
-}
-
-Rivedere la struttura dello schema creato per Config
-anche questo gli mancherà la struttura corretta per mettere tooltip e descrizione
 
 
----------------------
 - [ ] class **Config** as a container for ParamterList
      - [x] uniqueId for Parameter starts from 1000
      - [x] Add valueAsInt
@@ -94,16 +62,21 @@ anche questo gli mancherà la struttura corretta per mettere tooltip e descrizio
      - [ ] test description in schema
      
 - [ ] class Config Test
+     - [x] testConfigDebugOutput
+
 - [ ] class Config Documentation
+
+- [x] class **ConfigFile** load / save configuration of current application
+- [x] class ConfigFile test
+- [ ] class ConfigFile documentation
+- [ ] test Debug() function for ConfigFile (to be implemented)
+
 
 - [x] class **GlobalConfig** as static wrapper for a singletone Config
 - [x] appConfig macro for easy access
 - [x] class GlobalConfig test
 - [ ] class GlobalConfig Documentation
 
-- [x] class **ConfigFile** load / save configuration of current application
-- [x] class ConfigFile test
-- [ ] class ConfigFile documentation
 
 More:
 
