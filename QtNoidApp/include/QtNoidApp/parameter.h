@@ -125,13 +125,13 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariant, m_value, &Parameter::valueChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariant, m_min, &Parameter::minChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariant, m_max, &Parameter::maxChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariantMap, m_presets, &Parameter::presetsChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_name, &Parameter::nameChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_description, &Parameter::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_unit, &Parameter::unitChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_tooltip, &Parameter::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_readOnly, &Parameter::readOnlyChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_visible, &Parameter::visibleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariantMap, m_presets, &Parameter::presetsChanged)
 
     void enforceRange();
     QVariant clampValue(const QVariant &value) const;
@@ -158,19 +158,25 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter &param)
     QDebugStateSaver saver(debug);
     debug.nospace() << "Parameter("
                     << "id: " << param.uniqueId()
-                    << ", name: \"" << param.name() << "\""
+                    << ", name: " << param.name()
                     << ", value: " << param.value()
                     << ", isChanged: " << param.isValueChanged()
-                    << ", range: [" << param.min() << ", " << param.max() << "]"
                     << ", readOnly: " << param.readOnly()
                     << ", visible: " << param.visible();
 
+    if(param.rangeIsValid()) {
+        debug << ", range: [" << param.min() << ", " << param.max() << "]";
+    }
+
     if (!param.description().isEmpty()) {
-        debug << ", desc: \"" << param.description() << "\"";
+        debug << ", desc: " << param.description();
+    }
+    if (!param.tooltip().isEmpty()) {
+        debug << ", tooltip: " << param.tooltip();
     }
 
     if (!param.unit().isEmpty()) {
-        debug << ", unit: \"" << param.unit() << "\"";
+        debug << ", unit: " << param.unit();
     }
 
     if (!param.presets().isEmpty()) {

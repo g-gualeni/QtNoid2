@@ -106,6 +106,10 @@ private slots:
     void testParameterIsValueChangedShouldBeTrueAfterLoadingADifferentJsonValues();
     void testParameterIsValueChangedSholdBeFalseAfterSettingTheSameValue();
 
+    // QDebug operator<< tests
+    void testParameterWithQDebugOperator();
+    void testParameterWithQDebugOperatorWithPointer();
+
 private:
 
 };
@@ -1062,27 +1066,43 @@ void TestQtNoidAppParameter::testBindableReadOnly()
 
 void TestQtNoidAppParameter::testParameterToJsonSchema()
 {
+    // Q_PROPERTY(QVariant value READ value WRITE setValue BINDABLE bindableValue NOTIFY valueChanged FINAL)
+    // Q_PROPERTY(QString unit READ unit WRITE setUnit BINDABLE bindableUnit NOTIFY unitChanged FINAL)
+    // Q_PROPERTY(QVariant min READ min WRITE setMin BINDABLE bindableMin NOTIFY minChanged FINAL)
+    // Q_PROPERTY(QVariant max READ max WRITE setMax BINDABLE bindableMax NOTIFY maxChanged FINAL)
+    // no need to be tested Q_PROPERTY(std::pair<QVariant, QVariant> range READ range WRITE setRange NOTIFY rangeChanged FINAL)
+    // Q_PROPERTY(QVariantMap presets READ presets WRITE setPresets BINDABLE bindablePresets NOTIFY presetsChanged FINAL)
+    // Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
+    // Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
+    // Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
+    // Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
+    // Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
+
+
     Parameter par(50.0, "Log File Size", "Parameter description", this);
 
     par.setUnit("kB");
-    par.setTooltip("Size of the log file on disk");
     par.setMin(0.0);
     par.setMax(100.0);
-    par.setReadOnly(true);
     par.setPreset("Small", 2.0);
     par.setPreset("Large", 90.0);
+    par.setTooltip("Size of the log file on disk");
+    par.setReadOnly(true);
+    par.setVisible(false);
     
     QJsonObject schema = par.toJsonSchema();
     
     QVERIFY(schema.contains("Log File Size"));
     QJsonObject paramSchema = schema["Log File Size"].toObject();
-    
+    // QCOMPARE(paramSchema["value"], 50.0); -> Value is not part of schema
+
+    QCOMPARE(paramSchema["min"].toVariant(), QVariant(0.0));
+    QCOMPARE(paramSchema["max"].toVariant(), QVariant(100.0));
     QCOMPARE(paramSchema["description"].toString(), "Parameter description");
     QCOMPARE(paramSchema["unit"].toString(), "kB");
     QCOMPARE(paramSchema["tooltip"].toString(), "Size of the log file on disk");
     QCOMPARE(paramSchema["readOnly"].toBool(), true);
-    QCOMPARE(paramSchema["min"].toVariant(), QVariant(0.0));
-    QCOMPARE(paramSchema["max"].toVariant(), QVariant(100.0));
+    QCOMPARE(paramSchema["visible"].toBool(), false);
 
     QVERIFY(paramSchema.contains("presets"));
     QJsonArray presetArray = paramSchema["presets"].toArray();
@@ -1918,6 +1938,76 @@ void TestQtNoidAppParameter::testParameterIsValueChangedSholdBeFalseAfterSetting
     QCOMPARE(param.isValueChanged(), false);
 }
 
+void TestQtNoidAppParameter::testParameterWithQDebugOperator()
+{
+    // Test parameter with minimal properties
+    Parameter param1(42.0, "Basic Param", this);
+    QString output1 = QDebug::toString(&param1);
+    // qDebug() << __func__ << output1;
+
+    QVERIFY(output1.contains("Parameter("));
+
+    QVERIFY(output1.contains("name: \"Basic Param\""));
+    QVERIFY(output1.contains("value: QVariant(double, 42)"));
+    QVERIFY(output1.contains("isChanged: false"));
+    QVERIFY(output1.contains("visible: true"));
+    QVERIFY(output1.contains("readOnly: false"));
+
+    // Test parameter with full metadata
+    Parameter param2(25.5, "Temperature", "Current temperature", this);
+    param2.setUnit("°C");
+    param2.setTooltip("Temperature sensor reading");
+    param2.setRange(-50.0, 150.0);
+    param2.setReadOnly(true);
+    param2.setVisible(false);
+    param2.setPreset("Low", -10.0);
+    param2.setPreset("High", 100.0);
+
+    QString output2 = QDebug::toString(&param2);
+    // qDebug() << __func__ << output2;
+
+    QVERIFY(output2.contains("name: \"Temperature\""));
+    QVERIFY(output2.contains("value: QVariant(double, 25.5)"));
+    QVERIFY(output2.contains("range: [QVariant(double, -50), QVariant(double, 150)]"));
+    QVERIFY(output2.contains("readOnly: true"));
+    QVERIFY(output2.contains("visible: false"));
+    QVERIFY(output2.contains("desc: \"Current temperature\""));
+    QVERIFY(output2.contains("tooltip: \"Temperature sensor reading\""));
+    QVERIFY(output2.contains("unit: \"°C\""));
+    QVERIFY(output2.contains("presets: {"));
+    QVERIFY(output2.contains("Low"));
+    QVERIFY(output2.contains("High"));
+
+    // Test parameter with changed value
+    Parameter param3(100.0, "ChangedParam", this);
+    param3.setValue(200.0);
+    QString output3 = QDebug::toString(&param3);
+    QVERIFY(output3.contains("isChanged: true"));
+    QVERIFY(output3.contains("value: QVariant(double, 200)"));
+
+    // Test parameter with string value
+    Parameter param5("StringValue", "StringParam", this);
+    QString output5 = QDebug::toString(&param5);
+    QVERIFY(output5.contains("name: \"StringParam\""));
+    QVERIFY(output5.contains("value: QVariant(QString, \"StringValue\")"));
+
+}
+
+void TestQtNoidAppParameter::testParameterWithQDebugOperatorWithPointer()
+{
+    // Test with valid pointer
+    Parameter *param1 = new Parameter(42.0, "PointerParam", this);
+    QString output1 = QDebug::toString(param1);
+    QVERIFY(output1.contains("Parameter("));
+    QVERIFY(output1.contains("name: \"PointerParam\""));
+    QVERIFY(output1.contains("value: QVariant(double, 42)"));
+    delete param1;
+
+    // Test with nullptr
+    Parameter *param2 = nullptr;
+    QString output2 = QDebug::toString(param2);
+    QVERIFY(output2.contains("Parameter(nullptr)"));
+}
 
 
 QTEST_MAIN(TestQtNoidAppParameter)

@@ -212,31 +212,32 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
 {
     QDebugStateSaver saver(debug);
     debug.nospace() << list.name()
-                    << ", Count: " << list.count()
-                    << ", Visible: " << list.visible();
+                    << ":{ uniqueID:" << list.uniqueId()
+                    << ", count: " << list.count()
+                    << ", visible: " << list.visible();
     QString str = list.description();
     if(!str.isEmpty()){
-        debug.nospace() << ", Description: " << str;
+        debug.nospace() << ", description: " << str;
     }
     str = list.tooltip();
     if(!str.isEmpty()){
-        debug.nospace() << ", Tooltip: " << str;
+        debug.nospace() << ", tooltip: " << str;
     }
 
     if (!list.isEmpty()) {
-        debug << ", Parameters: [";
+        debug << ", parameters: [";
         for (int i = 0; i < list.count(); ++i) {
             if (i > 0) debug << ", ";
             QtNoid::App::Parameter* param = list.parameter(i);
             if (param) {
-                QString changedFlag = param->isValueChanged()? ", Changed" : ", notChanged";
+                QString changedFlag = param->isValueChanged()? ", changed" : ", notChanged";
                 debug << param->name() << ":{" << param->value() << changedFlag << "}";
 
             }
         }
         debug << "]";
     }
-    debug << ")";
+    debug << "}";
     return debug;
 }
 

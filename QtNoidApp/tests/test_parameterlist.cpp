@@ -72,6 +72,11 @@ private slots:
     void testParameterListConstIteratorsAndConstRangeLoop();
     void testParameterListReverseIteratorsAndRangeLoop();
     void testParameterListConstReverseIterators();
+
+    // QDebug operator<< tests
+    void testQDebugOperator();
+    void testParameterListWithQDebugOperatorWithPointer();
+
 };
 
 
@@ -598,7 +603,7 @@ void TestQtNoidAppParameterList::testToJsonValues()
     // Verify JSON structure
     QVERIFY(json.contains("Configuration"));
     QJsonObject main = json["Configuration"].toObject();
-    QJsonArray parametersArray = main["Parameters"].toArray();
+    QJsonArray parametersArray = main["parameters"].toArray();
     QCOMPARE(parametersArray.size(), 2);
     QVERIFY(parametersArray.contains(param1->toJsonValue()));
     QVERIFY(parametersArray.contains(param2->toJsonValue()));
@@ -609,7 +614,7 @@ void TestQtNoidAppParameterList::testToJsonValuesNoName()
     ParameterList page(this);
     QJsonObject json = page.toJsonValues();
     // qDebug() << __func__ << json;
-    QVERIFY(json.contains("PageName"));
+    QVERIFY(json.contains("pageName"));
 }
 
 void TestQtNoidAppParameterList::TestToJsonSchema()
@@ -634,13 +639,13 @@ void TestQtNoidAppParameterList::TestToJsonSchema()
 
     QVERIFY(jsonSchema.contains("Configuration"));
 
-    QJsonObject jsonLowLevel = jsonSchema["Configuration"].toObject();
+    QJsonObject jsonMain = jsonSchema["Configuration"].toObject();
 
-    QCOMPARE(jsonLowLevel["Tooltip"], "Set the app configuration");
-    QCOMPARE(jsonLowLevel["Description"], "This is your's app config page");
-    QCOMPARE(jsonLowLevel["Visible"], true);
+    QCOMPARE(jsonMain["tooltip"], "Set the app configuration");
+    QCOMPARE(jsonMain["description"], "This is your's app config page");
+    QCOMPARE(jsonMain["visible"], true);
 
-    QJsonArray parametersArray = jsonLowLevel["Parameters"].toArray();
+    QJsonArray parametersArray = jsonMain["parameters"].toArray();
     QCOMPARE(parametersArray.size(), 2);
 
     QVERIFY(parametersArray.contains(param1->toJsonSchema()));
@@ -652,7 +657,7 @@ void TestQtNoidAppParameterList::TestToJsonSchemaNoName()
 {
     ParameterList page(this);
     QJsonObject json = page.toJsonSchema();
-    qDebug() << __func__ << json;
+    // qDebug() << __func__ << json;
     QVERIFY(json.contains("PageName"));
 }
 
@@ -889,14 +894,12 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     schemaArray.append(pressSchemaWrapper);
 
     QJsonObject schemaMain;
-    schemaMain["Visible"] = false;
-    schemaMain["Description"] = "Desc";
-    schemaMain["Tooltip"] = "toollllllttiiiipp";
-    schemaMain["Parameters"] = schemaArray;
+    schemaMain["visible"] = false;
+    schemaMain["description"] = "Desc";
+    schemaMain["tooltip"] = "toollllllttiiiipp";
+    schemaMain["parameters"] = schemaArray;
 
-    QJsonObject schemaList;
-    schemaList["SensorConfiguration"] = schemaMain;
-
+    QJsonObject schemaList({{"SensorConfiguration", schemaMain}});
     // qDebug() << __func__ << schemaList;
 
     // Create values JSON
@@ -909,11 +912,9 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     pressValue["Pressure"] = 1013.25;
     valuesArray.append(pressValue);
 
-    QJsonObject valueMain({{"Parameters", valuesArray}});
-    QJsonObject valueList;
-    valueList["SensorConfiguration"] = valueMain;
-
-    qDebug() << __func__ << valueList;
+    QJsonObject valueMain({{"parameters", valuesArray}});
+    QJsonObject valueList({{"SensorConfiguration", valueMain}});
+    // qDebug() << __func__ << valueList;
 
     // Test constructor
     ParameterList list(schemaList, valueList, this);
@@ -1959,6 +1960,61 @@ void TestQtNoidAppParameterList::testParameterListConstReverseIterators()
 #else
     QVERIFY(0);
 #endif
+}
+
+void TestQtNoidAppParameterList::testQDebugOperator()
+{
+    ParameterList list1("myApp Settings", this);
+
+    QString output = QDebug::toString(&list1);
+    // qDebug() << output;
+
+    QVERIFY(output.contains("\"myApp Settings\""));
+    QVERIFY(output.contains("uniqueID"));
+    QVERIFY(output.contains("count: 0"));
+    QVERIFY(output.contains("visible: true"));
+
+    ParameterList list2("myApp Settings full", this);
+    list2.setDescription("this is my app settings");
+    list2.setTooltip("this is my app tooltip");
+    list2.emplace(37.1, "Temp", "temperature");
+    list2.emplace(101.1, "Press", "pressure");
+    list2.emplace(70.1, "Humidity");
+    list2.setValue("Humidity", 80.8);
+
+    output = QDebug::toString(&list2);
+    // qDebug() <<__func__ << output;
+
+    QVERIFY(output.contains("tooltip"));
+    QVERIFY(output.contains("description"));
+    QVERIFY(output.contains("Temp"));
+    QVERIFY(output.contains("Press"));
+    QVERIFY(output.contains("Humidity"));
+    QVERIFY(output.contains("changed"));
+
+}
+
+void TestQtNoidAppParameterList::testParameterListWithQDebugOperatorWithPointer()
+{
+    // Test with valid pointer
+    ParameterList* list1 = new ParameterList("myApp Settings", this);
+
+    QString output = QDebug::toString(list1);
+    // qDebug() << output;
+
+    QVERIFY(output.contains("\"myApp Settings\""));
+    QVERIFY(output.contains("uniqueID"));
+    QVERIFY(output.contains("count: 0"));
+    QVERIFY(output.contains("visible: true"));
+
+    delete list1;
+
+    // Test with nullptr
+    ParameterList* list2 = nullptr;
+    output = QDebug::toString(list2);
+    // qDebug() << output;
+    QVERIFY(output.contains("ParameterList(nullptr)"));
+
 }
 
 

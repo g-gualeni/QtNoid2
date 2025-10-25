@@ -50,7 +50,7 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
     // Prepare a QHash map for values so I can get them fast from their name
     const QJsonObject valueMain = valueList[name].toObject();
     QHash<QString, QJsonObject> valueMap;
-    const QJsonArray valueArray = valueMain["Parameters"].toArray();
+    const QJsonArray valueArray = valueMain["parameters"].toArray();
 
     // qDebug() << __func__ << valueArray;
 
@@ -64,17 +64,17 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
 
     // Load parameters from schemaList and merge with values in valueList
     const QJsonObject schemaMain = schemaList[name].toObject();
-    if(schemaMain.contains("Visible")) {
-        setVisible(schemaMain["Visible"].toBool());
+    if(schemaMain.contains("visible")) {
+        setVisible(schemaMain["visible"].toBool());
     }
-    if(schemaMain.contains("Description")) {
-        setDescription(schemaMain["Description"].toString());
+    if(schemaMain.contains("description")) {
+        setDescription(schemaMain["description"].toString());
     }
-    if(schemaMain.contains("Tooltip")) {
-        setTooltip(schemaMain["Tooltip"].toString());
+    if(schemaMain.contains("tooltip")) {
+        setTooltip(schemaMain["tooltip"].toString());
     }
 
-    const QJsonArray schemaArray = schemaMain["Parameters"].toArray();
+    const QJsonArray schemaArray = schemaMain["parameters"].toArray();
     for (const QJsonValue& schema : schemaArray) {
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
@@ -91,7 +91,7 @@ QJsonObject ParameterList::toJsonValues() const
 {
     QString name = m_name;
     if(name.isEmpty()) {
-        name = "PageName";
+        name = "pageName";
     }
 
     QJsonArray parametersArray;
@@ -100,7 +100,7 @@ QJsonObject ParameterList::toJsonValues() const
         parametersArray.append(param->toJsonValue());
     }
 
-    QJsonObject main({{"Parameters", parametersArray}});
+    QJsonObject main({{"parameters", parametersArray}});
     QJsonObject json({{name, main}});
     return json;
 }
@@ -119,10 +119,10 @@ QJsonObject ParameterList::toJsonSchema() const
     }
 
     QJsonObject schemaObject;
-    schemaObject["Description"] = m_description.value();
-    schemaObject["Tooltip"] = m_tooltip.value();
-    schemaObject["Parameters"] = parametersArray;
-    schemaObject["Visible"] = m_visible.value();
+    schemaObject["description"] = m_description.value();
+    schemaObject["tooltip"] = m_tooltip.value();
+    schemaObject["parameters"] = parametersArray;
+    schemaObject["visible"] = m_visible.value();
 
     QJsonObject schema;
     schema[name] = schemaObject;

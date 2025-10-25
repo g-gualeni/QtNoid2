@@ -318,7 +318,7 @@ void TestQtNoidAppConfig::testConfigDebugOutput()
     QVERIFY(!emptyOutput.isEmpty());
     QVERIFY(emptyOutput.contains("Config("));
     QVERIFY(emptyOutput.contains("EmptyConfig"));
-    QVERIFY(emptyOutput.contains("Count: 0"));
+    QVERIFY(emptyOutput.contains("count: 0"));
 
 
     // Test with populated config

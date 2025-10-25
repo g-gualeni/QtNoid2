@@ -4,13 +4,19 @@
 
 ### Sprint Goals
 - Implementation of the QtNoid::Yaml2Json library 
-- Implementaton of QtNoid::App::Config class
+- Implementaton of QtNoid::App::Config class from 
 - Implementaton of appConfig global instance 
+- Review of Parameter / ParameterList after 
+  deriving Config / ConfigFile / ConfigGlobal
 - Release of QtNoid2 version 2.2.0
 
 &nbsp;
 
 ### Progress Status
+
+salvare questo trucco
+QString output2 = QDebug::toString(&param2);
+
 Implementation of Yaml2Json library 
 Is there a reason to keep Txt2Json? Maybe it is faster?
 
@@ -29,20 +35,28 @@ Finire di sistemare i test dopo la revisione dello schema per paramterList
 - [x] doc update for appExeOrAppBundleFilePath
 - [x] test for appExeOrAppBundleDirPath
 - [x] test update for appExeOrAppBundleFilePath
+- [ ] class **Parameter** update
+     - [ ] check Parameter Documentation
+     - [x] all json names should be camelCase lowercase
+     - [x] check all properties are in the JsonSchema
+     - [x] check all properties are in the << Debug operator
+     
 - [ ] class **ParameterList** update
+     - [ ] check ParameterList Documentation
      - [x] add the visible flag
      - [x] test description in schema
      - [x] test description from schema
      - [x] test tooltip in schema
      - [x] test tooltip from schema
-     - [ ] test tooltip in Debug()
-     - [ ] test description in Debug()
-     - [ ] add uniqueId
-     - [ ] test uniqueId
+     - [x] all json names should be camelCase lowercase
+     - [x] add uniqueId
+     - [x] test uniqueId
+     - [x] test for QDebug operator
+     - [x] test tooltip and all parameters are in Debug()
      - [ ] count should be bindable
 
-
 - [ ] class **Config** as a container for ParamterList
+     - [ ] class Config Documentation
      - [x] uniqueId for Parameter starts from 1000
      - [x] Add valueAsInt
      - [x] Add valueAsDouble
@@ -53,29 +67,31 @@ Finire di sistemare i test dopo la revisione dello schema per paramterList
      - [x] addRecentFile
      - [x] clearRecentFiles
      - [x] restoreRecentFiles
-     - [ ] check implementation of class Config
-     - [ ] move s_nextUniqueId to ParameterList starting from 0
-     - [ ] add iterator and reverse iterator for Config
-     - [ ] cound should be bindable
+     - [x] remove s_nextUniqueId because it is in ParameterList
      - [ ] add tooltip
+     - [ ] check implementation of class Config
+     
      - [ ] test tooltip in schema
      - [ ] test description in schema
      
-- [ ] class Config Test
-     - [x] testConfigDebugOutput
+     - [ ] all json names should be camelCase lowercase
+     - [ ] add iterator and reverse iterator for Config
+     - [ ] cound should be bindable
+     - [ ] class Config Test
+     - [ ] testConfigDebugOutput
 
-- [ ] class Config Documentation
 
-- [x] class **ConfigFile** load / save configuration of current application
-- [x] class ConfigFile test
-- [ ] class ConfigFile documentation
-- [ ] test Debug() function for ConfigFile (to be implemented)
+- [x] class **ConfigFile** as an extension of Config
+     - [ ] class ConfigFile documentation         
+     - [x] load / save configuration 
+     - [x] class ConfigFile test     
+     - [ ] test Debug() function for ConfigFile (to be implemented)
 
 
 - [x] class **GlobalConfig** as static wrapper for a singletone Config
-- [x] appConfig macro for easy access
-- [x] class GlobalConfig test
-- [ ] class GlobalConfig Documentation
+     - [x] appConfig macro for easy access
+     - [x] class GlobalConfig test
+     - [ ] class GlobalConfig Documentation
 
 
 More:
@@ -111,18 +127,17 @@ More:
      - [x] Save/Restore Geometry
      - [x] Save restore recent file
      
+- [x] Add the screenshot command
 - [ ] Add the debug menu that can save current config to app resources?
 - [ ] Restore app config file from resources, the first time.
-- [x] Add the screenshot command
+- [ ] Add a run feature that run through all examples and generate a report
+
 
 
 ### Release Drafting
 - [ ] Run the CLOC-Report.bat and update CLOC-REPORT.md
 - [ ] Update CLOC Report
 - [ ] Update the ReleaseNotes.txt
-
-
-
 
 ### Doc
 - [ ] Doc update
@@ -222,9 +237,24 @@ Readings: [
 &nbsp;
 ## Next Sprint Ideas
 
-### Text2Json:
-https://jsonstudio.io/convert/TEXT-to-JSON-Converter
+### New QtNoid::AppUI library 
+ - Generate recent files menu
+ - Generate About dialog
+ - Generate Config UI from Config class
+ 
+### New QtNoid::CmdUI library 
+ - File Move/Copy/Rename/Marshal using pattern matching
+ - File preview as tiles
 
+### New QtNoid::DispUI library 
+ - ImageViewer with all functionality
+     Zoom, Pan, Keystone, Pixel value zoom
+     Histogram
+     Image Component
+     Histogram Stretching using CLAHE
+
+### New QtNoid::JsonUI library 
+- Yaml / JSON UI editor
 
 ### Upgrade QtNoid::Common::File
 - [ ] Massive File Copy / Rename / Move could became Copy Move Marshal
@@ -232,4 +262,3 @@ https://jsonstudio.io/convert/TEXT-to-JSON-Converter
 - [ ] Massive File Rename: replace token in huge file list above multipe folders
       Forse è solo in DeepImageLoader
     
-

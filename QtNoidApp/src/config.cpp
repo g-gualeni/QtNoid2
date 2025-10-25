@@ -10,7 +10,7 @@ namespace QtNoid {
 namespace App {
 
 // Initialize static counter
-int Config::s_nextUniqueId = 0;
+// int Config::s_nextUniqueId = 0;
 
 Config::Config(QObject *parent)
     : QObject(parent)
@@ -229,15 +229,9 @@ bool Config::append(ParameterList *parameterList)
         return false;
     }
 
-    // Generate a unique ID for this list
-    int uniqueId = generateUniqueId();
-    if (m_parameterListsByUniqueId.contains(uniqueId)) {
-        return false;
-    }
-
     // Update all indexes
     appendParameterListAndUpdateIndexs(parameterList);
-    m_parameterListsByUniqueId.insert(uniqueId, parameterList);
+    m_parameterListsByUniqueId.insert(parameterList->uniqueId(), parameterList);
     return true;
 }
 
@@ -262,8 +256,7 @@ ParameterList* Config::emplace(const QString& name, const QString& description)
 
     ParameterList* parameterList = new ParameterList(name, this);
     parameterList->setDescription(description);
-    int uniqueId = generateUniqueId();
-    m_parameterListsByUniqueId.insert(uniqueId, parameterList);
+    m_parameterListsByUniqueId.insert(parameterList->uniqueId(), parameterList);
     appendParameterListAndUpdateIndexs(parameterList);
 
     return parameterList;
@@ -706,12 +699,6 @@ void Config::appendParameterListAndUpdateIndexs(ParameterList *parameterList)
 
     emit parameterListAdded(parameterList);
     emit countChanged(m_parameterListsByIndex.count());
-}
-
-
-int Config::generateUniqueId()
-{
-    return s_nextUniqueId++;
 }
 
 

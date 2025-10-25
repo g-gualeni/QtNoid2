@@ -125,8 +125,8 @@ private:
     bool saveValuePrivate(const QString &paramName, const QVariant &value, const QString &listName);
 
     // Static counter for unique IDs
-    static int s_nextUniqueId;
-    int generateUniqueId();
+    // static int s_nextUniqueId;
+    // int generateUniqueId();
 };
 
 } // namespace App
