@@ -9,18 +9,16 @@
 namespace QtNoid {
 namespace App {
 
-// Initialize static counter
-// int Config::s_nextUniqueId = 0;
 
 Config::Config(QObject *parent)
     : QObject(parent)
-{
-}
+{}
+
 
 Config::Config(const QString &name, QObject *parent)
     : QObject(parent), m_name(name)
-{
-}
+{}
+
 
 Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, QObject *parent)
     : QObject(parent)
@@ -54,7 +52,11 @@ Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, 
     // Prepare a QHash map for values so I can get them fast from their name
     // and also skip values that are not objects
     QHash<QString, QJsonObject> valueMap;
-    const QJsonArray valueArray = valueConfig[name].toArray();
+
+    qDebug() << __func__ << valueConfig[name];
+
+    const QJsonObject valueMain = valueConfig[name].toObject();
+    const QJsonArray valueArray = valueMain["pages"].toArray();
     for (const QJsonValue& value : valueArray) {
         if (value.isObject()) {
             const QJsonObject valueObj = value.toObject();
@@ -89,7 +91,8 @@ QJsonObject Config::toJsonValues() const
         listsArray.append(list->toJsonValues());
     }
 
-    QJsonObject json({{name, listsArray}});
+    QJsonObject jsonMain({{"pages", listsArray}});
+    QJsonObject json({{name, jsonMain}});
 
     return json;
 }
@@ -107,12 +110,12 @@ QJsonObject Config::toJsonSchema() const
         listsArray.append(list->toJsonSchema());
     }
 
-    QJsonObject schemaObject;
-    schemaObject["description"] = m_description.value();
-    schemaObject["tooltip"] = m_tooltip.value();
-    schemaObject["pages"] = listsArray;
+    QJsonObject schemaMain;
+    schemaMain["description"] = m_description.value();
+    schemaMain["tooltip"] = m_tooltip.value();
+    schemaMain["pages"] = listsArray;
 
-    QJsonObject schema ({{name, schemaObject}});
+    QJsonObject schema ({{name, schemaMain}});
 
     return schema;
 }

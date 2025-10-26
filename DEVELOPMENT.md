@@ -32,19 +32,8 @@ test di ParameterList::nameEdited(const QString &oldName, const QString &newName
 test che Parameter::nameChanged() venga emesso
 test che Parameter::nameEdited() venga emesso
 
-
-Devo implementare questa struttura sia per jsonValue che per JsonSchema
-"TestConfig": [
-       {
-           "Settings": {
-               "parameters": [
-                   {
-                       "Volume": 100
-                   },
-                   {
-                       "Theme": "light"
-                   }
-
+C'è un pb con con il test Config costruttore partendo da JSON
+-> se non ci sono parametri nello schema non li carica
 
 
 # QtNoidApp
