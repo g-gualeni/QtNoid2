@@ -318,36 +318,19 @@ ParameterList* Config::emplace(const QJsonObject& schema, const QJsonObject& val
     return page;
 }
 
+
 void Config::remove(ParameterList *page)
 {
     if (page == nullptr) {
         return;
     }
 
-//    m_pagesByUniqueId. [page->uniqueId()]
-//     ---non so
-    // Find the unique ID by iterating through the map
-    int uniqueId = -1;    
-    for (auto it = m_pagesByUniqueId.constBegin(); it != m_pagesByUniqueId.constEnd(); ++it) {
-        if (it.value() == page) {
-            uniqueId = it.key();
-            break;
-        }
-    }
-
-    if (uniqueId == -1) {
-        // List not found
-        return;
-    }
-
-    m_pagesByUniqueId.remove(uniqueId);
+    m_pagesByUniqueId.remove(page->uniqueId());
     m_pagesByName.remove(page->name());
 
     int idx = m_pageToIndex.value(page, -1);
-    if(idx != -1) {
-        m_pageToIndex.remove(page);
-        m_pagesByIndex.remove(idx);
-    }
+    m_pageToIndex.remove(page);
+    m_pagesByIndex.remove(idx);
 
     disconnect(page, &QObject::destroyed, this, &Config::onPageDestroyed);
     disconnect(page, &ParameterList::nameChanged, this, nullptr);
@@ -356,76 +339,62 @@ void Config::remove(ParameterList *page)
     emit countChanged(m_pagesByIndex.count());
 }
 
+
 void Config::remove(const QString &pageName)
 {
-    ParameterList* parameterList = m_pagesByName.value(pageName, nullptr);
-    if(parameterList == nullptr) {
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr) {
         return;
     }
-
-    m_pagesByName.remove(pageName);
-
-    // Find and remove by unique ID
-    int uniqueId = -1;
-    for (auto it = m_pagesByUniqueId.constBegin(); it != m_pagesByUniqueId.constEnd(); ++it) {
-        if (it.value() == parameterList) {
-            uniqueId = it.key();
-            break;
-        }
-    }
-    if (uniqueId != -1) {
-        m_pagesByUniqueId.remove(uniqueId);
-    }
-
-    int idx = m_pageToIndex.value(parameterList, -1);
-    if(idx > 0) {
-        m_pageToIndex.remove(parameterList);
-        m_pagesByIndex.remove(idx);
-    }
-
-    disconnect(parameterList, &QObject::destroyed, this, &Config::onPageDestroyed);
-    disconnect(parameterList, &ParameterList::nameChanged, this, nullptr);
-    emit pageRemoved(parameterList);
-    emit countChanged(m_pagesByIndex.count());
+    remove(page);
 }
+
 
 void Config::clear()
 {
     if(isEmpty()) return;
 
     for (auto it = m_pagesByIndex.begin(); it != m_pagesByIndex.end(); ++it) {
-        ParameterList* list = it.value();
-        disconnect(list, &QObject::destroyed, this, &Config::onPageDestroyed);
-        disconnect(list, &ParameterList::nameChanged, this, nullptr);
-        emit pageRemoved(list);
+        ParameterList* page = it.value();
+        m_pagesByUniqueId.remove(page->uniqueId());
+        m_pagesByName.remove(page->name());
+        int idx = m_pageToIndex.value(page, -1);
+        m_pageToIndex.remove(page);
+        m_pagesByIndex.remove(idx);
+
+        disconnect(page, &QObject::destroyed, this, &Config::onPageDestroyed);
+        disconnect(page, &ParameterList::nameChanged, this, nullptr);
+
+        emit pageRemoved(page);
     }
-    m_pagesByUniqueId.clear();
-    m_pagesByIndex.clear();
-    m_pageToIndex.clear();
-    m_pagesByName.clear();
 
     emit countChanged(0);
 }
+
 
 bool Config::isEmpty() const
 {
     return m_pagesByIndex.isEmpty();
 }
 
+
 ParameterList *Config::page(int index) const
 {
     return m_pagesByIndex.value(index, nullptr);
 }
+
 
 ParameterList *Config::page(const QString &pageName) const
 {
     return m_pagesByName.value(pageName, nullptr);
 }
 
+
 int Config::indexOf(ParameterList *page) const
 {
     return m_pageToIndex.value(page, -1);
 }
+
 
 int Config::indexOf(const QString &pageName) const
 {
@@ -433,10 +402,12 @@ int Config::indexOf(const QString &pageName) const
     return m_pageToIndex.value(list, -1);
 }
 
+
 bool Config::contains(ParameterList *page) const
 {
     return m_pageToIndex.contains(page);
 }
+
 
 bool Config::contains(const QString &pageName) const
 {
@@ -456,27 +427,27 @@ QList<ParameterList *> Config::pages() const
 
 Parameter* Config::parameter(const QString& paramName, const QString& pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
-        return nullptr;
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
+        return {};
 
-    return list->parameter(paramName);
+    return page->parameter(paramName);
 }
-
-
 
 
 bool Config::saveValuePrivate(const QString &paramName, const QVariant &value, const QString &pageName)
 {
     // qDebug() << __func__ << value;
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list != nullptr) {
-        if(list->contains(paramName)) {
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page != nullptr) {
+
+        // Update existing page
+        if(page->contains(paramName)) {
             // Update the existing value
-            return list->setValue(paramName, value);
+            return page->setValue(paramName, value);
         }
         // Create the new value
-        auto newParam = list->emplace(value, paramName);
+        auto newParam = page->emplace(value, paramName);
         if(newParam == nullptr) {
             return false;
         }
@@ -484,11 +455,11 @@ bool Config::saveValuePrivate(const QString &paramName, const QVariant &value, c
     }
 
     // Create the list and the parameter
-    list = emplace(pageName);
-    if(list == nullptr) {
+    page = emplace(pageName);
+    if(page == nullptr) {
         return false;
     }
-    auto param = list->emplace(value, paramName);
+    auto param = page->emplace(value, paramName);
     if(param == nullptr) {
         return false;
     }
@@ -499,12 +470,11 @@ bool Config::saveValuePrivate(const QString &paramName, const QVariant &value, c
 
 bool Config::restoreAsBool(const QString &paramName, bool defaultValue, const QString &pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return defaultValue;
 
-    return list->value(paramName).toBool();
-
+    return page->value(paramName).toBool();
 }
 
 
@@ -523,11 +493,11 @@ bool Config::saveValue(const QString &paramName, bool value, const QString &page
 
 int Config::restoreAsInt(const QString &paramName, int defaultValue, const QString &pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return defaultValue;
 
-    return list->value(paramName).toInt();
+    return page->value(paramName).toInt();
 }
 
 
@@ -539,11 +509,11 @@ bool Config::saveValue(const QString &paramName, int value, const QString &pageN
 
 double Config::restoreAsDouble(const QString &paramName, double defaultValue, const QString &pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return defaultValue;
 
-    return list->value(paramName).toDouble();
+    return page->value(paramName).toDouble();
 }
 
 
@@ -555,11 +525,11 @@ bool Config::saveValue(const QString &paramName, double value, const QString &pa
 
 QString Config::restoreAsString(const QString &paramName, const QString &defaultValue, const QString &pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return defaultValue;
 
-    return list->value(paramName).toString();
+    return page->value(paramName).toString();
 }
 
 
@@ -571,11 +541,11 @@ bool Config::saveValue(const QString &paramName, const QString &value, const QSt
 
 QStringList Config::restoreAsStringList(const QString &paramName, const QStringList &defaultValue, const QString &pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return defaultValue;
 
-    return list->value(paramName).toStringList();
+    return page->value(paramName).toStringList();
 }
 
 
@@ -587,11 +557,11 @@ bool Config::saveValue(const QString &paramName, const QStringList &value, const
 
 QVariant Config::restoreAsVariant(const QString& paramName, const QVariant &defaultValue, const QString& pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return defaultValue;
 
-    return list->value(paramName);
+    return page->value(paramName);
 }
 
 
@@ -603,14 +573,11 @@ bool Config::saveValue(const QString& paramName, const QVariant& value, const QS
 
 QByteArray Config::restoreAsByteArray(const QString &paramName, const QByteArray defaultValue, const QString &pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return defaultValue;
 
-    auto valueAsString = list->value(paramName).toString();
-
-    // qDebug() << __func__ << valueAsString;
-    // qDebug() << __func__ << QByteArray::fromBase64(valueAsString.toUtf8());
+    auto valueAsString = page->value(paramName).toString();
 
     return QByteArray::fromBase64(valueAsString.toUtf8());
 }
@@ -624,21 +591,21 @@ bool Config::saveValue(const QString &paramName, const QByteArray &value, const 
 
 QStringList Config::restoreRecentFiles(const QStringList defaultValue, const QString &paramName, const QString &pageName) const
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return defaultValue;
 
-    return list->value(paramName).toStringList();
+    return page->value(paramName).toStringList();
 }
 
 void Config::clearRecentFiles(const QString &paramName, const QString &pageName)
 {
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
-    if(list == nullptr)
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
         return;
 
-    if(list->contains(paramName)){
-        list->setValue(paramName, QStringList());
+    if(page->contains(paramName)){
+        page->setValue(paramName, QStringList());
     }
 }
 
@@ -649,28 +616,29 @@ bool Config::addRecentFile(QString filePath, int max, const QString &paramName, 
     if(filePath.isEmpty())
         return false;
 
-    ParameterList* list = m_pagesByName.value(pageName, nullptr);
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
 
     // Create the list and the parameter
     QStringList filePathList;
-    if(list == nullptr) {
-        list = emplace(pageName);
-        if(list == nullptr) {
+    if(page == nullptr) {
+        // Create a new page and item
+        page = emplace(pageName);
+        if(page == nullptr) {
             return false;
         }
         filePathList << filePath;
-        list->emplace(filePathList, paramName);
+        page->emplace(filePathList, paramName);
         return true;
     }
 
     // Expand the list or create if not available
-    if(!list->contains(paramName)) {
+    if(!page->contains(paramName)) {
         filePathList << filePath;
-        list->emplace(filePathList, paramName);
+        page->emplace(filePathList, paramName);
         return true;
     }
 
-    filePathList = list->value(paramName).toStringList();
+    filePathList = page->value(paramName).toStringList();
     // Remove the file if it already exists to avoid duplicates
     filePathList.removeAll(filePath);
     filePathList.prepend(filePath);
@@ -679,43 +647,33 @@ bool Config::addRecentFile(QString filePath, int max, const QString &paramName, 
         filePathList.resize(max);
     }
 
-    list->setValue(paramName, filePathList);
+    page->setValue(paramName, filePathList);
 
     return true;
 }
 
 
 
-void Config::onPageDestroyed(QObject *parameterList)
+void Config::onPageDestroyed(QObject *obj)
 {
-    ParameterList *list = static_cast<ParameterList*>(parameterList);
-    int idx = m_pageToIndex.value(list, -1);
+    ParameterList *page = qobject_cast<ParameterList*>(obj);
+
+    if(page == nullptr)
+        return;
+
+    int idx = m_pageToIndex.value(page, -1);
     if(idx == -1) {
         return;
     }
-    m_pageToIndex.remove(list);
+    m_pageToIndex.remove(page);
     m_pagesByIndex.remove(idx);
+    m_pagesByUniqueId.remove(page->uniqueId());
+    m_pagesByName.remove(page->name());
 
-    // Find and remove by unique ID
-    int uniqueId = -1;
-    for (auto it = m_pagesByUniqueId.constBegin(); it != m_pagesByUniqueId.constEnd(); ++it) {
-        if (it.value() == list) {
-            uniqueId = it.key();
-            break;
-        }
-    }
-    if (uniqueId != -1) {
-        m_pagesByUniqueId.remove(uniqueId);
-    }
-
-    // Remove from m_pagesByName using list
-    // because list->name() could be modified
-    QString key = m_pagesByName.key(list);
-    m_pagesByName.remove(key);
-
-    emit pageRemoved(list);
+    emit pageRemoved(page);
     emit countChanged(m_pagesByIndex.count());
 }
+
 
 void Config::onPageNameEdited(const QString &oldName, const QString &newName)
 {
@@ -729,21 +687,23 @@ void Config::onPageNameEdited(const QString &oldName, const QString &newName)
         return;
     }
 
-    ParameterList* currentList = m_pagesByName.take(oldName);
-    m_pagesByName.insert(newName, currentList);
+    ParameterList* page = m_pagesByName.take(oldName);
+    m_pagesByName.insert(newName, page);
 
     return;
 }
 
 void Config::appendPageAndUpdateIndexs(ParameterList *page)
 {
+
+    m_nextPageIndex++;
     m_pageToIndex.insert(page, m_nextPageIndex);
     m_pagesByIndex.insert(m_nextPageIndex, page);
-    m_nextPageIndex++;
     m_pagesByName.insert(page->name(), page);
     m_pagesByUniqueId.insert(page->uniqueId(), page);
-    // connect(parameterList, &QObject::destroyed, this, &Config::onParameterListDestroyed);
-    // connect(parameterList, &ParameterList::nameChanged, this, &Config::onParameterListNameEdited);
+
+    connect(page, &QObject::destroyed, this, &Config::onPageDestroyed);
+    connect(page, &ParameterList::nameEdited, this, &Config::onPageNameEdited);
 
     emit pageAdded(page);
     emit countChanged(m_pagesByIndex.count());

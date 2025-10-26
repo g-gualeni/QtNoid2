@@ -116,7 +116,7 @@ signals:
     void pageRenameError(const QString& oldName, const QString& newName);
 
 private slots:
-    void onPageDestroyed(QObject* parameterList);
+    void onPageDestroyed(QObject *obj);
     void onPageNameEdited(const QString& oldName, const QString& newName);
 
 private:

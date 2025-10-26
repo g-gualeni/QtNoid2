@@ -207,15 +207,23 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
     return true;
 }
 
+
 QString ParameterList::name() const
 {
     return m_name.value();
 }
 
-void ParameterList::setName(const QString &value)
+
+void ParameterList::setName(const QString &newName)
 {
-    m_name = value;
+    if(m_name == newName)
+        return;
+
+    QString oldName = m_name;
+    m_name = newName;
+    emit nameEdited(oldName, newName);
 }
+
 
 QBindable<QString> ParameterList::bindableName()
 {

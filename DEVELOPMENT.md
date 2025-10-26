@@ -27,6 +27,13 @@ Fare un metodo statico per la conversione YAML to JSON
 revisione di Config
 fino a void Config::remove(ParameterList *page)
 
+test di ParameterList::nameEdited(const QString &oldName, const QString &newName);
+
+test che Parameter::nameChanged() venga emesso
+test che Parameter::nameEdited() venga emesso
+
+
+
 # QtNoidApp
 - [x] appExeOrAppBundleDirPath();
 - [x] appExeOrAppBundleFilePath();

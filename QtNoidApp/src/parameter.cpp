@@ -434,11 +434,13 @@ QString Parameter::name() const
 
 void Parameter::setName(const QString &newName)
 {
+    if(m_name == newName)
+        return;
+
     QString oldName = m_name;
-    if(oldName != newName) {
-        m_name = newName;
-        emit nameEdited(oldName, newName);
-    }
+    m_name = newName;
+
+    emit nameEdited(oldName, newName);
 }
 
 QBindable<QString> Parameter::bindableName()

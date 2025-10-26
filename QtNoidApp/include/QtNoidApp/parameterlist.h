@@ -102,7 +102,7 @@ public:
     
     // Name
     QString name() const;
-    void setName(const QString& value);
+    void setName(const QString& newName);
     QBindable<QString> bindableName();
 
     // Description
@@ -175,6 +175,7 @@ public:
 
 signals:
     void nameChanged(const QString& value);
+    void nameEdited(const QString &oldName, const QString &newName);
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
     void countChanged(int count);
