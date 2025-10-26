@@ -149,8 +149,8 @@ bool ParameterList::valuesFromJson(const QJsonObject &json)
     }
 
     // Load parameters
-    const QJsonArray parametersArray = json[name].toArray();
-
+    const QJsonObject jsonMain = json[name].toObject();
+    const QJsonArray parametersArray = jsonMain["parameters"].toArray();
     // qDebug() << __func__ << parametersArray;
 
     for (const QJsonValue& value : parametersArray) {

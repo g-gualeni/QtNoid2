@@ -41,7 +41,6 @@ void TestQtNoidAppConfigGlobal::init()
     // Clean up any existing state in the global config before each tests
     Config* cfg = ConfigGlobal::instance();
     cfg->clear();
-    // qDebug() << __func__;
 }
 
 void TestQtNoidAppConfigGlobal::cleanup()

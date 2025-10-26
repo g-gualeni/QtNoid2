@@ -33,6 +33,19 @@ test che Parameter::nameChanged() venga emesso
 test che Parameter::nameEdited() venga emesso
 
 
+Devo implementare questa struttura sia per jsonValue che per JsonSchema
+"TestConfig": [
+       {
+           "Settings": {
+               "parameters": [
+                   {
+                       "Volume": 100
+                   },
+                   {
+                       "Theme": "light"
+                   }
+
+
 
 # QtNoidApp
 - [x] appExeOrAppBundleDirPath();

@@ -716,7 +716,6 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithEmptyNameShouldTakeTheJso
 {
     // Create JSON objects (simulating what Parameter::toJsonValue() would return)
     QJsonArray parametersArray;
-
     QJsonObject pressureJson;
     pressureJson["Pressure"]= 1013.25;
     parametersArray.append(pressureJson);
@@ -732,6 +731,8 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithEmptyNameShouldTakeTheJso
     // Test successful fromJson
     ParameterList list(this);
     QVERIFY(list.valuesFromJson(json));
+
+    QVERIFY(0); // finire di sistemare
 
     // Verify list properties
     QCOMPARE(list.name(), "MyTestPage");

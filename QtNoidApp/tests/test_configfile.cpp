@@ -227,20 +227,16 @@ void TestQtNoidAppConfigFile::testConfigFileIsNotValidWithEmptyFileName()
 
 void TestQtNoidAppConfigFile::testConfigFileSaveAndLoad()
 {
-    QString testFileName = __func__ + QString(".json");
+    QString testFileName = __func__ + QStringLiteral(".json");
     QFile::remove(testFileName);
 
     // Create a ConfigFile and populate it with data
     ConfigFile configFile(testFileName, this);
     configFile.setName("TestConfig");
-    configFile.setDescription("Test configuration for save/load");
 
-    // Add a ParameterList with parameters
-    ParameterList* paramList = configFile.emplace("Settings", "Application settings");
-    QVERIFY(paramList != nullptr);
-
-    paramList->emplace(100.0, "Volume", "Audio volume level");
-    paramList->emplace("dark", "Theme", "UI theme");
+    // Add 2 Parameters
+    configFile.saveValue("Volume", 100.0);
+    configFile.saveValue("Theme", QStringLiteral("light"));
 
     // Save to file
     bool saveResult = configFile.save();
@@ -248,28 +244,19 @@ void TestQtNoidAppConfigFile::testConfigFileSaveAndLoad()
 
     // Create a new ConfigFile and load from the same file
     ConfigFile loadedConfig(testFileName, this);
-
-
-    bool loadResult = loadedConfig.load();
-    QVERIFY(loadResult);
-
-    // Verify loaded data matches saved data
-    QCOMPARE(loadedConfig.count(), 1);
-
-    ParameterList* loadedParamList = loadedConfig.page("Settings");
-    QVERIFY(loadedParamList != nullptr);
-    QCOMPARE(loadedParamList->count(), 2);
-
-    Parameter* loadedParam1 = loadedParamList->parameter("Volume");
-    QVERIFY(loadedParam1 != nullptr);
-    QCOMPARE(loadedParam1->value().toDouble(), 100.0);
-
-    Parameter* loadedParam2 = loadedParamList->parameter("Theme");
-    QVERIFY(loadedParam2 != nullptr);
-    QCOMPARE(loadedParam2->value().toString(), "dark");
-
+    // qDebug() << __func__ << configFile;
+    // qDebug() << __func__ << loadedConfig;
 
     QCOMPARE(loadedConfig.name(), "TestConfig");
+    QCOMPARE(loadedConfig.count(), 1);
+    QCOMPARE(loadedConfig.parametersCount(), 2);
+
+    auto volume = loadedConfig.restoreAsDouble("Volume", 0.0);
+    QCOMPARE(volume, 100.0);
+
+    auto theme = loadedConfig.restoreAsString("Theme", "");
+    QCOMPARE(theme, "light");
+
 }
 
 void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyFileName()

@@ -352,21 +352,22 @@ void Config::remove(const QString &pageName)
 
 void Config::clear()
 {
+
     if(isEmpty()) return;
 
     for (auto it = m_pagesByIndex.begin(); it != m_pagesByIndex.end(); ++it) {
         ParameterList* page = it.value();
         m_pagesByUniqueId.remove(page->uniqueId());
         m_pagesByName.remove(page->name());
-        int idx = m_pageToIndex.value(page, -1);
         m_pageToIndex.remove(page);
-        m_pagesByIndex.remove(idx);
 
         disconnect(page, &QObject::destroyed, this, &Config::onPageDestroyed);
         disconnect(page, &ParameterList::nameChanged, this, nullptr);
 
         emit pageRemoved(page);
     }
+    // After removing all - it's time to clear also last index
+    m_pagesByIndex.clear();
 
     emit countChanged(0);
 }
@@ -422,6 +423,16 @@ QList<ParameterList *> Config::pages() const
         res << it.value();
     }
     return res;
+}
+
+
+int Config::parametersCount(const QString &pageName) const
+{
+    ParameterList* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
+        return {};
+
+    return page->count();
 }
 
 
@@ -695,10 +706,11 @@ void Config::onPageNameEdited(const QString &oldName, const QString &newName)
 
 void Config::appendPageAndUpdateIndexs(ParameterList *page)
 {
-
-    m_nextPageIndex++;
     m_pageToIndex.insert(page, m_nextPageIndex);
     m_pagesByIndex.insert(m_nextPageIndex, page);
+
+    // NOW I can increment the pageIndex
+    m_nextPageIndex++;
     m_pagesByName.insert(page->name(), page);
     m_pagesByUniqueId.insert(page->uniqueId(), page);
 

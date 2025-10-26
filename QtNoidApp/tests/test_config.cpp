@@ -317,7 +317,6 @@ void TestQtNoidAppConfig::testConfigDebugOutput()
     QVERIFY(dbgOutput.contains("EmptyConfig"));
     QVERIFY(dbgOutput.contains("count: 0"));
 
-
     // Test with populated config
     Config config;
     config.setName("DebugTest");
@@ -329,8 +328,7 @@ void TestQtNoidAppConfig::testConfigDebugOutput()
     config.saveValue("Theme", "light");
 
     dbgOutput = QDebug::toString(&config);
-    qDebug() << __func__ << dbgOutput;
-
+    // qDebug() << __func__ << dbgOutput;
 
     // Verify output contains expected information
     QVERIFY(!dbgOutput.isEmpty());

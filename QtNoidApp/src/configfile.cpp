@@ -16,12 +16,15 @@ ConfigFile::ConfigFile(QObject *parent)
 {
 }
 
+
 ConfigFile::ConfigFile(const QString &fileName, QObject *parent)
     : Config(parent)
 {
     initFileName(fileName);
     load();
+    // qDebug() << __func__ << this;
 }
+
 
 ConfigFile::~ConfigFile()
 {
@@ -29,20 +32,24 @@ ConfigFile::~ConfigFile()
     save();
 }
 
+
 QString ConfigFile::fileName() const
 {
     return m_fileName.value();
 }
+
 
 void ConfigFile::setFileName(const QString &value)
 {
     m_fileName = value;
 }
 
+
 QBindable<QString> ConfigFile::bindableFileName()
 {
     return QBindable<QString>(&m_fileName);
 }
+
 
 bool ConfigFile::isValid()
 {
@@ -51,6 +58,7 @@ bool ConfigFile::isValid()
 
     return true;
 }
+
 
 bool ConfigFile::load()
 {
@@ -70,9 +78,9 @@ bool ConfigFile::load()
     return valuesFromJson(doc.object());
 }
 
+
 bool ConfigFile::save()
 {
-
     if(!isValid())
         return false;
     QFile file(m_fileName);
@@ -90,6 +98,7 @@ bool ConfigFile::save()
     // qDebug() << __func__;
     return true;
 }
+
 
 void ConfigFile::initFileName(const QString &fileName)
 {

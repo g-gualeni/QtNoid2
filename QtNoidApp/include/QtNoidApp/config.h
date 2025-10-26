@@ -65,10 +65,12 @@ public:
     bool contains(ParameterList* page) const;
     bool contains(const QString& pageName) const;
 
+
     // List access
     QList<ParameterList*> pages() const;
 
     // Convenience methods for nested access
+    int parametersCount(const QString& pageName = "Settings") const;
     Parameter* parameter(const QString& paramName, const QString& pageName = "Settings") const;
 
     bool restoreAsBool(const QString& paramName, bool defaultValue, const QString& pageName = "Settings") const;
@@ -152,12 +154,12 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Config &config)
 
     if (!config.isEmpty()) {
         debug << ", pages: [";
-        for (int i = 0; i < config.count(); ++i) {
-            if (i > 0) debug << ", ";
-            QtNoid::App::ParameterList* list = config.page(i);
-            if (list) {
+        for (int ii = 0; ii < config.count(); ++ii) {
+            if (ii > 0) debug << ", ";
+            QtNoid::App::ParameterList* page = config.page(ii);
+            if (page) {
                 debug <<   " {";
-                debug << list;
+                debug << page;
                 debug <<  "}";
             }
         }
