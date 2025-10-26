@@ -256,7 +256,7 @@ void TestQtNoidAppConfigFile::testConfigFileSaveAndLoad()
     // Verify loaded data matches saved data
     QCOMPARE(loadedConfig.count(), 1);
 
-    ParameterList* loadedParamList = loadedConfig.parameterList("Settings");
+    ParameterList* loadedParamList = loadedConfig.page("Settings");
     QVERIFY(loadedParamList != nullptr);
     QCOMPARE(loadedParamList->count(), 2);
 
@@ -443,7 +443,7 @@ void TestQtNoidAppConfigFile::testConfigValuesFromJsonWithEmptyName()
     QCOMPARE(config.name(), "TestConfig");
     QCOMPARE(config.count(), 1);
 
-    ParameterList* list = config.parameterList("Settings");
+    ParameterList* list = config.page("Settings");
     QVERIFY(list != nullptr);
     QCOMPARE(list->count(), 1);
     QCOMPARE(list->value("Volume").toDouble(), 75.0);
@@ -477,7 +477,7 @@ void TestQtNoidAppConfigFile::testConfigValuesFromJsonWithMatchingName()
     QCOMPARE(config.name(), "MyConfig");
     QCOMPARE(config.count(), 1);
 
-    ParameterList* list = config.parameterList("Settings");
+    ParameterList* list = config.page("Settings");
     QVERIFY(list != nullptr);
     QCOMPARE(list->value("Theme").toString(), "dark");
 }
@@ -534,12 +534,12 @@ void TestQtNoidAppConfigFile::testConfigValuesFromJsonCreatesNewParameterLists()
     QVERIFY(result);
     QCOMPARE(config.count(), 2);
 
-    ParameterList* settings = config.parameterList("Settings");
+    ParameterList* settings = config.page("Settings");
     QVERIFY(settings != nullptr);
     QCOMPARE(settings->count(), 1);
     QCOMPARE(settings->value("Volume").toDouble(), 100.0);
 
-    ParameterList* advanced = config.parameterList("Advanced");
+    ParameterList* advanced = config.page("Advanced");
     QVERIFY(advanced != nullptr);
     QCOMPARE(advanced->count(), 1);
     QCOMPARE(advanced->value("Debug").toBool(), true);
@@ -588,7 +588,7 @@ void TestQtNoidAppConfigFile::testConfigValuesFromJsonUpdatesExistingParameterLi
     // Should still have only 1 ParameterList (not duplicated)
     QCOMPARE(config.count(), 1);
 
-    ParameterList* updatedSettings = config.parameterList("Settings");
+    ParameterList* updatedSettings = config.page("Settings");
     QVERIFY(updatedSettings != nullptr);
     QVERIFY(updatedSettings == settings); // Should be the same object
 

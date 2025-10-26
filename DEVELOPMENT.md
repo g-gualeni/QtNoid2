@@ -24,9 +24,8 @@ Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
 Fare un metodo statico per la conversione YAML to JSON
 
-Finire di sistemare i test dopo la revisione dello schema per paramterList
-
-
+revisione di Config
+fino a void Config::remove(ParameterList *page)
 
 # QtNoidApp
 - [x] appExeOrAppBundleDirPath();
@@ -68,17 +67,18 @@ Finire di sistemare i test dopo la revisione dello schema per paramterList
      - [x] clearRecentFiles
      - [x] restoreRecentFiles
      - [x] remove s_nextUniqueId because it is in ParameterList
-     - [ ] add tooltip
+     - [x] add tooltip
+     - [x] all json names should be camelCase lowercase
+     - [x] test Config Debug Output 
      - [ ] check implementation of class Config
      
-     - [ ] test tooltip in schema
-     - [ ] test description in schema
-     
-     - [ ] all json names should be camelCase lowercase
      - [ ] add iterator and reverse iterator for Config
      - [ ] cound should be bindable
+     
      - [ ] class Config Test
-     - [ ] testConfigDebugOutput
+     - [ ] test tooltip in schema
+     - [ ] test description in schema
+
 
 
 - [x] class **ConfigFile** as an extension of Config

@@ -309,43 +309,41 @@ void TestQtNoidAppConfig::testConfigDebugOutput()
     Config emptyConfig(this);
     emptyConfig.setName("EmptyConfig");
 
-    QString emptyOutput;
-    QDebug emptyDebug(&emptyOutput);
-    emptyDebug << emptyConfig;
-    // qDebug() << __func__ << emptyConfig;
+    QString dbgOutput = QDebug::toString(&emptyConfig);
+    // qDebug() << __func__ << dbgOutput;
 
     // Verify output contains the config name and count
-    QVERIFY(!emptyOutput.isEmpty());
-    QVERIFY(emptyOutput.contains("Config("));
-    QVERIFY(emptyOutput.contains("EmptyConfig"));
-    QVERIFY(emptyOutput.contains("count: 0"));
+    QVERIFY(!dbgOutput.isEmpty());
+    QVERIFY(dbgOutput.contains("EmptyConfig"));
+    QVERIFY(dbgOutput.contains("count: 0"));
 
 
     // Test with populated config
     Config config;
     config.setName("DebugTest");
     config.setDescription("Test config for debug output");
+    config.setTooltip("Test config tooltip");
 
     // Add multiple parameter lists
     config.saveValue("Volume", 75.0);
     config.saveValue("Theme", "light");
 
-    // Capture debug output
-    QString debugOutput;
-    QDebug debug(&debugOutput);
-    debug << config;
+    dbgOutput = QDebug::toString(&config);
+    qDebug() << __func__ << dbgOutput;
 
-    // qDebug() << __func__ << configFile;
 
     // Verify output contains expected information
-    QVERIFY(!debugOutput.isEmpty());
-    QVERIFY(debugOutput.contains("Config("));
-    QVERIFY(debugOutput.contains("DebugTest"));
-    QVERIFY(debugOutput.contains("Count: 2"));
-    QVERIFY(debugOutput.contains("ParameterLists:"));
-    QVERIFY(debugOutput.contains("Settings"));
-    QVERIFY(debugOutput.contains("Count: 2"));
-    QVERIFY(debugOutput.contains("Count: 1"));
+    QVERIFY(!dbgOutput.isEmpty());
+    QVERIFY(dbgOutput.contains("DebugTest"));
+    QVERIFY(dbgOutput.contains("description"));
+    QVERIFY(dbgOutput.contains("tooltip"));
+
+    QVERIFY(dbgOutput.contains("pages: ["));
+    QVERIFY(dbgOutput.contains("Settings"));
+    QVERIFY(dbgOutput.contains("count: 2, visible: true"));
+    QVERIFY(dbgOutput.contains("Volume"));
+    QVERIFY(dbgOutput.contains("Theme"));
+
 
     // Test pointer version
     Config* ptrConfig = new Config(this);
