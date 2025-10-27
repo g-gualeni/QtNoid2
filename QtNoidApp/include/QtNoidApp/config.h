@@ -51,7 +51,7 @@ public:
     bool append(ParameterList *page);
     bool append(const QJsonObject& schema, const QJsonObject& value);
     ParameterList* emplace(const QString& name, const QString& description = {});
-    ParameterList* emplace(const QJsonObject& schema, const QJsonObject& value);
+    ParameterList* emplace(const QJsonObject& schema, const QJsonObject& values);
     void remove(ParameterList* page);
     void remove(const QString& pageName);
     void clear();

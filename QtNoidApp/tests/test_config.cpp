@@ -16,15 +16,6 @@ private slots:
     void init();
     void cleanup();
 
-    // RecentFiles tests
-    void testAddRecentFile();
-    void testAddRecentFileShouldDoNothingIfAnEmptyString();
-    void testRestoreRecentFiles();
-    void testClearRecentFiles();
-
-    // Debug output test
-    void testConfigDebugOutput();
-
     // Constructor tests
     void testDefaultConstructor();
     void testConstructorWithName();
@@ -39,8 +30,8 @@ private slots:
     // JSON serialization tests
     void testToJsonValues();
     void testToJsonSchema();
-    void testValuesFromJson();
-    void testSchemaFromJson();
+    void testConfigValuesFromJson();
+    void testConfigSchemaFromJson();
 
     // Container management tests
     void testAppendPage();
@@ -48,7 +39,7 @@ private slots:
     void testEmplacePage();
     void testEmplaceWithJson();
     void testRemovePage();
-    void testRemovePageByName();
+    void testRemoveNonExistentPage();
     void testClearPages();
     void testIsEmpty();
 
@@ -56,13 +47,15 @@ private slots:
     void testPageByIndex();
     void testPageByName();
     void testIndexOfPage();
-    void testIndexOfPageByName();
     void testContainsPage();
-    void testContainsPageByName();
     void testPagesList();
 
     // Parameter access tests
     void testParameterAccess();
+    void testParametersCount();
+
+    // Operator tests
+    void testOperatorStreamInsert();
 
     // Save/restore value tests
     void testSaveAndRestoreInt();
@@ -82,25 +75,36 @@ private slots:
     void testPageRemovedSignal();
     void testPageRenameErrorSignal();
 
-    // Operator tests
-    void testStreamOperator();
+    // RecentFiles tests
+    void testAddRecentFile();
+    void testAddRecentFileShouldDoNothingIfAnEmptyString();
+    void testRestoreRecentFiles();
+    void testClearRecentFiles();
+
+    // Debug output test
+    void testConfigDebugOutput();
 };
+
 
 void TestQtNoidAppConfig::initTestCase()
 {
 }
 
+
 void TestQtNoidAppConfig::cleanupTestCase()
 {
 }
+
 
 void TestQtNoidAppConfig::init()
 {
 }
 
+
 void TestQtNoidAppConfig::cleanup()
 {
 }
+
 
 void TestQtNoidAppConfig::testAddRecentFile()
 {
@@ -187,7 +191,6 @@ void TestQtNoidAppConfig::testAddRecentFileShouldDoNothingIfAnEmptyString()
     recentFiles = config.restoreAsStringList("RecentFiles", QStringList());
     QCOMPARE(recentFiles.size(), 1);
     QCOMPARE(recentFiles.at(0), "C:/test/file1.txt");
-
 }
 
 
@@ -448,8 +451,6 @@ void TestQtNoidAppConfig::testConstructorWithName()
 void TestQtNoidAppConfig::testConstructorWithJson()
 {
     // Create schema JSON
-
-
     QJsonObject page1Details({{"description", "Page 1"}});
     QJsonObject page1Schema({{"Settings", page1Details}});
     QJsonArray pagesArray({page1Schema});
@@ -460,7 +461,7 @@ void TestQtNoidAppConfig::testConstructorWithJson()
         {"pages", pagesArray}
     });
     QJsonObject schema({{"TestConfig", schemaMain}});
-    qDebug() << __func__ << "Schema:" << schema;
+    // qDebug() << __func__ << "Schema:" << schema;
 
     // Create value JSON
     QJsonObject param1({{"Volume", 50}});
@@ -470,12 +471,11 @@ void TestQtNoidAppConfig::testConstructorWithJson()
     QJsonObject page1({{"Settings", page1Main}});
     QJsonObject valueMain({{"pages", QJsonArray({page1})}});
     QJsonObject value({{"TestConfig", valueMain}});
-    qDebug() << __func__ << "Value:" << value;
+    // qDebug() << __func__ << "Value:" << value;
 
     // Create config from JSON
     Config config(schema, value, this);
-
-    qDebug() << __func__ << config;
+    // qDebug() << __func__ << config;
 
     QCOMPARE(config.name(), "TestConfig");
     QCOMPARE(config.description(), "Test description");
@@ -486,9 +486,9 @@ void TestQtNoidAppConfig::testConstructorWithJson()
     auto theme = config.restoreAsString("Theme", "");
     QCOMPARE(theme, "light");
 
-    QVERIFY(0);
     QCOMPARE(config.count(), 1);
     QVERIFY(config.contains("Settings"));
+    QCOMPARE(config.parametersCount("Settings"), 2);
 }
 
 // Property tests
@@ -573,10 +573,13 @@ void TestQtNoidAppConfig::testToJsonValues()
     config.saveValue("Theme", "dark");
 
     QJsonObject json = config.toJsonValues();
+    // qDebug() << __func__ << config;
+    // qDebug() << __func__ << json;
 
     QVERIFY(json.contains("TestConfig"));
-    QJsonArray valuesArray = json["TestConfig"].toArray();
-    QVERIFY(valuesArray.size() > 0);
+    QJsonObject jsonMain = json["TestConfig"].toObject();
+    QJsonArray pagesArray = jsonMain["pages"].toArray();
+    QVERIFY(pagesArray.size() == 1);
 }
 
 void TestQtNoidAppConfig::testToJsonSchema()
@@ -595,67 +598,89 @@ void TestQtNoidAppConfig::testToJsonSchema()
     QVERIFY(schemaMain.contains("pages"));
 }
 
-void TestQtNoidAppConfig::testValuesFromJson()
+
+void TestQtNoidAppConfig::testConfigValuesFromJson()
 {
     Config config("TestConfig", this);
-    config.emplace("Settings");
 
     // Create value JSON
-    QJsonObject value;
-    QJsonArray valuesArray;
-    QJsonObject pageValue;
-    QJsonArray params;
-    QJsonObject param1;
-    param1["Volume"] = 80;
-    params.append(param1);
-    pageValue["Settings"] = params;
-    valuesArray.append(pageValue);
-    value["TestConfig"] = valuesArray;
+    QJsonObject param1({{"Volume", 80}});
+    QJsonObject param2({{"Intensity", 500}});
+    QJsonArray params({param1, param2});
+    QJsonObject pageValue({{"parameters", params}});
+    QJsonObject pageMain({{"Settings", pageValue}});
+    QJsonArray pagesArray({pageMain});
+    QJsonObject valueMain({{"pages", pagesArray}});
+    QJsonObject value({{"TestConfig", valueMain}});
 
+    // qDebug() << __func__ << value;
     bool result = config.valuesFromJson(value);
+    // qDebug() << __func__ << config;
 
     QVERIFY(result);
+    QCOMPARE(config.name(), "TestConfig");
     QCOMPARE(config.restoreAsInt("Volume", 0), 80);
+    QCOMPARE(config.restoreAsInt("Intensity", 0), 500);
+
+    // Test using a Config object with 0 pages
+    Config config2(this);
+    QJsonObject valueMain2({{"pages", QJsonArray()}});
+    QJsonObject value2({{"TestConfig2", valueMain2}});
+
+    // qDebug() << __func__ << value2;
+    result = config2.valuesFromJson(value2);
+    // qDebug() << __func__ << config2;
+
+    QVERIFY(result);
+    QCOMPARE(config2.name(), "TestConfig2");
+    QCOMPARE(config2.count(), 0);
 }
 
-void TestQtNoidAppConfig::testSchemaFromJson()
+
+void TestQtNoidAppConfig::testConfigSchemaFromJson()
 {
     Config config(this);
 
     // Create schema JSON
     QJsonObject schema;
-    QJsonObject schemaMain;
-    schemaMain["description"] = "Loaded description";
-    schemaMain["tooltip"] = "Loaded tooltip";
 
-    QJsonArray pagesArray;
-    QJsonObject pageSchema;
-    QJsonObject pageDetails;
-    pageDetails["description"] = "Settings page";
-    pageSchema["Settings"] = pageDetails;
-    pagesArray.append(pageSchema);
-
-    schemaMain["pages"] = pagesArray;
+    QJsonObject pageDetails({{"description", "Settings page"}});
+    QJsonObject pageSchema({{"Settings",pageDetails}});
+    QJsonArray pagesArray({pageSchema});
+    QJsonObject schemaMain({{"description", "Loaded description"},
+                            {"tooltip", "Loaded tooltip"},
+                            {"pages", pagesArray}});
     schema["LoadedConfig"] = schemaMain;
 
+    // qDebug() << __func__ << schema;
     bool result = config.schemaFromJson(schema);
+    // qDebug() << __func__ << config;
 
     QVERIFY(result);
     QCOMPARE(config.name(), "LoadedConfig");
     QCOMPARE(config.description(), "Loaded description");
     QCOMPARE(config.tooltip(), "Loaded tooltip");
     QVERIFY(config.contains("Settings"));
+    QCOMPARE(config.parametersCount(), 0);
+
 }
 
 // Container management tests
 void TestQtNoidAppConfig::testAppendPage()
 {
     Config config(this);
+    QSignalSpy pageSpy(&config, &Config::pageAdded);
+    QVERIFY(pageSpy.isValid());
 
     ParameterList* page = new ParameterList("Page1", &config);
     bool result = config.append(page);
 
     QVERIFY(result);
+    QCOMPARE(pageSpy.count(), 1);
+    auto argument = pageSpy.takeFirst();
+    auto actual = argument.at(0).value<ParameterList*>();
+    QCOMPARE(actual, page);
+
     QCOMPARE(config.count(), 1);
     QVERIFY(config.contains("Page1"));
 
@@ -676,29 +701,30 @@ void TestQtNoidAppConfig::testAppendPage()
     result = config.append(emptyName);
     QVERIFY(!result);
     delete emptyName;
+
 }
 
 void TestQtNoidAppConfig::testAppendWithJson()
 {
     Config config(this);
 
-    QJsonObject schema;
-    QJsonObject pageSchema;
-    pageSchema["description"] = "Page description";
-    schema["Page1"] = pageSchema;
+    QJsonObject pageSchema({{"description", "Page description"}});
+    QJsonObject schema({{"Page1", pageSchema}});
 
-    QJsonObject value;
-    QJsonArray params;
-    QJsonObject param;
-    param["Key"] = "Value";
-    params.append(param);
-    value["Page1"] = params;
+    QJsonObject param1({{"Key","Value"}});
+    QJsonObject param2({{"Int", 123}});
+    QJsonArray params({{param1, param2}});
+    QJsonObject valueMain({{"parameters", params}});
+    QJsonObject value({{"Page1", valueMain}});
 
     bool result = config.append(schema, value);
+    // qDebug() << __func__ << config;
 
     QVERIFY(result);
     QCOMPARE(config.count(), 1);
     QVERIFY(config.contains("Page1"));
+    QCOMPARE(config.restoreAsString("Key", "", "Page1"), "Value");
+    QCOMPARE(config.restoreAsInt("Int", 0, "Page1"), 123);
 }
 
 void TestQtNoidAppConfig::testEmplacePage()
@@ -728,58 +754,76 @@ void TestQtNoidAppConfig::testEmplaceWithJson()
 {
     Config config(this);
 
-    QJsonObject schema;
-    QJsonObject pageSchema;
-    pageSchema["description"] = "Page description";
-    schema["Page1"] = pageSchema;
+    QJsonObject schemaPageMain({{"description", "Page description"},
+                                {"tooltip", "Page Tooltip"}});
+    QJsonObject schemaPage({{"DriversPage", schemaPageMain}});
 
-    QJsonObject value;
-    QJsonArray params;
-    value["Page1"] = params;
+    QJsonObject value1({{"Citizenship", true}});
+    QJsonObject value2({{"DrivingLicenseNumber", 12345}});
+    QJsonObject valueMain({{"parameters", QJsonArray({value1, value2})}});
+    QJsonObject value({{"DriversPage", valueMain}});
 
-    ParameterList* page = config.emplace(schema, value);
+    ParameterList* page = config.emplace(schemaPage, value);
+    // qDebug() << __func__ << page;
 
     QVERIFY(page != nullptr);
     QCOMPARE(config.count(), 1);
-    QVERIFY(config.contains("Page1"));
+    QVERIFY(config.contains("DriversPage"));
+
+    QCOMPARE(config.restoreAsBool("Citizenship", false, "DriversPage"), true);
+    QCOMPARE(config.restoreAsInt("DrivingLicenseNumber", 0, "DriversPage"), 12345);
 }
 
 void TestQtNoidAppConfig::testRemovePage()
 {
     Config config(this);
+    QSignalSpy spy(&config, &Config::pageRemoved);
 
     ParameterList* page1 = config.emplace("Page1");
     ParameterList* page2 = config.emplace("Page2");
+    ParameterList* page3 = config.emplace("Page3");
+    QCOMPARE(config.count(), 3);
 
-    QCOMPARE(config.count(), 2);
+    config.remove(page1);   // Remove by reference
+    QCOMPARE(spy.count(), 1);
+    auto args = spy.takeFirst();
+    auto actual = args.at(0).value<ParameterList*>();
+    QCOMPARE(actual, page1);
 
-    config.remove(page1);
+
+    config.remove("Page2"); // Remove by Name
+    QCOMPARE(spy.count(), 1);
+    args = spy.takeFirst();
+    actual = args.at(0).value<ParameterList*>();
+    QCOMPARE(actual, page2);
+
+    // I left Page3 on purpose
     QCOMPARE(config.count(), 1);
-    QVERIFY(!config.contains("Page1"));
-    QVERIFY(config.contains("Page2"));
+    QVERIFY(!config.contains(page1));
+    QVERIFY(!config.contains(page2));
+    QVERIFY(config.contains(page3));
+    QVERIFY(config.contains("Page3"));
 
-    // Test removing nullptr
-    config.remove(static_cast<ParameterList*>(nullptr));
-    QCOMPARE(config.count(), 1);
 }
 
-void TestQtNoidAppConfig::testRemovePageByName()
+void TestQtNoidAppConfig::testRemoveNonExistentPage()
 {
     Config config(this);
 
     config.emplace("Page1");
     config.emplace("Page2");
 
+    // Test removing nullptr
+    config.remove(static_cast<ParameterList*>(nullptr));
     QCOMPARE(config.count(), 2);
 
-    config.remove("Page1");
-    QCOMPARE(config.count(), 1);
-    QVERIFY(!config.contains("Page1"));
-    QVERIFY(config.contains("Page2"));
+    config.remove("NonExistentPage");
+    QCOMPARE(config.count(), 2);
 
-    // Test removing non-existent page
-    config.remove("NonExistent");
-    QCOMPARE(config.count(), 1);
+    // Test removing not related page
+    ParameterList list(this);
+    config.remove(&list);
+    QCOMPARE(config.count(), 2);
 }
 
 void TestQtNoidAppConfig::testClearPages()
@@ -800,12 +844,12 @@ void TestQtNoidAppConfig::testClearPages()
     // Test clearing empty config
     config.clear();
     QCOMPARE(config.count(), 0);
+
 }
 
 void TestQtNoidAppConfig::testIsEmpty()
 {
     Config config(this);
-
     QVERIFY(config.isEmpty());
 
     config.emplace("Page1");
@@ -813,6 +857,7 @@ void TestQtNoidAppConfig::testIsEmpty()
 
     config.clear();
     QVERIFY(config.isEmpty());
+
 }
 
 // Access methods tests
@@ -843,6 +888,7 @@ void TestQtNoidAppConfig::testPageByName()
 
     // Test non-existent page
     QVERIFY(config.page("NonExistent") == nullptr);
+
 }
 
 void TestQtNoidAppConfig::testIndexOfPage()
@@ -852,28 +898,23 @@ void TestQtNoidAppConfig::testIndexOfPage()
     ParameterList* page1 = config.emplace("Page1");
     ParameterList* page2 = config.emplace("Page2");
 
+    // index using object
     QCOMPARE(config.indexOf(page1), 0);
     QCOMPARE(config.indexOf(page2), 1);
 
-    // Test non-existent page
-    ParameterList* external = new ParameterList("External");
-    QCOMPARE(config.indexOf(external), -1);
-    delete external;
-}
-
-void TestQtNoidAppConfig::testIndexOfPageByName()
-{
-    Config config(this);
-
-    config.emplace("Page1");
-    config.emplace("Page2");
-
+    // index using name
     QCOMPARE(config.indexOf("Page1"), 0);
     QCOMPARE(config.indexOf("Page2"), 1);
 
     // Test non-existent page
-    QCOMPARE(config.indexOf("NonExistent"), -1);
+    ParameterList* external = new ParameterList("External");
+    QCOMPARE(config.indexOf(external), -1);
+    QCOMPARE(config.indexOf("external"), -1);
+
+    delete external;
+
 }
+
 
 void TestQtNoidAppConfig::testContainsPage()
 {
@@ -882,21 +923,14 @@ void TestQtNoidAppConfig::testContainsPage()
     ParameterList* page1 = config.emplace("Page1");
 
     QVERIFY(config.contains(page1));
+    QVERIFY(config.contains("Page1"));
 
     // Test non-existent page
     ParameterList* external = new ParameterList("External");
     QVERIFY(!config.contains(external));
+    QVERIFY(!config.contains("external"));
     delete external;
-}
 
-void TestQtNoidAppConfig::testContainsPageByName()
-{
-    Config config(this);
-
-    config.emplace("Page1");
-
-    QVERIFY(config.contains("Page1"));
-    QVERIFY(!config.contains("NonExistent"));
 }
 
 void TestQtNoidAppConfig::testPagesList()
@@ -909,10 +943,12 @@ void TestQtNoidAppConfig::testPagesList()
 
     QList<ParameterList*> pages = config.pages();
 
+
     QCOMPARE(pages.size(), 3);
     QVERIFY(pages.contains(page1));
     QVERIFY(pages.contains(page2));
     QVERIFY(pages.contains(page3));
+
 }
 
 // Parameter access tests
@@ -925,14 +961,149 @@ void TestQtNoidAppConfig::testParameterAccess()
     Parameter* param = config.parameter("Volume", "Settings");
     QVERIFY(param != nullptr);
     QCOMPARE(param->name(), "Volume");
+    QCOMPARE(param->value(), 75);
+
 
     // Test non-existent parameter
     Parameter* nonExistent = config.parameter("NonExistent", "Settings");
     QVERIFY(nonExistent == nullptr);
 
+
     // Test non-existent page
     Parameter* nonExistentPage = config.parameter("Volume", "NonExistentPage");
     QVERIFY(nonExistentPage == nullptr);
+}
+
+void TestQtNoidAppConfig::testParametersCount()
+{
+    Config config(this);
+
+    // Test 1: Count with default page name "Settings" - page doesn't exist yet
+    int count = config.parametersCount();
+    QCOMPARE(count, 0);
+
+    // Test 2: Count after adding parameters to default "Settings" page
+    config.saveValue("Volume", 75);
+    config.saveValue("Theme", "dark");
+    config.saveValue("Language", "en");
+    count = config.parametersCount();
+    QCOMPARE(count, 3);
+
+    // Test 3: Count with explicit "Settings" page name
+    count = config.parametersCount("Settings");
+    QCOMPARE(count, 3);
+
+    // Test 4: Count for non-existent page
+    count = config.parametersCount("NonExistentPage");
+    QCOMPARE(count, 0);
+
+    // Test 5: Count with custom page name
+    config.saveValue("Width", 1920, "Display");
+    config.saveValue("Height", 1080, "Display");
+    count = config.parametersCount("Display");
+    QCOMPARE(count, 2);
+
+    // Verify Settings page still has 3 parameters
+    count = config.parametersCount("Settings");
+    QCOMPARE(count, 3);
+
+    // Test 6: Count for empty page
+    config.emplace("EmptyPage");
+    count = config.parametersCount("EmptyPage");
+    QCOMPARE(count, 0);
+
+    // Test 7: Count after adding parameters to previously empty page
+    config.saveValue("Key1", "Value1", "EmptyPage");
+    config.saveValue("Key2", "Value2", "EmptyPage");
+    count = config.parametersCount("EmptyPage");
+    QCOMPARE(count, 2);
+
+    // Test 8: Verify count doesn't change when updating existing parameter
+    config.saveValue("Volume", 50); // Update existing
+    count = config.parametersCount("Settings");
+    QCOMPARE(count, 3); // Should still be 3
+}
+
+void TestQtNoidAppConfig::testOperatorStreamInsert()
+{
+    Config config(this);
+    QSignalSpy pageAddedSpy(&config, &Config::pageAdded);
+    QSignalSpy countSpy(&config, &Config::countChanged);
+
+    // Test 1: operator<< with ParameterList reference
+    ParameterList page1("Page1", &config);
+    config << page1;
+
+    QCOMPARE(config.count(), 1);
+    QVERIFY(config.contains("Page1"));
+    QCOMPARE(config.page(0), &page1);
+    QCOMPARE(pageAddedSpy.count(), 1);
+    QCOMPARE(countSpy.count(), 1);
+
+    // Test 2: operator<< with ParameterList pointer
+    ParameterList* page2 = new ParameterList("Page2", &config);
+    config << page2;
+
+    QCOMPARE(config.count(), 2);
+    QVERIFY(config.contains("Page2"));
+    QCOMPARE(config.page(1), page2);
+    QCOMPARE(pageAddedSpy.count(), 2);
+    QCOMPARE(countSpy.count(), 2);
+
+    // Test 3: Chaining operator<< calls
+    ParameterList* page3 = new ParameterList("Page3", &config);
+    ParameterList* page4 = new ParameterList("Page4", &config);
+    config << page3 << page4;
+
+    QCOMPARE(config.count(), 4);
+    QVERIFY(config.contains("Page3"));
+    QVERIFY(config.contains("Page4"));
+    QCOMPARE(pageAddedSpy.count(), 4);
+    QCOMPARE(countSpy.count(), 4);
+
+    // Test 4: operator<< with nullptr pointer (should do nothing)
+    ParameterList* nullPage = nullptr;
+    config << nullPage;
+
+    QCOMPARE(config.count(), 4); // Count should not change
+    QCOMPARE(pageAddedSpy.count(), 4); // No signal should be emitted
+
+    // Test 5: operator<< with duplicate name (should fail but not crash)
+    ParameterList* duplicate = new ParameterList("Page1", &config);
+    config << duplicate;
+
+    QCOMPARE(config.count(), 4); // Count should not change
+    QCOMPARE(pageAddedSpy.count(), 4); // No signal should be emitted
+    delete duplicate; // Clean up since it wasn't added
+
+    // Test 6: operator<< with empty name (should fail)
+    ParameterList* emptyName = new ParameterList("", &config);
+    config << emptyName;
+
+    QCOMPARE(config.count(), 4); // Count should not change
+    QCOMPARE(pageAddedSpy.count(), 4); // No signal should be emitted
+    delete emptyName; // Clean up since it wasn't added
+
+    // Test 7: Verify that operator<< returns Config reference for chaining
+    Config config2(this);
+    ParameterList page5("Page5", &config2);
+    ParameterList page6("Page6", &config2);
+
+    Config& result = (config2 << page5 << page6);
+
+    QCOMPARE(&result, &config2); // Should return reference to same object
+    QCOMPARE(config2.count(), 2);
+
+    // Test 8: Mixed reference and pointer chaining
+    Config config3(this);
+    ParameterList pageRef("PageRef", &config3);
+    ParameterList* pagePtr = new ParameterList("PagePtr", &config3);
+
+    config3 << pageRef << pagePtr;
+
+    QCOMPARE(config3.count(), 2);
+    QVERIFY(config3.contains("PageRef"));
+    QVERIFY(config3.contains("PagePtr"));
 }
 
 // Save/restore value tests
@@ -1061,11 +1232,14 @@ void TestQtNoidAppConfig::testNameChangedSignal()
 
     config.setName("TestName");
     QCOMPARE(spy.count(), 1);
-    QList<QVariant> arguments = spy.takeFirst();
+    auto arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "TestName");
 
     config.setName("NewName");
     QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "NewName");
+
 }
 
 void TestQtNoidAppConfig::testDescriptionChangedSignal()
@@ -1075,9 +1249,10 @@ void TestQtNoidAppConfig::testDescriptionChangedSignal()
 
     config.setDescription("Test description");
     QCOMPARE(spy.count(), 1);
-    QList<QVariant> arguments = spy.takeFirst();
+    auto arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "Test description");
 }
+
 
 void TestQtNoidAppConfig::testTooltipChangedSignal()
 {
@@ -1086,8 +1261,9 @@ void TestQtNoidAppConfig::testTooltipChangedSignal()
 
     config.setTooltip("Test tooltip");
     QCOMPARE(spy.count(), 1);
-    QList<QVariant> arguments = spy.takeFirst();
+    auto arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "Test tooltip");
+
 }
 
 void TestQtNoidAppConfig::testCountChangedSignal()
@@ -1097,7 +1273,7 @@ void TestQtNoidAppConfig::testCountChangedSignal()
 
     config.emplace("Page1");
     QCOMPARE(spy.count(), 1);
-    QList<QVariant> arguments = spy.takeFirst();
+    auto arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toInt(), 1);
 
     config.emplace("Page2");
@@ -1106,35 +1282,48 @@ void TestQtNoidAppConfig::testCountChangedSignal()
     QCOMPARE(arguments.at(0).toInt(), 2);
 
     config.clear();
-    QCOMPARE(spy.count(), 2); // One signal per page removal + one for count
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 0);
 }
+
 
 void TestQtNoidAppConfig::testPageAddedSignal()
 {
     Config config(this);
     QSignalSpy spy(&config, &Config::pageAdded);
 
-    config.emplace("Page1");
+    auto page1 = config.emplace("Page1");
     QCOMPARE(spy.count(), 1);
+    auto param = spy.takeFirst();
+    QCOMPARE(param.at(0).value<ParameterList*>(), page1);
 
-    config.emplace("Page2");
-    QCOMPARE(spy.count(), 2);
+    auto page2 = config.emplace("Page2");
+    QCOMPARE(spy.count(), 1);
+    param = spy.takeFirst();
+    QCOMPARE(param.at(0).value<ParameterList*>(), page2);
 }
+
 
 void TestQtNoidAppConfig::testPageRemovedSignal()
 {
     Config config(this);
+    QSignalSpy spy(&config, &Config::pageRemoved);
 
     ParameterList* page1 = config.emplace("Page1");
     ParameterList* page2 = config.emplace("Page2");
 
-    QSignalSpy spy(&config, &Config::pageRemoved);
-
     config.remove(page1);
     QCOMPARE(spy.count(), 1);
+    auto param = spy.takeFirst();
+    QCOMPARE(param.at(0).value<ParameterList*>(), page1);
+
 
     config.remove("Page2");
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.count(), 1);
+    param = spy.takeFirst();
+    QCOMPARE(param.at(0).value<ParameterList*>(), page2);
+
 }
 
 void TestQtNoidAppConfig::testPageRenameErrorSignal()
@@ -1151,37 +1340,14 @@ void TestQtNoidAppConfig::testPageRenameErrorSignal()
     // Try to rename to an existing name - should trigger error
     page1->setName("Page2");
 
+
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "Page1");
     QCOMPARE(arguments.at(1).toString(), "Page2");
+
 }
 
-// Operator tests
-void TestQtNoidAppConfig::testStreamOperator()
-{
-    Config config(this);
-    config.setName("TestConfig");
-
-    ParameterList* page = config.emplace("Page1");
-    config.saveValue("Volume", 75);
-
-    // Test operator<< with reference
-    QString output1;
-    QDebug debug1(&output1);
-    debug1 << config;
-
-    QVERIFY(!output1.isEmpty());
-    QVERIFY(output1.contains("TestConfig"));
-
-    // Test operator<< with pointer
-    QString output2;
-    QDebug debug2(&output2);
-    debug2 << &config;
-
-    QVERIFY(!output2.isEmpty());
-    QVERIFY(output2.contains("TestConfig"));
-}
 
 QTEST_MAIN(TestQtNoidAppConfig)
 #include "test_config.moc"

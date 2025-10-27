@@ -40,7 +40,7 @@ Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, 
         return;
     }
 
-    // Load parameter lists from schemaConfig and merge with values in valueConfig
+    // Load properties that are only in schema
     const QJsonObject schemaMain = schemaConfig[name].toObject();
     if(schemaMain.contains("description")) {
         setDescription(schemaMain["description"].toString());
@@ -49,29 +49,33 @@ Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, 
         setTooltip(schemaMain["tooltip"].toString());
     }
 
-    // Prepare a QHash map for values so I can get them fast from their name
-    // and also skip values that are not objects
-    QHash<QString, QJsonObject> valueMap;
-
-    qDebug() << __func__ << valueConfig[name];
-
-    const QJsonObject valueMain = valueConfig[name].toObject();
-    const QJsonArray valueArray = valueMain["pages"].toArray();
-    for (const QJsonValue& value : valueArray) {
-        if (value.isObject()) {
-            const QJsonObject valueObj = value.toObject();
-            auto valueName = valueObj.begin().key();
-            valueMap.insert(valueName, valueObj);
-        }
-    }
-
+    // Generate objects from schema
     const QJsonArray schemaArray = schemaMain["pages"].toArray();
     for (const QJsonValue& schema : schemaArray) {
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
             const QString& newPageName = schemaObj.constBegin().key();
-            const QJsonObject valueObj = valueMap.value(newPageName, {});
-            auto newPage = new ParameterList(schemaObj, valueObj, this);
+            auto newPage = new ParameterList(schemaObj, {}, this);
+            bool res = append(newPage);
+            if(!res) delete newPage;
+        }
+    }
+
+    // Generate or update using objects from JSON Values
+    // qDebug() << __func__ << valueConfig[name];
+    const QJsonObject valueMain = valueConfig[name].toObject();
+    const QJsonArray valueArray = valueMain["pages"].toArray();
+    for (const QJsonValue& value : valueArray) {
+        if (!value.isObject()) {
+            continue;
+        }
+        const QJsonObject valueObj = value.toObject();
+        auto valueName = valueObj.begin().key();
+        if(contains(valueName)){
+            m_pagesByName[valueName]->valuesFromJson(valueObj);
+        }
+        else {
+            auto newPage = new ParameterList({}, valueObj, this);
             bool res = append(newPage);
             if(!res) delete newPage;
         }
@@ -139,9 +143,9 @@ bool Config::valuesFromJson(const QJsonObject &json)
     }
 
     // Load parameter lists
-    const QJsonArray listsArray = json[name].toArray();
-
-    for (const QJsonValue& value : listsArray) {
+    const QJsonObject valueMain = json[name].toObject();
+    const QJsonArray valueArray = valueMain["pages"].toArray();
+    for (const QJsonValue& value : valueArray) {
         if (value.isObject()) {
             const QJsonObject valueObj = value.toObject();
             const auto valueName = valueObj.constBegin().key();
@@ -310,9 +314,9 @@ ParameterList* Config::emplace(const QString& name, const QString& description)
     return page;
 }
 
-ParameterList* Config::emplace(const QJsonObject& schema, const QJsonObject& value)
+ParameterList* Config::emplace(const QJsonObject& schema, const QJsonObject& values)
 {
-    ParameterList* page = new ParameterList(schema, value, this);
+    ParameterList* page = new ParameterList(schema, values, this);
     bool res = append(page);
     if(!res) {
         delete page;
@@ -488,6 +492,9 @@ bool Config::restoreAsBool(const QString &paramName, bool defaultValue, const QS
     if(page == nullptr)
         return defaultValue;
 
+    if(!page->contains(paramName))
+        return defaultValue;
+
     return page->value(paramName).toBool();
 }
 
@@ -511,6 +518,9 @@ int Config::restoreAsInt(const QString &paramName, int defaultValue, const QStri
     if(page == nullptr)
         return defaultValue;
 
+    if(!page->contains(paramName))
+        return defaultValue;
+
     return page->value(paramName).toInt();
 }
 
@@ -525,6 +535,9 @@ double Config::restoreAsDouble(const QString &paramName, double defaultValue, co
 {
     ParameterList* page = m_pagesByName.value(pageName, nullptr);
     if(page == nullptr)
+        return defaultValue;
+
+    if(!page->contains(paramName))
         return defaultValue;
 
     return page->value(paramName).toDouble();
@@ -543,6 +556,9 @@ QString Config::restoreAsString(const QString &paramName, const QString &default
     if(page == nullptr)
         return defaultValue;
 
+    if(!page->contains(paramName))
+        return defaultValue;
+
     return page->value(paramName).toString();
 }
 
@@ -557,6 +573,9 @@ QStringList Config::restoreAsStringList(const QString &paramName, const QStringL
 {
     ParameterList* page = m_pagesByName.value(pageName, nullptr);
     if(page == nullptr)
+        return defaultValue;
+
+    if(!page->contains(paramName))
         return defaultValue;
 
     return page->value(paramName).toStringList();
@@ -575,6 +594,9 @@ QVariant Config::restoreAsVariant(const QString& paramName, const QVariant &defa
     if(page == nullptr)
         return defaultValue;
 
+    if(!page->contains(paramName))
+        return defaultValue;
+
     return page->value(paramName);
 }
 
@@ -589,6 +611,9 @@ QByteArray Config::restoreAsByteArray(const QString &paramName, const QByteArray
 {
     ParameterList* page = m_pagesByName.value(pageName, nullptr);
     if(page == nullptr)
+        return defaultValue;
+
+    if(!page->contains(paramName))
         return defaultValue;
 
     auto valueAsString = page->value(paramName).toString();
@@ -607,6 +632,9 @@ QStringList Config::restoreRecentFiles(const QStringList defaultValue, const QSt
 {
     ParameterList* page = m_pagesByName.value(pageName, nullptr);
     if(page == nullptr)
+        return defaultValue;
+
+    if(!page->contains(paramName))
         return defaultValue;
 
     return page->value(paramName).toStringList();

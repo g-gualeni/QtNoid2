@@ -24,16 +24,10 @@ Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
 Fare un metodo statico per la conversione YAML to JSON
 
-revisione di Config
-fino a void Config::remove(ParameterList *page)
-
 test di ParameterList::nameEdited(const QString &oldName, const QString &newName);
-
 test che Parameter::nameChanged() venga emesso
 test che Parameter::nameEdited() venga emesso
 
-C'è un pb con con il test Config costruttore partendo da JSON
--> se non ci sono parametri nello schema non li carica
 
 
 # QtNoidApp
@@ -79,16 +73,13 @@ C'è un pb con con il test Config costruttore partendo da JSON
      - [x] add tooltip
      - [x] all json names should be camelCase lowercase
      - [x] test Config Debug Output 
-     - [ ] check implementation of class Config
+     - [x] check implementation of class Config
+     - [x] class Config Test
+     - [x] test tooltip in schema
+     - [x] test description in schema
      
      - [ ] add iterator and reverse iterator for Config
-     - [ ] cound should be bindable
-     
-     - [ ] class Config Test
-     - [ ] test tooltip in schema
-     - [ ] test description in schema
-
-
+     - [ ] count should be bindable
 
 - [x] class **ConfigFile** as an extension of Config
      - [ ] class ConfigFile documentation         
