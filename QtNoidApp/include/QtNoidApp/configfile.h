@@ -37,4 +37,24 @@ private:
 } // namespace App
 } // namespace QtNoid
 
+
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ConfigFile &configFile)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "ConfigFile(" << configFile.fileName() << "->";
+
+    auto config = qobject_cast<const QtNoid::App::Config*>(&configFile);
+    debug.nospace() << QDebug::toString(config);
+    return debug;
+}
+
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ConfigFile *configFile)
+{
+    if (configFile) {
+        return ::operator<<(debug, *configFile);
+    } else {
+        return debug << "ConfigFile(nullptr)";
+    }
+}
+
 #endif // QTNOID_APP_CONFIGFILE_H

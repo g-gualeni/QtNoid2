@@ -47,13 +47,6 @@ private slots:
 
     // Debug output test
     void testConfigFileDebugOutput();
-
-    // valuesFromJson tests
-    void testConfigValuesFromJsonWithEmptyName();
-    void testConfigValuesFromJsonWithMatchingName();
-    void testConfigValuesFromJsonWithMismatchedName();
-    void testConfigValuesFromJsonCreatesNewParameterLists();
-    void testConfigValuesFromJsonUpdatesExistingParameterLists();
 };
 
 void TestQtNoidAppConfigFile::initTestCase()
@@ -397,192 +390,25 @@ void TestQtNoidAppConfigFile::testConfigFileShouldSaveFileOnDestruction()
 
 void TestQtNoidAppConfigFile::testConfigFileDebugOutput()
 {
+    QString fileName = __func__ + QStringLiteral(".json");
+    QFile::remove(fileName);
+    ConfigFile* configFile = nullptr;
+    QString dbgOutput = QDebug::toString(configFile);
 
-    // Create ConfigFile debug adding the filename to the Config Debug
-    QVERIFY(0);
-}
+    QVERIFY(!dbgOutput.isEmpty());
+    QVERIFY(dbgOutput.contains("ConfigFile(nullptr)"));
 
-void TestQtNoidAppConfigFile::testConfigValuesFromJsonWithEmptyName()
-{
-    QVERIFY(0); // Move it to config
-    // When Config name is empty and JSON has a single top-level key,
-    // valuesFromJson should set the name from the JSON
-    ConfigFile config(this);
-    QVERIFY(config.name().isEmpty());
+    configFile = new ConfigFile(fileName, this);
+    dbgOutput = QDebug::toString(configFile);
+    QVERIFY(dbgOutput.contains("Config"));
 
-    QJsonObject json;
-    QJsonArray listsArray;
+    configFile->saveValue("RunCounter", 123);
+    configFile->saveValue("Active", true);
+    dbgOutput = QDebug::toString(configFile);
 
-    QJsonObject settingsList;
-    QJsonArray settingsParams;
-
-    QJsonObject volumeParam;
-    volumeParam["Volume"] = 75.0;
-    settingsParams.append(volumeParam);
-
-    settingsList["Settings"] = settingsParams;
-    listsArray.append(settingsList);
-
-    json["TestConfig"] = listsArray;
-
-    bool result = config.valuesFromJson(json);
-    QVERIFY(result);
-    QCOMPARE(config.name(), "TestConfig");
-    QCOMPARE(config.count(), 1);
-
-    ParameterList* list = config.page("Settings");
-    QVERIFY(list != nullptr);
-    QCOMPARE(list->count(), 1);
-    QCOMPARE(list->value("Volume").toDouble(), 75.0);
-}
-
-void TestQtNoidAppConfigFile::testConfigValuesFromJsonWithMatchingName()
-{
-    QVERIFY(0); // Move it to config
-
-    // When Config has a name and JSON contains a matching key, should succeed
-    ConfigFile config(this);
-    config.setName("MyConfig");
-
-    QJsonObject json;
-    QJsonArray listsArray;
-
-    QJsonObject settingsList;
-    QJsonArray settingsParams;
-
-    QJsonObject themeParam;
-    themeParam["Theme"] = QString("dark");
-    settingsParams.append(themeParam);
-
-    settingsList["Settings"] = settingsParams;
-    listsArray.append(settingsList);
-
-    json["MyConfig"] = listsArray;
-
-    bool result = config.valuesFromJson(json);
-    QVERIFY(result);
-    QCOMPARE(config.name(), "MyConfig");
-    QCOMPARE(config.count(), 1);
-
-    ParameterList* list = config.page("Settings");
-    QVERIFY(list != nullptr);
-    QCOMPARE(list->value("Theme").toString(), "dark");
-}
-
-void TestQtNoidAppConfigFile::testConfigValuesFromJsonWithMismatchedName()
-{
-    QVERIFY(0); // Move it to config
-
-    // When Config has a name but JSON doesn't contain that key, should return false
-    ConfigFile config(this);
-    config.setName("ExpectedName");
-
-    QJsonObject json;
-    QJsonArray listsArray;
-    json["DifferentName"] = listsArray;
-
-    bool result = config.valuesFromJson(json);
-    QVERIFY(!result);
-    QCOMPARE(config.count(), 0);
-}
-
-void TestQtNoidAppConfigFile::testConfigValuesFromJsonCreatesNewParameterLists()
-{
-    QVERIFY(0); // Move it to config
-
-    // valuesFromJson should create new ParameterLists if they don't exist
-    ConfigFile config(this);
-    config.setName("TestConfig");
-
-    QJsonObject json;
-    QJsonArray listsArray;
-
-    // Create first ParameterList
-    QJsonObject settingsList;
-    QJsonArray settingsParams;
-    QJsonObject volumeParam;
-    volumeParam["Volume"] = 100.0;
-    settingsParams.append(volumeParam);
-    settingsList["Settings"] = settingsParams;
-    listsArray.append(settingsList);
-
-    // Create second ParameterList
-    QJsonObject advancedList;
-    QJsonArray advancedParams;
-    QJsonObject debugParam;
-    debugParam["Debug"] = true;
-    advancedParams.append(debugParam);
-    advancedList["Advanced"] = advancedParams;
-    listsArray.append(advancedList);
-
-    json["TestConfig"] = listsArray;
-
-    bool result = config.valuesFromJson(json);
-    QVERIFY(result);
-    QCOMPARE(config.count(), 2);
-
-    ParameterList* settings = config.page("Settings");
-    QVERIFY(settings != nullptr);
-    QCOMPARE(settings->count(), 1);
-    QCOMPARE(settings->value("Volume").toDouble(), 100.0);
-
-    ParameterList* advanced = config.page("Advanced");
-    QVERIFY(advanced != nullptr);
-    QCOMPARE(advanced->count(), 1);
-    QCOMPARE(advanced->value("Debug").toBool(), true);
-}
-
-void TestQtNoidAppConfigFile::testConfigValuesFromJsonUpdatesExistingParameterLists()
-{
-    QVERIFY(0); // Move it to config
-
-    // valuesFromJson should update existing ParameterLists instead of creating duplicates
-    ConfigFile config(this);
-    config.setName("TestConfig");
-
-    // Pre-populate with a ParameterList
-    ParameterList* settings = config.emplace("Settings", "Application settings");
-    QVERIFY(settings != nullptr);
-    settings->emplace(50.0, "Volume", "Audio volume");
-    settings->emplace("light", "Theme", "UI theme");
-
-    QCOMPARE(config.count(), 1);
-    QCOMPARE(settings->count(), 2);
-
-    // Create JSON that updates the existing list and adds a new parameter
-    QJsonObject json;
-    QJsonArray listsArray;
-
-    QJsonObject settingsList;
-    QJsonArray settingsParams;
-
-    QJsonObject volumeParam;
-    volumeParam["Volume"] = 80.0; // Update existing
-    settingsParams.append(volumeParam);
-
-    QJsonObject brightnessParam;
-    brightnessParam["Brightness"] = 90.0; // Add new
-    settingsParams.append(brightnessParam);
-
-    settingsList["Settings"] = settingsParams;
-    listsArray.append(settingsList);
-
-    json["TestConfig"] = listsArray;
-
-    bool result = config.valuesFromJson(json);
-    QVERIFY(result);
-
-    // Should still have only 1 ParameterList (not duplicated)
-    QCOMPARE(config.count(), 1);
-
-    ParameterList* updatedSettings = config.page("Settings");
-    QVERIFY(updatedSettings != nullptr);
-    QVERIFY(updatedSettings == settings); // Should be the same object
-
-    // Volume should be updated, Theme should remain, Brightness should be added
-    QCOMPARE(updatedSettings->value("Volume").toDouble(), 80.0);
-    QCOMPARE(updatedSettings->value("Theme").toString(), "light");
-    QCOMPARE(updatedSettings->value("Brightness").toDouble(), 90.0);
+    QVERIFY(dbgOutput.contains("RunCounter"));
+    QVERIFY(dbgOutput.contains("Active"));
+    qDebug() << __func__ << dbgOutput;
 }
 
 

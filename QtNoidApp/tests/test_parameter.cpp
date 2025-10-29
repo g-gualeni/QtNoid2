@@ -1652,17 +1652,17 @@ void TestQtNoidAppParameter::testParameterFromJson()
     Parameter par(this);
 
     // Create schema and value JSON objects
-    QJsonObject schema;
-    QJsonObject temperatureSchema;
-    temperatureSchema["description"] = "Test temperature parameter";
-    temperatureSchema["unit"] = "°C";
-    temperatureSchema["readOnly"] = false;
-    temperatureSchema["min"] = -50.0;
-    temperatureSchema["max"] = 150.0;
-    schema["Temperature"] = temperatureSchema;
+    QJsonObject temperatureSchema{{"unit", "°C"},
+                                  {"min", -50.0},
+                                  {"max", 150.0},
+                                  {"description", "Test temperature parameter"},
+                                  {"tooltip", "Test temperature parameter tooltip"},
+                                  {"readOnly", true},
+                                  {"visible", false}
+    };
+    QJsonObject schema{{"Temperature", temperatureSchema}};
 
-    QJsonObject value;
-    value["Temperature"] = 25.5;
+    QJsonObject value{{"Temperature", 25.5}};
 
     // Test fromJson method
     bool result = par.fromJson(schema, value);
@@ -1670,11 +1670,13 @@ void TestQtNoidAppParameter::testParameterFromJson()
 
     // Verify all properties were set correctly
     QCOMPARE(par.name(), "Temperature");
-    QCOMPARE(par.description(), "Test temperature parameter");
     QCOMPARE(par.unit(), "°C");
-    QCOMPARE(par.readOnly(), false);
     QCOMPARE(par.min().toDouble(), -50.0);
     QCOMPARE(par.max().toDouble(), 150.0);
+    QCOMPARE(par.description(), "Test temperature parameter");
+    QCOMPARE(par.tooltip(), "Test temperature parameter tooltip");
+    QCOMPARE(par.readOnly(), true);
+    QCOMPARE(par.visible(), false);
     QCOMPARE(par.value().toDouble(), 25.5);
 }
 
@@ -1721,8 +1723,8 @@ void TestQtNoidAppParameter::testParameterFromJsonWithInvalidSchemaShouldLeaveTh
     // Create invalid schema (empty object)
     QJsonObject emptySchema;
 
-    QJsonObject value;
-    value["TestParam"] = 200.0;
+    QJsonObject value{{"TestParam", 200.0}};
+
 
     // Test fromJson with invalid schema - should fail
     bool result = par.fromJson(emptySchema, value);
@@ -1738,24 +1740,44 @@ void TestQtNoidAppParameter::testParameterFromJsonWithInvalidSchemaShouldLeaveTh
 
 void TestQtNoidAppParameter::testParameterFromJsonWithInvalidValueShouldLeaveValueUnchanged()
 {
-    Parameter par("ExistingName", "This is an existing paramter", "InitialValue", this);
+    Parameter par(12, "MyParameter", "Parameter Description", this);
 
     // Create valid schema
-    QJsonObject testSchema{{"unit", "°K"}};
-    QJsonObject schema{{"NewParameter", testSchema}};
+    QJsonObject schemaMain{{"unit", "°K"},
+                           {"min", 0},
+                           {"max", 100}
+    };
+    QJsonObject schema{{"MyParameter", schemaMain}};
 
-    // Create invalid value (non-matching key)
+    // Create a value with a different name (non-matching name)
     QJsonObject value;
-    value["DifferentParam"] = 150.0;
+    value["DifferentParam"] = 15;
 
     // Test fromJson with invalid value - should fail
     bool result = par.fromJson(schema, value);
-    QCOMPARE(result, false);
+    QCOMPARE(result, true);
+    // qDebug() << __func__ << par;
 
-    // Schema should have been applied, but value should remain invalid
-    QCOMPARE(par.name(), "NewParameter");
-    QCOMPARE(par.unit(), "°K");
+    QCOMPARE(par.name(), "MyParameter");
     QVERIFY(par.isValid()); // Value should remain valid
+
+    // Check that the schema has been applied
+    QCOMPARE(par.min(), 0);
+    QCOMPARE(par.max(), 100);
+    QCOMPARE(par.unit(), "°K");
+
+    // Try to create a new one using same Schema / ValueMt
+    Parameter newParam(schema, value, this);
+    // qDebug() << __func__ << newParam;
+
+    QCOMPARE(newParam.name(), "MyParameter");
+    QCOMPARE(newParam.value(), QVariant()); // Value is an empty QVariant
+    QCOMPARE(newParam.isValid(), false);
+
+    // Check that the schema has been applied
+    QCOMPARE(newParam.min(), 0);
+    QCOMPARE(newParam.max(), 100);
+    QCOMPARE(newParam.unit(), "°K");
 }
 
 void TestQtNoidAppParameter::testParameterFromJsonWithIncompleteSchemaShouldOverrideExisitingSchema()

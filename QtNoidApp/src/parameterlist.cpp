@@ -58,20 +58,8 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
         setTooltip(schemaMain["tooltip"].toString());
     }
 
-    // Add the schema content
-    const QJsonArray schemaArray = schemaMain["parameters"].toArray();
-    for (const QJsonValue& schema : schemaArray) {
-        if (schema.isObject()) {
-            const QJsonObject schemaObj = schema.toObject();
-            const QString& newParamName = schemaObj.constBegin().key();
-            auto newParam = new Parameter(schemaObj, {}, this);
-            bool res = append(newParam);
-            if(!res) delete newParam;
-        }
-    }
-
-    // Add the value content
-    // Prepare a QHash map for values so I can get them fast from their name
+    // ADD PARAMETERS
+    // Start from the value content to initialize also read only paramters
     const QJsonObject valueMain = valueList[name].toObject();
     const QJsonArray valueArray = valueMain["parameters"].toArray();
 
@@ -81,16 +69,36 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
         }
         const QJsonObject valueObj = value.toObject();
         auto valueName = valueObj.begin().key();
-        if(contains(valueName)){
-            m_parametersByName[valueName]->valueFromJson(valueObj);
+        auto newParam = new Parameter(QJsonObject(), valueObj, this);
+        bool res = append(newParam);
+        if(!res) delete newParam;
+        // qDebug() << __func__ << "valueObj:" << valueObj;
+        // qDebug() << __func__ << m_parametersByName[valueName];
+
+    }
+
+    // Add the schema content
+    const QJsonArray schemaArray = schemaMain["parameters"].toArray();
+    for (const QJsonValue& schema : schemaArray) {
+        if (!schema.isObject()) {
+            continue;
         }
-        else{
-            auto newParam = new Parameter(QJsonObject(), valueObj, this);
+
+        const QJsonObject schemaObj = schema.toObject();
+        const QString& newParamName = schemaObj.constBegin().key();
+        if(contains(newParamName)){
+            m_parametersByName[newParamName]->schemaFromJson(schemaObj);
+        }
+        else {
+            auto newParam = new Parameter(schemaObj, {}, this);
             bool res = append(newParam);
             if(!res) delete newParam;
         }
+        // qDebug() << __func__ << "valueObj:" << schemaObj;
+        // qDebug() << __func__ << m_parametersByName[newParamName];
     }
 }
+
 
 QJsonObject ParameterList::toJsonValues() const
 {

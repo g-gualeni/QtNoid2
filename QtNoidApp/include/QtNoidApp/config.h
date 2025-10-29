@@ -65,7 +65,6 @@ public:
     bool contains(ParameterList* page) const;
     bool contains(const QString& pageName) const;
 
-
     // List access
     QList<ParameterList*> pages() const;
 

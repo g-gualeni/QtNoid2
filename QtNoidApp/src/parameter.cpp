@@ -144,21 +144,31 @@ QJsonObject Parameter::toJsonSchema() const
 bool Parameter::fromJson(const QJsonObject &schema, const QJsonObject &value)
 {
     // Override the parameter name using schema
-    if(schema.isEmpty())    return false;
+    if(schema.isEmpty())
+        return false;
+
     QString paramName = schema.begin().key();
-    if(paramName.isEmpty()) return false;
+    if(paramName.isEmpty())
+        return false;
+
     m_name = paramName;
 
-    if(!schemaFromJson(schema))         return false;
-    if(!valueFromJson(value))         return false;
+    auto resJson = valueFromJson(value);
+    auto resSchema = schemaFromJson(schema);
 
-    return true;
+    if(resJson || resSchema) {
+        // Conversion is successfull if at least one is successfull
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool Parameter::valueFromJson(const QJsonObject& json)
 {
     //
-    QString name = m_name.value();
+    QString name = m_name.value();    
     if(name.isEmpty() && (json.count() == 1)) {
         // Get the unique JSON object and use it to set the name
         name = json.begin().key();

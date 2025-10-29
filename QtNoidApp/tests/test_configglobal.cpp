@@ -84,28 +84,29 @@ void TestQtNoidAppConfigGlobal::testAppConfigFileName()
     QCOMPARE(appConfig->fileName(), expected);
 }
 
+
 void TestQtNoidAppConfigGlobal::testAppConfigSaveAndLoad()
 {
+    // Clear existing files
+    auto fileName = Settings::filePathAsAppSibling();
+    QFile::remove(fileName);
+
     // Set config name and add a parameter
-    qDebug() << __func__ << qAppName();
     appConfig->setName(qAppName());
-    ParameterList* paramList = appConfig->emplace("Settings", "Settings");
-    paramList->emplace(42.0, "TestParam", "Test parameter");
+    appConfig->saveValue("TestParameter", 42.0);
 
     // Save
     bool saveResult = appConfig->save();
     QVERIFY(saveResult);
-
+\
     // Modify value
-    appConfig->saveValue("TestParam", 99.0);
-    QCOMPARE(appConfig->restoreAsVariant("TestParam", "DefValue").toDouble(), 99.0);
+    appConfig->saveValue("TestParameter", 99.0);
+    QCOMPARE(appConfig->restoreAsVariant("TestParameter", 0).toDouble(), 99.0);
 
     // Load - should restore original value
     bool loadResult = appConfig->load();
     QVERIFY(loadResult);
-    QCOMPARE(appConfig->restoreAsVariant("TestParam", "DefVal").toDouble(), 42.0);
-
-    QVERIFY(0);
+    QCOMPARE(appConfig->restoreAsVariant("TestParameter", 0).toDouble(), 42.0);
 }
 
 

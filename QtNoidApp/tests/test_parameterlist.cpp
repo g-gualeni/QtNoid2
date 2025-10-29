@@ -39,6 +39,8 @@ private slots:
     void testBindableDescriptionProperty();
     void testParameterListTooltip();
     void testBindableTooltipProperty();
+    void testParameterListVisible();
+    void testBindableParameterListVisible();
 
     void testToJsonValues();
     void testToJsonValuesNoName();
@@ -165,20 +167,26 @@ void TestQtNoidAppParameterList::testCreatingParameterList()
 
 void TestQtNoidAppParameterList::testParameterListName()
 {
-    ParameterList list(this);
-    QSignalSpy spy(&list, &ParameterList::nameChanged);
+    ParameterList list("MyList", this);
+    QSignalSpy spyChanged(&list, &ParameterList::nameChanged);
+    QSignalSpy spyEdited(&list, &ParameterList::nameEdited);
     
     list.setName("Application Configuration");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spyChanged.count(), 1);
+    QCOMPARE(spyEdited.count(), 1);
     QCOMPARE(list.name(), "Application Configuration");
     
     // Check signal argument
-    QList<QVariant> arguments = spy.takeFirst();
+    auto arguments = spyChanged.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "Application Configuration");
-    
+    arguments = spyEdited.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "MyList");
+    QCOMPARE(arguments.at(1).toString(), "Application Configuration");
+
     // Same value, no signal
     list.setName("Application Configuration");
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spyChanged.count(), 0);
+    QCOMPARE(spyEdited.count(), 0);
 }
 
 void TestQtNoidAppParameterList::testAppendingParameters()
@@ -715,24 +723,19 @@ void TestQtNoidAppParameterList::testToJsonSchemaWithPresets()
 void TestQtNoidAppParameterList::testValuesFromJsonWithEmptyNameShouldTakeTheJsonName()
 {
     // Create JSON objects (simulating what Parameter::toJsonValue() would return)
-    QJsonArray parametersArray;
-    QJsonObject pressureJson;
-    pressureJson["Pressure"]= 1013.25;
-    parametersArray.append(pressureJson);
-    
-    QJsonObject temperatureJson;
-    temperatureJson["Temperature"]= 25;
-    parametersArray.append(temperatureJson);
+    QJsonObject pressureJson({{"Pressure", 1013.25}});
+    QJsonObject temperatureJson({{"Temperature", 25.5}});
+    QJsonArray parametersArray({pressureJson, temperatureJson});
+    QJsonObject jsonMain({{"parameters", parametersArray}});
 
-    QJsonObject json;
-    json["MyTestPage"] = parametersArray;
+    QJsonObject json({{"MyTestPage", jsonMain}});
     // qDebug() << __func__ << json;
 
-    // Test successful fromJson
     ParameterList list(this);
-    QVERIFY(list.valuesFromJson(json));
+    auto res = list.valuesFromJson(json);
+    QVERIFY(res);
+    // qDebug() << __func__ << list;
 
-    QVERIFY(0); // finire di sistemare
 
     // Verify list properties
     QCOMPARE(list.name(), "MyTestPage");
@@ -740,8 +743,10 @@ void TestQtNoidAppParameterList::testValuesFromJsonWithEmptyNameShouldTakeTheJso
 
     auto actual = list.parameter("Pressure")->toJsonValue();
     QCOMPARE(actual, pressureJson);
+
     actual = list.parameter("Temperature")->toJsonValue();
     QCOMPARE(actual, temperatureJson);
+
 }
 
 void TestQtNoidAppParameterList::testValuesFromJsonWithWrongNameShouldFail()
@@ -866,59 +871,52 @@ void TestQtNoidAppParameterList::testSchemaFromDuplicatedJsonOverwriteAndNotFail
 void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
 {
     // Create schema JSON with two parameters
-    QJsonArray schemaArray;
 
     // Temperature parameter schema
-    QJsonObject tempSchema;
-    tempSchema["description"] = "Current temperature";
-    tempSchema["tooltip"] = "Temperature of the sensor ";
-    tempSchema["unit"] = "°C";
-    tempSchema["readOnly"] = true;  // it should be possible initialize a read only!
-    tempSchema["visible"] = true;
-    tempSchema["min"] = -50.0;
-    tempSchema["max"] = 100.0;
-    QJsonObject tempSchemaWrapper;
-    tempSchemaWrapper["Temperature"] = tempSchema;
-    schemaArray.append(tempSchemaWrapper);
+    QJsonObject temperatureSchema{{"description", "Current temperature"},
+                            {"tooltip", "Temperature of the sensor"},
+                            {"unit", "°C"},
+                            {"readOnly", true},
+                            {"visible", true},
+                            {"min", -50.0},
+                            {"max", 100.0}
+    };
+    QJsonObject temperatureSchemaMain{{"Temperature", temperatureSchema}};
 
     // Pressure parameter schema
-    QJsonObject pressSchema;
-    pressSchema["description"] = "Atmospheric pressure";
-    pressSchema["tooltip"] = "This is the atmospheric pressure";
-    pressSchema["unit"] = "hPa";
-    pressSchema["readOnly"] = false;
-    pressSchema["visible"] = true;
-    pressSchema["min"] = 800.0;
-    pressSchema["max"] = 1100.0;
-    QJsonObject pressSchemaWrapper;
-    pressSchemaWrapper["Pressure"] = pressSchema;
-    schemaArray.append(pressSchemaWrapper);
+    QJsonObject pressureSchema{{"description", "Atmospheric pressure"},
+                                {"tooltip", "This is the atmospheric pressure"},
+                                {"unit", "hPa"},
+                                {"readOnly", false},
+                                {"visible", true},
+                                {"min", 800.0},
+                                {"max", 1100.0}
+    };
+    QJsonObject pressureSchemaMain{{"Pressure", pressureSchema}};
 
-    QJsonObject schemaMain;
-    schemaMain["visible"] = false;
-    schemaMain["description"] = "Desc";
-    schemaMain["tooltip"] = "toollllllttiiiipp";
-    schemaMain["parameters"] = schemaArray;
 
-    QJsonObject schemaList({{"SensorConfiguration", schemaMain}});
-    // qDebug() << __func__ << schemaList;
+    QJsonObject schemaMain{{"visible", false},
+                        {"description", "Desc"},
+                        {"tooltip", "toollllllttiiiipp"},
+                        {"parameters", QJsonArray{temperatureSchemaMain, pressureSchemaMain}}
+    };
+
+    QJsonObject schema{{"SensorConfiguration", schemaMain}};
+    // qDebug() << __func__ << schema;
+
 
     // Create values JSON
-    QJsonArray valuesArray;
-    QJsonObject tempValue;
-    tempValue["Temperature"] = 25.5;
-    valuesArray.append(tempValue);
-
-    QJsonObject pressValue;
-    pressValue["Pressure"] = 1013.25;
-    valuesArray.append(pressValue);
-
-    QJsonObject valueMain({{"parameters", valuesArray}});
-    QJsonObject valueList({{"SensorConfiguration", valueMain}});
-    // qDebug() << __func__ << valueList;
+    QJsonObject temperatureValue{{"Temperature", 25.5}};
+    QJsonObject pressureValue{{"Pressure", 1013.25}};
+    QJsonObject valueMain({{"parameters", QJsonArray{temperatureValue, pressureValue}}});
+    QJsonObject value{{"SensorConfiguration", valueMain}};
+    // qDebug() << __func__ << "JSON-Value:" << value;
 
     // Test constructor
-    ParameterList list(schemaList, valueList, this);
+    ParameterList list(schema, value, this);
+    // qDebug() << __func__ << list;
+    // qDebug() << __func__ << "Temperature:" << list.value("Temperature");
+    // qDebug() << __func__ << "Pressure:" << list.value("Pressure");
 
     // Verify the list was created correctly
     QCOMPARE(list.name(), "SensorConfiguration");
@@ -928,17 +926,19 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     QCOMPARE(list.tooltip(), "toollllllttiiiipp");
     QCOMPARE(list.visible(), false);
 
-    // qDebug() << __func__ << list;
-
     // Verify Temperature parameter
-    Parameter* tempParam = list.parameter("Temperature");
-    QVERIFY(tempParam != nullptr);
-    QCOMPARE(tempParam->value().toDouble(), 25.5);
-    QCOMPARE(tempParam->description(), "Current temperature");
-    QCOMPARE(tempParam->unit(), "°C");
-    QCOMPARE(tempParam->readOnly(), true);
-    QCOMPARE(tempParam->min().toDouble(), -50.0);
-    QCOMPARE(tempParam->max().toDouble(), 100.0);
+    Parameter* temperature = list.parameter("Temperature");
+    qDebug() << __func__ << temperature;
+
+    QVERIFY(temperature != nullptr);
+    QCOMPARE(temperature->description(), "Current temperature");
+    QCOMPARE(temperature->tooltip(), "Temperature of the sensor");
+    QCOMPARE(temperature->unit(), "°C");
+    QCOMPARE(temperature->readOnly(), true);
+    QCOMPARE(temperature->visible(), true);
+    QCOMPARE(temperature->min().toDouble(), -50.0);
+    QCOMPARE(temperature->max().toDouble(), 100.0);
+    QCOMPARE(temperature->value().toDouble(), 25.5);
 
     // Verify Pressure parameter
     Parameter* pressParam = list.parameter("Pressure");
@@ -951,8 +951,8 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
     QCOMPARE(pressParam->max().toDouble(), 1100.0);
 
     // Verify JSON serialization matches input
-    QCOMPARE(list.toJsonSchema(), schemaList);
-    QCOMPARE(list.toJsonValues(), valueList);
+    QCOMPARE(list.toJsonSchema(), schema);
+    QCOMPARE(list.toJsonValues(), value);
 }
 
 void TestQtNoidAppParameterList::testChangingParamterNameShouldUpdateTheParameterList()
@@ -1048,7 +1048,7 @@ void TestQtNoidAppParameterList::testParameterListTooltip()
     QCOMPARE(list.tooltip(), "This is a helpful tooltip for the parameter list");
 
     // Check signal argument
-    QList<QVariant> arguments = spy.takeFirst();
+    auto arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "This is a helpful tooltip for the parameter list");
 
     // Same value, no signal should be emitted
@@ -1099,6 +1099,50 @@ void TestQtNoidAppParameterList::testBindableTooltipProperty()
     QCOMPARE(list.tooltip(), "Externally set tooltip");
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first().toString(), "Externally set tooltip");
+}
+
+void TestQtNoidAppParameterList::testParameterListVisible()
+{
+    ParameterList list(this);
+    QSignalSpy spy(&list, &ParameterList::visibleChanged);
+    list.setVisible(false);
+    QCOMPARE(spy.count(), 1);
+    auto arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toBool(), false);
+
+    list.setVisible(false);
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppParameterList::testBindableParameterListVisible()
+{
+    ParameterList list(this);
+    auto bindableVisible = list.bindableVisible();
+    QVERIFY(bindableVisible.isValid());
+    QCOMPARE(bindableVisible.value(), true);
+
+    // Test binding to another property
+    QProperty<bool> externalProperty;
+    externalProperty.setBinding([&]() { return bindableVisible.value(); });
+    QCOMPARE(externalProperty.value(), true);
+
+    // Change parameter visible and verify binding updates
+    list.setVisible(false);
+    QCOMPARE(externalProperty.value(), false);
+
+    // Test setting visible through bindable
+    bindableVisible.setValue(true);
+    QCOMPARE(list.visible(), true);
+    QCOMPARE(externalProperty.value(), true);
+
+    // Create a reverse binding from externalProperty to list
+    QSignalSpy spy(&list, &ParameterList::visibleChanged);
+    bindableVisible.setBinding([&]() { return externalProperty.value(); });
+    externalProperty.setValue(false);
+    QCOMPARE(bindableVisible.value(), false);
+    QCOMPARE(list.visible(), false);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().first(), false);
 }
 
 void TestQtNoidAppParameterList::testParameterRenameError()
@@ -1324,29 +1368,23 @@ void TestQtNoidAppParameterList::testApplyJsonValuesToExistingParameterListShoul
     QCOMPARE(list.value("Temperature").toDouble(), 20.0);
     QCOMPARE(list.value("Pressure").toDouble(), 1000.0);
 
-    // Create JSON values to apply to the existing list
-    QJsonArray valuesArray;
-    QJsonObject tempValue;
-    tempValue["Temperature"] = 25.5;
-    valuesArray.append(tempValue);
+    // Create JSON values to update existing paramters
+    QJsonObject temperatureValue{{"Temperature", 25.5}};
+    QJsonObject pressValue{{"Pressure", 1013.25}};
 
-    QJsonObject pressValue;
-    pressValue["Pressure"] = 1013.25;
-    valuesArray.append(pressValue);
+    // Add a new parameter that should be add to the list
+    QJsonObject humidityValue{{"Humidity", 60.0}};
+    QJsonArray valuesArray{temperatureValue, pressValue, humidityValue};
 
-    // Add a new parameter via JSON
-    QJsonObject humidityValue;
-    humidityValue["Humidity"] = 60.0;
-    valuesArray.append(humidityValue);
-
-    QJsonObject jsonValues;
-    jsonValues["SensorConfig"] = valuesArray;
+    QJsonObject jsonMain{{"parameters", valuesArray}};
+    QJsonObject jsonValues{{"SensorConfig", jsonMain}};
 
     QSignalSpy countSpy(&list, &ParameterList::countChanged);
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
 
     // Apply JSON values to existing list
     bool result = list.valuesFromJson(jsonValues);
+    // qDebug() << __func__<< list;
 
     // Verify the operation succeeded
     QVERIFY(result);
@@ -1359,6 +1397,7 @@ void TestQtNoidAppParameterList::testApplyJsonValuesToExistingParameterListShoul
     QCOMPARE(list.count(), 3);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
+    // qDebug() << __func__ << list.value("Humidiy");
     QCOMPARE(list.value("Humidity"), 60.0);
 }
 

@@ -49,6 +49,7 @@ private slots:
     void testIndexOfPage();
     void testContainsPage();
     void testPagesList();
+    void testParameterAndPageRenameShouldAutomaticallyUpdate();
 
     // Parameter access tests
     void testParameterAccess();
@@ -950,6 +951,28 @@ void TestQtNoidAppConfig::testPagesList()
     QVERIFY(pages.contains(page3));
 
 }
+
+void TestQtNoidAppConfig::testParameterAndPageRenameShouldAutomaticallyUpdate()
+{
+    Config config("AppConfig", this);
+
+    // Create parameter and page
+    Parameter parameter(123, "PARAM", this);
+    ParameterList page("PAGE", this);
+    page << parameter;
+    config << page;
+    // qDebug() << __func__ << config;
+
+    // Try to rename the value
+    parameter.setName("ParamNewName");
+    page.setName("PageNewName");
+    // qDebug() << __func__ << config;
+
+    // Check the new names are in place
+    auto actual = config.restoreAsInt("ParamNewName", -1, "PageNewName");
+    QCOMPARE(actual, 123);
+}
+
 
 // Parameter access tests
 void TestQtNoidAppConfig::testParameterAccess()

@@ -13,22 +13,20 @@
 &nbsp;
 
 ### Progress Status
+Rimuovere Txt2Json
+Rimuovere JSON Txt2Json Basic Usage example
 
-salvare questo trucco
-QString output2 = QDebug::toString(&param2);
+prossima cosa da fare: count should be bindable
 
-Implementation of Yaml2Json library 
-Is there a reason to keep Txt2Json? Maybe it is faster?
+&nbsp;
 
+# QtNoidJson
+finire implementation Yaml2Json library 
 Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
-Fare un metodo statico per la conversione YAML to JSON
-
-test di ParameterList::nameEdited(const QString &oldName, const QString &newName);
-test che Parameter::nameChanged() venga emesso
-test che Parameter::nameEdited() venga emesso
 
 
+&nbsp;
 
 # QtNoidApp
 - [x] appExeOrAppBundleDirPath();
@@ -38,13 +36,12 @@ test che Parameter::nameEdited() venga emesso
 - [x] test for appExeOrAppBundleDirPath
 - [x] test update for appExeOrAppBundleFilePath
 - [ ] class **Parameter** update
-     - [ ] check Parameter Documentation
      - [x] all json names should be camelCase lowercase
      - [x] check all properties are in the JsonSchema
      - [x] check all properties are in the << Debug operator
-     
+     - [ ] check Parameter Documentation
+        
 - [ ] class **ParameterList** update
-     - [ ] check ParameterList Documentation
      - [x] add the visible flag
      - [x] test description in schema
      - [x] test description from schema
@@ -55,10 +52,12 @@ test che Parameter::nameEdited() venga emesso
      - [x] test uniqueId
      - [x] test for QDebug operator
      - [x] test tooltip and all parameters are in Debug()
+     - [x] test signal nameEdited(old, new)
+     - [x] test signal visibleChanged
      - [ ] count should be bindable
+     - [ ] check ParameterList Documentation
 
 - [ ] class **Config** as a container for ParamterList
-     - [ ] class Config Documentation
      - [x] uniqueId for Parameter starts from 1000
      - [x] Add valueAsInt
      - [x] Add valueAsDouble
@@ -77,15 +76,17 @@ test che Parameter::nameEdited() venga emesso
      - [x] class Config Test
      - [x] test tooltip in schema
      - [x] test description in schema
-     
-     - [ ] add iterator and reverse iterator for Config
+     - [x] test for Config &operator<<(ParameterList& page)
+     - [x] test Parameter::nameEdited / ParameterList::nameEdited to keep names in sync
      - [ ] count should be bindable
+     - [ ] add iterator and reverse iterator for Config
+     - [ ] class Config Documentation
 
 - [x] class **ConfigFile** as an extension of Config
-     - [ ] class ConfigFile documentation         
      - [x] load / save configuration 
      - [x] class ConfigFile test     
-     - [ ] test Debug() function for ConfigFile (to be implemented)
+     - [x] test Debug() function for ConfigFile (to be implemented)
+     - [ ] class ConfigFile documentation         
 
 
 - [x] class **GlobalConfig** as static wrapper for a singletone Config
@@ -93,16 +94,22 @@ test che Parameter::nameEdited() venga emesso
      - [x] class GlobalConfig test
      - [ ] class GlobalConfig Documentation
 
+&nbsp;
+# QtNoidCommon
+- [ ] class **Text** 
+     - [x] TestQtNoidCommonText::testTokenizeJsonArray() adding
+          more test cases with string or a mixture of strings and numbers 
+          (mixed types array)
 
-More:
-
-- [ ] Settings::initFullDialogGrabShortcut fix keySequence usage
-     - [ ] Add a test that verify the keysequence are correct
-     - [x] Add -windows and -macOs to the screenshot and update doc
+- [ ] class **Settings** 
+     - [ ] initFullDialogGrabShortcut 
+          - [x] Add -windows and -macOs to the screenshot and update doc
+          - [ ] fix keySequence usage
+          - [ ] Add a test that verify the keysequence are correct
      
-- [ ] Settings: appConfigFileToProjectRes(): load current configuration file into 
+     - [ ] appConfigFileToProjectRes(): load current configuration file into 
           project resources
-- [ ] appConfigFileFromRes: init application config file from project resources
+     - [ ] appConfigFileFromRes: init application config file from project resources
 
 
 # Older Examples
@@ -134,34 +141,12 @@ More:
 
 
 
-### Release Drafting
+# Release Drafting
+- [ ] Doc update
 - [ ] Run the CLOC-Report.bat and update CLOC-REPORT.md
 - [ ] Update CLOC Report
 - [ ] Update the ReleaseNotes.txt
 
-### Doc
-- [ ] Doc update
-
-### Todo Txt2Json Parser
-these are the use case
-
-Key-value
-key: value
-
-Key-child objects
-key:
-        obj1:value
-        obj2:value
-
-Key-child array
-key:
-        obj1:[value1 value2]
-        obj2:[value1 value2]
-
-Key-array of objects
-key: [
-        obj1:value
-        obj2:value]
 
 
 
@@ -221,11 +206,26 @@ Readings: [
        CodeSize: [ "5 Mils" "8 Mils" "10 Mils" "12 Mils" "15 Mils" "20 Mils"]
        WDLimit: [ 230 367 458 550 687 916  ]}
 
+these are the use case
 
-### Test Common Text
-- [x] check the TestQtNoidCommonText::testTokenizeJsonArray() addining
-     more test cases with string or a mixture of strings and numbers (
-     mixed types array)
+Key-value
+key: value
+
+Key-child objects
+key:
+        obj1:value
+        obj2:value
+
+Key-child array
+key:
+        obj1:[value1 value2]
+        obj2:[value1 value2]
+
+Key-array of objects
+key: [
+        obj1:value
+        obj2:value]
+
 
 
 ### Test Txt2Json
@@ -233,30 +233,42 @@ Readings: [
 - [x] update testTextArrayToJson()
 - [ ] update testPlainTextToJsonFromListOfObjects();
 
+Fare un metodo statico per la conversione YAML to JSON
+
+
+
+
+
+
+
+
 
 &nbsp;
-## Next Sprint Ideas
 
-### New QtNoid::AppUI library 
+&nbsp;
+
+# Next Sprint Ideas
+
+## New QtNoid::AppUI library 
  - Generate recent files menu
  - Generate About dialog
  - Generate Config UI from Config class
  
-### New QtNoid::CmdUI library 
+## New QtNoid::CmdUI library 
  - File Move/Copy/Rename/Marshal using pattern matching
  - File preview as tiles
 
-### New QtNoid::DispUI library 
+## New QtNoid::DispUI library 
  - ImageViewer with all functionality
      Zoom, Pan, Keystone, Pixel value zoom
      Histogram
      Image Component
      Histogram Stretching using CLAHE
 
-### New QtNoid::JsonUI library 
+## New QtNoid::JsonUI library 
 - Yaml / JSON UI editor
 
-### Upgrade QtNoid::Common::File
+## Upgrade QtNoid::Common::File
 - [ ] Massive File Copy / Rename / Move could became Copy Move Marshal
       Si trova in Deep  
 - [ ] Massive File Rename: replace token in huge file list above multipe folders
