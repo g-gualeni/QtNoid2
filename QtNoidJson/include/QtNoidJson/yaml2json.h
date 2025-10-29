@@ -41,6 +41,7 @@ public:
     void setYaml(const QString &newYaml);
 
     QJsonObject json() const { return m_json; }
+    QString jsonAsString() const;
 
     QStringList tokens();
 

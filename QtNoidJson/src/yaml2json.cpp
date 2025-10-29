@@ -40,6 +40,12 @@ void Yaml2Json::setYaml(const QString &newYaml)
     }
 }
 
+QString Yaml2Json::jsonAsString() const
+{
+    auto doc = QJsonDocument(m_json);
+    return QString(doc.toJson());
+}
+
 QStringList Yaml2Json::tokens()
 {
     return m_lexer->tokensAsStringList();

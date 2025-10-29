@@ -46,15 +46,15 @@ MainWindow::~MainWindow()
 void MainWindow::on_cmdConvertToJson_clicked()
 {
     QString yamlText = ui->txtYAML->toPlainText();
-    // QJsonObject jsonObj = QtNoid::Json::Yaml2Json::yamlToJson(yamlText);
-    // QJsonDocument doc(jsonObj);
-    // ui->txtJson->setPlainText(doc.toJson(QJsonDocument::Indented));
+    auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
+    ui->txtJsonOutput->setPlainText(converter.jsonAsString());
+    ui->txtTokensOutput->setPlainText(converter.tokens().join("\n"));
 }
 
 
 void MainWindow::on_cmdConvertToYAML_clicked()
 {
-    QString jsonText = ui->txtJson->toPlainText();
+    QString jsonText = ui->txtJsonOutput->toPlainText();
     QJsonDocument doc = QJsonDocument::fromJson(jsonText.toUtf8());
     // QString yamlText = QtNoid::Json::Yaml2Json::jsonToYaml(doc.object());
     // ui->txtYAML->setPlainText(yamlText);

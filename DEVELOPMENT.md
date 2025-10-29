@@ -145,6 +145,8 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 - [ ] Run the CLOC-Report.bat and update CLOC-REPORT.md
 - [ ] Update CLOC Report
 - [ ] Update the ReleaseNotes.txt
+- [ ] Cancel the build folder and run the build from scratch for both Debug and 
+      Release
 
 
 
