@@ -11,17 +11,17 @@ namespace App {
 
 
 Config::Config(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), m_count(0)
 {}
 
 
 Config::Config(const QString &name, QObject *parent)
-    : QObject(parent), m_name(name)
+    : QObject(parent), m_name(name), m_count(0)
 {}
 
 
 Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, QObject *parent)
-    : QObject(parent)
+    : QObject(parent), m_count(0)
 {
     // Scan schemaConfig and valueConfig to recreate the config
     QString name = m_name.value();
@@ -263,9 +263,13 @@ QBindable<QString> Config::bindableTooltip()
 
 int Config::count() const
 {
-    return m_pagesByIndex.count();
+    return m_count.value();
 }
 
+QBindable<int> Config::bindableCount()
+{
+    return QBindable<int>(&m_count);
+}
 
 bool Config::append(ParameterList *page)
 {
@@ -343,7 +347,7 @@ void Config::remove(ParameterList *page)
     disconnect(page, &ParameterList::nameChanged, this, nullptr);
 
     emit pageRemoved(page);
-    emit countChanged(m_pagesByIndex.count());
+    m_count = m_pagesByIndex.count();
 }
 
 
@@ -376,7 +380,7 @@ void Config::clear()
     // After removing all - it's time to clear also last index
     m_pagesByIndex.clear();
 
-    emit countChanged(0);
+    m_count = 0;
 }
 
 
@@ -713,7 +717,7 @@ void Config::onPageDestroyed(QObject *obj)
     m_pagesByName.remove(page->name());
 
     emit pageRemoved(page);
-    emit countChanged(m_pagesByIndex.count());
+    m_count = m_pagesByIndex.count();
 }
 
 
@@ -749,7 +753,7 @@ void Config::appendPageAndUpdateIndexs(ParameterList *page)
     connect(page, &ParameterList::nameEdited, this, &Config::onPageNameEdited);
 
     emit pageAdded(page);
-    emit countChanged(m_pagesByIndex.count());
+    m_count = m_pagesByIndex.count();
 }
 
 

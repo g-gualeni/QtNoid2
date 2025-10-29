@@ -17,7 +17,7 @@ class QTNOIDAPP_EXPORT ParameterList : public QObject
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
-    Q_PROPERTY(int count READ count NOTIFY countChanged FINAL)
+    Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
     Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
 
 public:
@@ -122,6 +122,8 @@ public:
 
     // List management
     int count() const;
+    QBindable<int> bindableCount();
+
     bool append(Parameter *parameter);
     bool append(const QJsonObject& schema, const QJsonObject& value);
     Parameter* emplace(const QVariant& initialValue, const QString& name, const QString& description = {});
@@ -192,6 +194,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_name, &ParameterList::nameChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_description, &ParameterList::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_tooltip, &ParameterList::tooltipChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, int, m_count, &ParameterList::countChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_visible, &ParameterList::visibleChanged)
 
     QHash<int, Parameter*> m_parametersByUniqueId;

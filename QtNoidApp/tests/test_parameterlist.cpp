@@ -41,6 +41,7 @@ private slots:
     void testBindableTooltipProperty();
     void testParameterListVisible();
     void testBindableParameterListVisible();
+    void testParameterListBindableCountProperty();
 
     void testToJsonValues();
     void testToJsonValuesNoName();
@@ -1144,6 +1145,84 @@ void TestQtNoidAppParameterList::testBindableParameterListVisible()
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first(), false);
 }
+
+void TestQtNoidAppParameterList::testParameterListBindableCountProperty()
+{
+    ParameterList list(this);
+
+    // Get the bindable property
+    auto bindableCount = list.bindableCount();
+    QVERIFY(bindableCount.isValid());
+    QCOMPARE(bindableCount.value(), 0);
+
+    // Test binding to another property
+    QProperty<int> externalProperty;
+    externalProperty.setBinding([&]() { return bindableCount.value(); });
+    QCOMPARE(externalProperty.value(), 0);
+
+    // Add parameters and verify binding updates
+    QSignalSpy countChangedSpy(&list, &ParameterList::countChanged);
+
+    // Add a parameter using emplace
+    list.emplace(100, "Param1");
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(bindableCount.value(), 1);
+    QCOMPARE(externalProperty.value(), 1);
+    QCOMPARE(countChangedSpy.count(), 1);
+
+    // Add a parameter using append
+    Parameter* param2 = new Parameter(200.0, "Param2", this);
+    list.append(param2);
+    QCOMPARE(list.count(), 2);
+    QCOMPARE(bindableCount.value(), 2);
+    QCOMPARE(externalProperty.value(), 2);
+    QCOMPARE(countChangedSpy.count(), 2);
+
+    // Add a parameter using emplace from JSON
+    QJsonObject param3{{"Param3", 300.0}};
+    list.emplace({}, param3);
+    QCOMPARE(list.value("Param3"), 300.0);
+    QCOMPARE(list.count(), 3);
+    QCOMPARE(bindableCount.value(), 3);
+    QCOMPARE(externalProperty.value(), 3);
+    QCOMPARE(countChangedSpy.count(), 3);
+
+    // Remove a parameter by reference
+    list.removeParameter(param2);
+    QCOMPARE(list.count(), 2);
+    QCOMPARE(bindableCount.value(), 2);
+    QCOMPARE(externalProperty.value(), 2);
+    QCOMPARE(countChangedSpy.count(), 4);
+
+    // Remove a parameter by name
+    list.removeParameter("Param3");
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(bindableCount.value(), 1);
+    QCOMPARE(externalProperty.value(), 1);
+    QCOMPARE(countChangedSpy.count(), 5);
+
+    // Clear list and verify binding updates
+    list.clear();
+    QCOMPARE(list.count(), 0);
+    QCOMPARE(bindableCount.value(), 0);
+    QCOMPARE(externalProperty.value(), 0);
+    QCOMPARE(countChangedSpy.count(), 6);
+
+    // Verify signal was emitted with correct values
+    QList<QVariant> arguments = countChangedSpy.at(0);
+    QCOMPARE(arguments.at(0).toInt(), 1);
+    arguments = countChangedSpy.at(1);
+    QCOMPARE(arguments.at(0).toInt(), 2);
+    arguments = countChangedSpy.at(2);
+    QCOMPARE(arguments.at(0).toInt(), 3);
+    arguments = countChangedSpy.at(3);
+    QCOMPARE(arguments.at(0).toInt(), 2);
+    arguments = countChangedSpy.at(4);
+    QCOMPARE(arguments.at(0).toInt(), 1);
+    arguments = countChangedSpy.at(5);
+    QCOMPARE(arguments.at(0).toInt(), 0);
+}
+
 
 void TestQtNoidAppParameterList::testParameterRenameError()
 {

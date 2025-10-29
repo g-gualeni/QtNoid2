@@ -16,7 +16,6 @@
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 
-prossima cosa da fare: count should be bindable
 
 &nbsp;
 
@@ -54,7 +53,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] test tooltip and all parameters are in Debug()
      - [x] test signal nameEdited(old, new)
      - [x] test signal visibleChanged
-     - [ ] count should be bindable
+     - [x] count should be bindable
      - [ ] check ParameterList Documentation
 
 - [ ] class **Config** as a container for ParamterList
@@ -78,18 +77,18 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] test description in schema
      - [x] test for Config &operator<<(ParameterList& page)
      - [x] test Parameter::nameEdited / ParameterList::nameEdited to keep names in sync
-     - [ ] count should be bindable
-     - [ ] add iterator and reverse iterator for Config
+     - [x] count should be bindable
+     - [x] add iterator and reverse iterator for Config
      - [ ] class Config Documentation
 
-- [x] class **ConfigFile** as an extension of Config
+- [ ] class **ConfigFile** as an extension of Config
      - [x] load / save configuration 
      - [x] class ConfigFile test     
      - [x] test Debug() function for ConfigFile (to be implemented)
      - [ ] class ConfigFile documentation         
 
 
-- [x] class **GlobalConfig** as static wrapper for a singletone Config
+- [ ] class **GlobalConfig** as static wrapper for a singletone Config
      - [x] appConfig macro for easy access
      - [x] class GlobalConfig test
      - [ ] class GlobalConfig Documentation

@@ -21,17 +21,17 @@ QAtomicInt ParameterList::getNextUniqueId()
 
 
 ParameterList::ParameterList(QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
 }
 
 ParameterList::ParameterList(const QString &name, QObject *parent)
-    : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId()), m_visible(true)
+    : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
 }
 
 ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
-    : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
     // Scan schemaList and valueList to recreate the page
     QString name = m_name.value();
@@ -290,7 +290,12 @@ QBindable<bool> ParameterList::bindableVisible()
 
 int ParameterList::count() const
 {
-    return m_parametersByIndex.count();
+    return m_count.value();
+}
+
+QBindable<int> ParameterList::bindableCount()
+{
+    return QBindable<int>(&m_count);
 }
 
 bool ParameterList::append(Parameter *parameter)
@@ -376,7 +381,7 @@ void ParameterList::removeParameter(Parameter *parameter)
     disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
 
     emit parameterRemoved(parameter);
-    emit countChanged(m_parametersByIndex.count());
+    m_count = m_parametersByIndex.count();
 }
 
 void ParameterList::removeParameter(const QString &name)
@@ -397,7 +402,7 @@ void ParameterList::removeParameter(const QString &name)
     disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
     disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
     emit parameterRemoved(parameter);
-    emit countChanged(m_parametersByIndex.count());
+    m_count = m_parametersByIndex.count();
 }
 
 void ParameterList::clear()
@@ -415,7 +420,7 @@ void ParameterList::clear()
     m_parameterToIndex.clear();
     m_parametersByName.clear();
 
-    emit countChanged(0);
+    m_count = 0;
 }
 
 bool ParameterList::isEmpty() const
@@ -510,7 +515,7 @@ void ParameterList::onParameterDestroyed(QObject *parameter)
     m_parametersByName.remove(key);
 
     emit parameterRemoved(param);
-    emit countChanged(m_parametersByIndex.count());
+    m_count = m_parametersByIndex.count();
 }
 
 void ParameterList::onParameterNameEdited(const QString &oldName, const QString &newName)
@@ -542,7 +547,7 @@ void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
     connect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
 
     emit parameterAdded(parameter);
-    emit countChanged(m_parametersByIndex.count());
+    m_count = m_parametersByIndex.count();
 }
 
 

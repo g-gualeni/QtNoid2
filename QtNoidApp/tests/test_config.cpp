@@ -26,6 +26,7 @@ private slots:
     void testDescriptionProperty();
     void testTooltipProperty();
     void testCountProperty();
+    void testConfigBindableCountProperty();
 
     // JSON serialization tests
     void testToJsonValues();
@@ -84,6 +85,12 @@ private slots:
 
     // Debug output test
     void testConfigDebugOutput();
+
+    // Iterator tests
+    void testConfigBeginAndEndAndRangeLoop();
+    void testConfigConstIteratorsAndConstRangeLoop();
+    void testConfigReverseIteratorsAndRangeLoop();
+    void testConfigConstReverseIterators();
 };
 
 
@@ -565,6 +572,87 @@ void TestQtNoidAppConfig::testCountProperty()
     config.clear();
     QCOMPARE(config.count(), 0);
 }
+
+void TestQtNoidAppConfig::testConfigBindableCountProperty()
+{    
+    Config config(this);
+
+    // Get the bindable property
+    auto bindableCount = config.bindableCount();
+    QVERIFY(bindableCount.isValid());
+    QCOMPARE(bindableCount.value(), 0);
+
+    // Test binding to another property
+    QProperty<int> externalProperty;
+    externalProperty.setBinding([&]() { return bindableCount.value(); });
+    QCOMPARE(externalProperty.value(), 0);
+
+    // Add pages and verify binding updates
+    QSignalSpy countChangedSpy(&config, &Config::countChanged);
+
+    // Add a page using emplace
+    config.emplace("Page1");
+    QCOMPARE(config.count(), 1);
+    QCOMPARE(bindableCount.value(), 1);
+    QCOMPARE(externalProperty.value(), 1);
+    QCOMPARE(countChangedSpy.count(), 1);
+
+    // Add a page using append
+    ParameterList* page2 = new ParameterList("Page2", &config);
+    config.append(page2);
+    QCOMPARE(config.count(), 2);
+    QCOMPARE(bindableCount.value(), 2);
+    QCOMPARE(externalProperty.value(), 2);
+    QCOMPARE(countChangedSpy.count(), 2);
+
+    // Add a page using emplace from JSON
+    QJsonObject pageSchema({{"description", "This is Page 3"}});
+    QJsonObject schema({{"Page3", pageSchema}});
+    QJsonObject param({{"Key", "Value"}});
+    QJsonObject valueMain({{"parameters", QJsonArray{param} }});
+    QJsonObject value({{"Page3", valueMain}});
+    config.emplace(schema, value);
+    QCOMPARE(config.count(), 3);
+    QCOMPARE(bindableCount.value(), 3);
+    QCOMPARE(externalProperty.value(), 3);
+    QCOMPARE(countChangedSpy.count(), 3);
+
+    // Remove a page by reference
+    config.remove(page2);
+    QCOMPARE(config.count(), 2);
+    QCOMPARE(bindableCount.value(), 2);
+    QCOMPARE(externalProperty.value(), 2);
+    QCOMPARE(countChangedSpy.count(), 4);
+
+    // Remove a page by name
+    config.remove("Page3");
+    QCOMPARE(config.count(), 1);
+    QCOMPARE(bindableCount.value(), 1);
+    QCOMPARE(externalProperty.value(), 1);
+    QCOMPARE(countChangedSpy.count(), 5);
+
+    // Clear config and verify binding updates
+    config.clear();
+    QCOMPARE(config.count(), 0);
+    QCOMPARE(bindableCount.value(), 0);
+    QCOMPARE(externalProperty.value(), 0);
+    QCOMPARE(countChangedSpy.count(), 6);
+
+    // Verify signal was emitted with correct values
+    QList<QVariant> arguments = countChangedSpy.at(0);
+    QCOMPARE(arguments.at(0).toInt(), 1);
+    arguments = countChangedSpy.at(1);
+    QCOMPARE(arguments.at(0).toInt(), 2);
+    arguments = countChangedSpy.at(2);
+    QCOMPARE(arguments.at(0).toInt(), 3);
+    arguments = countChangedSpy.at(3);
+    QCOMPARE(arguments.at(0).toInt(), 2);
+    arguments = countChangedSpy.at(4);
+    QCOMPARE(arguments.at(0).toInt(), 1);
+    arguments = countChangedSpy.at(5);
+    QCOMPARE(arguments.at(0).toInt(), 0);
+}
+
 
 // JSON serialization tests
 void TestQtNoidAppConfig::testToJsonValues()
@@ -1369,6 +1457,508 @@ void TestQtNoidAppConfig::testPageRenameErrorSignal()
     QCOMPARE(arguments.at(0).toString(), "Page1");
     QCOMPARE(arguments.at(1).toString(), "Page2");
 
+}
+
+void TestQtNoidAppConfig::testConfigBeginAndEndAndRangeLoop()
+{
+    Config config("TestConfig", this);
+
+    // Test empty config
+    QVERIFY(config.begin() == config.end());
+
+    // Add some pages
+    config.emplace("First", "First page");
+    config.emplace("Second", "Second page");
+    config.emplace("Third", "Third page");
+
+    // Test that begin() != end() for non-empty config
+    QVERIFY(config.begin() != config.end());
+
+    // Test iterator dereferencing
+    Config::iterator it = config.begin();
+    QVERIFY(it != config.end());
+
+    ParameterList* firstPage = *it;
+    QVERIFY(firstPage != nullptr);
+    QCOMPARE(firstPage->name(), "First");
+    QCOMPARE(firstPage->description(), "First page");
+
+    // Test iterator increment
+    ++it;
+    QVERIFY(it != config.end());
+    ParameterList* secondPage = *it;
+    QVERIFY(secondPage != nullptr);
+    QCOMPARE(secondPage->name(), "Second");
+    QCOMPARE(secondPage->description(), "Second page");
+
+    // Test post-increment
+    auto prevIt = it++;
+    QVERIFY(it != config.end());
+    QVERIFY(prevIt != it);
+    ParameterList* thirdPage = *it;
+    QVERIFY(thirdPage != nullptr);
+    QCOMPARE(thirdPage->name(), "Third");
+    QCOMPARE(thirdPage->description(), "Third page");
+
+    // Test iterator index() method
+    QCOMPARE(config.begin().index(), 0);
+    auto secondIt = config.begin();
+    ++secondIt;
+    QCOMPARE(secondIt.index(), 1);
+
+    // Test bidirectional iterator (decrement)
+    auto lastIt = config.end();
+    --lastIt;
+    ParameterList* lastPage = *lastIt;
+    QVERIFY(lastPage != nullptr);
+    QCOMPARE(lastPage->name(), "Third");
+    QCOMPARE(lastPage->description(), "Third page");
+
+    // Test post-decrement
+    auto postDecIt = lastIt--;
+    QCOMPARE((*postDecIt)->name(), "Third");
+    QCOMPARE((*lastIt)->name(), "Second");
+
+    // Test range-based for loop
+    QStringList expectedList = {"First", "Second", "Third"};
+    QStringList nameList;
+    for(auto page : config){
+        nameList << page->name();
+    }
+    QCOMPARE(nameList, expectedList);
+}
+
+void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
+{
+    Config config("TestConfig", this);
+
+    // Add some pages
+    config.emplace("Alpha", "Alpha page");
+    config.emplace("Beta", "Beta page");
+    config.emplace("Gamma", "Gamma page");
+
+    // Create a const reference to the config
+    const Config& constConfig = config;
+
+    // ===== Test begin() const and end() const =====
+    // Test empty vs non-empty
+    QVERIFY(constConfig.begin() != constConfig.end());
+
+    // Test const iterator dereferencing
+    Config::const_iterator cit = constConfig.begin();
+    const ParameterList* firstPage = *cit;
+    QVERIFY(firstPage != nullptr);
+    QCOMPARE(firstPage->name(), "Alpha");
+    QCOMPARE(firstPage->description(), "Alpha page");
+
+    // Test const iterator increment
+    ++cit;
+    QVERIFY(cit != constConfig.end());
+    const ParameterList* secondPage = *cit;
+    QVERIFY(secondPage != nullptr);
+    QCOMPARE(secondPage->name(), "Beta");
+    QCOMPARE(secondPage->description(), "Beta page");
+
+    // Test post-increment
+    auto prevCit = cit++;
+    QVERIFY(prevCit != cit);
+    const ParameterList* thirdPage = *cit;
+    QVERIFY(thirdPage != nullptr);
+    QCOMPARE(thirdPage->name(), "Gamma");
+    QCOMPARE(thirdPage->description(), "Gamma page");
+
+    // Test reaching end
+    ++cit;
+    QVERIFY(cit == constConfig.end());
+
+    // ===== Test cbegin() and cend() =====
+    // Test that cbegin() != cend() for non-empty config
+    QVERIFY(constConfig.cbegin() != constConfig.cend());
+
+    // Test cbegin() dereferencing
+    auto cbegIt = constConfig.cbegin();
+    const ParameterList* cbegPage = *cbegIt;
+    QVERIFY(cbegPage != nullptr);
+    QCOMPARE(cbegPage->name(), "Alpha");
+    QCOMPARE(cbegPage->description(), "Alpha page");
+
+    // Test cbegin() index method
+    QCOMPARE(constConfig.cbegin().index(), 0);
+    auto secondCbegIt = constConfig.cbegin();
+    ++secondCbegIt;
+    QCOMPARE(secondCbegIt.index(), 1);
+
+    // ===== Test bidirectional const iterator operations =====
+    // Test decrement from end
+    auto lastCit = constConfig.cend();
+    --lastCit;
+    const ParameterList* lastPage = *lastCit;
+    QVERIFY(lastPage != nullptr);
+    QCOMPARE(lastPage->name(), "Gamma");
+    QCOMPARE(lastPage->description(), "Gamma page");
+
+    // Test post-decrement
+    auto postDecCit = lastCit--;
+    QCOMPARE((*postDecCit)->name(), "Gamma");
+    QCOMPARE((*lastCit)->name(), "Beta");
+
+    // ===== Test iterator conversion from mutable to const =====
+    // Test that mutable iterator can be converted to const iterator
+    Config::iterator mutIt = config.begin();
+    Config::const_iterator constFromMut = mutIt;
+
+    QCOMPARE((*constFromMut)->name(), "Alpha");
+    QCOMPARE((*constFromMut)->description(), "Alpha page");
+
+    // Verify they point to the same element
+    QVERIFY(*mutIt == *constFromMut);
+
+    // ===== Test const range-based for loop =====
+    QStringList constNames;
+    QStringList constDescriptions;
+
+    // Test const range-based for loop
+    for (const ParameterList* page : constConfig) {
+        QVERIFY(page != nullptr);
+        constNames << page->name();
+        constDescriptions << page->description();
+    }
+
+    QCOMPARE(constNames.size(), 3);
+    QCOMPARE(constNames, QStringList({"Alpha", "Beta", "Gamma"}));
+    QCOMPARE(constDescriptions, QStringList({"Alpha page", "Beta page", "Gamma page"}));
+
+    // ===== Test that const iterators prevent modification =====
+    // This should compile (reading)
+    auto constIt = constConfig.cbegin();
+    QString pageName = (*constIt)->name();
+    QCOMPARE(pageName, "Alpha");
+
+    // ===== Test empty const config =====
+    Config emptyConfig("EmptyTest", this);
+    const Config& constEmptyConfig = emptyConfig;
+
+    QVERIFY(constEmptyConfig.begin() == constEmptyConfig.end());
+    QVERIFY(constEmptyConfig.cbegin() == constEmptyConfig.cend());
+
+    // Test const range-based for loop with empty config
+    int constCount = 0;
+    for ([[maybe_unused]] const ParameterList* page : constEmptyConfig) {
+        constCount++;
+    }
+    QCOMPARE(constCount, 0);
+}
+
+void TestQtNoidAppConfig::testConfigReverseIteratorsAndRangeLoop()
+{
+#ifdef Q_OS_WIN
+    Config config("TestConfig", this);
+
+    // Add some pages
+    config.emplace("First", "First page");
+    config.emplace("Second", "Second page");
+    config.emplace("Third", "Third page");
+    config.emplace("Fourth", "Fourth page");
+
+    // ===== Test rbegin() and rend() basic functionality =====
+    QVERIFY(config.rbegin() != config.rend());
+
+    // Test reverse iterator dereferencing - should start from last element
+    Config::reverse_iterator rit = config.rbegin();
+    ParameterList* lastPage = *rit;
+    QVERIFY(lastPage != nullptr);
+    QCOMPARE(lastPage->name(), "Fourth");  // Should be the last element
+    QCOMPARE(lastPage->description(), "Fourth page");
+
+    // ===== Test reverse iterator increment (moves backward through config) =====
+    ++rit;
+    QVERIFY(rit != config.rend());
+    ParameterList* thirdPage = *rit;
+    QVERIFY(thirdPage != nullptr);
+    QCOMPARE(thirdPage->name(), "Third");
+    QCOMPARE(thirdPage->description(), "Third page");
+
+    // Test post-increment
+    auto prevRit = rit++;
+    QVERIFY(rit != config.rend());
+    QVERIFY(prevRit != rit);
+    ParameterList* secondPage = *rit;
+    QVERIFY(secondPage != nullptr);
+    QCOMPARE(secondPage->name(), "Second");
+    QCOMPARE(secondPage->description(), "Second page");
+
+    // Continue to first element
+    ++rit;
+    QVERIFY(rit != config.rend());
+    ParameterList* firstPage = *rit;
+    QVERIFY(firstPage != nullptr);
+    QCOMPARE(firstPage->name(), "First");
+    QCOMPARE(firstPage->description(), "First page");
+
+    // Test reaching rend()
+    ++rit;
+    QVERIFY(rit == config.rend());
+
+    // ===== Test reverse iterator range-based for loop simulation =====
+    QStringList reverseNames;
+    QStringList reverseDescriptions;
+
+    // Manually iterate through reverse iterators
+    for (auto revIt = config.rbegin(); revIt != config.rend(); ++revIt) {
+        ParameterList* page = *revIt;
+        QVERIFY(page != nullptr);
+        reverseNames << page->name();
+        reverseDescriptions << page->description();
+    }
+
+    // Verify reverse order
+    QCOMPARE(reverseNames.size(), 4);
+    QCOMPARE(reverseNames, QStringList({"Fourth", "Third", "Second", "First"}));
+    QCOMPARE(reverseDescriptions, QStringList({"Fourth page", "Third page", "Second page", "First page"}));
+
+    // ===== Test reverse iterator arrow operator =====
+    auto rbeginIt = config.rbegin();
+    QCOMPARE((*rbeginIt)->name(), "Fourth");
+    QCOMPARE((*rbeginIt)->description(), "Fourth page");
+
+    // ===== Test relationship between normal and reverse iterators =====
+    // rbegin() should correspond to the element before end()
+    auto normalEnd = config.end();
+    --normalEnd;
+    auto reverseBegin = config.rbegin();
+    QCOMPARE((*normalEnd)->name(), (*reverseBegin)->name());
+    QCOMPARE((*normalEnd)->description(), (*reverseBegin)->description());
+
+    // ===== Test empty config reverse iterators =====
+    Config emptyConfig("EmptyTest", this);
+    QVERIFY(emptyConfig.rbegin() == emptyConfig.rend());
+
+    // Test reverse iteration over empty config
+    int reverseCount = 0;
+    for (auto revIt = emptyConfig.rbegin(); revIt != emptyConfig.rend(); ++revIt) {
+        reverseCount++;
+    }
+    QCOMPARE(reverseCount, 0);
+
+    // ===== Test reverse iterator with std::reverse algorithm simulation =====
+    // Use reverse iterators to create a reversed copy
+    QStringList normalOrder;
+    QStringList reversedOrder;
+
+    // Normal order
+    for (auto it = config.begin(); it != config.end(); ++it) {
+        normalOrder << (*it)->name();
+    }
+
+    // Reversed order using reverse iterators
+    for (auto rit = config.rbegin(); rit != config.rend(); ++rit) {
+        reversedOrder << (*rit)->name();
+    }
+
+    // Verify they are opposite
+    QCOMPARE(normalOrder, QStringList({"First", "Second", "Third", "Fourth"}));
+    QCOMPARE(reversedOrder, QStringList({"Fourth", "Third", "Second", "First"}));
+
+    // ===== Test reverse iterator decrement (moves forward through config) =====
+    // Start from rbegin() and use decrement to move "forward" in reverse direction
+    auto rLastIt = config.rbegin();
+    ++rLastIt; ++rLastIt; ++rLastIt; // Move to "First"
+    QCOMPARE((*rLastIt)->name(), "First");
+
+    // Test pre-decrement (should move to "Second")
+    --rLastIt;
+    QCOMPARE((*rLastIt)->name(), "Second");
+
+    // Test post-decrement
+    auto postDecRit = rLastIt--;
+    QCOMPARE((*postDecRit)->name(), "Second");
+    QCOMPARE((*rLastIt)->name(), "Third");
+#else
+    QVERIFY(0);
+#endif
+}
+
+void TestQtNoidAppConfig::testConfigConstReverseIterators()
+{
+#ifdef Q_OS_WIN
+    Config config("TestConfig", this);
+
+    // Add some pages
+    config.emplace("First", "First page");
+    config.emplace("Second", "Second page");
+    config.emplace("Third", "Third page");
+    config.emplace("Fourth", "Fourth page");
+
+    // Create a const reference to the config
+    const Config& constConfig = config;
+
+    // ===== Test rbegin() const and rend() const =====
+    // Test that const rbegin() != rend() for non-empty config
+    QVERIFY(constConfig.rbegin() != constConfig.rend());
+
+    // Test const reverse iterator dereferencing - should start from last element
+    Config::const_reverse_iterator crit = constConfig.rbegin();
+    QVERIFY(crit != constConfig.rend());
+
+    const ParameterList* lastPage = *crit;
+    QVERIFY(lastPage != nullptr);
+    QCOMPARE(lastPage->name(), "Fourth");  // Should be the last element
+    QCOMPARE(lastPage->description(), "Fourth page");
+
+    // ===== Test const reverse iterator increment (moves backward through config) =====
+    // Test pre-increment (moves to previous element in normal order)
+    ++crit;
+    QVERIFY(crit != constConfig.rend());
+    const ParameterList* thirdPage = *crit;
+    QVERIFY(thirdPage != nullptr);
+    QCOMPARE(thirdPage->name(), "Third");
+    QCOMPARE(thirdPage->description(), "Third page");
+
+    // Test post-increment
+    auto prevCrit = crit++;
+    QVERIFY(crit != constConfig.rend());
+    QVERIFY(prevCrit != crit);
+    const ParameterList* secondPage = *crit;
+    QVERIFY(secondPage != nullptr);
+    QCOMPARE(secondPage->name(), "Second");
+    QCOMPARE(secondPage->description(), "Second page");
+
+    // Continue to first element
+    ++crit;
+    QVERIFY(crit != constConfig.rend());
+    const ParameterList* firstPage = *crit;
+    QVERIFY(firstPage != nullptr);
+    QCOMPARE(firstPage->name(), "First");
+    QCOMPARE(firstPage->description(), "First page");
+
+    // Test reaching rend()
+    ++crit;
+    QVERIFY(crit == constConfig.rend());
+
+    // ===== Test crbegin() and crend() =====
+    // Test that crbegin() != crend() for non-empty config
+    QVERIFY(constConfig.crbegin() != constConfig.crend());
+
+    // Test crbegin() dereferencing - should start from last element
+    Config::const_reverse_iterator crbit = constConfig.crbegin();
+    QVERIFY(crbit != constConfig.crend());
+
+    const ParameterList* crbPage = *crbit;
+    QVERIFY(crbPage != nullptr);
+    QCOMPARE(crbPage->name(), "Fourth");
+    QCOMPARE(crbPage->description(), "Fourth page");
+
+    // Test crbegin() increment
+    ++crbit;
+    QVERIFY(crbit != constConfig.crend());
+    const ParameterList* crbSecondPage = *crbit;
+    QVERIFY(crbSecondPage != nullptr);
+    QCOMPARE(crbSecondPage->name(), "Third");
+    QCOMPARE(crbSecondPage->description(), "Third page");
+
+    // ===== Test const reverse iterator range-based for loop simulation =====
+    QStringList constReverseNames;
+    QStringList constReverseDescriptions;
+
+    // Manually iterate through const reverse iterators using rbegin() const
+    for (auto constRevIt = constConfig.rbegin(); constRevIt != constConfig.rend(); ++constRevIt) {
+        const ParameterList* page = *constRevIt;
+        QVERIFY(page != nullptr);
+        constReverseNames << page->name();
+        constReverseDescriptions << page->description();
+    }
+
+    // Verify const reverse order
+    QCOMPARE(constReverseNames.size(), 4);
+    QCOMPARE(constReverseNames, QStringList({"Fourth", "Third", "Second", "First"}));
+    QCOMPARE(constReverseDescriptions, QStringList({"Fourth page", "Third page", "Second page", "First page"}));
+
+    // ===== Test const reverse iterator range-based for loop with crbegin/crend =====
+    QStringList crNames;
+    QStringList crDescriptions;
+
+    // Manually iterate through const reverse iterators using crbegin()/crend()
+    for (auto crIt = constConfig.crbegin(); crIt != constConfig.crend(); ++crIt) {
+        const ParameterList* page = *crIt;
+        QVERIFY(page != nullptr);
+        crNames << page->name();
+        crDescriptions << page->description();
+    }
+
+    // Verify crbegin/crend produces same result as rbegin/rend const
+    QCOMPARE(crNames, constReverseNames);
+    QCOMPARE(crDescriptions, constReverseDescriptions);
+
+    // ===== Test const reverse iterator arrow operator =====
+    auto crbeginIt = constConfig.crbegin();
+    QCOMPARE((*crbeginIt)->name(), "Fourth");
+    QCOMPARE((*crbeginIt)->description(), "Fourth page");
+
+    auto rbeginConstIt = constConfig.rbegin();
+    QCOMPARE((*rbeginConstIt)->name(), "Fourth");
+    QCOMPARE((*rbeginConstIt)->description(), "Fourth page");
+
+    // ===== Test relationship between const normal and const reverse iterators =====
+    // rbegin() const should correspond to the element before end() const
+    auto constNormalEnd = constConfig.end();
+    --constNormalEnd;
+    auto constReverseBegin = constConfig.rbegin();
+
+    QCOMPARE((*constNormalEnd)->name(), (*constReverseBegin)->name());
+    QCOMPARE((*constNormalEnd)->description(), (*constReverseBegin)->description());
+
+    // Same test for crbegin() and cend()
+    auto constCEnd = constConfig.cend();
+    --constCEnd;
+    auto constCRBegin = constConfig.crbegin();
+
+    QCOMPARE((*constCEnd)->name(), (*constCRBegin)->name());
+    QCOMPARE((*constCEnd)->description(), (*constCRBegin)->description());
+
+    // ===== Test empty const config reverse iterators =====
+    Config emptyConfig("EmptyTest", this);
+    const Config& constEmptyConfig = emptyConfig;
+
+    QVERIFY(constEmptyConfig.rbegin() == constEmptyConfig.rend());
+    QVERIFY(constEmptyConfig.crbegin() == constEmptyConfig.crend());
+
+    // Test const reverse iteration over empty config
+    int constReverseCount = 0;
+    for (auto constRevIt = constEmptyConfig.rbegin(); constRevIt != constEmptyConfig.rend(); ++constRevIt) {
+        constReverseCount++;
+    }
+    QCOMPARE(constReverseCount, 0);
+
+    // Test crbegin/crend with empty config
+    int crCount = 0;
+    for (auto crIt = constEmptyConfig.crbegin(); crIt != constEmptyConfig.crend(); ++crIt) {
+        crCount++;
+    }
+    QCOMPARE(crCount, 0);
+
+    // ===== Test const correctness =====
+    // This should compile (reading from const iterator)
+    auto constIt = constConfig.crbegin();
+    QString pageName = (*constIt)->name();
+    QCOMPARE(pageName, "Fourth");
+
+    // ===== Test bidirectional const reverse iterator operations =====
+    // Test decrement operations on const reverse iterators
+    auto constLastRevIt = constConfig.rbegin();
+    ++constLastRevIt; ++constLastRevIt; ++constLastRevIt; // Move to "First"
+    QCOMPARE((*constLastRevIt)->name(), "First");
+
+    // Test pre-decrement (should move to "Second")
+    --constLastRevIt;
+    QCOMPARE((*constLastRevIt)->name(), "Second");
+
+    // Test post-decrement
+    auto postDecConstRevIt = constLastRevIt--;
+    QCOMPARE((*postDecConstRevIt)->name(), "Second");
+    QCOMPARE((*constLastRevIt)->name(), "Third");
+#else
+    QVERIFY(0);
+#endif
 }
 
 
