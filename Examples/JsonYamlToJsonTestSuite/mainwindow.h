@@ -23,19 +23,22 @@ public:
 private slots:
     void on_cmdConvertToJson_clicked();
     void on_cmdConvertToYAML_clicked();
+    void on_cmdBrowseFolder_clicked();
     void on_actionLoadYAML_triggered();
     void on_actionTestSuite_2022_01_17_triggered();
+    void on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered();
     void on_actionTestDataFolder_triggered();
+
 
 private:
     Ui::MainWindow *ui;
     QShortcut* m_screenshotShortcut;
     recentFilesManager* m_recentFilesManager;
 private:
-    bool generateTestDataFromResource(const QString &resPath);
-
+    bool generateTestDataFromResource(const QString &root, const QString &resPath);
     bool updateUI_loadYamlFile(const QString &filePath);
-
+    void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);
+    void onFolderComboBoxDoubleClicked();
 };
 #endif // MAINWINDOW_H

@@ -21,7 +21,21 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->lblDescription->clear();
+    // ui->cmdPrevious->setText("\u2B05");
+    // ui->cmdNext->setText("\u27a1\ufe0f"); // ➡️
+    auto save_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
+    ui->cmdSaveDescription->setIcon(save_icon);
+    ui->cmdSaveDescription->setIconSize({16,16});
+    auto iconArrowLeft = style()->standardIcon(QStyle::SP_ArrowLeft);
+    ui->cmdPrevious->setIcon(iconArrowLeft);
+    ui->cmdPrevious->setIconSize({32,32});
+    ui->cmdPrevious->setText("");
+    auto iconArrowRight = style()->standardIcon(QStyle::SP_ArrowRight);
+    ui->cmdNext->setIcon(iconArrowRight);
+    ui->cmdNext->setIconSize({32,32});
+    ui->cmdNext->setText("");
+
+    ui->txtDescription->clear();
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
 
     m_screenshotShortcut = QtNoid::App::Settings::initFullDialogGrabShortcut(this);
@@ -30,11 +44,15 @@ MainWindow::MainWindow(QWidget *parent)
     m_recentFilesManager = new recentFilesManager(ui->actionRecent_Files, this);
     connect(m_recentFilesManager, &recentFilesManager::fileSelected, this, [this](const QString& fileName){
         updateUI_loadYamlFile(fileName);
+        updateUI_convertYamlToJson();
     });
     connect(m_recentFilesManager, &recentFilesManager::listCleared, this, [this](){
         appConfig->clearRecentFiles();
     });
     updateUI_recentFiles(QString());
+
+    // Connect double-click signal from folder comboBox
+    connect(ui->txtFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
 }
 
 MainWindow::~MainWindow()
@@ -45,10 +63,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_cmdConvertToJson_clicked()
 {
-    QString yamlText = ui->txtYAML->toPlainText();
-    auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
-    ui->txtJsonOutput->setPlainText(converter.jsonAsString());
-    ui->txtTokensOutput->setPlainText(converter.tokens().join("\n"));
+    updateUI_convertYamlToJson();
 }
 
 
@@ -58,6 +73,11 @@ void MainWindow::on_cmdConvertToYAML_clicked()
     QJsonDocument doc = QJsonDocument::fromJson(jsonText.toUtf8());
     // QString yamlText = QtNoid::Json::Yaml2Json::jsonToYaml(doc.object());
     // ui->txtYAML->setPlainText(yamlText);
+}
+
+void MainWindow::on_cmdBrowseFolder_clicked()
+{
+
 }
 
 void MainWindow::updateUI_recentFiles(QString fileName)
@@ -81,12 +101,13 @@ void MainWindow::on_actionLoadYAML_triggered()
         return;
     };
 
+    updateUI_convertYamlToJson();
     updateUI_recentFiles(fileName);
 }
 
 void MainWindow::on_actionTestSuite_2022_01_17_triggered()
 {
-    if(generateTestDataFromResource("TestSuite-2022-01-17")) {
+    if(generateTestDataFromResource("://yaml-test-suite/", "YamlTestSuite-2022-01-17")) {
         QMessageBox::information(this, tr("Test Suite"),
                                  tr("Test data generated successfully!"));
     }
@@ -96,19 +117,37 @@ void MainWindow::on_actionTestSuite_2022_01_17_triggered()
     }
 }
 
-bool MainWindow::generateTestDataFromResource(const QString &resPath)
+void MainWindow::on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered()
 {
-    // Read the file list from resources
-    QString root = "://yaml-test-suite/";
+    // :/Txt2JsonTestSuite/Txt2JsonTestSuite-QtNoid-2.2.0
+    // ://Txt2JsonTestSuite/Txt2JsonTestSuite-QtNoid-2.2.0
+    if(generateTestDataFromResource("://Txt2JsonTestSuite/", "Txt2JsonTestSuite-QtNoid-2.2.0")) {
+        QMessageBox::information(this, tr("Test Suite"),
+                                 tr("Test data generated successfully!"));
+    }
+    else {
+        QMessageBox::information(this, tr("Test Suite"),
+                                 tr("Error generating test data"));
+    }
+}
+
+bool MainWindow::generateTestDataFromResource(const QString &root, const QString &resPath)
+{
+    // Read the file list from resources    
     QFile fileListResource(root + resPath);
+    // qDebug() << __func__ << fileListResource.fileName();
     if (!fileListResource.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
     }
 
     QTextStream in(&fileListResource);
     QString baseOutputPath = QtNoid::App::Settings::appExeOrAppBundleDirPath();
-    qDebug() << baseOutputPath;
     baseOutputPath += QDir::separator() + resPath;
+    qDebug() << __func__ << baseOutputPath;
+
+    // C:\GitHub\g-gualeni-public-QtNoid2\build\Desktop_Qt_6_9_3_llvm_mingw_64_bit-Debug\Examples\JsonYamlToJsonTestSuite
+    //"C:/GitHub/g-gualeni-public-QtNoid2/build/Desktop_Qt_6_9_3_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite"
+    // C:/GitHub/g-gualeni-public-QtNoid2/build/Desktop_Qt_6_9_3_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite\\Txt2JsonTestSuite-QtNoid-2.2.0"
 
     int fileCount = 0;
     int errorCount = 0;
@@ -118,12 +157,18 @@ bool MainWindow::generateTestDataFromResource(const QString &resPath)
         if (resourcePath.isEmpty())
             continue;
 
+        // qDebug() << __func__ << resourcePath;
+
+        // :/Txt2JsonTestSuite/QtNoid-2.2.0/Txt2JsonTestSuite/QtNoid-2.2.0/S1/===
+        // :/Txt2JsonTestSuite/QtNoid-2.2.0/Txt2JsonTestSuite/QtNoid-2.2.0/S1/===
+
         // Open the resource file
         QFile resourceFile(resourcePath);
         if (!resourceFile.open(QIODevice::ReadOnly)) {
             errorCount++;
             continue;
         }
+
 
         // Read the content
         QByteArray content = resourceFile.readAll();
@@ -192,6 +237,9 @@ bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
     file.close();
 
     ui->txtYAML->setPlainText(yamlContent);
+    auto tooltipPath = QDir(QtNoid::App::Settings::appExeOrAppBundleDirPath()).relativeFilePath(filePath);
+    ui->txtYAML->setToolTip(tooltipPath);
+    ui->tabWidgetInput->setToolTip(tooltipPath);
 
     // Update status bar with file path
     ui->statusbar->showMessage(filePath);
@@ -230,9 +278,9 @@ bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
         QTextStream descIn(&descriptionFile);
         QString descContent = descIn.readAll();
         descriptionFile.close();
-        ui->lblDescription->setText(descContent);
+        ui->txtDescription->setText(descContent);
     } else {
-        ui->lblDescription->clear();
+        ui->txtDescription->clear();
     }
 
     // Look for "test.event" tokens file
@@ -246,8 +294,53 @@ bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
         ui->txtTokensExpected->clear();
     }
 
+    // Run the converter
+
     return true;
 }
+
+void MainWindow::updateUI_convertYamlToJson()
+{
+    QString yamlText = ui->txtYAML->toPlainText();
+    auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
+    ui->txtJsonOutput->setPlainText(converter.jsonAsString());
+    ui->txtTokensOutput->setPlainText(converter.tokens().join("\n"));
+    ui->txtErrorOutput->setPlainText(converter.errorString());
+}
+
+void MainWindow::onFolderComboBoxDoubleClicked()
+{
+    QString folderPath = ui->txtFolder->currentText();
+    QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+    folderPath = QFileDialog::getOpenFileName(this, tr("Select the first element"), folderPath);
+
+    if (folderPath.isEmpty())
+        return;
+
+    // qDebug() << __func__ << root;
+    // qDebug() << __func__ << folderPath;
+
+    // Remove root
+    QDir dir(folderPath);
+    dir.cdUp();
+    folderPath = QDir(root).relativeFilePath(dir.absolutePath());
+
+    // Add the folder to the comboBox if it's not already there
+    int index = ui->txtFolder->findText(folderPath);
+    if (index == -1) {
+        ui->txtFolder->addItem(folderPath);
+        ui->txtFolder->setCurrentIndex(ui->txtFolder->count() - 1);
+    } else {
+        ui->txtFolder->setCurrentIndex(index);
+    }
+
+    updateUI_loadYamlFile(dir.absoluteFilePath("in.yaml"));
+
+    // Update status bar
+    ui->statusbar->showMessage(tr("Selected folder: %1").arg(folderPath));
+}
+
+
 
 
 

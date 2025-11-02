@@ -15,6 +15,8 @@
 ### Progress Status
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
+Avanti con YamlExample
+-> Ripensare il metodo che crea gli esempi per renderlo flessibile
 
 
 &nbsp;
@@ -23,6 +25,8 @@ Rimuovere JSON Txt2Json Basic Usage example
 finire implementation Yaml2Json library 
 Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
+
+
 
 
 &nbsp;

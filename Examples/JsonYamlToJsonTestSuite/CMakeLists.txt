@@ -27,6 +27,8 @@ set(PROJECT_SOURCES
         mainwindow.ui
         recentfilesmanager.cpp
         recentfilesmanager.h
+        foldercombobox.cpp
+        foldercombobox.h
         yaml-test-suite.qrc
 )
 
