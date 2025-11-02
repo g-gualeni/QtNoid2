@@ -73,7 +73,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="FolderComboBox" name="txtFolder">
+           <widget class="FolderComboBox" name="txtCollectionFolder">
             <property name="toolTip">
              <string>Collection Folder</string>
             </property>

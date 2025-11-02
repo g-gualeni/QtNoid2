@@ -10,8 +10,14 @@ FolderComboBox::FolderComboBox(QWidget *parent)
 bool FolderComboBox::event(QEvent *event)
 {
     if (event->type() == QEvent::MouseButtonPress) {
-        qDebug() << __func__ << event;
-        this->showPopup();
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        QRect dropdownRect = rect();
+        dropdownRect.setLeft(width() - 20);
+        if (dropdownRect.contains(mouseEvent->pos())) {
+            // qDebug() << __func__ << event;
+            // qDebug() << "Click sul pulsante dropdown!";
+            showPopup();
+        }
         return true;
     }
     else if (event->type() == QEvent::MouseButtonDblClick) {

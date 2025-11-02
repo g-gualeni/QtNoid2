@@ -166,6 +166,8 @@ public:
     void clearRecentFiles(const QString& paramName="RecentFiles", const QString& pageName = "Settings");
     bool addRecentFile(QString filePath, int max = 10, const QString& paramName = "RecentFiles", const QString& pageName = "Settings");
 
+
+
     // ===== ITERATOR METHODS =====
     iterator begin() { return iterator(m_pagesByIndex.begin()); }
     iterator end() { return iterator(m_pagesByIndex.end()); }

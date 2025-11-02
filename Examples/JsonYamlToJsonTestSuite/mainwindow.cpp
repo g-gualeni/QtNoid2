@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->txtDescription->clear();
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
 
+
     m_screenshotShortcut = QtNoid::App::Settings::initFullDialogGrabShortcut(this);
 
     // Recent files management
@@ -51,13 +52,29 @@ MainWindow::MainWindow(QWidget *parent)
     });
     updateUI_recentFiles(QString());
 
+    // Recent test collection folder list
+    updateUI_restoreRecentTestCollectionFolders();
+
+
+
+
     // Connect double-click signal from folder comboBox
-    connect(ui->txtFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
+    connect(ui->txtCollectionFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
+    connect(ui->cmdBrowseFolder, &QToolButton::clicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
+    connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextText);
+    connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousText);
 }
 
 MainWindow::~MainWindow()
 {
-    appConfig->saveValue("Geometry", saveGeometry());    
+    appConfig->saveValue("Geometry", saveGeometry());
+
+    QStringList collectionFolderList;
+    for(int ii=0; ii<ui->txtCollectionFolder->count(); ii++) {
+        collectionFolderList << ui->txtCollectionFolder->itemText(ii);
+    }
+    appConfig->saveValue("CollectionFolderList", collectionFolderList);
+
     delete ui;
 }
 
@@ -75,15 +92,33 @@ void MainWindow::on_cmdConvertToYAML_clicked()
     // ui->txtYAML->setPlainText(yamlText);
 }
 
-void MainWindow::on_cmdBrowseFolder_clicked()
-{
-
-}
-
 void MainWindow::updateUI_recentFiles(QString fileName)
 {
     appConfig->addRecentFile(fileName);
     m_recentFilesManager->updateRecentFilesMenu(appConfig->restoreRecentFiles());
+}
+
+void MainWindow::updateUI_restoreRecentTestCollectionFolders()
+{
+    auto items = appConfig->restoreAsStringList("CollectionFolderList", {});
+    ui->txtCollectionFolder->clear();
+    ui->txtCollectionFolder->addItems(items);
+}
+
+void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
+{
+    qDebug() << __func__ << folder;
+    // Devo cercare tutti i file *.yaml nella cartella o nelle sue sottocartelle
+
+    // QStringList listPathRecursively(const QString &path, const QStringList &nameFilters={});
+    QtNoid::Common::File QtNoidFile;
+    m_yamlTestCollectionList = QtNoidFile.listPathRecursively(folder, {".yaml"});
+    m_yamlTestCollectionListCurrent = 0;
+    QString msg = tr("Scanned %1 Yaml files").arg(m_yamlTestCollectionList.count());
+    ui->statusbar->showMessage(msg);
+
+    // qDebug() << __func__ << m_yamlTestCollectionList;
+
 }
 
 void MainWindow::on_actionLoadYAML_triggered()
@@ -310,37 +345,56 @@ void MainWindow::updateUI_convertYamlToJson()
 
 void MainWindow::onFolderComboBoxDoubleClicked()
 {
-    QString folderPath = ui->txtFolder->currentText();
+    QString folderPath = ui->txtCollectionFolder->currentText();
     QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
-    folderPath = QFileDialog::getOpenFileName(this, tr("Select the first element"), folderPath);
+    folderPath = QFileDialog::getExistingDirectory(this, tr("Select the main folder"), folderPath);
 
     if (folderPath.isEmpty())
         return;
 
-    // qDebug() << __func__ << root;
-    // qDebug() << __func__ << folderPath;
-
     // Remove root
     QDir dir(folderPath);
-    dir.cdUp();
     folderPath = QDir(root).relativeFilePath(dir.absolutePath());
+    // dir.cdUp();
 
     // Add the folder to the comboBox if it's not already there
-    int index = ui->txtFolder->findText(folderPath);
+    int index = ui->txtCollectionFolder->findText(folderPath);
     if (index == -1) {
-        ui->txtFolder->addItem(folderPath);
-        ui->txtFolder->setCurrentIndex(ui->txtFolder->count() - 1);
+        ui->txtCollectionFolder->addItem(folderPath);
+        ui->txtCollectionFolder->setCurrentIndex(ui->txtCollectionFolder->count() - 1);
     } else {
-        ui->txtFolder->setCurrentIndex(index);
+        ui->txtCollectionFolder->setCurrentIndex(index);
     }
 
-    updateUI_loadYamlFile(dir.absoluteFilePath("in.yaml"));
+    // updateUI_loadYamlFile(dir.absoluteFilePath("in.yaml"));
 
     // Update status bar
     ui->statusbar->showMessage(tr("Selected folder: %1").arg(folderPath));
 }
 
+void MainWindow::onPreviousText()
+{
+    if(m_yamlTestCollectionListCurrent > 0) {
+        m_yamlTestCollectionListCurrent--;
+        updateUI_loadYamlFile(m_yamlTestCollectionList.at(m_yamlTestCollectionListCurrent));
+    }
+}
+
+void MainWindow::onNextText()
+{
+    if((m_yamlTestCollectionListCurrent + 1) < m_yamlTestCollectionList.count()) {
+        m_yamlTestCollectionListCurrent++;
+        updateUI_loadYamlFile(m_yamlTestCollectionList.at(m_yamlTestCollectionListCurrent));
+    }
+}
 
 
 
+
+
+
+void MainWindow::on_txtCollectionFolder_currentTextChanged(const QString &arg1)
+{
+    updateUI_scanTestCollectionFolder(arg1);
+}
 
