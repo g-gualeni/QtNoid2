@@ -83,6 +83,8 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] test Parameter::nameEdited / ParameterList::nameEdited to keep names in sync
      - [x] count should be bindable
      - [x] add iterator and reverse iterator for Config
+     - [ ] restoreComboBoxTextItems
+     - [ ] saveComboBoxTextItems
      - [ ] class Config Documentation
 
 - [ ] class **ConfigFile** as an extension of Config

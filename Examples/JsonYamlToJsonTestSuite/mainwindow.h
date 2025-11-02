@@ -27,9 +27,6 @@ private slots:
     void on_actionTestSuite_2022_01_17_triggered();
     void on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered();
     void on_actionTestDataFolder_triggered();
-    void on_txtCollectionFolder_currentTextChanged(const QString &arg1);
-
-
 
 private:
     Ui::MainWindow *ui;
@@ -43,8 +40,8 @@ private:
     bool updateUI_loadYamlFile(const QString &filePath);
     void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);
-    void updateUI_restoreRecentTestCollectionFolders();
     void updateUI_scanTestCollectionFolder(const QString &folder);
+    void updateUI_progressBar();
 
     void onFolderComboBoxDoubleClicked();
     void onPreviousText();

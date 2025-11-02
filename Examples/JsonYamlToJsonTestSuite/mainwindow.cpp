@@ -53,14 +53,19 @@ MainWindow::MainWindow(QWidget *parent)
     updateUI_recentFiles(QString());
 
     // Recent test collection folder list
-    updateUI_restoreRecentTestCollectionFolders();
-
-
-
+    appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
+    updateUI_progressBar();
 
     // Connect double-click signal from folder comboBox
     connect(ui->txtCollectionFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
+    connect(ui->txtCollectionFolder, &FolderComboBox::currentTextChanged, this, [&](const QString &folder){
+        updateUI_scanTestCollectionFolder(folder);
+        updateUI_progressBar();
+    });
+
+
     connect(ui->cmdBrowseFolder, &QToolButton::clicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
+
     connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextText);
     connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousText);
 }
@@ -69,11 +74,7 @@ MainWindow::~MainWindow()
 {
     appConfig->saveValue("Geometry", saveGeometry());
 
-    QStringList collectionFolderList;
-    for(int ii=0; ii<ui->txtCollectionFolder->count(); ii++) {
-        collectionFolderList << ui->txtCollectionFolder->itemText(ii);
-    }
-    appConfig->saveValue("CollectionFolderList", collectionFolderList);
+    appConfig->saveComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList");
 
     delete ui;
 }
@@ -98,12 +99,6 @@ void MainWindow::updateUI_recentFiles(QString fileName)
     m_recentFilesManager->updateRecentFilesMenu(appConfig->restoreRecentFiles());
 }
 
-void MainWindow::updateUI_restoreRecentTestCollectionFolders()
-{
-    auto items = appConfig->restoreAsStringList("CollectionFolderList", {});
-    ui->txtCollectionFolder->clear();
-    ui->txtCollectionFolder->addItems(items);
-}
 
 void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 {
@@ -119,6 +114,18 @@ void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 
     // qDebug() << __func__ << m_yamlTestCollectionList;
 
+}
+
+void MainWindow::updateUI_progressBar()
+{
+    if(m_yamlTestCollectionList.isEmpty()) {
+        ui->cboCollectionProgress->setEnabled(false);
+        return;
+    }
+    ui->cboCollectionProgress->setEnabled(true);
+    ui->cboCollectionProgress->setMinimum(0);
+    ui->cboCollectionProgress->setMaximum(m_yamlTestCollectionList.count());
+    ui->cboCollectionProgress->setValue(m_yamlTestCollectionListCurrent + 1);
 }
 
 void MainWindow::on_actionLoadYAML_triggered()
@@ -377,6 +384,7 @@ void MainWindow::onPreviousText()
     if(m_yamlTestCollectionListCurrent > 0) {
         m_yamlTestCollectionListCurrent--;
         updateUI_loadYamlFile(m_yamlTestCollectionList.at(m_yamlTestCollectionListCurrent));
+        updateUI_progressBar();
     }
 }
 
@@ -385,6 +393,7 @@ void MainWindow::onNextText()
     if((m_yamlTestCollectionListCurrent + 1) < m_yamlTestCollectionList.count()) {
         m_yamlTestCollectionListCurrent++;
         updateUI_loadYamlFile(m_yamlTestCollectionList.at(m_yamlTestCollectionListCurrent));
+        updateUI_progressBar();
     }
 }
 
@@ -393,8 +402,4 @@ void MainWindow::onNextText()
 
 
 
-void MainWindow::on_txtCollectionFolder_currentTextChanged(const QString &arg1)
-{
-    updateUI_scanTestCollectionFolder(arg1);
-}
 

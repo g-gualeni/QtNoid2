@@ -9,6 +9,8 @@
 #include <QList>
 #include <QProperty>
 
+
+class QComboBox;
 namespace QtNoid {
 namespace App {
 
@@ -165,6 +167,9 @@ public:
     QStringList restoreRecentFiles(const QStringList defaultValue = {}, const QString& paramName="RecentFiles", const QString& pageName = "Settings") const;
     void clearRecentFiles(const QString& paramName="RecentFiles", const QString& pageName = "Settings");
     bool addRecentFile(QString filePath, int max = 10, const QString& paramName = "RecentFiles", const QString& pageName = "Settings");
+
+    void restoreComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings") const;
+    void saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings");
 
 
 

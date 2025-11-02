@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QComboBox>
 
 namespace QtNoid {
 namespace App {
@@ -696,6 +697,52 @@ bool Config::addRecentFile(QString filePath, int max, const QString &paramName, 
     page->setValue(paramName, filePathList);
 
     return true;
+}
+
+void Config::restoreComboBoxTextItems(QComboBox *cbo, const QString &paramName, const QStringList &defaultValue, const QString &pageName) const
+{
+    if(cbo == nullptr)
+        return;
+
+    QStringList items = defaultValue;
+    QString currentItem;
+
+    do {
+        ParameterList* page = m_pagesByName.value(pageName, nullptr);
+        if(page == nullptr)
+            break;
+        if(!page->contains(paramName))
+            break;
+        items = page->value(paramName).toStringList();
+
+        QString selectedItemParamName = paramName + QStringLiteral("Current");
+        if(!page->contains(selectedItemParamName))
+            break;
+
+        currentItem = page->value(selectedItemParamName).toString();
+
+    } while(0);
+
+    cbo->clear();
+    cbo->addItems(items);
+    cbo->setCurrentText(currentItem);
+}
+
+void Config::saveComboBoxTextItems(QComboBox *cbo, const QString &paramName, const QString &pageName)
+{
+    if(cbo == nullptr)
+        return;
+
+    QStringList items;
+    for(int ii=0; ii<cbo->count(); ii++) {
+        items << cbo->itemText(ii);
+    }
+    saveValuePrivate(paramName, items, pageName);
+
+    QString currentItem = cbo->currentText();
+    QString selectedItemParamName = paramName + QStringLiteral("Current");
+    saveValuePrivate(selectedItemParamName, currentItem, pageName);
+
 }
 
 

@@ -1,3 +1,4 @@
+#include <QComboBox>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QSignalSpy>
@@ -82,6 +83,10 @@ private slots:
     void testAddRecentFileShouldDoNothingIfAnEmptyString();
     void testRestoreRecentFiles();
     void testClearRecentFiles();
+
+    // ComboBox tests
+    void testSaveComboBoxTextItems();
+    void testRestoreComboBoxTextItems();
 
     // Debug output test
     void testConfigDebugOutput();
@@ -1457,6 +1462,313 @@ void TestQtNoidAppConfig::testPageRenameErrorSignal()
     QCOMPARE(arguments.at(0).toString(), "Page1");
     QCOMPARE(arguments.at(1).toString(), "Page2");
 
+}
+
+void TestQtNoidAppConfig::testSaveComboBoxTextItems()
+{
+
+    // Test 1: Save combo box items with default page name "Settings"
+    Config config1("TestConfig1", this);
+    QComboBox* cbo1 = new QComboBox();
+    cbo1->addItems({"Option1", "Option2", "Option3"});
+    cbo1->setCurrentIndex(1); // Select "Option2"
+
+    config1.saveComboBoxTextItems(cbo1, "MyComboBox");
+
+    // Verify items were saved
+    QStringList savedItems = config1.restoreAsStringList("MyComboBox", {});
+    QCOMPARE(savedItems.size(), 3);
+    QCOMPARE(savedItems.at(0), "Option1");
+    QCOMPARE(savedItems.at(1), "Option2");
+    QCOMPARE(savedItems.at(2), "Option3");
+
+    // Verify current item was saved with "Current" suffix
+    QString savedCurrent = config1.restoreAsString("MyComboBoxCurrent", "");
+    QCOMPARE(savedCurrent, "Option2");
+
+    delete cbo1;
+
+    // Test 2: Save combo box items with custom page name
+    Config config2("TestConfig2", this);
+    QComboBox* cbo2 = new QComboBox();
+    cbo2->addItems({"Red", "Green", "Blue"});
+    cbo2->setCurrentIndex(2); // Select "Blue"
+    config2.saveComboBoxTextItems(cbo2, "ColorPicker", "Display");
+    delete cbo2;
+
+    // Verify items were saved to correct page
+    QStringList colorItems = config2.restoreAsStringList("ColorPicker", QStringList(), "Display");
+    QCOMPARE(colorItems.size(), 3);
+    QCOMPARE(colorItems, QStringList({"Red", "Green", "Blue"}));
+
+    QString currentColor = config2.restoreAsString("ColorPickerCurrent", "", "Display");
+    QCOMPARE(currentColor, "Blue");
+
+    // Test 3: Save empty combo box
+    Config config3("TestConfig3", this);
+    QComboBox* cbo3 = new QComboBox();
+    // Don't add any items
+
+    config3.saveComboBoxTextItems(cbo3, "EmptyCombo");
+
+    QStringList emptyItems = config3.restoreAsStringList("EmptyCombo", QStringList());
+    QCOMPARE(emptyItems.size(), 0);
+    QVERIFY(emptyItems.isEmpty());
+
+    // Current text should be empty string
+    QString emptyCurrent = config3.restoreAsString("EmptyComboCurrent", "DEFAULT");
+    QCOMPARE(emptyCurrent, "");
+
+    delete cbo3;
+
+    // Test 4: Save combo box with no selection (index -1)
+    Config config4("TestConfig4", this);
+    QComboBox* cbo4 = new QComboBox();
+    cbo4->addItems({"Item1", "Item2", "Item3"});
+    cbo4->setCurrentIndex(-1); // No selection
+
+    config4.saveComboBoxTextItems(cbo4, "NoSelection");
+
+    QStringList items4 = config4.restoreAsStringList("NoSelection", QStringList());
+    QCOMPARE(items4.size(), 3);
+
+    // Current text should be empty when no selection
+    QString current4 = config4.restoreAsString("NoSelectionCurrent", "DEFAULT");
+    QCOMPARE(current4, "");
+
+    delete cbo4;
+
+    // Test 5: Handle null pointer gracefully (should not crash)
+    Config config5("TestConfig5", this);
+    QComboBox* nullCbo = nullptr;   
+    config5.saveComboBoxTextItems(nullCbo, "NullCombo");
+
+    // Should not have created any parameters
+    QStringList nullItems = config5.restoreAsStringList("NullCombo", {"DEFAULT"});
+    QCOMPARE(nullItems.size(), 1);
+    QCOMPARE(nullItems.at(0), "DEFAULT"); // Should return default value
+
+
+    // Test 6: Update existing combo box items
+    Config config6("TestConfig6", this);
+    QComboBox* cbo6 = new QComboBox();
+    cbo6->addItems({"First", "Second"});
+    cbo6->setCurrentIndex(0);
+    config6.saveComboBoxTextItems(cbo6, "UpdateTest");
+
+    QStringList initial = config6.restoreAsStringList("UpdateTest", QStringList());
+    QCOMPARE(initial.size(), 2);
+
+    // Update the combo box
+    cbo6->clear();
+    cbo6->addItems({"Alpha", "Beta", "Gamma", "Delta"});
+    cbo6->setCurrentIndex(2); // Select "Gamma"
+
+    config6.saveComboBoxTextItems(cbo6, "UpdateTest");
+
+    QStringList updated = config6.restoreAsStringList("UpdateTest", QStringList());
+    QCOMPARE(updated.size(), 4);
+    QCOMPARE(updated, QStringList({"Alpha", "Beta", "Gamma", "Delta"}));
+    QString updatedCurrent = config6.restoreAsString("UpdateTestCurrent", "");
+    QCOMPARE(updatedCurrent, "Gamma");
+    delete cbo6;
+
+
+    // Test 7: Save combo box with editable text
+    Config config7("TestConfig7", this);
+    QComboBox* cbo7 = new QComboBox();
+    cbo7->setEditable(true);
+    cbo7->addItems({"Preset1", "Preset2"});
+    cbo7->setCurrentText("CustomText"); // User typed custom text
+
+    config7.saveComboBoxTextItems(cbo7, "EditableCombo");
+
+
+    QStringList presets = config7.restoreAsStringList("EditableCombo", QStringList());
+    QCOMPARE(presets.size(), 2); // Should save the preset items
+
+    QString customText = config7.restoreAsString("EditableComboCurrent", "");
+    QCOMPARE(customText, "CustomText"); // Should save the custom text
+
+    delete cbo7;
+
+
+    // Test 8: Verify separate pages don't interfere
+    Config config8("TestConfig8", this);
+    QComboBox* cboA = new QComboBox();
+    cboA->addItems({"A1", "A2"});
+    cboA->setCurrentIndex(0);
+
+
+    QComboBox* cboB = new QComboBox();
+    cboB->addItems({"B1", "B2", "B3"});
+    cboB->setCurrentIndex(1);
+
+    config8.saveComboBoxTextItems(cboA, "Combo", "PageA");
+    config8.saveComboBoxTextItems(cboB, "Combo", "PageB");
+
+    QStringList itemsA = config8.restoreAsStringList("Combo", QStringList(), "PageA");
+    QStringList itemsB = config8.restoreAsStringList("Combo", QStringList(), "PageB");
+
+    QCOMPARE(itemsA.size(), 2);
+    QCOMPARE(itemsB.size(), 3);
+    QCOMPARE(config8.restoreAsString("ComboCurrent", "", "PageA"), "A1");
+    QCOMPARE(config8.restoreAsString("ComboCurrent", "", "PageB"), "B2");
+
+    delete cboA;
+    delete cboB;
+
+}
+
+void TestQtNoidAppConfig::testRestoreComboBoxTextItems()
+{
+    // Test 1: Restore combo box with previously saved items
+    Config config1("TestConfig1", this);
+    QComboBox* cbo1 = new QComboBox();
+    cbo1->addItems({"Original1", "Original2"});
+    cbo1->setCurrentIndex(1);
+
+    // Save first
+    config1.saveComboBoxTextItems(cbo1, "RestoredCombo");
+
+    // Clear and restore
+    cbo1->clear();
+    QCOMPARE(cbo1->count(), 0);
+
+    config1.restoreComboBoxTextItems(cbo1, "RestoredCombo", {});
+
+    // Verify items were restored
+    QCOMPARE(cbo1->count(), 2);
+    QCOMPARE(cbo1->itemText(0), "Original1");
+    QCOMPARE(cbo1->itemText(1), "Original2");
+    QCOMPARE(cbo1->currentText(), "Original2");
+    QCOMPARE(cbo1->currentIndex(), 1);
+    delete cbo1;
+
+
+
+    // Test 2: Restore with default values when parameter doesn't exist
+    Config config2("TestConfig2", this);
+    QComboBox* cbo2 = new QComboBox();
+    QStringList defaultItems = {"Default1", "Default2", "Default3"};
+
+    config2.restoreComboBoxTextItems(cbo2, "NonExistent", defaultItems);
+
+    QCOMPARE(cbo2->count(), 3);
+    QCOMPARE(cbo2->itemText(0), "Default1");
+    QCOMPARE(cbo2->itemText(1), "Default2");
+    QCOMPARE(cbo2->itemText(2), "Default3");
+    QCOMPARE(cbo2->currentText(), "Default1");
+    QCOMPARE(cbo2->currentIndex(), 0);
+
+    delete cbo2;
+
+    // Test 3: Restore with custom page name
+    Config config3("TestConfig3", this);
+    QComboBox* cbo3 = new QComboBox();
+    cbo3->addItems({"Color1", "Color2", "Color3"});
+    cbo3->setCurrentIndex(2);
+
+    config3.saveComboBoxTextItems(cbo3, "Colors", "Display");
+
+    cbo3->clear();
+    config3.restoreComboBoxTextItems(cbo3, "Colors", {}, "Display");
+
+    QCOMPARE(cbo3->count(), 3);
+    QCOMPARE(cbo3->currentText(), "Color3");
+
+    delete cbo3;
+
+    // Test 4: Handle null pointer gracefully
+    // Should not crash: Test passes if no crash occurred
+    Config config4("TestConfig4", this);
+    QComboBox* nullCbo = nullptr;
+    config4.restoreComboBoxTextItems(nullCbo, "NullTest", {});
+
+    // Test 5: Restore empty combo box (saved with no items)
+    Config config5("TestConfig5", this);
+    QComboBox* cbo5a = new QComboBox();
+    // Don't add any items
+    config5.saveComboBoxTextItems(cbo5a, "EmptyCombo");
+    QCOMPARE(cbo5a->count(), 0);
+    delete cbo5a;
+
+
+    // // Test 5b:  Should be cleared to match saved state
+    QComboBox* cbo5b = new QComboBox();
+    cbo5b->addItems({"Temp1", "Temp2"}); // Add some temp items
+    config5.restoreComboBoxTextItems(cbo5b, "EmptyCombo", {});
+    QCOMPARE(cbo5b->count(), 0);
+    delete cbo5b;
+
+
+    // Test 6: Restore when only items exist but no current selection saved
+    Config config6("TestConfig6", this);
+    // Manually save just the items list without the "Current" parameter
+    QStringList items6 = {"Item1", "Item2", "Item3"};
+    config6.saveValue("TestCombo", items6);
+    // Intentionally not saving "TestComboCurrent"
+    QComboBox* cbo6 = new QComboBox();
+    config6.restoreComboBoxTextItems(cbo6, "TestCombo", {});
+
+    QCOMPARE(cbo6->count(), 3);
+    QCOMPARE(cbo6->itemText(0), "Item1");
+    QCOMPARE(cbo6->itemText(1), "Item2");
+    QCOMPARE(cbo6->itemText(2), "Item3");
+    QCOMPARE(cbo6->currentIndex(), 0);
+    delete cbo6;
+
+
+    // Test 7: Restore preserves current text even if not in items
+    Config config7("TestConfig7", this);
+    QComboBox* cbo7a = new QComboBox();
+    cbo7a->setEditable(true);
+    cbo7a->addItems({"Preset1", "Preset2"});
+    cbo7a->setCurrentText("CustomValue");
+
+    config7.saveComboBoxTextItems(cbo7a, "EditableCombo");
+    delete cbo7a;
+
+    QComboBox* cbo7b = new QComboBox();
+    cbo7b->setEditable(true);
+    config7.restoreComboBoxTextItems(cbo7b, "EditableCombo", {});
+
+    QCOMPARE(cbo7b->count(), 2);
+    QCOMPARE(cbo7b->currentText(), "CustomValue"); // Custom text should be restored
+
+    delete cbo7b;
+
+    // Test 8: Restore doesn't affect other combo boxes on different pages
+    Config config8("TestConfig8", this);
+
+    QComboBox* cboPageA = new QComboBox();
+    cboPageA->addItems({"A1", "A2"});
+    cboPageA->setCurrentIndex(1);
+    config8.saveComboBoxTextItems(cboPageA, "Combo", "PageA");
+
+    QComboBox* cboPageB = new QComboBox();
+    cboPageB->addItems({"B1", "B2", "B3"});
+    cboPageB->setCurrentIndex(0);
+    config8.saveComboBoxTextItems(cboPageB, "Combo", "PageB");
+
+    delete cboPageA;
+    delete cboPageB;
+
+    // Restore separately
+    QComboBox* restoreA = new QComboBox();
+    QComboBox* restoreB = new QComboBox();
+
+    config8.restoreComboBoxTextItems(restoreA, "Combo", QStringList(), "PageA");
+    config8.restoreComboBoxTextItems(restoreB, "Combo", QStringList(), "PageB");
+
+    QCOMPARE(restoreA->count(), 2);
+    QCOMPARE(restoreA->currentText(), "A2");
+
+    QCOMPARE(restoreB->count(), 3);
+    QCOMPARE(restoreB->currentText(), "B1");
+
+    delete restoreA;
+    delete restoreB;
 }
 
 void TestQtNoidAppConfig::testConfigBeginAndEndAndRangeLoop()
