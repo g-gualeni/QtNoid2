@@ -61,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->txtCollectionFolder, &FolderComboBox::currentTextChanged, this, [&](const QString &folder){
         updateUI_scanTestCollectionFolder(folder);
         updateUI_progressBar();
+        updateUI_loadYamlFile(m_yamlTestCollectionList.value(0, {}));
     });
 
 
@@ -118,14 +119,12 @@ void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 
 void MainWindow::updateUI_progressBar()
 {
-    if(m_yamlTestCollectionList.isEmpty()) {
-        ui->cboCollectionProgress->setEnabled(false);
-        return;
-    }
-    ui->cboCollectionProgress->setEnabled(true);
+    ui->cboCollectionProgress->setVisible(!m_yamlTestCollectionList.isEmpty());
     ui->cboCollectionProgress->setMinimum(0);
     ui->cboCollectionProgress->setMaximum(m_yamlTestCollectionList.count());
     ui->cboCollectionProgress->setValue(m_yamlTestCollectionListCurrent + 1);
+    QString msg = QString("%1/%2").arg(m_yamlTestCollectionListCurrent+1).arg(m_yamlTestCollectionList.count());
+    ui->cboCollectionProgress->setToolTip(msg);
 }
 
 void MainWindow::on_actionLoadYAML_triggered()
@@ -381,20 +380,23 @@ void MainWindow::onFolderComboBoxDoubleClicked()
 
 void MainWindow::onPreviousText()
 {
+    qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
+
     if(m_yamlTestCollectionListCurrent > 0) {
         m_yamlTestCollectionListCurrent--;
-        updateUI_loadYamlFile(m_yamlTestCollectionList.at(m_yamlTestCollectionListCurrent));
         updateUI_progressBar();
     }
+    updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
 }
 
 void MainWindow::onNextText()
 {
+    qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
     if((m_yamlTestCollectionListCurrent + 1) < m_yamlTestCollectionList.count()) {
         m_yamlTestCollectionListCurrent++;
-        updateUI_loadYamlFile(m_yamlTestCollectionList.at(m_yamlTestCollectionListCurrent));
         updateUI_progressBar();
     }
+    updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
 }
 
 
