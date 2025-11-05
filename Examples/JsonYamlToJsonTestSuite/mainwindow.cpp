@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_recentFilesManager, &recentFilesManager::fileSelected, this, [this](const QString& fileName){
         updateUI_loadYamlFile(fileName);
         updateUI_convertYamlToJson();
+        updateUI_statusBar();
     });
     connect(m_recentFilesManager, &recentFilesManager::listCleared, this, [this](){
         appConfig->clearRecentFiles();
@@ -54,7 +55,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Recent test collection folder list
     appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
+    updateUI_scanTestCollectionFolder(ui->txtCollectionFolder->currentText());
+    updateUI_loadYamlFile(m_yamlTestCollectionList.value(0, {}));
+    m_yamlTestCollectionListCurrent = appConfig->restoreAsInt("yamlTestCollectionListCurrent", 0);
+
+    TODO
+    fare un metodo set per m_yamlTestCollectionListCurrent in modo  che faccia il clip sopra o sotto
+    in questo modo semplifico anche il codice di move next, move previous
+
     updateUI_progressBar();
+    updateUI_statusBar();
 
     // Connect double-click signal from folder comboBox
     connect(ui->txtCollectionFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
@@ -62,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
         updateUI_scanTestCollectionFolder(folder);
         updateUI_progressBar();
         updateUI_loadYamlFile(m_yamlTestCollectionList.value(0, {}));
+        updateUI_statusBar();
     });
 
 
@@ -74,9 +85,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     appConfig->saveValue("Geometry", saveGeometry());
-
     appConfig->saveComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList");
-
+    appConfig->saveValue("yamlTestCollectionListCurrent", m_yamlTestCollectionListCurrent);
     delete ui;
 }
 
@@ -103,6 +113,9 @@ void MainWindow::updateUI_recentFiles(QString fileName)
 
 void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 {
+    if(folder.isEmpty())
+        return;
+
     qDebug() << __func__ << folder;
     // Devo cercare tutti i file *.yaml nella cartella o nelle sue sottocartelle
 
@@ -110,11 +123,6 @@ void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
     QtNoid::Common::File QtNoidFile;
     m_yamlTestCollectionList = QtNoidFile.listPathRecursively(folder, {".yaml"});
     m_yamlTestCollectionListCurrent = 0;
-    QString msg = tr("Scanned %1 Yaml files").arg(m_yamlTestCollectionList.count());
-    ui->statusbar->showMessage(msg);
-
-    // qDebug() << __func__ << m_yamlTestCollectionList;
-
 }
 
 void MainWindow::updateUI_progressBar()
@@ -125,6 +133,28 @@ void MainWindow::updateUI_progressBar()
     ui->cboCollectionProgress->setValue(m_yamlTestCollectionListCurrent + 1);
     QString msg = QString("%1/%2").arg(m_yamlTestCollectionListCurrent+1).arg(m_yamlTestCollectionList.count());
     ui->cboCollectionProgress->setToolTip(msg);
+}
+
+void MainWindow::updateUI_statusBar(const QString& msg)
+{
+    if(!msg.isEmpty()) {
+        ui->statusbar->showMessage(msg);
+        return;
+    }
+    QString sbMsg;
+    if(!m_yamlTestCollectionList.isEmpty()) {
+        auto folderPath = ui->txtCollectionFolder->currentText();
+        QDir dir(folderPath);
+        auto fileName = dir.relativeFilePath(m_yamlTestCollectionList[m_yamlTestCollectionListCurrent]);
+        sbMsg = tr("%1 Item %2/%3 - %4")
+                    .arg(folderPath)
+                    .arg(m_yamlTestCollectionListCurrent+1)
+                    .arg(m_yamlTestCollectionList.count())
+                    .arg(fileName) ;
+        qDebug() << __func__ << sbMsg;
+        ui->statusbar->showMessage(sbMsg);
+        return;
+    }
 }
 
 void MainWindow::on_actionLoadYAML_triggered()
@@ -245,12 +275,13 @@ bool MainWindow::generateTestDataFromResource(const QString &root, const QString
     fileListResource.close();
 
     // Show summary in status bar
-    ui->statusbar->showMessage(
+    QString msg(
         tr("Generated %1 files (%2 errors) in %3")
         .arg(fileCount)
         .arg(errorCount)
         .arg(baseOutputPath)
     );
+    updateUI_statusBar(msg);
 
     if(errorCount) {
         return false;
@@ -268,6 +299,10 @@ void MainWindow::on_actionTestDataFolder_triggered()
 
 bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
 {
+    if(filePath.isEmpty()) {
+        return false;
+    }
+
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
@@ -281,9 +316,6 @@ bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
     auto tooltipPath = QDir(QtNoid::App::Settings::appExeOrAppBundleDirPath()).relativeFilePath(filePath);
     ui->txtYAML->setToolTip(tooltipPath);
     ui->tabWidgetInput->setToolTip(tooltipPath);
-
-    // Update status bar with file path
-    ui->statusbar->showMessage(filePath);
 
     // Look for corresponding .json file
     QFileInfo FI(filePath);
@@ -373,9 +405,6 @@ void MainWindow::onFolderComboBoxDoubleClicked()
     }
 
     // updateUI_loadYamlFile(dir.absoluteFilePath("in.yaml"));
-
-    // Update status bar
-    ui->statusbar->showMessage(tr("Selected folder: %1").arg(folderPath));
 }
 
 void MainWindow::onPreviousText()
@@ -387,6 +416,7 @@ void MainWindow::onPreviousText()
         updateUI_progressBar();
     }
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
+    updateUI_statusBar();
 }
 
 void MainWindow::onNextText()
@@ -397,6 +427,7 @@ void MainWindow::onNextText()
         updateUI_progressBar();
     }
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
+    updateUI_statusBar();
 }
 
 

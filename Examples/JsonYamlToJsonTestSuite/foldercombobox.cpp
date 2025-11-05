@@ -1,5 +1,6 @@
 #include "foldercombobox.h"
 #include <QEvent>
+#include <QMenu>
 #include <QMouseEvent>
 
 FolderComboBox::FolderComboBox(QWidget *parent)
@@ -35,4 +36,17 @@ bool FolderComboBox::event(QEvent *event)
     }
 
     return QComboBox::event(event);
+}
+
+
+void FolderComboBox::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu menu;
+    QAction *resetAction = menu.addAction("Reset");
+    QAction *selected = menu.exec(event->globalPos());
+
+    if (selected == resetAction) {
+        clear();
+        setCurrentIndex(-1);
+    }
 }

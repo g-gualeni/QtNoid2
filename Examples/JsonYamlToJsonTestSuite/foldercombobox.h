@@ -19,6 +19,10 @@ signals:
 
 private:
     bool m_ignoreNextMouseRelease = false;
+
+    // QWidget interface
+protected:
+    virtual void contextMenuEvent(QContextMenuEvent *event) override;
 };
 
 #endif // FOLDERCOMBOBOX_H

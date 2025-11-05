@@ -42,6 +42,7 @@ private:
     void updateUI_recentFiles(QString fileName);
     void updateUI_scanTestCollectionFolder(const QString &folder);
     void updateUI_progressBar();
+    void updateUI_statusBar(const QString &msg = {});
 
     void onFolderComboBoxDoubleClicked();
     void onPreviousText();
