@@ -1,7 +1,6 @@
 2.2.0
+The release has been compiled using: Qt 6.10.0 without any limitation for macOS
 
-The release has been compiled using: Qt 6.9.3 because of my macOS 12 (Monterey)
-doesn't support Qt 6.10
 
 
 Rename and split of appExeOrAppBundlePath() into 2 methods:

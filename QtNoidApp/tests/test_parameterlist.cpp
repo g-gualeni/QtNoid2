@@ -1759,7 +1759,6 @@ void TestQtNoidAppParameterList::testParameterListConstIteratorsAndConstRangeLoo
 
 void TestQtNoidAppParameterList::testParameterListReverseIteratorsAndRangeLoop()
 {
-#ifdef Q_OS_WIN
     ParameterList list("TestList", this);
     // Add some parameters
     list.emplace(100.0, "First", "First parameter");
@@ -1880,14 +1879,10 @@ void TestQtNoidAppParameterList::testParameterListReverseIteratorsAndRangeLoop()
     auto postDecRit = rLastIt--;
     QCOMPARE((*postDecRit)->name(), "Second");
     QCOMPARE((*rLastIt)->name(), "Third");
-#else
-    QVERIFY(0);
-#endif
 }
 
 void TestQtNoidAppParameterList::testParameterListConstReverseIterators()
 {
-#ifdef Q_OS_WIN
     ParameterList list("TestList", this);
 
     // Add some parameters
@@ -2076,9 +2071,6 @@ void TestQtNoidAppParameterList::testParameterListConstReverseIterators()
     auto postDecConstRevIt = constLastRevIt--;
     QCOMPARE((*postDecConstRevIt)->name(), "Second");
     QCOMPARE((*constLastRevIt)->name(), "Third");
-#else
-    QVERIFY(0);
-#endif
 }
 
 void TestQtNoidAppParameterList::testQDebugOperator()

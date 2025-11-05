@@ -38,15 +38,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->txtDescription->clear();
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
 
-
     m_screenshotShortcut = QtNoid::App::Settings::initFullDialogGrabShortcut(this);
 
     // Recent files management
     m_recentFilesManager = new recentFilesManager(ui->actionRecent_Files, this);
     connect(m_recentFilesManager, &recentFilesManager::fileSelected, this, [this](const QString& fileName){
         updateUI_loadYamlFile(fileName);
-        updateUI_convertYamlToJson();
         updateUI_statusBar();
+        updateUI_convertYamlToJson();
     });
     connect(m_recentFilesManager, &recentFilesManager::listCleared, this, [this](){
         appConfig->clearRecentFiles();
@@ -57,12 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
     updateUI_scanTestCollectionFolder(ui->txtCollectionFolder->currentText());
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(0, {}));
-    m_yamlTestCollectionListCurrent = appConfig->restoreAsInt("yamlTestCollectionListCurrent", 0);
-
-    TODO
-    fare un metodo set per m_yamlTestCollectionListCurrent in modo  che faccia il clip sopra o sotto
-    in questo modo semplifico anche il codice di move next, move previous
-
+    setYamlTestCollectionListCurrent(appConfig->restoreAsInt("yamlTestCollectionListCurrent", 0));
     updateUI_progressBar();
     updateUI_statusBar();
 
@@ -113,16 +107,15 @@ void MainWindow::updateUI_recentFiles(QString fileName)
 
 void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 {
-    if(folder.isEmpty())
+    m_yamlTestCollectionListCurrent = 0;
+    m_yamlTestCollectionList.clear();
+
+    if(folder.isEmpty()) {
         return;
-
-    qDebug() << __func__ << folder;
-    // Devo cercare tutti i file *.yaml nella cartella o nelle sue sottocartelle
-
-    // QStringList listPathRecursively(const QString &path, const QStringList &nameFilters={});
+    }
     QtNoid::Common::File QtNoidFile;
     m_yamlTestCollectionList = QtNoidFile.listPathRecursively(folder, {".yaml"});
-    m_yamlTestCollectionListCurrent = 0;
+    qDebug() << __func__ << folder << "count:" << m_yamlTestCollectionList.count();
 }
 
 void MainWindow::updateUI_progressBar()
@@ -141,6 +134,9 @@ void MainWindow::updateUI_statusBar(const QString& msg)
         ui->statusbar->showMessage(msg);
         return;
     }
+
+    ui->statusbar->clearMessage();
+
     QString sbMsg;
     if(!m_yamlTestCollectionList.isEmpty()) {
         auto folderPath = ui->txtCollectionFolder->currentText();
@@ -154,7 +150,7 @@ void MainWindow::updateUI_statusBar(const QString& msg)
         qDebug() << __func__ << sbMsg;
         ui->statusbar->showMessage(sbMsg);
         return;
-    }
+    }    
 }
 
 void MainWindow::on_actionLoadYAML_triggered()
@@ -166,12 +162,7 @@ void MainWindow::on_actionLoadYAML_triggered()
     if (fileName.isEmpty())
         return;
 
-    if(!updateUI_loadYamlFile(fileName)) {
-        QMessageBox::warning(this, tr("Error"),
-                             tr("Cannot read the file %1:").arg(fileName));
-        return;
-    };
-
+    updateUI_loadYamlFile(fileName);
     updateUI_convertYamlToJson();
     updateUI_recentFiles(fileName);
 }
@@ -296,22 +287,48 @@ void MainWindow::on_actionTestDataFolder_triggered()
     QDesktopServices::openUrl(QUrl::fromLocalFile(appPath));
 }
 
-
-bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
+void MainWindow::setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent)
 {
-    if(filePath.isEmpty()) {
-        return false;
+    // qDebug() << __func__ <<"NewIndex:" << newYamlTestCollectionListCurrent << m_yamlTestCollectionList.count()
+    //          << m_yamlTestCollectionListCurrent;
+
+    if(newYamlTestCollectionListCurrent + 1 > m_yamlTestCollectionList.count()) {
+        m_yamlTestCollectionListCurrent = m_yamlTestCollectionList.count();
     }
-
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
+    else if(newYamlTestCollectionListCurrent < 0 ) {
+        m_yamlTestCollectionListCurrent = 0;
     }
+    else {
+        m_yamlTestCollectionListCurrent = newYamlTestCollectionListCurrent;
+    }
+}
 
-    QTextStream in(&file);
-    QString yamlContent = in.readAll();
-    file.close();
 
+void MainWindow::updateUI_loadYamlFile(const QString &filePath)
+{
+    QString yamlContent;
+    do{
+        if(filePath.isEmpty()) {
+            break;
+        }
+        QFile file(filePath);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            break;
+        }
+        QTextStream in(&file);
+        yamlContent = in.readAll();
+        file.close();
+    } while(0);
+
+    ui->txtYAML->clear();
+    ui->txtJsonExpected->clear();
+    ui->txtDescription->clear();
+    ui->txtTokensExpected->clear();
+    ui->txtDescription->clear();
+
+    if(yamlContent.isEmpty()){
+        return;
+    }
     ui->txtYAML->setPlainText(yamlContent);
     auto tooltipPath = QDir(QtNoid::App::Settings::appExeOrAppBundleDirPath()).relativeFilePath(filePath);
     ui->txtYAML->setToolTip(tooltipPath);
@@ -319,7 +336,6 @@ bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
 
     // Look for corresponding .json file
     QFileInfo FI(filePath);
-
     QString jsonFileName = FI.absolutePath() + QDir::separator() +
                            FI.baseName() + ".json";
     QString errorFileName = FI.absolutePath() + QDir::separator() +
@@ -329,6 +345,18 @@ bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
     QString tokensFileName = FI.absolutePath() + QDir::separator() +
                              "test.event";
 
+    // Look for "===" description file
+    QFile descriptionFile(descriptionFileName);
+    if (descriptionFile.exists() && descriptionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream descIn(&descriptionFile);
+        QString descContent = descIn.readAll();
+        descriptionFile.close();
+        ui->txtDescription->setText(descContent);
+    } else {
+        ui->txtDescription->clear();
+    }
+
+    // Load Expected JSON file
     QFile jsonFile(jsonFileName);
     if (jsonFile.exists() && jsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream jsonIn(&jsonFile);
@@ -345,17 +373,6 @@ bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
         }
     }
 
-    // Look for "===" description file
-    QFile descriptionFile(descriptionFileName);
-    if (descriptionFile.exists() && descriptionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream descIn(&descriptionFile);
-        QString descContent = descIn.readAll();
-        descriptionFile.close();
-        ui->txtDescription->setText(descContent);
-    } else {
-        ui->txtDescription->clear();
-    }
-
     // Look for "test.event" tokens file
     QFile tokensFile(tokensFileName);
     if (tokensFile.exists() && tokensFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -367,14 +384,16 @@ bool MainWindow::updateUI_loadYamlFile(const QString &filePath)
         ui->txtTokensExpected->clear();
     }
 
-    // Run the converter
-
-    return true;
+    return;
 }
+
 
 void MainWindow::updateUI_convertYamlToJson()
 {
+
     QString yamlText = ui->txtYAML->toPlainText();
+    qDebug() << __func__ << "LastYaml:" << yamlText;
+
     auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
     ui->txtJsonOutput->setPlainText(converter.jsonAsString());
     ui->txtTokensOutput->setPlainText(converter.tokens().join("\n"));
@@ -407,27 +426,28 @@ void MainWindow::onFolderComboBoxDoubleClicked()
     // updateUI_loadYamlFile(dir.absoluteFilePath("in.yaml"));
 }
 
+
 void MainWindow::onPreviousText()
 {
-    qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
-
-    if(m_yamlTestCollectionListCurrent > 0) {
-        m_yamlTestCollectionListCurrent--;
-        updateUI_progressBar();
-    }
+    // qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
+    auto current = m_yamlTestCollectionListCurrent;
+    setYamlTestCollectionListCurrent(--current);
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
+    updateUI_progressBar();
     updateUI_statusBar();
+    updateUI_convertYamlToJson();
 }
+
 
 void MainWindow::onNextText()
 {
-    qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
-    if((m_yamlTestCollectionListCurrent + 1) < m_yamlTestCollectionList.count()) {
-        m_yamlTestCollectionListCurrent++;
-        updateUI_progressBar();
-    }
+    // qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
+    auto current = m_yamlTestCollectionListCurrent;
+    setYamlTestCollectionListCurrent(++current);
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
+    updateUI_progressBar();
     updateUI_statusBar();
+    updateUI_convertYamlToJson();
 }
 
 

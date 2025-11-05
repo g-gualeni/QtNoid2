@@ -1963,7 +1963,6 @@ void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
 
 void TestQtNoidAppConfig::testConfigReverseIteratorsAndRangeLoop()
 {
-#ifdef Q_OS_WIN
     Config config("TestConfig", this);
 
     // Add some pages
@@ -2085,14 +2084,10 @@ void TestQtNoidAppConfig::testConfigReverseIteratorsAndRangeLoop()
     auto postDecRit = rLastIt--;
     QCOMPARE((*postDecRit)->name(), "Second");
     QCOMPARE((*rLastIt)->name(), "Third");
-#else
-    QVERIFY(0);
-#endif
 }
 
 void TestQtNoidAppConfig::testConfigConstReverseIterators()
 {
-#ifdef Q_OS_WIN
     Config config("TestConfig", this);
 
     // Add some pages
@@ -2268,9 +2263,6 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
     auto postDecConstRevIt = constLastRevIt--;
     QCOMPARE((*postDecConstRevIt)->name(), "Second");
     QCOMPARE((*constLastRevIt)->name(), "Third");
-#else
-    QVERIFY(0);
-#endif
 }
 
 

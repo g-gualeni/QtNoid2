@@ -20,6 +20,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+
 private slots:
     void on_cmdConvertToJson_clicked();
     void on_cmdConvertToYAML_clicked();
@@ -36,8 +37,10 @@ private:
     int m_yamlTestCollectionListCurrent = 0;
 
 private:
+    void setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent);
+
     bool generateTestDataFromResource(const QString &root, const QString &resPath);
-    bool updateUI_loadYamlFile(const QString &filePath);
+    void updateUI_loadYamlFile(const QString &filePath);
     void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);
     void updateUI_scanTestCollectionFolder(const QString &folder);

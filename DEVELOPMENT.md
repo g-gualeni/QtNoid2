@@ -3,8 +3,9 @@
 ## Current Sprint (Sprint-004)
 
 ### Sprint Goals
-- Implementation of the QtNoid::Yaml2Json library 
-- Implementaton of QtNoid::App::Config class from 
+- Implementation of the QtNoid::Yaml2Json library: this the first implementation, the 
+     goal is to handle all YAML Suite test without crash.
+- Implementaton of QtNoid::App::Config class from Paramters
 - Implementaton of appConfig global instance 
 - Review of Parameter / ParameterList after 
   deriving Config / ConfigFile / ConfigGlobal
@@ -13,11 +14,14 @@
 &nbsp;
 
 ### Progress Status
+sistemare class **Settings**  initFullDialogGrabShortcut 
+
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
 -> Ripensare il metodo che crea gli esempi per renderlo flessibile
-
+-> Fare il metodo per salvare il file di config nelle risorse
+-> Fare il metodo per ripristinare il file di config iniziale.
 
 &nbsp;
 
@@ -25,7 +29,6 @@ Avanti con YamlExample
 finire implementation Yaml2Json library 
 Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
-
 
 
 
@@ -142,7 +145,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 - [x] Add the screenshot command
 - [ ] Add the debug menu that can save current config to app resources?
 - [ ] Restore app config file from resources, the first time.
-- [ ] Add a run feature that run through all examples and generate a report
+
 
 
 
@@ -235,12 +238,10 @@ key: [
 
 
 
-### Test Txt2Json
+### Test Txt2Json - ELIMINARE
 - [x] update and verify void testPlainTextIsArray();
 - [x] update testTextArrayToJson()
 - [ ] update testPlainTextToJsonFromListOfObjects();
-
-Fare un metodo statico per la conversione YAML to JSON
 
 
 
@@ -255,6 +256,9 @@ Fare un metodo statico per la conversione YAML to JSON
 &nbsp;
 
 # Next Sprint Ideas
+
+Yaml to Json validation test
+- [ ] Add a run feature that run through all examples and generate a report
 
 ## New QtNoid::AppUI library 
  - Generate recent files menu
