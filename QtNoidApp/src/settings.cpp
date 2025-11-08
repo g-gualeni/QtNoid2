@@ -152,7 +152,7 @@ QImage Settings::fullDialogGrab(QWidget *ref)
 
 QShortcut *Settings::initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence, QString destinationPath, bool saveToClipboard)
 {
-    QShortcut* shortCut = new QShortcut(QKeySequence("Ctrl+Shift+S"), parent);
+    QShortcut* shortCut = new QShortcut(QKeySequence(keySequence), parent);
     parent->connect(shortCut, &QShortcut::activated, parent, [=](){
         auto screenshot =  fullDialogGrab(parent);
 

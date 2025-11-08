@@ -430,17 +430,6 @@ void MainWindow::onFolderComboBoxDoubleClicked()
 
 void MainWindow::onPreviousTest()
 {
-    // qDebug() << __func__ << "Testing Png";
-
-    // QPixmap pix = QtNoid::App::Settings::fullDialogGrab(this);
-    // QImage img = pix.toImage();
-    // qDebug() << __func__ << img.colorSpace();
-    // img.setColorSpace(QColorSpace());
-
-    // img.save("../../../capperi.png");
-
-
-    // qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
     auto current = m_yamlTestCollectionListCurrent;
     setYamlTestCollectionListCurrent(--current);
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
@@ -452,7 +441,6 @@ void MainWindow::onPreviousTest()
 
 void MainWindow::onNextTest()
 {
-    // qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
     auto current = m_yamlTestCollectionListCurrent;
     setYamlTestCollectionListCurrent(++current);
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));

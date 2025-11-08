@@ -106,11 +106,12 @@ perfect for storing settings for a pop-up dialog or even for the main dialog.
 it updates the main dialog title, adding an * if changed is true, or removing 
 the * if false.
 
-- `QPixmap fullDialogGrab(QWidget *ref)`: Starting from a widget, captures the 
+- `QImage fullDialogGrab(QWidget *ref)`: Starting from a widget, captures the 
 full dialog as seen in the operating system. This is perfect for creating screenshots 
 for a user manuals or release notes. If you need to capture only the widget content, 
 just use the QWidget method `grab()`. It works also a `QMainWindow` pointer, since this 
-class inherits QWidget.
+class inherits QWidget. Since 2.2.0 returns a QImage, becuase of a problem with macOs. 
+With QImage we can apply QColorSpace() and avoid a crash saving as PNG.
 
 - `QShortcut *initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence, QString destinationPath, bool saveToClipboard)`:
 This is an helper method to simplify adding screenshot functionality to an application.

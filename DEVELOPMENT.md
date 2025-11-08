@@ -43,6 +43,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] doc update for appExeOrAppBundleFilePath
      - [x] test for appExeOrAppBundleDirPath
      - [x] test update for appExeOrAppBundleFilePath
+     - [x] fullDialogGrab: now returns QImage and fix the QColorSpace
      - [ ] check Settings Documentation
      
 - [ ] class **Parameter** update
