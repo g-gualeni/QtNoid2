@@ -62,7 +62,8 @@ QString Settings::filePathAsAppSibling(const QString &fileName)
         cleanFName = FI.fileName();
     }
     // qDebug() << __func__ << cleanFName;
-    auto res = qApp->applicationDirPath() + "/" +cleanFName;
+
+    auto res = appExeOrAppBundleDirPath() + "/" +cleanFName;
     return res;
 }
 

@@ -35,12 +35,16 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 &nbsp;
 
 # QtNoidApp
-- [x] appExeOrAppBundleDirPath();
-- [x] appExeOrAppBundleFilePath();
-- [x] doc appExeOrAppBundleDirPath
-- [x] doc update for appExeOrAppBundleFilePath
-- [x] test for appExeOrAppBundleDirPath
-- [x] test update for appExeOrAppBundleFilePath
+- [ ] class **Settings** update
+     - [x] appExeOrAppBundleDirPath();
+     - [x] appExeOrAppBundleFilePath();
+     - [x] filePathAsAppSibling() not correct under macOs
+     - [x] doc appExeOrAppBundleDirPath
+     - [x] doc update for appExeOrAppBundleFilePath
+     - [x] test for appExeOrAppBundleDirPath
+     - [x] test update for appExeOrAppBundleFilePath
+     - [ ] check Settings Documentation
+     
 - [ ] class **Parameter** update
      - [x] all json names should be camelCase lowercase
      - [x] check all properties are in the JsonSchema

@@ -34,3 +34,4 @@ build
 
 CMakeLists.txt.user
 *.odp#
+.DS_Store

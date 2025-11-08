@@ -233,13 +233,25 @@ void TestQtNoidAppSettings::testFullDialogGrab()
 
     // Save the MainWindows as a dialog for debug purpose
     auto path = qApp->applicationDirPath() + "/" + __func__;
-    pixMap.save(path  + "_Expected.png");
+
+    // qDebug() << __func__<< pixMap << path;
+    QImage image = pixMap.toImage();
+    // image = image.convertToFormat(QImage::Format_ARGB32);
+    QImage rgb = image.convertToFormat(QImage::Format_RGB888);
+
+    qDebug() << "Image format:" << image.format();
+    qDebug() << "RGB format:" << rgb.format();
+
+    rgb.save(path  + "_Expected.png", "BMP");
+    QVERIFY(0);  // Capire come mai non va
+
 
     auto expected = pixMap;
     auto actual = Settings::fullDialogGrab(&frm);
-    actual.save(path + "_Actual.png");
+    actual.save(path + "_Actual.bmp");
 
     QCOMPARE(actual, expected);
+
 }
 
 
