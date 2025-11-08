@@ -1,5 +1,6 @@
 #include <QTest>
 #include <QtNoidApp/QtNoidApp>
+#include <QColorSpace>
 #include <QHBoxLayout>
 #include <QImage>
 #include <QLabel>
@@ -200,7 +201,7 @@ void TestQtNoidAppSettings::testUpdateMainWindowTitle_multipleChange()
 
 void TestQtNoidAppSettings::testFullDialogGrab_shouldBeEmpty()
 {
-    auto expected = QPixmap();
+    auto expected = QImage();
     auto actual = Settings::fullDialogGrab(nullptr);
     QCOMPARE(actual, expected);
 }
@@ -233,25 +234,16 @@ void TestQtNoidAppSettings::testFullDialogGrab()
 
     // Save the MainWindows as a dialog for debug purpose
     auto path = qApp->applicationDirPath() + "/" + __func__;
-
-    // qDebug() << __func__<< pixMap << path;
     QImage image = pixMap.toImage();
-    // image = image.convertToFormat(QImage::Format_ARGB32);
-    QImage rgb = image.convertToFormat(QImage::Format_RGB888);
+    image.setColorSpace(QColorSpace());
 
-    qDebug() << "Image format:" << image.format();
-    qDebug() << "RGB format:" << rgb.format();
+    image.save(path  + "_Expected.png");
+    auto expected = image;
 
-    rgb.save(path  + "_Expected.png", "BMP");
-    QVERIFY(0);  // Capire come mai non va
-
-
-    auto expected = pixMap;
     auto actual = Settings::fullDialogGrab(&frm);
     actual.save(path + "_Actual.bmp");
 
     QCOMPARE(actual, expected);
-
 }
 
 

@@ -7,6 +7,7 @@
 #include <QScreen>
 #include <QShortcut>
 #include <QClipboard>
+#include <QColorSpace>
 #include <QtNoidCommon/QtNoidCommon>
 
 namespace QtNoid {
@@ -124,7 +125,7 @@ bool Settings::updateMainWindowTitle(bool changed, QWidget *ref)
     return true;
 }
 
-QPixmap Settings::fullDialogGrab(QWidget *ref)
+QImage Settings::fullDialogGrab(QWidget *ref)
 {
     auto mainWindow = mainWindowFromWidget(ref);
     if(mainWindow == nullptr)
@@ -142,8 +143,10 @@ QPixmap Settings::fullDialogGrab(QWidget *ref)
                                         relativeRect.width(),
                                         relativeRect.height());
 
-
-    return pixMap;
+    // This conversion to Image is necessary for macOS
+    QImage img = pixMap.toImage();
+    img.setColorSpace(QColorSpace());
+    return img;
 }
 
 
@@ -151,7 +154,7 @@ QShortcut *Settings::initFullDialogGrabShortcut(QWidget *parent, const QString &
 {
     QShortcut* shortCut = new QShortcut(QKeySequence("Ctrl+Shift+S"), parent);
     parent->connect(shortCut, &QShortcut::activated, parent, [=](){
-        QPixmap screenshot =  fullDialogGrab(parent);
+        auto screenshot =  fullDialogGrab(parent);
 
         auto mainWindow = mainWindowFromWidget(parent);
         QString fileName = destinationPath;
@@ -164,7 +167,7 @@ QShortcut *Settings::initFullDialogGrabShortcut(QWidget *parent, const QString &
         bool res = screenshot.save(fileName);
         if(saveToClipboard) {
             QClipboard *clipboard = QApplication::clipboard();
-            clipboard->setPixmap(screenshot);
+            clipboard->setImage(screenshot);
         }
         qDebug() << "saveToClipboard:" << saveToClipboard <<
             "Destination:" << fileName << "Res:" << res;

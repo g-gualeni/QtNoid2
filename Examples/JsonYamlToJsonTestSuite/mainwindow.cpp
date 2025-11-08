@@ -14,6 +14,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+#include <QColorSpace>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -72,8 +73,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->cmdBrowseFolder, &QToolButton::clicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
 
-    connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextText);
-    connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousText);
+    connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextTest);
+    connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousTest);
 }
 
 MainWindow::~MainWindow()
@@ -427,8 +428,18 @@ void MainWindow::onFolderComboBoxDoubleClicked()
 }
 
 
-void MainWindow::onPreviousText()
+void MainWindow::onPreviousTest()
 {
+    // qDebug() << __func__ << "Testing Png";
+
+    // QPixmap pix = QtNoid::App::Settings::fullDialogGrab(this);
+    // QImage img = pix.toImage();
+    // qDebug() << __func__ << img.colorSpace();
+    // img.setColorSpace(QColorSpace());
+
+    // img.save("../../../capperi.png");
+
+
     // qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
     auto current = m_yamlTestCollectionListCurrent;
     setYamlTestCollectionListCurrent(--current);
@@ -439,7 +450,7 @@ void MainWindow::onPreviousText()
 }
 
 
-void MainWindow::onNextText()
+void MainWindow::onNextTest()
 {
     // qDebug() << __func__ << m_yamlTestCollectionList.count() << m_yamlTestCollectionListCurrent;
     auto current = m_yamlTestCollectionListCurrent;
@@ -449,10 +460,6 @@ void MainWindow::onNextText()
     updateUI_statusBar();
     updateUI_convertYamlToJson();
 }
-
-
-
-
 
 
 

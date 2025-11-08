@@ -58,7 +58,7 @@ void MainWindow::on_cmdFullDialogGrab_clicked()
         auto pixMap = Settings::fullDialogGrab(this);
         ui->txtFullDialogGrab->setStyleSheet("border: 2px solid blue;");
         ui->txtFullDialogGrab->setScaledContents(true);
-        ui->txtFullDialogGrab->setPixmap(pixMap);
+        ui->txtFullDialogGrab->setPixmap(QPixmap::fromImage(pixMap));
         ui->cmdFullDialogGrab->setText("Clear " + text);
     }
 }

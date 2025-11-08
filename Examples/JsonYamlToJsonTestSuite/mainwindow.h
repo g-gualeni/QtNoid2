@@ -29,6 +29,7 @@ private slots:
     void on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered();
     void on_actionTestDataFolder_triggered();
 
+
 private:
     Ui::MainWindow *ui;
     QShortcut* m_screenshotShortcut;
@@ -48,8 +49,8 @@ private:
     void updateUI_statusBar(const QString &msg = {});
 
     void onFolderComboBoxDoubleClicked();
-    void onPreviousText();
-    void onNextText();
+    void onPreviousTest();
+    void onNextTest();
 
 };
 #endif // MAINWINDOW_H
