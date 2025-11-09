@@ -150,20 +150,30 @@ QImage Settings::fullDialogGrab(QWidget *ref)
 }
 
 
-QShortcut *Settings::initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence, QString destinationPath, bool saveToClipboard)
+QShortcut *Settings::initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence, QString destinationFileOrPath,
+                                                bool saveToClipboard)
 {
     QShortcut* shortCut = new QShortcut(QKeySequence(keySequence), parent);
     parent->connect(shortCut, &QShortcut::activated, parent, [=](){
         auto screenshot =  fullDialogGrab(parent);
 
-        auto mainWindow = mainWindowFromWidget(parent);
-        QString fileName = destinationPath;
-        if(!fileName.isEmpty()) {
-            fileName += "/";
+        QFileInfo FI(destinationFileOrPath);
+        QString fileName = destinationFileOrPath;
+        // if(!FI.isFile()) {
+        if (FI.suffix().isEmpty()) {
+            // Gather the class / window name
+            if(!fileName.isEmpty()) {
+                fileName += "/";
+            }
+            QString os = QSysInfo::productType();
+            auto mainWindow = mainWindowFromWidget(parent);
+            if(mainWindow == nullptr){
+                fileName +=  "Screenshot-" + os + ".png";
+            }
+            else {
+                fileName += mainWindow->windowTitle() + "-" + os + ".png";
+            }
         }
-        QString os = QSysInfo::productType();
-
-        fileName += mainWindow->windowTitle() + "-" + os + ".png";
         bool res = screenshot.save(fileName);
         if(saveToClipboard) {
             QClipboard *clipboard = QApplication::clipboard();

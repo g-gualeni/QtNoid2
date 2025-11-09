@@ -25,7 +25,7 @@ public:
     static bool updateMainWindowTitle(bool changed, QWidget *ref);
     static QImage fullDialogGrab(QWidget *ref);
     static QShortcut *initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence = "Ctrl+Shift+S",
-                                                 QString destinationPath = {}, bool saveToClipboard = true);
+                                                 QString destinationFileOrPath = {}, bool saveToClipboard = true);
 
 private:
 };

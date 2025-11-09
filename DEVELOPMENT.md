@@ -14,8 +14,6 @@
 &nbsp;
 
 ### Progress Status
-sistemare class **Settings**  initFullDialogGrabShortcut 
-
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
@@ -44,6 +42,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] test for appExeOrAppBundleDirPath
      - [x] test update for appExeOrAppBundleFilePath
      - [x] fullDialogGrab: now returns QImage and fix the QColorSpace
+     - [ ] initFullDialogGrabShortcut(): update to handle also a filepath
      - [ ] check Settings Documentation
      
 - [ ] class **Parameter** update

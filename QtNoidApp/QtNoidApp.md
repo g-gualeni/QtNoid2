@@ -109,7 +109,8 @@ the * if false.
 - `QImage fullDialogGrab(QWidget *ref)`: Starting from a widget, captures the 
 full dialog as seen in the operating system. This is perfect for creating screenshots 
 for a user manuals or release notes. If you need to capture only the widget content, 
-just use the QWidget method `grab()`. It works also a `QMainWindow` pointer, since this 
+just use the QWidget method `grab()`. This method captures also the caption and 
+the borders. The parameter 'ref' can be even a `QMainWindow` pointer, since this 
 class inherits QWidget. Since 2.2.0 returns a QImage, becuase of a problem with macOs. 
 With QImage we can apply QColorSpace() and avoid a crash saving as PNG.
 
@@ -124,13 +125,15 @@ copied to the system clipboard for immediate use.
   Parameters:
    - **parent**: the parent widget that will own the shortcut
    - **keySequence** the keyboard combination that triggers the screenshot;
-   if empty the default value "Ctrl+Shift+S" will be used.
-   - **destinationPath**: file path where the screenshot will be saved. If empty
-   it will be in the application execution folder. The File Name will be the 
-   application window title followed by -windows or by -macOs depending on the 
-   operating system.
-   - **saveToClipboard** - If true, copies the captured image to clipboard in addition
-   to saving to file.
+   if empty the default value "Ctrl+Shift+S" will be used. This is translated as
+   "Cmd+Shift+S" on macOs.
+   - **destinationFileOrPath**: it could be a file path for the resulting screenshot
+   or a folder where the screenshot will be saved. If empty the screenshot will be
+   saved in the application execution folder. If it doesn't contains a 
+   FileName, the image file name will be the application window title followed
+   by -windows or by -macOs depending on the operating system.
+   - **saveToClipboard** - If true, copies the captured image to clipboard, as an 
+   image, in addition to saving to the file.
  
   Returns: A pointer to the configured QShortcut object that handles the screenshot 
   functionality.
