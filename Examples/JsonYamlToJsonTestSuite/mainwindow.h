@@ -30,6 +30,10 @@ private slots:
     void on_actionTestDataFolder_triggered();
 
 
+    void on_actionUpdateProjectConfigFile_triggered();
+
+    void on_actionRestoreConfigFromProject_triggered();
+
 private:
     Ui::MainWindow *ui;
     QShortcut* m_screenshotShortcut;
@@ -51,6 +55,8 @@ private:
     void onFolderComboBoxDoubleClicked();
     void onPreviousTest();
     void onNextTest();
+    void initFromAppConfig();
+    void updateUI_initDevelopment();
 
 };
 #endif // MAINWINDOW_H

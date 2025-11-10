@@ -17,6 +17,7 @@ find_package(QtNoidJson REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 find_package(QtNoidApp REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 
 
+add_compile_definitions(SOURCE_FILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
 
 
 
@@ -29,7 +30,7 @@ set(PROJECT_SOURCES
         recentfilesmanager.h
         foldercombobox.cpp
         foldercombobox.h
-        yaml-test-suite.qrc
+        JsonYamlToJsonTestSuite.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

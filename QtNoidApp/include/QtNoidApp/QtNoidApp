@@ -6,4 +6,6 @@
 #include "parameterlist.h" // IWYU pragma: export
 #include "config.h" // IWYU pragma: export
 #include "configglobal.h" // IWYU pragma: export
+#include "development.h" // IWYU pragma: export
+
 

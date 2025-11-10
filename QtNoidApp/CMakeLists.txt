@@ -41,6 +41,7 @@ set(SOURCES
     ${SOURCES_DIR}/config.cpp
     ${SOURCES_DIR}/configglobal.cpp
     ${SOURCES_DIR}/configfile.cpp
+    ${SOURCES_DIR}/development.cpp
 )
 
 # File header
@@ -53,6 +54,7 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/config.h
     ${HEADERS_DIR}/${PROJECT_NAME}/configglobal.h
     ${HEADERS_DIR}/${PROJECT_NAME}/configfile.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/development.h
 )
 
 
@@ -153,6 +155,13 @@ endif()
 # =============================================================================
 set(PROJECT_DOCS
     QtNoidApp.md
+    doc/Settings.md
+    doc/Parameter.md
+    doc/ParameterList.md
+    doc/Config.md
+    doc/ConfigFile.md
+    doc/ConfigGlobal.md
+    doc/Development.md
     doc/AppParameterBasicUsage.md
     doc/AppParameterListBasicUsage.md
     doc/AppParameterListBenchmark.md

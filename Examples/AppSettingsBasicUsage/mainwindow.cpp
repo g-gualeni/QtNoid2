@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->txtGroupName->setText(Settings::groupNameFromObjectOrClass(this));
 
-    m_screenshotShortcut = Settings::initFullDialogGrabShortcut(this);
+    m_screenshotShortcut = Development::initFullDialogGrabShortcut(this);
 }
 
 MainWindow::~MainWindow()

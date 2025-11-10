@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->txtIterationsJson->setValidator(validator);
     ui->txtParametersCountJson->setValidator(validator);
 
-    m_screenshotShortcut = QtNoid::App::Settings::initFullDialogGrabShortcut(this);
+    m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 }
 
 MainWindow::~MainWindow()

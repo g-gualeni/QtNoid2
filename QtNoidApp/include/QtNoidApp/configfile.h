@@ -26,6 +26,7 @@ public:
 
 signals:
     void fileNameChanged(const QString& value);
+    void fileLoaded(const QString& fileName);
 
 private:
     void initFileName(const QString& fileName);

@@ -1891,6 +1891,7 @@
     <qresource prefix="/">
         <file>yaml-test-suite/YamlTestSuite-2022-01-17</file>
         <file>Txt2JsonTestSuite/Txt2JsonTestSuite-QtNoid-2.2.0</file>
+        <file>resources/JsonYamlToJsonTestSuite.json</file>
     </qresource>
     <qresource prefix="/Txt2JsonTestSuite/QtNoid-2.2.0">
         <file>Txt2JsonTestSuite/QtNoid-2.2.0/S1/===</file>

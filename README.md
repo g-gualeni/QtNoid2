@@ -29,7 +29,7 @@ the first public release.
     This is a collection of class (Settings, ...) to simplify the
     the implementation of common feature of a Desktop Application.
 
-* **[QtNoidJson](./QtNoidApp/QtNoidJson.md)**:
+* **[QtNoidJson](./QtNoidJson/QtNoidJson.md)**:
     This lib contains the class Txt2Json that simplify the creation of simple
     JSON doc, starting from a quick textual description with a few rules.
     

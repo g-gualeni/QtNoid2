@@ -1,0 +1,25 @@
+{
+    "ConfigName": {
+        "pages": [
+            {
+                "Settings": {
+                    "parameters": [
+                        {
+                            "Geometry": "AdnQywADAAAAAAIOAAAAgAAABd4AAALHAAACDgAAAJ8AAAXeAAACxwAAAAAAAAAAB4AAAAIOAAAAnwAABd4AAALH"
+                        },
+                        {
+                            "CollectionFolderList": [
+                            ]
+                        },
+                        {
+                            "CollectionFolderListCurrent": ""
+                        },
+                        {
+                            "yamlTestCollectionListCurrent": 0
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

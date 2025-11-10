@@ -14,21 +14,22 @@ namespace App {
 ConfigFile::ConfigFile(QObject *parent)
     : Config(parent)
 {
+    qDebug() << __func__ ;
 }
 
 
 ConfigFile::ConfigFile(const QString &fileName, QObject *parent)
     : Config(parent)
 {
+    qDebug() << __func__ << this;
     initFileName(fileName);
     load();
-    // qDebug() << __func__ << this;
 }
 
 
 ConfigFile::~ConfigFile()
 {
-    // qDebug() << __func__;
+    qDebug() << __func__;
     save();
 }
 
@@ -62,6 +63,7 @@ bool ConfigFile::isValid()
 
 bool ConfigFile::load()
 {
+    // qDebug() << __func__ ;
     if(!isValid())
         return false;
 
@@ -75,7 +77,13 @@ bool ConfigFile::load()
     if(!doc.isObject())
         return false;
 
-    return valuesFromJson(doc.object());
+    auto res = valuesFromJson(doc.object());
+    if(!res) {
+        return false;
+    }
+
+    emit fileLoaded(m_fileName);
+    return true;
 }
 
 

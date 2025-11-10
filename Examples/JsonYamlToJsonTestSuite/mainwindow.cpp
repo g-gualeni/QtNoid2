@@ -35,11 +35,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cmdNext->setIcon(iconArrowRight);
     ui->cmdNext->setIconSize({32,32});
     ui->cmdNext->setText("");
-
     ui->txtDescription->clear();
-    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
 
-    m_screenshotShortcut = QtNoid::App::Settings::initFullDialogGrabShortcut(this);
+    connect(appConfig, &QtNoid::App::ConfigFile::fileLoaded, this, [&](const QString& fName){
+        // qDebug() << "QtNoid::App::ConfigFile::fileLoaded" << fName;
+        initFromAppConfig();
+    });
+    appConfig->load();
+
+
+    m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
     // Recent files management
     m_recentFilesManager = new recentFilesManager(ui->actionRecent_Files, this);
@@ -53,11 +58,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
     updateUI_recentFiles(QString());
 
-    // Recent test collection folder list
-    appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
-    updateUI_scanTestCollectionFolder(ui->txtCollectionFolder->currentText());
-    updateUI_loadYamlFile(m_yamlTestCollectionList.value(0, {}));
-    setYamlTestCollectionListCurrent(appConfig->restoreAsInt("yamlTestCollectionListCurrent", 0));
     updateUI_progressBar();
     updateUI_statusBar();
 
@@ -76,6 +76,22 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextTest);
     connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousTest);
 }
+
+void MainWindow::initFromAppConfig()
+{
+    qDebug() << __func__ ;
+
+    // Geometry
+    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+
+    // Recent test collection folder list
+    appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
+    updateUI_scanTestCollectionFolder(ui->txtCollectionFolder->currentText());
+    updateUI_loadYamlFile(m_yamlTestCollectionList.value(0, {}));
+    setYamlTestCollectionListCurrent(appConfig->restoreAsInt("yamlTestCollectionListCurrent", 0));
+
+}
+
 
 MainWindow::~MainWindow()
 {
@@ -450,4 +466,67 @@ void MainWindow::onNextTest()
 }
 
 
+void MainWindow::updateUI_initDevelopment()
+{
+
+}
+
+
+
+
+void MainWindow::on_actionUpdateProjectConfigFile_triggered()
+{
+
+    QFileInfo FI(appConfig->fileName());
+    QString appFile = FI.fileName();
+    qDebug()<< __func__ << FI.suffix() << SOURCE_FILES_PATH;
+
+    QtNoid::Common::File qtnoidFile;
+    auto list = qtnoidFile.listPathRecursively(SOURCE_FILES_PATH, QStringList(FI.suffix()));
+    qDebug() << __func__ << list.count();
+
+    // Is the file present? => get the full path
+    QString projectFile;
+    for(const QString& file : list) {
+        if(file.endsWith(appFile)) {
+            projectFile = file;
+            break;
+        }
+    }
+    if(projectFile.isEmpty()) {
+        qDebug() << __func__ << "unable to find the project file";
+        return;
+    }
+
+    QFile newFile(FI.absoluteFilePath());
+    QFile::remove(projectFile);
+    auto res = newFile.copy(projectFile);
+    qDebug() << __func__ << projectFile;
+    qDebug() << __func__ << FI.absoluteFilePath();
+    if(!res) {
+        qDebug() << __func__ << "Error copying file";
+        return;
+    }
+
+    qDebug() << __func__ << "DONE";
+}
+
+
+void MainWindow::on_actionRestoreConfigFromProject_triggered()
+{
+    QString appConfigFile = appConfig->fileName();
+    QFile::remove(appConfigFile);
+
+    QFile newFile("://resources/JsonYamlToJsonTestSuite.json");
+    auto res = newFile.copy(appConfigFile);
+    if(!res) {
+        qDebug() << __func__ << "Error copying file";
+        return;
+    }
+    QFile::setPermissions(appConfigFile, QFile::ReadOwner | QFile::WriteOwner);
+    appConfig->load();
+    qDebug() << __func__ << "DONE";
+
+    // ://resources/JsonYamlToJsonTestSuite.json
+}
 

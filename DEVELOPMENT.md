@@ -3,12 +3,16 @@
 ## Current Sprint (Sprint-004)
 
 ### Sprint Goals
-- Implementation of the QtNoid::Yaml2Json library: this the first implementation, the 
-     goal is to handle all YAML Suite test without crash.
+- Implementation of the QtNoid::Yaml2Json library: 
+     - this the first implementation
+     - Main goal is to handle all YAML Suite test without crash.
 - Implementaton of QtNoid::App::Config class from Paramters
 - Implementaton of appConfig global instance 
 - Review of Parameter / ParameterList after 
   deriving Config / ConfigFile / ConfigGlobal
+- Implementation of QtNoid::App::Development class to help the application 
+     development
+
 - Release of QtNoid2 version 2.2.0
 
 &nbsp;
@@ -20,6 +24,8 @@ Avanti con YamlExample
 -> Ripensare il metodo che crea gli esempi per renderlo flessibile
 -> Fare il metodo per salvare il file di config nelle risorse
 -> Fare il metodo per ripristinare il file di config iniziale.
+-> C'è il problema del salvataggio. Serve un modo per applicare i nuovi parametri
+
 
 &nbsp;
 
@@ -33,6 +39,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 &nbsp;
 
 # QtNoidApp
+- [ ] Split the documentation into 1 file for each class
 - [ ] class **Settings** update
      - [x] appExeOrAppBundleDirPath();
      - [x] appExeOrAppBundleFilePath();
@@ -41,8 +48,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] doc update for appExeOrAppBundleFilePath
      - [x] test for appExeOrAppBundleDirPath
      - [x] test update for appExeOrAppBundleFilePath
-     - [x] fullDialogGrab: now returns QImage and fix the QColorSpace
-     - [ ] initFullDialogGrabShortcut(): update to handle also a filepath
+     - [x] fullDialogGrab: now returns QImage and fix the QColorSpace          
      - [ ] check Settings Documentation
      
 - [ ] class **Parameter** update
@@ -98,6 +104,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] load / save configuration 
      - [x] class ConfigFile test     
      - [x] test Debug() function for ConfigFile (to be implemented)
+     - [ ] new event on a new file loaded (fileLoaded())
      - [ ] class ConfigFile documentation         
 
 
@@ -105,6 +112,13 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] appConfig macro for easy access
      - [x] class GlobalConfig test
      - [ ] class GlobalConfig Documentation
+
+- [ ] class **Development** as a class to support application development
+     - [x] initFullDialogGrabShortcut(): update to handle also a filepath     
+     - [ ] move initFullDialogGrabShortcut
+     - [ ] class Development Documentation
+
+
 
 &nbsp;
 # QtNoidCommon

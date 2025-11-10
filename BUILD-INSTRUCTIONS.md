@@ -43,3 +43,8 @@ Remove all exe files from the library
 - [ ] Copy the Win binary in a 7zip file into the release folder
 - [ ] Copy macOS binary to Releases (remember to remove the executable)
 
+&nbsp;
+# Checking documentation
+The preview page in QtCreator is not stable, so it is better to have an external
+viewer. The Chrome extension called Markdown Reader is a good tool, easy to install
+and to use.

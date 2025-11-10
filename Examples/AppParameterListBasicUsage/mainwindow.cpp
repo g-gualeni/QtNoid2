@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     createList();
     createUiFromList();
-    m_screenshotShortcut = QtNoid::App::Settings::initFullDialogGrabShortcut(this);
+    m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 }
 
 MainWindow::~MainWindow()
