@@ -14,14 +14,14 @@ namespace App {
 ConfigFile::ConfigFile(QObject *parent)
     : Config(parent)
 {
-    qDebug() << __func__ ;
+    // qDebug() << __func__ ;
 }
 
 
 ConfigFile::ConfigFile(const QString &fileName, QObject *parent)
     : Config(parent)
 {
-    qDebug() << __func__ << this;
+    // qDebug() << __func__ << this;
     initFileName(fileName);
     load();
 }
@@ -29,7 +29,7 @@ ConfigFile::ConfigFile(const QString &fileName, QObject *parent)
 
 ConfigFile::~ConfigFile()
 {
-    qDebug() << __func__;
+    // qDebug() << __func__;
     save();
 }
 

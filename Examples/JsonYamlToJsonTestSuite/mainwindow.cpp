@@ -37,12 +37,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cmdNext->setText("");
     ui->txtDescription->clear();
 
+    updateUI_initDevelopment();
+
+    initAppConfigFile();
     connect(appConfig, &QtNoid::App::ConfigFile::fileLoaded, this, [&](const QString& fName){
-        // qDebug() << "QtNoid::App::ConfigFile::fileLoaded" << fName;
         initFromAppConfig();
     });
     appConfig->load();
-
 
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
@@ -59,6 +60,8 @@ MainWindow::MainWindow(QWidget *parent)
     updateUI_recentFiles(QString());
 
     updateUI_progressBar();
+    updateUI_txtCurrentFile();
+    updateUI_cmdPrevNext();
     updateUI_statusBar();
 
     // Connect double-click signal from folder comboBox
@@ -66,10 +69,22 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->txtCollectionFolder, &FolderComboBox::currentTextChanged, this, [&](const QString &folder){
         updateUI_scanTestCollectionFolder(folder);
         updateUI_progressBar();
+        updateUI_txtCurrentFile();
+        updateUI_cmdPrevNext();
         updateUI_loadYamlFile(m_yamlTestCollectionList.value(0, {}));
         updateUI_statusBar();
     });
 
+    connect(ui->txtCurrentFile, &QComboBox::currentIndexChanged, this, [&](int index){
+        // QString folder = ui->txtCollectionFolder->currentText();
+        // QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+        m_yamlTestCollectionListCurrent = index;
+        updateUI_progressBar();
+        updateUI_txtCurrentFile();
+        updateUI_cmdPrevNext();
+        updateUI_loadYamlFile(m_yamlTestCollectionList.value(index, {}));
+        updateUI_statusBar();
+    });
 
     connect(ui->cmdBrowseFolder, &QToolButton::clicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
 
@@ -79,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::initFromAppConfig()
 {
-    qDebug() << __func__ ;
+    // qDebug() << __func__ ;
 
     // Geometry
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
@@ -89,7 +104,6 @@ void MainWindow::initFromAppConfig()
     updateUI_scanTestCollectionFolder(ui->txtCollectionFolder->currentText());
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(0, {}));
     setYamlTestCollectionListCurrent(appConfig->restoreAsInt("yamlTestCollectionListCurrent", 0));
-
 }
 
 
@@ -130,9 +144,18 @@ void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
     if(folder.isEmpty()) {
         return;
     }
+
     QtNoid::Common::File QtNoidFile;
-    m_yamlTestCollectionList = QtNoidFile.listPathRecursively(folder, {".yaml"});
-    qDebug() << __func__ << folder << "count:" << m_yamlTestCollectionList.count();
+    QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath() + QDir::separator() + folder;
+    m_yamlTestCollectionList = QtNoidFile.listPathRecursively(root, {"in.yaml"});
+    qDebug() << __func__ << root << "count:" << m_yamlTestCollectionList.count();
+    ui->txtCurrentFile->clear();
+    QDir dir(root);
+    for(auto it = m_yamlTestCollectionList.constBegin(); it < m_yamlTestCollectionList.constEnd(); ++it) {
+        auto file = *it;
+        auto relFile = dir.relativeFilePath(file);
+        ui->txtCurrentFile->addItem(dir.relativeFilePath(*it));
+    }
 }
 
 void MainWindow::updateUI_progressBar()
@@ -143,6 +166,24 @@ void MainWindow::updateUI_progressBar()
     ui->cboCollectionProgress->setValue(m_yamlTestCollectionListCurrent + 1);
     QString msg = QString("%1/%2").arg(m_yamlTestCollectionListCurrent+1).arg(m_yamlTestCollectionList.count());
     ui->cboCollectionProgress->setToolTip(msg);
+}
+
+void MainWindow::updateUI_cmdPrevNext()
+{
+    // Set cmdPrevious enabled if I am not
+    bool enabled = (!m_yamlTestCollectionList.isEmpty()) && (m_yamlTestCollectionListCurrent >0);
+    ui->cmdPrevious->setEnabled(enabled);
+
+    enabled = (!m_yamlTestCollectionList.isEmpty()) && (m_yamlTestCollectionListCurrent+1 < m_yamlTestCollectionList.count());
+    ui->cmdNext->setEnabled(enabled);
+}
+
+void MainWindow::updateUI_txtCurrentFile()
+{
+    qDebug() << __func__ << m_yamlTestCollectionListCurrent << m_yamlTestCollectionList.count();
+    ui->txtCurrentFile->blockSignals(true);
+    ui->txtCurrentFile->setCurrentIndex(m_yamlTestCollectionListCurrent);
+    ui->txtCurrentFile->blockSignals(false);
 }
 
 void MainWindow::updateUI_statusBar(const QString& msg)
@@ -186,97 +227,80 @@ void MainWindow::on_actionLoadYAML_triggered()
 
 void MainWindow::on_actionTestSuite_2022_01_17_triggered()
 {
-    if(generateTestDataFromResource("://yaml-test-suite/", "YamlTestSuite-2022-01-17")) {
-        QMessageBox::information(this, tr("Test Suite"),
+    // :/Test/resources/yaml-test-suite/data-2022-01-17.txt
+    // :/Data/resources/yaml-test-suite/data-2022-01-17/2AUY/===
+    if(generateTestDataFromResource("://Data/resources/yaml-test-suite/data-2022-01-17/",
+                                     ":/Test/resources/yaml-test-suite/data-2022-01-17.txt"))
+    {
+        QMessageBox::information(this, "YamlTestSuite 2022-01-17",
                                  tr("Test data generated successfully!"));
     }
     else {
-        QMessageBox::information(this, tr("Test Suite"),
+        QMessageBox::information(this, "YamlTestSuite 2022-01-17",
                                  tr("Error generating test data"));
     }
 }
 
 void MainWindow::on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered()
 {
-    // :/Txt2JsonTestSuite/Txt2JsonTestSuite-QtNoid-2.2.0
-    // ://Txt2JsonTestSuite/Txt2JsonTestSuite-QtNoid-2.2.0
-    if(generateTestDataFromResource("://Txt2JsonTestSuite/", "Txt2JsonTestSuite-QtNoid-2.2.0")) {
-        QMessageBox::information(this, tr("Test Suite"),
+    // :/Test/resources/Txt2JsonTestSuite/QtNoid-2.2.0.txt
+    // :/Data/resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-001/===
+    if(generateTestDataFromResource("://Data/resources/Txt2JsonTestSuite/QtNoid-2.2.0/",
+                                     ":/Test/resources/Txt2JsonTestSuite/QtNoid-2.2.0.txt"))
+    {
+        QMessageBox::information(this, "Test Suite QtNoid_2_2_0",
                                  tr("Test data generated successfully!"));
     }
     else {
-        QMessageBox::information(this, tr("Test Suite"),
+        QMessageBox::information(this, "Test Suite QtNoid_2_2_0",
                                  tr("Error generating test data"));
     }
 }
 
-bool MainWindow::generateTestDataFromResource(const QString &root, const QString &resPath)
+bool MainWindow::generateTestDataFromResource(const QString &dataPrefix, const QString &mapFilePath)
 {
-    // Read the file list from resources    
-    QFile fileListResource(root + resPath);
-    // qDebug() << __func__ << fileListResource.fileName();
+    // Read the file map
+    QFile fileListResource(mapFilePath);
     if (!fileListResource.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
     }
-
     QTextStream in(&fileListResource);
-    QString baseOutputPath = QtNoid::App::Settings::appExeOrAppBundleDirPath();
-    baseOutputPath += QDir::separator() + resPath;
-    qDebug() << __func__ << baseOutputPath;
 
-    // C:\GitHub\g-gualeni-public-QtNoid2\build\Desktop_Qt_6_9_3_llvm_mingw_64_bit-Debug\Examples\JsonYamlToJsonTestSuite
-    //"C:/GitHub/g-gualeni-public-QtNoid2/build/Desktop_Qt_6_9_3_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite"
-    // C:/GitHub/g-gualeni-public-QtNoid2/build/Desktop_Qt_6_9_3_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite\\Txt2JsonTestSuite-QtNoid-2.2.0"
+    // Destination path is in CWD + dataPrefix
+    QString baseOutputPath = dataPrefix;
+    baseOutputPath.remove(":");
+    baseOutputPath = QtNoid::App::Settings::appExeOrAppBundleDirPath() + baseOutputPath;
+
+    QDir dir;
+    dir.mkpath(baseOutputPath);
+    // qDebug() << __func__ << baseOutputPath;
 
     int fileCount = 0;
     int errorCount = 0;
 
     while (!in.atEnd()) {
-        QString resourcePath = in.readLine().trimmed();
-        if (resourcePath.isEmpty())
+        QString resourceFilePath = in.readLine().trimmed();
+        if (resourceFilePath.isEmpty())
             continue;
 
-        // qDebug() << __func__ << resourcePath;
+        // qDebug() << __func__ << dataPrefix + resourceFilePath;
 
-        // :/Txt2JsonTestSuite/QtNoid-2.2.0/Txt2JsonTestSuite/QtNoid-2.2.0/S1/===
-        // :/Txt2JsonTestSuite/QtNoid-2.2.0/Txt2JsonTestSuite/QtNoid-2.2.0/S1/===
-
-        // Open the resource file
-        QFile resourceFile(resourcePath);
-        if (!resourceFile.open(QIODevice::ReadOnly)) {
+        // Copy the resource file to baseOutputPath
+        // :/Data/resources/yaml-test-suite/data-2022-01-17/2AUY/===
+        QFile resourceFile(dataPrefix + resourceFilePath);
+        QFileInfo FI(baseOutputPath + resourceFilePath);
+        dir.mkpath(FI.absolutePath());
+        auto outFilePath = FI.absoluteFilePath();
+        auto res = resourceFile.copy(outFilePath);
+        if(!res) {
             errorCount++;
-            continue;
+        }
+        else {
+            QFile::setPermissions(outFilePath, QFile::ReadOwner | QFile::WriteOwner);
         }
 
+        // qDebug() << __func__ << "res:" << res << outFilePath;
 
-        // Read the content
-        QByteArray content = resourceFile.readAll();
-        resourceFile.close();
-
-        // Extract the relative path (remove the :/yaml-test-suite/data-2022-01-17/yaml-test-suite/data-2022-01-17/ prefix)
-        QString relativePath = resourcePath;
-        relativePath.remove(":/yaml-test-suite/data-2022-01-17/yaml-test-suite/data-2022-01-17/");
-
-        // Create full output path
-        QString outputPath = baseOutputPath + "/" + relativePath;
-
-        // Create directories if needed
-        QFileInfo fileInfo(outputPath);
-        QDir dir;
-        if (!dir.mkpath(fileInfo.absolutePath())) {
-            errorCount++;
-            continue;
-        }
-
-        // Write the file
-        QFile outputFile(outputPath);
-        if (!outputFile.open(QIODevice::WriteOnly)) {
-            errorCount++;
-            continue;
-        }
-
-        outputFile.write(content);
-        outputFile.close();
         fileCount++;
     }
 
@@ -310,7 +334,7 @@ void MainWindow::setYamlTestCollectionListCurrent(int newYamlTestCollectionListC
     //          << m_yamlTestCollectionListCurrent;
 
     if(newYamlTestCollectionListCurrent + 1 > m_yamlTestCollectionList.count()) {
-        m_yamlTestCollectionListCurrent = m_yamlTestCollectionList.count();
+        m_yamlTestCollectionListCurrent = m_yamlTestCollectionList.count() - 1;
     }
     else if(newYamlTestCollectionListCurrent < 0 ) {
         m_yamlTestCollectionListCurrent = 0;
@@ -421,7 +445,7 @@ void MainWindow::onFolderComboBoxDoubleClicked()
 {
     QString folderPath = ui->txtCollectionFolder->currentText();
     QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
-    folderPath = QFileDialog::getExistingDirectory(this, tr("Select the main folder"), folderPath);
+    folderPath = QFileDialog::getExistingDirectory(this, tr("Select the main folder"), root + QDir::separator() + folderPath);
 
     if (folderPath.isEmpty())
         return;
@@ -450,6 +474,8 @@ void MainWindow::onPreviousTest()
     setYamlTestCollectionListCurrent(--current);
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
     updateUI_progressBar();
+    updateUI_txtCurrentFile();
+    updateUI_cmdPrevNext();
     updateUI_statusBar();
     updateUI_convertYamlToJson();
 }
@@ -461,72 +487,39 @@ void MainWindow::onNextTest()
     setYamlTestCollectionListCurrent(++current);
     updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
     updateUI_progressBar();
+    updateUI_txtCurrentFile();
+    updateUI_cmdPrevNext();
     updateUI_statusBar();
     updateUI_convertYamlToJson();
+}
+
+void MainWindow::initAppConfigFile()
+{
+    QString appConfigFile = appConfig->fileName();
+    if(QFile::exists(appConfigFile)){
+        return;
+    }
+    QFile newFile("://resources/JsonYamlToJsonTestSuite.json");
+    newFile.copy(appConfigFile);
+    QFile::setPermissions(appConfigFile, QFile::ReadOwner | QFile::WriteOwner);
 }
 
 
 void MainWindow::updateUI_initDevelopment()
 {
+    // qDebug() << __func__;
+#ifdef QT_NO_DEBUG
+    // Hide the menù Development when in release
+    QMenu* dev = ui->menuDevelopment;
+    dev->menuAction()->setVisible(false);
+    return;
+#endif
+    // Creare i 2 menu
+    auto developmentMenu = ui->menuDevelopment;
+    developmentMenu->addSeparator();
 
+    QtNoid::App::Development::saveConfigToProject(developmentMenu, SOURCE_FILES_PATH);
+    QtNoid::App::Development::initConfigFromResources(developmentMenu, ":/resources");
 }
 
-
-
-
-void MainWindow::on_actionUpdateProjectConfigFile_triggered()
-{
-
-    QFileInfo FI(appConfig->fileName());
-    QString appFile = FI.fileName();
-    qDebug()<< __func__ << FI.suffix() << SOURCE_FILES_PATH;
-
-    QtNoid::Common::File qtnoidFile;
-    auto list = qtnoidFile.listPathRecursively(SOURCE_FILES_PATH, QStringList(FI.suffix()));
-    qDebug() << __func__ << list.count();
-
-    // Is the file present? => get the full path
-    QString projectFile;
-    for(const QString& file : list) {
-        if(file.endsWith(appFile)) {
-            projectFile = file;
-            break;
-        }
-    }
-    if(projectFile.isEmpty()) {
-        qDebug() << __func__ << "unable to find the project file";
-        return;
-    }
-
-    QFile newFile(FI.absoluteFilePath());
-    QFile::remove(projectFile);
-    auto res = newFile.copy(projectFile);
-    qDebug() << __func__ << projectFile;
-    qDebug() << __func__ << FI.absoluteFilePath();
-    if(!res) {
-        qDebug() << __func__ << "Error copying file";
-        return;
-    }
-
-    qDebug() << __func__ << "DONE";
-}
-
-
-void MainWindow::on_actionRestoreConfigFromProject_triggered()
-{
-    QString appConfigFile = appConfig->fileName();
-    QFile::remove(appConfigFile);
-
-    QFile newFile("://resources/JsonYamlToJsonTestSuite.json");
-    auto res = newFile.copy(appConfigFile);
-    if(!res) {
-        qDebug() << __func__ << "Error copying file";
-        return;
-    }
-    QFile::setPermissions(appConfigFile, QFile::ReadOwner | QFile::WriteOwner);
-    appConfig->load();
-    qDebug() << __func__ << "DONE";
-
-    // ://resources/JsonYamlToJsonTestSuite.json
-}
 

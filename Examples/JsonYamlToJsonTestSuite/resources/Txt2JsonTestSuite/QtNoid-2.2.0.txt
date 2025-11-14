@@ -1,0 +1,5 @@
+Array-001\===
+Array-001\in.json
+Array-001\in.yaml
+Array-001\out.yaml
+Array-001\test.event

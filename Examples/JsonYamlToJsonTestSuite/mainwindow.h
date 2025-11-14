@@ -29,11 +29,6 @@ private slots:
     void on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered();
     void on_actionTestDataFolder_triggered();
 
-
-    void on_actionUpdateProjectConfigFile_triggered();
-
-    void on_actionRestoreConfigFromProject_triggered();
-
 private:
     Ui::MainWindow *ui;
     QShortcut* m_screenshotShortcut;
@@ -44,19 +39,23 @@ private:
 private:
     void setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent);
 
-    bool generateTestDataFromResource(const QString &root, const QString &resPath);
+    bool generateTestDataFromResource(const QString &dataPrefix, const QString &mapFilePath);
     void updateUI_loadYamlFile(const QString &filePath);
     void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);
     void updateUI_scanTestCollectionFolder(const QString &folder);
     void updateUI_progressBar();
+    void updateUI_cmdPrevNext();
+    void updateUI_txtCurrentFile();
+
     void updateUI_statusBar(const QString &msg = {});
+    void updateUI_initDevelopment();
 
     void onFolderComboBoxDoubleClicked();
     void onPreviousTest();
     void onNextTest();
+    void initAppConfigFile();
     void initFromAppConfig();
-    void updateUI_initDevelopment();
 
 };
 #endif // MAINWINDOW_H

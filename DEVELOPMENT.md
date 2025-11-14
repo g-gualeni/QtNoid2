@@ -5,13 +5,13 @@
 ### Sprint Goals
 - Implementation of the QtNoid::Yaml2Json library: 
      - this the first implementation
-     - Main goal is to handle all YAML Suite test without crash.
-- Implementaton of QtNoid::App::Config class from Paramters
+     - Main goal is to handle all YAML Suite test without crash.     
+- Implementaton of QtNoid::App::Config class from Parameters
 - Implementaton of appConfig global instance 
-- Review of Parameter / ParameterList after 
-  deriving Config / ConfigFile / ConfigGlobal
 - Implementation of QtNoid::App::Development class to help the application 
      development
+- Review of Parameter / ParameterList after 
+  deriving Config / ConfigFile / ConfigGlobal
 
 - Release of QtNoid2 version 2.2.0
 
@@ -21,10 +21,12 @@
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
--> Ripensare il metodo che crea gli esempi per renderlo flessibile
--> Fare il metodo per salvare il file di config nelle risorse
--> Fare il metodo per ripristinare il file di config iniziale.
--> C'è il problema del salvataggio. Serve un modo per applicare i nuovi parametri
+
+c'è ancora un problemuccio sul filtraggio dei file yaml! 
+     Bisogna leggere solo in.yaml, non out.yaml
+Fare il salvataggio dei vari casi
+E se mettessi una drop down ncon tutti i files
+E se disattivassi i pulsanti quando sono ad uno degli estremi?
 
 
 &nbsp;
@@ -35,11 +37,10 @@ Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 
-
 &nbsp;
 
 # QtNoidApp
-- [ ] Split the documentation into 1 file for each class
+- [x] Split the documentation into 1 file for each class
 - [ ] class **Settings** update
      - [x] appExeOrAppBundleDirPath();
      - [x] appExeOrAppBundleFilePath();
@@ -100,11 +101,12 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] saveComboBoxTextItems
      - [ ] class Config Documentation
 
+
 - [ ] class **ConfigFile** as an extension of Config
      - [x] load / save configuration 
      - [x] class ConfigFile test     
      - [x] test Debug() function for ConfigFile (to be implemented)
-     - [ ] new event on a new file loaded (fileLoaded())
+     - [x] new event on a new file loaded (fileLoaded())
      - [ ] class ConfigFile documentation         
 
 
@@ -113,11 +115,26 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] class GlobalConfig test
      - [ ] class GlobalConfig Documentation
 
-- [ ] class **Development** as a class to support application development
-     - [x] initFullDialogGrabShortcut(): update to handle also a filepath     
-     - [ ] move initFullDialogGrabShortcut
-     - [ ] class Development Documentation
 
+- [ ] class **Development** as a class to support application development
+     - [x] move initFullDialogGrabShortcut to Development     
+     - [x] initFullDialogGrabShortcut(): 
+          - [x] Add -windows and -macOs to the screenshot and update doc
+          - [x] fix keySequence usage
+          - [x] Add a test that verify the keysequence are correct
+          - [x] update to handle also a filepath     
+          
+     - [ ] saveConfigToProject() -> Copy current configuration file into resources 
+          - [x] Method implementation
+          - [ ] Method test
+          - [x] Method doc
+          
+     - [ ] initConfigFromResources -> init application config file from resources
+          - [x] Method implementation
+          - [ ] Method test
+          - [x] Method doc     
+          
+     - [ ] class Development Documentation
 
 
 &nbsp;
@@ -126,17 +143,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] TestQtNoidCommonText::testTokenizeJsonArray() adding
           more test cases with string or a mixture of strings and numbers 
           (mixed types array)
-
-- [ ] class **Settings** 
-     - [ ] initFullDialogGrabShortcut 
-          - [x] Add -windows and -macOs to the screenshot and update doc
-          - [ ] fix keySequence usage
-          - [ ] Add a test that verify the keysequence are correct
      
-     - [ ] appConfigFileToProjectRes(): load current configuration file into 
-          project resources
-     - [ ] appConfigFileFromRes: init application config file from project resources
-
 
 # Older Examples
 - [x] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API

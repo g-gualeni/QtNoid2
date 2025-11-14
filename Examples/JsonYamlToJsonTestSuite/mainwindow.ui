@@ -14,117 +14,68 @@
    <string>YAML to JSON Test Suite</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_12" stretch="0,1">
-    <property name="spacing">
-     <number>6</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
-     <number>0</number>
-    </property>
+   <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,1,0">
-      <item>
-       <widget class="QPushButton" name="cmdPrevious">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>18</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Previous example</string>
-        </property>
+     <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,2,1,0,0">
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>&lt;-</string>
+         <string>Description</string>
         </property>
        </widget>
       </item>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_10">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Folder</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Description</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+      <item row="2" column="2" colspan="2">
+       <widget class="QLineEdit" name="txtDescription">
+        <property name="toolTip">
+         <string>Example description</string>
+        </property>
+       </widget>
       </item>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_Folder">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="FolderComboBox" name="txtCollectionFolder">
-            <property name="toolTip">
-             <string>Collection Folder</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="cmdBrowseFolder">
-            <property name="toolTip">
-             <string>Browse Folder</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QProgressBar" name="cboCollectionProgress">
-          <property name="value">
-           <number>24</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QLineEdit" name="txtDescription">
-            <property name="toolTip">
-             <string>Example description</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="cmdSaveDescription">
-            <property name="toolTip">
-             <string>Save Description</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
+      <item row="0" column="3">
+       <widget class="QComboBox" name="txtCurrentFile"/>
       </item>
-      <item>
+      <item row="0" column="2">
+       <widget class="FolderComboBox" name="txtCollectionFolder">
+        <property name="toolTip">
+         <string>Collection Folder</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Folder</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QToolButton" name="cmdBrowseFolder">
+        <property name="toolTip">
+         <string>Browse Folder</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="4">
+       <widget class="QProgressBar" name="cboCollectionProgress">
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QToolButton" name="cmdSaveDescription">
+        <property name="toolTip">
+         <string>Save Description</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5" rowspan="3">
        <widget class="QPushButton" name="cmdNext">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -142,6 +93,27 @@
         </property>
         <property name="text">
          <string>-&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" rowspan="3">
+       <widget class="QPushButton" name="cmdPrevious">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Previous example</string>
+        </property>
+        <property name="text">
+         <string>&lt;-</string>
         </property>
        </widget>
       </item>
@@ -273,7 +245,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidgetOutput">
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="tabOutputJson">
            <attribute name="title">
@@ -390,11 +362,12 @@
     <addaction name="actionTestDataFolder"/>
    </widget>
    <widget class="QMenu" name="menuDevelopment">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>Development</string>
     </property>
-    <addaction name="actionUpdateProjectConfigFile"/>
-    <addaction name="actionRestoreConfigFromProject"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTest"/>
@@ -429,6 +402,12 @@
   <action name="actionUpdateProjectConfigFile">
    <property name="text">
     <string>SaveConfigToProject</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; text-decoration: underline;&quot;&gt;SaveConfigToProject&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="statusTip">
+    <string>Pippo</string>
    </property>
   </action>
   <action name="actionRestoreConfigFromProject">

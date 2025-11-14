@@ -1,22 +1,29 @@
 2.2.0
 The release has been compiled using: Qt 6.10.0 without any limitation for macOS
 
-
-
+Improvements QtNodidApp:
 Rename and split of appExeOrAppBundlePath() into 2 methods:
 - QtNoid::App::Settings::appExeOrAppBundleDirPath();
 - QtNoid::App::Settings::appExeOrAppBundleFilePath();
 The first one return the execution of the app bundle folder (macOS).
 
-WARNING: there is a problem with ParamterList reverse iterators since
-it requires a newer version of macOS that supports a newer version of
-XCode to implement C++23 Code.
+New classes for QtNoidApp:
+    Config
+    ConfigFile
+    ConfigGlobal
+    Development
+
+New library:
+- QtNoidJson
+
+
+
 
 2.1.0
 October 1st, 2025
-New QtNodidApp library with Settings, Parameters, Parameters
-on top of the existing QtNoidCore, QtNoidCommon
 The release has been compiled using Qt 6.9.2
+New QtNodidApp library with Settings, Parameter, ParameterList
+on top of the existing QtNoidCore, QtNoidCommon
 
 WARNING: there is a problem with ParamterList reverse iterators
 that cannot compile with macOS.
@@ -24,11 +31,12 @@ that cannot compile with macOS.
 
 2.0.1
 June 10st, 2025
-This release expands the library, adding QtNoidCommon.
 The library has been compiled using Qt 6.9.1
+This release expands the library, adding QtNoidCommon.
 
 
 2.0.0
 June 1st, 2025
-This is just QtNoid::Core library
 The library has been compiled using Qt 6.9.0
+This is just QtNoid::Core library
+
