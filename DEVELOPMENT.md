@@ -22,11 +22,10 @@ Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
 
-c'è ancora un problemuccio sul filtraggio dei file yaml! 
-     Bisogna leggere solo in.yaml, non out.yaml
-Fare il salvataggio dei vari casi
-E se mettessi una drop down ncon tutti i files
-E se disattivassi i pulsanti quando sono ad uno degli estremi?
+
+Fare il salvataggio dei vari casi: serve una form
+
+
 
 
 &nbsp;
