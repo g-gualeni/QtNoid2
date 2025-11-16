@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "recentfilesmanager.h"
+#include "frmsavedataset.h"
 #include "QtNoidJson/QtNoidJson"
 #include "QtNoidCommon/QtNoidCommon"
 #include "QtNoidApp/QtNoidApp"
@@ -25,8 +26,8 @@ MainWindow::MainWindow(QWidget *parent)
     // ui->cmdPrevious->setText("\u2B05");
     // ui->cmdNext->setText("\u27a1\ufe0f"); // ➡️
     auto save_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
-    ui->cmdSaveDescription->setIcon(save_icon);
-    ui->cmdSaveDescription->setIconSize({16,16});
+    ui->cmdSaveTestDataset->setIcon(save_icon);
+    ui->cmdSaveTestDataset->setIconSize({16,16});
     auto iconArrowLeft = style()->standardIcon(QStyle::SP_ArrowLeft);
     ui->cmdPrevious->setIcon(iconArrowLeft);
     ui->cmdPrevious->setIconSize({32,32});
@@ -87,10 +88,11 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->cmdBrowseFolder, &QToolButton::clicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
-
     connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextTest);
     connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousTest);
+    connect(ui->cmdSaveTestDataset, &QPushButton::clicked, this, &MainWindow::onCmdSaveTestDataset);
 }
+
 
 void MainWindow::initFromAppConfig()
 {
@@ -180,7 +182,7 @@ void MainWindow::updateUI_cmdPrevNext()
 
 void MainWindow::updateUI_txtCurrentFile()
 {
-    qDebug() << __func__ << m_yamlTestCollectionListCurrent << m_yamlTestCollectionList.count();
+    // qDebug() << __func__ << m_yamlTestCollectionListCurrent << m_yamlTestCollectionList.count();
     ui->txtCurrentFile->blockSignals(true);
     ui->txtCurrentFile->setCurrentIndex(m_yamlTestCollectionListCurrent);
     ui->txtCurrentFile->blockSignals(false);
@@ -199,7 +201,7 @@ void MainWindow::updateUI_statusBar(const QString& msg)
     if(!m_yamlTestCollectionList.isEmpty()) {
         auto folderPath = ui->txtCollectionFolder->currentText();
         QDir dir(folderPath);
-        auto fileName = dir.relativeFilePath(m_yamlTestCollectionList[m_yamlTestCollectionListCurrent]);
+        auto fileName = dir.relativeFilePath(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
         sbMsg = tr("%1 Item %2/%3 - %4")
                     .arg(folderPath)
                     .arg(m_yamlTestCollectionListCurrent+1)
@@ -363,8 +365,8 @@ void MainWindow::updateUI_loadYamlFile(const QString &filePath)
 
     ui->txtYAML->clear();
     ui->txtJsonExpected->clear();
-    ui->txtDescription->clear();
     ui->txtTokensExpected->clear();
+    ui->txtErrorExpected->clear();
     ui->txtDescription->clear();
 
     if(yamlContent.isEmpty()){
@@ -375,7 +377,7 @@ void MainWindow::updateUI_loadYamlFile(const QString &filePath)
     ui->txtYAML->setToolTip(tooltipPath);
     ui->tabWidgetInput->setToolTip(tooltipPath);
 
-    // Look for corresponding .json file
+    // Look for corresponding filed
     QFileInfo FI(filePath);
     QString jsonFileName = FI.absolutePath() + QDir::separator() +
                            FI.baseName() + ".json";
@@ -405,13 +407,23 @@ void MainWindow::updateUI_loadYamlFile(const QString &filePath)
         jsonFile.close();
         ui->txtJsonExpected->setPlainText(jsonContent);
     } else {
-        // Look for "error" file in the same folder
-        QFile errorFile(errorFileName);
-        if (errorFile.exists()) {
-            ui->txtJsonExpected->setPlainText("ERROR");
-        } else {
-            ui->txtJsonExpected->setPlainText("NO JSON EXPECTED");;
+        ui->txtJsonExpected->setPlainText("NO JSON EXPECTED");;
+    }
+
+    // Look for "error" file in the same folder
+    QFile errorFile(errorFileName);
+    if (errorFile.exists()) {
+        ui->txtJsonExpected->setPlainText("ERROR");
+        QTextStream errorIn(&errorFile);
+        QString errorContent = errorFile.readAll();
+        errorFile.close();
+        if(errorContent.isEmpty()){
+            errorContent = "Error file is present but it is empty";
         }
+        ui->txtErrorExpected->setPlainText(errorContent);
+    }
+    else {
+        ui->txtErrorExpected->clear();
     }
 
     // Look for "test.event" tokens file
@@ -491,6 +503,69 @@ void MainWindow::onNextTest()
     updateUI_cmdPrevNext();
     updateUI_statusBar();
     updateUI_convertYamlToJson();
+}
+
+void MainWindow::onCmdSaveTestDataset()
+{
+    frmSaveDataset dialog(this);
+    QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+    QString folderPath = root + QDir::separator() + ui->txtCollectionFolder->currentText();
+    QString filePath = m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {});
+    dialog.setBaseFolderPath(folderPath);
+    dialog.setFilePath(filePath);
+    if(dialog.exec() == 0) {
+        // Request not accepted
+        return;
+    }
+
+    auto description = ui->txtDescription->text();
+    auto inYaml = ui->txtYAML->toPlainText();
+    auto inJson = ui->txtJsonExpected->toPlainText();
+    auto inTokens = ui->txtTokensExpected->toPlainText();
+    auto inErrors = ui->txtErrorExpected->toPlainText();
+
+    QString outFolderPath = folderPath + QDir::separator() + dialog.destinationFolder();
+    auto res = QDir().mkpath(outFolderPath);
+    if(!res) {
+        qDebug() << __func__ << "Error creating subfolder";
+    }
+
+    QString yamlFileName = outFolderPath + QDir::separator() + "in.yaml";
+    QString jsonFileName = outFolderPath + QDir::separator() + "in.json";
+    QString errorFileName = outFolderPath + QDir::separator() + "error";
+    QString descriptionFileName = outFolderPath + QDir::separator() + "===";
+    QString tokensFileName = outFolderPath + QDir::separator() + "test.event";
+
+    QFile descriptionFile(descriptionFileName);
+    QFile tokensFile(tokensFileName);
+
+    QFile yamlFile(yamlFileName);
+    if (yamlFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&yamlFile);
+        out << inYaml;
+        yamlFile.close();
+    }
+    QFile jsonFile(jsonFileName);
+    if (jsonFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&jsonFile);
+        out << inJson;
+        jsonFile.close();
+    }
+
+    QFile errorFile(errorFileName);
+    if(!inErrors.isEmpty()){
+        if (errorFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QTextStream out(&errorFile);
+            out << inJson;
+            errorFile.close();
+        }
+    }
+
+    FINIRE
+
+
+    // QFile descriptionFile(descriptionFileName);
+
 }
 
 void MainWindow::initAppConfigFile()

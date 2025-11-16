@@ -30,6 +30,9 @@ set(PROJECT_SOURCES
         recentfilesmanager.h
         foldercombobox.cpp
         foldercombobox.h
+        frmsavedataset.cpp
+        frmsavedataset.h
+        frmsavedataset.ui
         JsonYamlToJsonTestSuite.qrc
 )
 

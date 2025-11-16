@@ -66,7 +66,7 @@
        </widget>
       </item>
       <item row="2" column="4">
-       <widget class="QToolButton" name="cmdSaveDescription">
+       <widget class="QToolButton" name="cmdSaveTestDataset">
         <property name="toolTip">
          <string>Save Description</string>
         </property>
@@ -179,11 +179,11 @@
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="tabJsonExpected">
            <attribute name="title">
-            <string>JSON Expected</string>
+            <string>Expected JSON</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_11">
             <property name="leftMargin">
@@ -206,7 +206,7 @@
           </widget>
           <widget class="QWidget" name="tabTokensExpected">
            <attribute name="title">
-            <string>Tokens Expected</string>
+            <string>Expected Tokens</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <property name="spacing">
@@ -225,6 +225,29 @@
              <widget class="QPlainTextEdit" name="txtTokensExpected">
               <property name="placeholderText">
                <string>Expected tokens will appear here...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tabErrorExpected">
+           <attribute name="title">
+            <string>Expected Error</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_12">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPlainTextEdit" name="txtErrorExpected">
+              <property name="placeholderText">
+               <string>Error file is usually empty</string>
               </property>
              </widget>
             </item>

@@ -24,6 +24,13 @@ Avanti con YamlExample
 
 
 Fare il salvataggio dei vari casi: serve una form
+ - serve il percorso root
+ - devo recuperare i dati dalla dialog
+ - devo sapere se ho premuto Yes o Cancel
+ - creare un metodo nella classe principale
+ 
+
+ 
 
 
 
