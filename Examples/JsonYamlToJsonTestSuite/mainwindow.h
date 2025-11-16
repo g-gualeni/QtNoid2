@@ -54,6 +54,7 @@ private:
     void onFolderComboBoxDoubleClicked();
     void onPreviousTest();
     void onNextTest();
+    void onCmdSaveTestDataset();
     void initAppConfigFile();
     void initFromAppConfig();
 
