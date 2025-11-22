@@ -168,6 +168,9 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 - [x] Save Dataset command and dialog
 - [ ] Create new Dataset command and dialog
 
+- [ ] Ctrl+S to save
+- [ ] Add automation to init new folder and description
+- [ ] Create a resource manager to copy files into resouces end generate list
 
 
 

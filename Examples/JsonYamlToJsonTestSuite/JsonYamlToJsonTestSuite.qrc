@@ -12,6 +12,32 @@
         <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-001/in.yaml</file>
         <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-001/out.yaml</file>
         <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-001/test.event</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-002/===</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-002/error</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-002/in.json</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-002/in.yaml</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-002/test.event</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-003/===</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-003/error</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-003/in.json</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-003/in.yaml</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-003/test.event</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-004/===</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-004/in.json</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-004/in.yaml</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-004/test.event</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-005/===</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-005/in.json</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-005/in.yaml</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-005/test.event</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-006/===</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-006/in.json</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-006/in.yaml</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-006/test.event</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-007/===</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-007/in.json</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-007/in.yaml</file>
+        <file>resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-007/test.event</file>
         <file>resources/yaml-test-suite/data-2022-01-17/229Q/===</file>
         <file>resources/yaml-test-suite/data-2022-01-17/229Q/in.json</file>
         <file>resources/yaml-test-suite/data-2022-01-17/229Q/in.yaml</file>

@@ -149,7 +149,7 @@ void MainWindow::updateUI_recentFiles(QString fileName)
 
 void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 {
-    qDebug() << __func__ << folder;
+    // qDebug() << __func__ << folder;
     m_yamlTestCollectionListCurrent = 0;
     m_yamlTestCollectionList.clear();
 
@@ -160,7 +160,7 @@ void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
     QtNoid::Common::File QtNoidFile;
     QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath() + QDir::separator() + folder;
     m_yamlTestCollectionList = QtNoidFile.listPathRecursively(root, {"in.yaml"});
-    qDebug() << __func__ << root << "count:" << m_yamlTestCollectionList.count();
+    // qDebug() << __func__ << root << "count:" << m_yamlTestCollectionList.count();
     ui->txtCurrentFile->clear();
     QDir dir(root);
     for(auto it = m_yamlTestCollectionList.constBegin(); it < m_yamlTestCollectionList.constEnd(); ++it) {
@@ -172,7 +172,7 @@ void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 
 void MainWindow::updateUI_progressBar()
 {
-    qDebug() << __func__;
+    // qDebug() << __func__;
     ui->cboCollectionProgress->setVisible(!m_yamlTestCollectionList.isEmpty());
     ui->cboCollectionProgress->setMinimum(0);
     ui->cboCollectionProgress->setMaximum(m_yamlTestCollectionList.count());
@@ -183,7 +183,7 @@ void MainWindow::updateUI_progressBar()
 
 void MainWindow::updateUI_cmdPrevNext()
 {
-    qDebug() << __func__;
+    // qDebug() << __func__;
     // Set cmdPrevious enabled if I am not
     bool enabled = (!m_yamlTestCollectionList.isEmpty()) && (m_yamlTestCollectionListCurrent >0);
     ui->cmdPrevious->setEnabled(enabled);
@@ -194,7 +194,7 @@ void MainWindow::updateUI_cmdPrevNext()
 
 void MainWindow::updateUI_txtCurrentFile()
 {
-    qDebug() << __func__ << m_yamlTestCollectionListCurrent << m_yamlTestCollectionList.count();
+    // qDebug() << __func__ << m_yamlTestCollectionListCurrent << m_yamlTestCollectionList.count();
     ui->txtCurrentFile->blockSignals(true);
     ui->txtCurrentFile->setCurrentIndex(m_yamlTestCollectionListCurrent);
     ui->txtCurrentFile->blockSignals(false);
@@ -202,7 +202,7 @@ void MainWindow::updateUI_txtCurrentFile()
 
 void MainWindow::updateUI_statusBar(const QString& msg)
 {
-    qDebug() << __func__ << msg;
+    // qDebug() << __func__ << msg;
     if(!msg.isEmpty()) {
         ui->statusbar->showMessage(msg);
         return;
@@ -220,7 +220,7 @@ void MainWindow::updateUI_statusBar(const QString& msg)
                     .arg(m_yamlTestCollectionListCurrent+1)
                     .arg(m_yamlTestCollectionList.count())
                     .arg(fileName) ;
-        qDebug() << __func__ << sbMsg;
+        // qDebug() << __func__ << sbMsg;
         ui->statusbar->showMessage(sbMsg);
         return;
     }    
