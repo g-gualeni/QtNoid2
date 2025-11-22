@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include "recentfilesmanager.h"
 #include "frmsavedataset.h"
+#include "frmnewdataset.h"
 #include "QtNoidJson/QtNoidJson"
 #include "QtNoidCommon/QtNoidCommon"
 #include "QtNoidApp/QtNoidApp"
@@ -28,6 +29,11 @@ MainWindow::MainWindow(QWidget *parent)
     auto save_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
     ui->cmdSaveTestDataset->setIcon(save_icon);
     ui->cmdSaveTestDataset->setIconSize({16,16});
+
+    auto new_icon = style()->standardIcon(QStyle::SP_FileIcon);
+    ui->cmdNewTestDataset->setIcon(new_icon);
+    ui->cmdNewTestDataset->setIconSize({16,16});
+
     auto iconArrowLeft = style()->standardIcon(QStyle::SP_ArrowLeft);
     ui->cmdPrevious->setIcon(iconArrowLeft);
     ui->cmdPrevious->setIconSize({32,32});
@@ -91,6 +97,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextTest);
     connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousTest);
     connect(ui->cmdSaveTestDataset, &QPushButton::clicked, this, &MainWindow::onCmdSaveTestDataset);
+    connect(ui->cmdNewTestDataset, &QPushButton::clicked, this, &MainWindow::onCreateNewTest);
+    connect(ui->actionCreate_New_Test, &QAction::triggered, this, &MainWindow::onCreateNewTest);
+
 }
 
 
@@ -140,6 +149,7 @@ void MainWindow::updateUI_recentFiles(QString fileName)
 
 void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 {
+    qDebug() << __func__ << folder;
     m_yamlTestCollectionListCurrent = 0;
     m_yamlTestCollectionList.clear();
 
@@ -162,6 +172,7 @@ void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 
 void MainWindow::updateUI_progressBar()
 {
+    qDebug() << __func__;
     ui->cboCollectionProgress->setVisible(!m_yamlTestCollectionList.isEmpty());
     ui->cboCollectionProgress->setMinimum(0);
     ui->cboCollectionProgress->setMaximum(m_yamlTestCollectionList.count());
@@ -172,6 +183,7 @@ void MainWindow::updateUI_progressBar()
 
 void MainWindow::updateUI_cmdPrevNext()
 {
+    qDebug() << __func__;
     // Set cmdPrevious enabled if I am not
     bool enabled = (!m_yamlTestCollectionList.isEmpty()) && (m_yamlTestCollectionListCurrent >0);
     ui->cmdPrevious->setEnabled(enabled);
@@ -182,7 +194,7 @@ void MainWindow::updateUI_cmdPrevNext()
 
 void MainWindow::updateUI_txtCurrentFile()
 {
-    // qDebug() << __func__ << m_yamlTestCollectionListCurrent << m_yamlTestCollectionList.count();
+    qDebug() << __func__ << m_yamlTestCollectionListCurrent << m_yamlTestCollectionList.count();
     ui->txtCurrentFile->blockSignals(true);
     ui->txtCurrentFile->setCurrentIndex(m_yamlTestCollectionListCurrent);
     ui->txtCurrentFile->blockSignals(false);
@@ -190,6 +202,7 @@ void MainWindow::updateUI_txtCurrentFile()
 
 void MainWindow::updateUI_statusBar(const QString& msg)
 {
+    qDebug() << __func__ << msg;
     if(!msg.isEmpty()) {
         ui->statusbar->showMessage(msg);
         return;
@@ -325,7 +338,7 @@ bool MainWindow::generateTestDataFromResource(const QString &dataPrefix, const Q
 
 void MainWindow::on_actionTestDataFolder_triggered()
 {
-    QString appPath = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+    QString appPath = QtNoid::App::Settings::appExeOrAppBundleDirPath() + "/Data/resources";
 
     QDesktopServices::openUrl(QUrl::fromLocalFile(appPath));
 }
@@ -349,6 +362,8 @@ void MainWindow::setYamlTestCollectionListCurrent(int newYamlTestCollectionListC
 
 void MainWindow::updateUI_loadYamlFile(const QString &filePath)
 {
+    // qDebug() << __func__ << filePath;
+
     QString yamlContent;
     do{
         if(filePath.isEmpty()) {
@@ -445,7 +460,7 @@ void MainWindow::updateUI_convertYamlToJson()
 {
 
     QString yamlText = ui->txtYAML->toPlainText();
-    qDebug() << __func__ << "LastYaml:" << yamlText;
+    // qDebug() << __func__ << "LastYaml:" << yamlText;
 
     auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
     ui->txtJsonOutput->setPlainText(converter.jsonAsString());
@@ -518,53 +533,60 @@ void MainWindow::onCmdSaveTestDataset()
         return;
     }
 
-    auto description = ui->txtDescription->text();
-    auto inYaml = ui->txtYAML->toPlainText();
-    auto inJson = ui->txtJsonExpected->toPlainText();
-    auto inTokens = ui->txtTokensExpected->toPlainText();
-    auto inErrors = ui->txtErrorExpected->toPlainText();
 
-    QString outFolderPath = folderPath + QDir::separator() + dialog.destinationFolder();
+    QString outFolderPath = folderPath + QDir::separator() + dialog.destinationFolder() + QDir::separator();
     auto res = QDir().mkpath(outFolderPath);
     if(!res) {
         qDebug() << __func__ << "Error creating subfolder";
     }
 
-    QString yamlFileName = outFolderPath + QDir::separator() + "in.yaml";
-    QString jsonFileName = outFolderPath + QDir::separator() + "in.json";
-    QString errorFileName = outFolderPath + QDir::separator() + "error";
-    QString descriptionFileName = outFolderPath + QDir::separator() + "===";
-    QString tokensFileName = outFolderPath + QDir::separator() + "test.event";
+    auto description = ui->txtDescription->text();
+    QFile descriptionFile(outFolderPath + "===");
+    if (descriptionFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&descriptionFile);
+        out << description;
+        descriptionFile.close();
+    }
 
-    QFile descriptionFile(descriptionFileName);
-    QFile tokensFile(tokensFileName);
-
-    QFile yamlFile(yamlFileName);
+    auto inYaml = ui->txtYAML->toPlainText();
+    QFile yamlFile(outFolderPath + "in.yaml");
     if (yamlFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&yamlFile);
         out << inYaml;
         yamlFile.close();
     }
-    QFile jsonFile(jsonFileName);
+
+    auto inJson = ui->txtJsonExpected->toPlainText();
+    QFile jsonFile(outFolderPath + "in.json");
     if (jsonFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&jsonFile);
         out << inJson;
         jsonFile.close();
     }
 
-    QFile errorFile(errorFileName);
-    if(!inErrors.isEmpty()){
+
+    auto inErrors = ui->txtErrorExpected->toPlainText();
+    QFile errorFile(outFolderPath + "error");
+    if(inErrors.isEmpty()){
+        errorFile.remove();
+    }
+    else {
         if (errorFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream out(&errorFile);
-            out << inJson;
+            out << inErrors;
             errorFile.close();
         }
     }
 
-    FINIRE
 
 
-    // QFile descriptionFile(descriptionFileName);
+    auto inTokens = ui->txtTokensExpected->toPlainText();
+    QFile tokensFile(outFolderPath + "test.event");
+    if (tokensFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&tokensFile);
+        out << inTokens;
+        tokensFile.close();
+    }
 
 }
 
@@ -597,4 +619,136 @@ void MainWindow::updateUI_initDevelopment()
     QtNoid::App::Development::initConfigFromResources(developmentMenu, ":/resources");
 }
 
+
+
+void MainWindow::onCreateNewTest()
+{
+    // qDebug() << __func__;
+
+    frmNewDataset dialog(this);
+    QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+    auto rootFolder = QDir::cleanPath(root + QDir::separator() + ui->txtCollectionFolder->currentText());
+    dialog.setRootFolder(rootFolder);
+    if(dialog.exec() == 0) {
+        // Request not accepted
+        return;
+    }
+
+    // Update the main folder if it is new
+    rootFolder = dialog.rootFolder();
+    QDir dir(root);
+    rootFolder = dir.relativeFilePath(rootFolder);
+
+    // Add the folder to the comboBox if it's not already there
+    // If this is new, this will trigger the update
+    int index = ui->txtCollectionFolder->findText(rootFolder);
+    if (index == -1) {
+        ui->txtCollectionFolder->addItem(rootFolder);
+        ui->txtCollectionFolder->setCurrentIndex(ui->txtCollectionFolder->count() - 1);
+    } else {
+        ui->txtCollectionFolder->setCurrentIndex(index);
+    }
+
+    // Create the new in.yaml file
+    auto datasetFolder = dialog.rootFolder() + QDir::separator() + dialog.datasetFolder();
+    QDir().mkdir(datasetFolder);
+    // qDebug() << __func__ << datasetFolder <<  "accepted";
+
+    QFile yamlFile(datasetFolder + "/in.yaml");
+    if (yamlFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        // qDebug() << __func__ << "yamlFile file opened";
+        QTextStream out(&yamlFile);
+        out << dialog.yamlInput();
+        yamlFile.close();
+    }
+
+    // Create an empty JSON file
+    QFile jsonFile(datasetFolder + "/in.json");
+    if (jsonFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        // qDebug() << __func__ << "jsonFile file opened";
+        QTextStream out(&jsonFile);
+        out << "";
+        jsonFile.close();
+    }
+
+
+    // Create description file
+    QFile descriptionFile(datasetFolder + "/===");
+    if (descriptionFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        // qDebug() << __func__ << "descriptionFile file opened";
+        QTextStream out(&descriptionFile);
+        out << dialog.description();
+        descriptionFile.close();
+    }
+
+    // update the yaml file list
+    ui->txtCurrentFile->blockSignals(true);
+    updateUI_scanTestCollectionFolder(rootFolder);
+    ui->txtCurrentFile->blockSignals(false);
+
+    // select the new file
+    // This automatically triggers the load of the file.
+    dir.setPath(dialog.rootFolder());
+    auto yamlFilePath = dir.relativeFilePath(yamlFile.fileName());
+    ui->txtCurrentFile->setCurrentText(yamlFilePath);
+    // qDebug() << __func__ << yamlFilePath;
+
+
+
+    // QString outFolderPath = folderPath + QDir::separator() + dialog.destinationFolder() + QDir::separator();
+    // auto res = QDir().mkpath(outFolderPath);
+    // if(!res) {
+    //     qDebug() << __func__ << "Error creating subfolder";
+    // }
+
+    // auto description = ui->txtDescription->text();
+    // QFile descriptionFile(outFolderPath + "===");
+    // if (descriptionFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //     QTextStream out(&descriptionFile);
+    //     out << description;
+    //     descriptionFile.close();
+    // }
+
+    // auto inYaml = ui->txtYAML->toPlainText();
+    // QFile yamlFile(outFolderPath + "in.yaml");
+    // if (yamlFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //     QTextStream out(&yamlFile);
+    //     out << inYaml;
+    //     yamlFile.close();
+    // }
+
+    // auto inJson = ui->txtJsonExpected->toPlainText();
+    // QFile jsonFile(outFolderPath + "in.json");
+    // if (jsonFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //     QTextStream out(&jsonFile);
+    //     out << inJson;
+    //     jsonFile.close();
+    // }
+
+
+    // auto inErrors = ui->txtErrorExpected->toPlainText();
+    // QFile errorFile(outFolderPath + "error");
+    // if(inErrors.isEmpty()){
+    //     errorFile.remove();
+    // }
+    // else {
+    //     if (errorFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //         QTextStream out(&errorFile);
+    //         out << inErrors;
+    //         errorFile.close();
+    //     }
+    // }
+
+
+
+    // auto inTokens = ui->txtTokensExpected->toPlainText();
+    // QFile tokensFile(outFolderPath + "test.event");
+    // if (tokensFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //     QTextStream out(&tokensFile);
+    //     out << inTokens;
+    //     tokensFile.close();
+    // }
+
+
+}
 

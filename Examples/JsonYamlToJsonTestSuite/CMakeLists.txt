@@ -33,6 +33,9 @@ set(PROJECT_SOURCES
         frmsavedataset.cpp
         frmsavedataset.h
         frmsavedataset.ui
+        frmnewdataset.cpp
+        frmnewdataset.h
+        frmnewdataset.ui
         JsonYamlToJsonTestSuite.qrc
 )
 

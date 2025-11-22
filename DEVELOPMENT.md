@@ -21,18 +21,8 @@
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
-
-
-Fare il salvataggio dei vari casi: serve una form
- - serve il percorso root
- - devo recuperare i dati dalla dialog
- - devo sapere se ho premuto Yes o Cancel
- - creare un metodo nella classe principale
- 
-
- 
-
-
+ - Finire la creazione di un nuovo dataset
+ - Creare il dataset per i numeri
 
 
 &nbsp;
@@ -150,7 +140,6 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
           more test cases with string or a mixture of strings and numbers 
           (mixed types array)
      
-
 # Older Examples
 - [x] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
 - [x] AppSettingsBasicUsage update labels using bold 
@@ -174,8 +163,11 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] Save restore recent file
      
 - [x] Add the screenshot command
-- [ ] Add the debug menu that can save current config to app resources?
-- [ ] Restore app config file from resources, the first time.
+- [x] Add the debug menu that can save current config to app resources?
+- [x] Restore app config file from resources, the first time.
+- [x] Save Dataset command and dialog
+- [ ] Create new Dataset command and dialog
+
 
 
 
