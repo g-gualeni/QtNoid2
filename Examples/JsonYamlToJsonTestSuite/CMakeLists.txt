@@ -36,6 +36,9 @@ set(PROJECT_SOURCES
         frmnewdataset.cpp
         frmnewdataset.h
         frmnewdataset.ui
+        frmmanageprojectresources.cpp
+        frmmanageprojectresources.h
+        frmmanageprojectresources.ui
         JsonYamlToJsonTestSuite.qrc
 )
 

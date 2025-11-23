@@ -28,6 +28,7 @@ private slots:
     void on_actionTestSuite_2022_01_17_triggered();
     void on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered();
     void on_actionTestDataFolder_triggered();
+    void on_actionManageProjectResources_triggered();
 
 
 private:

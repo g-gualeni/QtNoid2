@@ -3,6 +3,7 @@
 #include "recentfilesmanager.h"
 #include "frmsavedataset.h"
 #include "frmnewdataset.h"
+#include "frmmanageprojectresources.h"
 #include "QtNoidJson/QtNoidJson"
 #include "QtNoidCommon/QtNoidCommon"
 #include "QtNoidApp/QtNoidApp"
@@ -341,6 +342,26 @@ void MainWindow::on_actionTestDataFolder_triggered()
     QString appPath = QtNoid::App::Settings::appExeOrAppBundleDirPath() + "/Data/resources";
 
     QDesktopServices::openUrl(QUrl::fromLocalFile(appPath));
+}
+
+void MainWindow::on_actionManageProjectResources_triggered()
+{
+    frmManageProjectResources dialog(this);
+
+    QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+    QString currentFolder = ui->txtCollectionFolder->currentText();
+
+    if (!currentFolder.isEmpty()) {
+        QString sourcePath = QDir::cleanPath(root + QDir::separator() + currentFolder);
+        dialog.setSourceFolder(sourcePath);
+
+        QDir dir(root);
+        QString relativePrefix = dir.relativeFilePath(sourcePath);
+        relativePrefix.replace('\\', '/');
+        dialog.setResourcePrefix(relativePrefix);
+    }
+
+    dialog.exec();
 }
 
 void MainWindow::setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent)

@@ -399,6 +399,7 @@
     <property name="title">
      <string>Development</string>
     </property>
+    <addaction name="actionManageProjectResources"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTest"/>
@@ -452,6 +453,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionManageProjectResources">
+   <property name="text">
+    <string>Manage Project Resources</string>
    </property>
   </action>
  </widget>

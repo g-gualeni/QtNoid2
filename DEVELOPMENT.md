@@ -21,9 +21,20 @@
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
- - Finire la creazione di un nuovo dataset
  - Creare il dataset per i numeri
-
+ 
+-> Prova ad iterare sulle risorse
+QDirIterator it(prefixQrc, QDirIterator::Subdirectories);
+   while (it.hasNext()) {
+       QString sourceFile = it.next();
+       
+       // Salta le directory, copia solo i file
+       if (it.fileInfo().isFile()) {
+           QString fileName = it.fileName();
+           QString destFile = destPath + "/" + fileName;
+           QFile::copy(sourceFile, destFile);
+       }
+   }
 
 &nbsp;
 
@@ -169,6 +180,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 - [ ] Create new Dataset command and dialog
 
 - [ ] Ctrl+S to save
+- [ ] Ctrl+J to convert to Json
 - [ ] Add automation to init new folder and description
 - [ ] Create a resource manager to copy files into resouces end generate list
 
