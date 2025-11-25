@@ -177,10 +177,9 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 - [x] Add the debug menu that can save current config to app resources?
 - [x] Restore app config file from resources, the first time.
 - [x] Save Dataset command and dialog
-- [ ] Create new Dataset command and dialog
-
-- [ ] Ctrl+S to save
-- [ ] Ctrl+J to convert to Json
+- [x] Ctrl+S to save
+- [x] Ctrl+J to convert to Json
+- [x] Create new Dataset command and dialog
 - [ ] Add automation to init new folder and description
 - [ ] Create a resource manager to copy files into resouces end generate list
 

@@ -364,6 +364,16 @@ void MainWindow::on_actionManageProjectResources_triggered()
     dialog.exec();
 }
 
+void MainWindow::on_actionConvert_To_Json_triggered()
+{
+    updateUI_convertYamlToJson();
+}
+
+void MainWindow::on_actionSave_Dataset_triggered()
+{
+    onCmdSaveTestDataset();
+}
+
 void MainWindow::setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent)
 {
     // qDebug() << __func__ <<"NewIndex:" << newYamlTestCollectionListCurrent << m_yamlTestCollectionList.count()
@@ -772,4 +782,5 @@ void MainWindow::onCreateNewTest()
 
 
 }
+
 

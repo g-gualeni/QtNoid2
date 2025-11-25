@@ -29,7 +29,8 @@ private slots:
     void on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered();
     void on_actionTestDataFolder_triggered();
     void on_actionManageProjectResources_triggered();
-
+    void on_actionConvert_To_Json_triggered();
+    void on_actionSave_Dataset_triggered();
 
 private:
     Ui::MainWindow *ui;
