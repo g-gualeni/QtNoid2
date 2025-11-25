@@ -23,7 +23,7 @@ Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
  - Creare il dataset per i numeri
  
--> Prova ad iterare sulle risorse
+iterare sulle risorse usando QDir
 QDirIterator it(prefixQrc, QDirIterator::Subdirectories);
    while (it.hasNext()) {
        QString sourceFile = it.next();
@@ -182,6 +182,11 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 - [x] Create new Dataset command and dialog
 - [ ] Add automation to init new folder and description
 - [ ] Create a resource manager to copy files into resouces end generate list
+     - [ ] File Copy to prject folder
+     - [ ] Scroll of all prefix
+     - [ ] Update of prefix content
+     
+
 
 
 
