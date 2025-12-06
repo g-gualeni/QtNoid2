@@ -77,3 +77,12 @@ install(TARGETS AppParameterBasicUsage
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(AppParameterBasicUsage)
 endif()
+
+
+# =============================================================================
+# Project Docs
+# =============================================================================
+set(PROJECT_DOCS
+    doc/AppParameterBasicUsage.md
+)
+add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

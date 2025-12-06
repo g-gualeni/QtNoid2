@@ -76,3 +76,12 @@ install(TARGETS JsonTxt2JsonBasicUsage
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(JsonTxt2JsonBasicUsage)
 endif()
+
+
+# =============================================================================
+# Project Docs
+# =============================================================================
+set(PROJECT_DOCS
+    doc/JsonTxt2JsonBasicUsage.md
+)
+add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

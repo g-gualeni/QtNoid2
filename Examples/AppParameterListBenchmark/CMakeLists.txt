@@ -78,3 +78,12 @@ install(TARGETS AppParameterListBenchmark
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(AppParameterListBenchmark)
 endif()
+
+
+# =============================================================================
+# Project Docs
+# =============================================================================
+set(PROJECT_DOCS
+    doc/AppParameterListBenchmark.md
+)
+add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

@@ -79,3 +79,12 @@ install(TARGETS AppSettingsBasicUsage
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(AppSettingsBasicUsage)
 endif()
+
+
+# =============================================================================
+# Project Docs
+# =============================================================================
+set(PROJECT_DOCS
+    doc/AppSettingsBasicUsage.md
+)
+add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})
