@@ -18,25 +18,25 @@ the first public release.
 &nbsp;
 
 ## Modules in the library
-* **[QtNoidCore](./QtNoidCore/QtNoidCore.md)**:
+* **[QtNoidCore](QtNoidCore.md)**:
   This is a simple class to control the library life cycle.
   
-* **[QtNoidCommon](./QtNoidCommon/QtNoidCommon.md)**:
+* **[QtNoidCommon](QtNoidCommon.md)**:
   This is a collection of class (Text, Scale, 
   File) to help on general tasks.
 
-* **[QtNoidApp](./QtNoidApp/QtNoidApp.md)**:
+* **[QtNoidApp](QtNoidApp.md)**:
     This is a collection of class (Settings, ...) to simplify the
     the implementation of common feature of a Desktop Application.
 
-* **[QtNoidJson](./QtNoidJson/QtNoidJson.md)**:
+* **[QtNoidJson](QtNoidJson.md)**:
     This lib contains the class Txt2Json that simplify the creation of simple
     JSON doc, starting from a quick textual description with a few rules.
     
 
 &nbsp;
 
-* ***More modules are in coming soon.***
+* ***More modules are coming soon.***
 
 &nbsp;
 
@@ -56,29 +56,26 @@ you specify the lib path in the the HINTS parameter
 of **find_package()** command.
 Insert the path to QtNoid2 instead of `<LIB Path>` in
 the code example below.
-If you are creating a portable project, use a switch
-as in the example below:
 
 ```cmake
-if(WIN32)
-  find_package(QtNoidCore QtNoidCommon REQUIRED 
-        HINTS "<LIB Path>/QtNoid2")
-elseif(APPLE)
-  find_package(QtNoidCore QtNoidCommon REQUIRED 
-        HINTS "<LIB Path>/QtNoid2")
-endif()
+find_package(QtNoidApp REQUIRED HINTS "<LIB Path>/QtNoid2")
+find_package(QtNoidCommon REQUIRED HINTS "<LIB Path>/QtNoid2")
+find_package(QtNoidCore REQUIRED HINTS "<LIB Path>/QtNoid2")
+find_package(QtNoidJson REQUIRED HINTS "<LIB Path>/QtNoid2")
 
 target_link_libraries(BasicUsage PRIVATE
   Qt${QT_VERSION_MAJOR}::Widgets
+  QtNoid::QtNoidApp
   QtNoid::QtNoidCore
   QtNoid::QtNoidCommon
+  QtNoid::QtNoidJson
 )
 ```
 
 
 ### Integrating the library in a console application
 
-Iinclude the convenient header of the library you need:
+Include the convenient header of the library you need:
  - QtNoidCore/QtNoidCore
  - QtNoidCommon/QtNoidCommon
  

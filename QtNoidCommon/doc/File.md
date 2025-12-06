@@ -1,36 +1,3 @@
-# QtNoidCommon
-This module contains:
-- [**File**](#class-file): collection of methods to manage files, rename, read and write text files.
-- [**Scale**](#class-scale): convert numbers to a human readable format.
-- [**Text**](#class-text): clean up, tokenize convert to camel case or snake case methods.
-
-&nbsp;
-
-## CMake
-```
-find_package: QtNoidCommon
-
-target_link_libraries: QtNoid::QtNoidCommon
-```
-
-&nbsp;
-
-## Header
-
-```cpp
-#include "QtNoidCommon/QtNoidCommon"
-```
-
-&nbsp;
-
-## Namespace
-
-```cpp
-using namespace QtNoid::Common;
-```
-
-&nbsp;
-
 ## Class: File
 This class contains a set of helper methods to work
 with files
@@ -38,7 +5,7 @@ with files
 ### Static Methods
 - `QString File::autoNamingNextName(const QString &fileName)`: splits the file
   name in tokens, finds the last number block if present and add 1 while trying 
-  to replicate the numbering scheme.This means that 1 becomes 2, 001 becomes 002
+  to replicate the numbering scheme. This means that 1 becomes 2, 001 becomes 002
   and (1) becomes (2). The fileName can be just the file name or a full path. If
   there are no number blocks it adds ` 001` right before the first "."
 
@@ -62,68 +29,26 @@ with files
 - `static bool isTextFile(const QFileInfo &fileInfo)`: read the file pointed by
   fileInfo and returns true if it guess this is a text file. 
 
-- `static QString saveAsTextFile(const QString &data, const QString &filePath, 
-  const QString &basePath="", const QString &fileSuffix="*")`:
-  Save data to a text file as specified by filePath. FilePath can be a fileName 
-  with or without suffix. We can also specify a base folder and ask the method
-  to replace the suffix with fileSuffix.
+- `static QString saveAsTextFile(const QString &data, const QString &filePath, const QString &basePath="", const QString &fileSuffix="*")`:
+  Save data to a text file as specified by filePath. The parameter filePath can be a fileName with or without suffix (i.e. txt). We can also specify a base folder and ask the method to replace the suffix with fileSuffix.
   
-- `static QString saveAsTextFile(const QStringList &data, const QString &filePath,
-  const QString &basePath="", const QString &fileSuffix="*")`
-  Save a string list to a text file as specified by filePath. FilePath can be a 
+- `static QString saveAsTextFile(const QStringList &data, const QString &filePath, const QString &basePath="", const QString &fileSuffix="*")`
+  Save a string list to a text file as specified by filePath. The parameter filePath can be a 
   fileName with or without suffix. We can also specify a base folder and ask the 
   method to replace the suffix with fileSuffix.
 
 - `static QStringList readAsStringList(const QString &absoluteFilePath)`: reads
   a text file and return it as a string list.
   
-
+- `static QStringList listPathRecursively(const QString &path, const QStringList &nameFilters)`: returns a string list containing the full path of all files 
+     found recursively under the specified path that match the given nameFilters. 
+     If path refers to a file, the method also returns all siblings files in the
+     same directory.
+  
 ### Non Static Methods
+None
 
-- `QStringList listPathRecursively(const QString &path, const QStringList 
-   &nameFilters)`: returns a string list containing the full path of all files 
-   found recursively under the specified path that match the given nameFilters. 
-   If path refers to a file, the method also returns all siblings files in the
-   same directory.
-
-[⬆ Back to top](#qtnoidcommon)
-
-&nbsp;
-
-## Class: Scale
-This class contains a set of helper methods to convert numbers to 
-a human readable text. 
-
-### Static Methods
- - `static QStringList scalePrefixList()`: return a list of prefix 
-    like "k","M","G","T","P","E".
-    
- - `static qint64 scaleMultiplier(const QString &prefix)`: given 
-    the standard prefix return the value of the multiplier.
- 
- - `static QString scaleMultiplierPrefix(qint64 value)`: evaluate 
-    the multiplier to be used with value.
- 
- - `static QString scaleAutoUpToExaByte(qint64 value, 
-    const QString& unitOfMeasure="Byte")`: convert the value into a
-    string that has 2 decimal places and a scale prefix like k, M,
-    G and so on. This static method consider 1 kByte as 1024 bytes.
-
- - `static QString scaleAutoUpToExa(qint64 value, const QString& 
-    unitOfMeasure)`: converts the value into a string with 2 decimal
-    places. The scale prefix is attached to the unitOfMeasure as in
-    this example: 1.00 [kg]
- 
- - `static QString scaleNanoSecsUpToDays(quint64 ns)`: convert ns 
-    elapsed time to a more readable value using the best combinations
-    of ms, seconds, minutes, hours, days. In this case ns is an 
-    unsigned value.
-    
- - `static QString scaleNanoSecsUpToDays(qint64 ns)`: convert ns 
-    to a readable value using ms, seconds, minutes, hours, days. In
-    this case ns is a signed value.
-    
-[⬆ Back to top](#qtnoidcommon)
+⬆ [[QtNoidCommon]]
 
 &nbsp;
 
@@ -194,5 +119,5 @@ convert to camelcase or snake case text strings.
 &nbsp;
 
 
-[← Back to Main Page](./../README.md)
+[← Back to Main Page](README.md)
 

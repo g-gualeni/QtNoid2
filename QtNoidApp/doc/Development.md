@@ -20,12 +20,12 @@ copied to the system clipboard for immediate use.
    - **parent**: the parent widget that will own the shortcut
    - **keySequence**: the keyboard combination that triggers the screenshot;
    if empty the default value "Ctrl+Shift+S" will be used. This is translated as
-   "Cmd+Shift+S" on macOs.
+   "Cmd+Shift+S" on macOS.
    - **destinationFileOrPath**: it could be a file path for the resulting screenshot
    or a folder where the screenshot will be saved. If empty the screenshot will be
    saved in the application execution folder. If it doesn't contains a
    FileName, the image file name will be the application window title followed
-   by -windows or by -macOs depending on the operating system.
+   by -windows or by -macOS depending on the operating system.
    - **saveToClipboard**: If true, copies the captured image to clipboard, as an
    image, in addition to saving to the file.
 
@@ -60,7 +60,7 @@ copied to the system clipboard for immediate use.
 
 &nbsp;
 
-[⬆ Back to QtNoidApp](../QtNoidApp.md)
+[⬆ Back to QtNoidApp](QtNoidApp.md)
 
 &nbsp;
 

@@ -6,8 +6,8 @@
 - Implementation of the QtNoid::Yaml2Json library: 
      - this the first implementation
      - Main goal is to handle all YAML Suite test without crash.     
-- Implementaton of QtNoid::App::Config class from Parameters
-- Implementaton of appConfig global instance 
+- Implementation of QtNoid::App::Config class from Parameters
+- Implementation of appConfig global instance 
 - Implementation of QtNoid::App::Development class to help the application 
      development
 - Review of Parameter / ParameterList after 
@@ -18,10 +18,29 @@
 &nbsp;
 
 ### Progress Status
+
+--> La documentazione va creata per ogni esempio, altrimenti manutenerla è impossibile
+    Valutare la creazione di una API per mostrare un file md
+    auto *browser = new QTextBrowser(&dialog);
+    browser->setMarkdown(markdown);
+    browser->setOpenExternalLinks(true);  // i link si aprono nel browser
+
+Pensare a come semplificare listPathRecursively
+QtNoid::Common::File QtNoidFile;
+auto fileList = QtNoidFile.listPathRecursively(ui->txtProjectFolder->text(), {".qrc"});
+-> Farla diventare statica
+-> Restituire il path relativo o assoluto
+
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
  - Creare il dataset per i numeri
+ - fare il compare dei files e mettere il comando per la copia
+ - Aggiornare anche qrc
+ - Come faccio a mostrare che i files sono diversi?
+     -> devo stampare in rosso quelli che sono nella colonna source
+     -> devo rappresentare un blu quelli nuovi
+
  
 iterare sulle risorse usando QDir
 QDirIterator it(prefixQrc, QDirIterator::Subdirectories);
@@ -150,7 +169,9 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] TestQtNoidCommonText::testTokenizeJsonArray() adding
           more test cases with string or a mixture of strings and numbers 
           (mixed types array)
-     
+- [ ] class **File** 
+     - [x] File::listPathRecursively() converted to static to simplify usage
+
 # Older Examples
 - [x] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
 - [x] AppSettingsBasicUsage update labels using bold 

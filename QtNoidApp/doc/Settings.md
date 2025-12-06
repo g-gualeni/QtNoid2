@@ -12,7 +12,7 @@ or resource files.
 file or of the Application Bundle on macOS, including the exe file name or the .app
 folder
 
-- `QString filePathAsAppSibling(const QString &fileName = {})`: calulates the
+- `QString filePathAsAppSibling(const QString &fileName = {})`: calculates the
 absolute file path for fileName, as an application or bundle sibling. If fileName
 is empty, it will use the applicationName as fileName and .json as the extension.
 By default this method creates a the configuration file with the same name of the
@@ -20,7 +20,7 @@ application executable, with a .json extension, in the same folder as the
 application or of the application bundle for macOS.
 
 - `QWidget* mainWindowsFromWidget(QWidget *ref)`: returns the main dialog of the
-current widget. It basically scans all parents untill it finds a MainDialog widget.
+current widget. It basically scans all parents until it finds a MainDialog widget.
 It works also with `QMainWindow` pointer, since this class inherits QWidget. This
 can be used in conjunction with __**groupNameFromObjectOrClass()**__ to dynamically
 calculate a group name to be used in the configuration file for storing the configuration.
@@ -38,7 +38,7 @@ full dialog as seen in the operating system. This is perfect for creating screen
 for a user manuals or release notes. If you need to capture only the widget content,
 just use the QWidget method `grab()`. This method captures also the caption and
 the borders. The parameter 'ref' can be even a `QMainWindow` pointer, since this
-class inherits QWidget. Since 2.2.0 returns a QImage, becuase of a problem with macOs.
+class inherits QWidget. Since 2.2.0 returns a QImage, because of a problem with macOS.
 With QImage we can apply QColorSpace() and avoid a crash saving as PNG.
 
 **Note**: For an automated screenshot shortcut, see [Development::initFullDialogGrabShortcut](Development.md).
@@ -49,7 +49,7 @@ With QImage we can apply QColorSpace() and avoid a crash saving as PNG.
 ## Non Static Methods
 
 
-[⬆ Back to QtNoidApp](../QtNoidApp.md)
+[⬆ Back to QtNoidApp](QtNoidApp.md)
 
 &nbsp;
 

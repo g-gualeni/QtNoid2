@@ -1,6 +1,6 @@
 # Class: ConfigFile
 
-[⬆ Back to QtNoidApp](../QtNoidApp.md)
+[⬆ Back to QtNoidApp](QtNoidApp.md)
 
 &nbsp;
 

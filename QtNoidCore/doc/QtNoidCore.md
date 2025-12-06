@@ -28,8 +28,7 @@ using namespace QtNoid;
 &nbsp;
 
 ## Examples
-- **CoreBasicUsage:** use this example to understand how the library can be integrated in 
-  your project
+- **[[CoreBasicUsage]]:** use this example to understand how the library can be integrated in your project
 
 &nbsp;
 
@@ -46,5 +45,5 @@ using namespace QtNoid;
   - Project copyright information
 
 
-[← Back to Main Page](./../README.md)
+[← Back to Main Page](README.md)
 

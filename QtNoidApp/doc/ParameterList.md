@@ -140,7 +140,7 @@ a parameter rename operation fails due to name conflicts
 &nbsp;
 &nbsp;
 
-[⬆ Back to QtNoidApp](../QtNoidApp.md)
+[⬆ Back to QtNoidApp](QtNoidApp.md)
 
 &nbsp;
 

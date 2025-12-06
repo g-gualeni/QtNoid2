@@ -1,7 +1,7 @@
 # Class: ConfigGlobal
 
 
-[⬆ Back to QtNoidApp](../QtNoidApp.md)
+[⬆ Back to QtNoidApp](QtNoidApp.md)
 
 &nbsp;
 

@@ -153,7 +153,7 @@ for simplify tracking of the activation.
 &nbsp;
 
 
-[⬆ Back to QtNoidApp](../QtNoidApp.md)
+[⬆ Back to QtNoidApp](QtNoidApp.md)
 
 
 &nbsp;
