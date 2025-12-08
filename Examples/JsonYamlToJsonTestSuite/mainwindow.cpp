@@ -243,10 +243,8 @@ void MainWindow::on_actionLoadYAML_triggered()
 
 void MainWindow::on_actionTestSuite_2022_01_17_triggered()
 {
-    // :/Test/resources/yaml-test-suite/data-2022-01-17.txt
-    // :/Data/resources/yaml-test-suite/data-2022-01-17/2AUY/===
-    if(generateTestDataFromResource("://Data/resources/yaml-test-suite/data-2022-01-17/",
-                                     ":/Test/resources/yaml-test-suite/data-2022-01-17.txt"))
+    // :/TestData/yaml-test-suite/data-2022-01-17/2AUY/===
+    if(generateTestDataFromResource(":/TestData/yaml-test-suite/data-2022-01-17/"))
     {
         QMessageBox::information(this, "YamlTestSuite 2022-01-17",
                                  tr("Test data generated successfully!"));
@@ -259,29 +257,20 @@ void MainWindow::on_actionTestSuite_2022_01_17_triggered()
 
 void MainWindow::on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered()
 {
-    // :/Test/resources/Txt2JsonTestSuite/QtNoid-2.2.0.txt
-    // :/Data/resources/Txt2JsonTestSuite/QtNoid-2.2.0/Array-001/===
-    if(generateTestDataFromResource("://Data/resources/Txt2JsonTestSuite/QtNoid-2.2.0/",
-                                     ":/Test/resources/Txt2JsonTestSuite/QtNoid-2.2.0.txt"))
+    // :/TestData/Txt2Json-test-suite/QtNoid-2.2.0/Array-001/===
+    if(generateTestDataFromResource("://TestData/Txt2Json-test-suite/QtNoid-2.2.0/"))
     {
-        QMessageBox::information(this, "Test Suite QtNoid_2_2_0",
+        QMessageBox::information(this, "Txt2Json Test Suite QtNoid_2_2_0",
                                  tr("Test data generated successfully!"));
     }
     else {
-        QMessageBox::information(this, "Test Suite QtNoid_2_2_0",
+        QMessageBox::information(this, "Txt2Json Test Suite QtNoid_2_2_0",
                                  tr("Error generating test data"));
     }
 }
 
-bool MainWindow::generateTestDataFromResource(const QString &dataPrefix, const QString &mapFilePath)
+bool MainWindow::generateTestDataFromResource(const QString &dataPrefix)
 {
-    // Read the file map
-    QFile fileListResource(mapFilePath);
-    if (!fileListResource.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
-    }
-    QTextStream in(&fileListResource);
-
     // Destination path is in CWD + dataPrefix
     QString baseOutputPath = dataPrefix;
     baseOutputPath.remove(":");
@@ -294,33 +283,27 @@ bool MainWindow::generateTestDataFromResource(const QString &dataPrefix, const Q
     int fileCount = 0;
     int errorCount = 0;
 
-    while (!in.atEnd()) {
-        QString resourceFilePath = in.readLine().trimmed();
-        if (resourceFilePath.isEmpty())
-            continue;
+    QtNoid::Common::File QtNoidFile;
+    auto testDataFiles = QtNoidFile.listPathRecursively(dataPrefix);
+    int dataDirLength = dataPrefix.length();
+    // qDebug() << __func__ << testDataFiles;
 
-        // qDebug() << __func__ << dataPrefix + resourceFilePath;
-
-        // Copy the resource file to baseOutputPath
-        // :/Data/resources/yaml-test-suite/data-2022-01-17/2AUY/===
-        QFile resourceFile(dataPrefix + resourceFilePath);
-        QFileInfo FI(baseOutputPath + resourceFilePath);
+    // "://TestData/Txt2Json-test-suite/QtNoid-2.2.0/Array-001/==="
+    for (const QString &srcPath : std::as_const(testDataFiles)) {
+        // qDebug() << srcPath.sliced(dataDirLength) << dataPrefix;
+        QFile srcFile(srcPath);
+        QFileInfo FI(baseOutputPath + srcPath.sliced(dataDirLength));
         dir.mkpath(FI.absolutePath());
-        auto outFilePath = FI.absoluteFilePath();
-        auto res = resourceFile.copy(outFilePath);
+        auto dstPath = FI.absoluteFilePath();
+        auto res = srcFile.copy(dstPath);
         if(!res) {
             errorCount++;
         }
         else {
-            QFile::setPermissions(outFilePath, QFile::ReadOwner | QFile::WriteOwner);
+            QFile::setPermissions(dstPath, QFile::ReadOwner | QFile::WriteOwner);
         }
-
-        // qDebug() << __func__ << "res:" << res << outFilePath;
-
         fileCount++;
     }
-
-    fileListResource.close();
 
     // Show summary in status bar
     QString msg(
@@ -347,19 +330,20 @@ void MainWindow::on_actionTestDataFolder_triggered()
 void MainWindow::on_actionManageProjectResources_triggered()
 {
     frmManageProjectResources dialog(this);
+    dialog.setProjectFolder(SOURCE_FILES_PATH);
+    dialog.setLocalFolder(ui->txtCollectionFolder->currentText());
 
-    QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
-    QString currentFolder = ui->txtCollectionFolder->currentText();
 
-    if (!currentFolder.isEmpty()) {
-        QString sourcePath = QDir::cleanPath(root + QDir::separator() + currentFolder);
-        dialog.setSourceFolder(sourcePath);
+    // QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+    // QString currentFolder = ui->txtCollectionFolder->currentText();
 
-        QDir dir(root);
-        QString relativePrefix = dir.relativeFilePath(sourcePath);
-        relativePrefix.replace('\\', '/');
-        dialog.setResourcePrefix(relativePrefix);
-    }
+    // if (!currentFolder.isEmpty()) {
+    //     QString sourcePath = QDir::cleanPath(root + QDir::separator() + currentFolder);
+
+    //     QDir dir(root);
+    //     QString relativePrefix = dir.relativeFilePath(sourcePath);
+    //     relativePrefix.replace('\\', '/');
+    // }
 
     dialog.exec();
 }
@@ -564,7 +548,6 @@ void MainWindow::onCmdSaveTestDataset()
         return;
     }
 
-
     QString outFolderPath = folderPath + QDir::separator() + dialog.destinationFolder() + QDir::separator();
     auto res = QDir().mkpath(outFolderPath);
     if(!res) {
@@ -595,7 +578,6 @@ void MainWindow::onCmdSaveTestDataset()
         jsonFile.close();
     }
 
-
     auto inErrors = ui->txtErrorExpected->toPlainText();
     QFile errorFile(outFolderPath + "error");
     if(inErrors.isEmpty()){
@@ -608,8 +590,6 @@ void MainWindow::onCmdSaveTestDataset()
             errorFile.close();
         }
     }
-
-
 
     auto inTokens = ui->txtTokensExpected->toPlainText();
     QFile tokensFile(outFolderPath + "test.event");
@@ -702,7 +682,6 @@ void MainWindow::onCreateNewTest()
         jsonFile.close();
     }
 
-
     // Create description file
     QFile descriptionFile(datasetFolder + "/===");
     if (descriptionFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -723,63 +702,6 @@ void MainWindow::onCreateNewTest()
     auto yamlFilePath = dir.relativeFilePath(yamlFile.fileName());
     ui->txtCurrentFile->setCurrentText(yamlFilePath);
     // qDebug() << __func__ << yamlFilePath;
-
-
-
-    // QString outFolderPath = folderPath + QDir::separator() + dialog.destinationFolder() + QDir::separator();
-    // auto res = QDir().mkpath(outFolderPath);
-    // if(!res) {
-    //     qDebug() << __func__ << "Error creating subfolder";
-    // }
-
-    // auto description = ui->txtDescription->text();
-    // QFile descriptionFile(outFolderPath + "===");
-    // if (descriptionFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    //     QTextStream out(&descriptionFile);
-    //     out << description;
-    //     descriptionFile.close();
-    // }
-
-    // auto inYaml = ui->txtYAML->toPlainText();
-    // QFile yamlFile(outFolderPath + "in.yaml");
-    // if (yamlFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    //     QTextStream out(&yamlFile);
-    //     out << inYaml;
-    //     yamlFile.close();
-    // }
-
-    // auto inJson = ui->txtJsonExpected->toPlainText();
-    // QFile jsonFile(outFolderPath + "in.json");
-    // if (jsonFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    //     QTextStream out(&jsonFile);
-    //     out << inJson;
-    //     jsonFile.close();
-    // }
-
-
-    // auto inErrors = ui->txtErrorExpected->toPlainText();
-    // QFile errorFile(outFolderPath + "error");
-    // if(inErrors.isEmpty()){
-    //     errorFile.remove();
-    // }
-    // else {
-    //     if (errorFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    //         QTextStream out(&errorFile);
-    //         out << inErrors;
-    //         errorFile.close();
-    //     }
-    // }
-
-
-
-    // auto inTokens = ui->txtTokensExpected->toPlainText();
-    // QFile tokensFile(outFolderPath + "test.event");
-    // if (tokensFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    //     QTextStream out(&tokensFile);
-    //     out << inTokens;
-    //     tokensFile.close();
-    // }
-
 
 }
 

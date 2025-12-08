@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
-    <height>600</height>
+    <width>1001</width>
+    <height>423</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,223 +15,72 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Resource Folder Configuration</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="lblSourceFolder">
-        <property name="text">
-         <string>Source Folder:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="txtSourceFolder">
-        <property name="placeholderText">
-         <string>Select source folder containing test data...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QToolButton" name="cmdBrowseSourceFolder">
-        <property name="text">
-         <string>...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="lblResourcePrefix">
-        <property name="text">
-         <string>Resource Prefix:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="txtResourcePrefix">
-        <property name="placeholderText">
-         <string>e.g., resources/yaml-test-suite/data-2022-01-17/</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="lblQrcPrefix">
-        <property name="text">
-         <string>QRC Prefix:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="cboQrcPrefix">
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-        <item>
-         <property name="text">
-          <string>/Data</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>/Test</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>/</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="lblMapFileName">
-        <property name="text">
-         <string>Map File Name:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="txtMapFileName">
-        <property name="placeholderText">
-         <string>e.g., data-2022-01-17.txt</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="cmdScanFolder">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Scan Folder</string>
+        <string>Destination</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="cmdGenerateMapFile">
+     <item row="2" column="4">
+      <widget class="QComboBox" name="txtProjectRes"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="txtLocalFolder"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Generate Map File (.txt)</string>
+        <string>Source</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="cmdGenerateQrcEntries">
+     <item row="1" column="4">
+      <widget class="QLineEdit" name="txtProjectFolder">
        <property name="text">
-        <string>Generate QRC Entries</string>
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string>Current project folder</string>
        </property>
       </widget>
      </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+     <item row="1" column="2">
+      <widget class="QLabel" name="lblSourceFolder_2">
+       <property name="text">
+        <string>Project Folder:</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="lblSourceFolder_3">
+       <property name="text">
+        <string>Resources File</string>
        </property>
-      </spacer>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Resource File Prefix</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QComboBox" name="txtProjectResPrefix"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Local Folder</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Statistics</string>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QLabel" name="lblStatsFiles">
-        <property name="text">
-         <string>Files: 0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="lblStatsFolders">
-        <property name="text">
-         <string>Folders: 0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tabFileList">
-      <attribute name="title">
-       <string>File List</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QPlainTextEdit" name="txtFileList">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="placeholderText">
-          <string>Click 'Scan Folder' to see the list of files...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tabMapFile">
-      <attribute name="title">
-       <string>Map File Content</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <widget class="QPlainTextEdit" name="txtMapFileContent">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="placeholderText">
-          <string>Generated .txt map file content will appear here...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tabQrcEntries">
-      <attribute name="title">
-       <string>QRC Entries</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <item>
-        <widget class="QPlainTextEdit" name="txtQrcEntries">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="placeholderText">
-          <string>Generated QRC file entries will appear here...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
+    <widget class="QTableView" name="tableView"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

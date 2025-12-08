@@ -291,16 +291,16 @@ QStringList File::listPathRecursively(const QString &path, const QStringList &na
 
     // We have a folder, scan it!
     // Use System to list also broken .lnk files
-    QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System;
+    constexpr QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System;
 
     // entryInfoList(nameFilters, ...) skip filter also folders name
     const QFileInfoList fileList = dir.entryInfoList(filters);
     for(const QFileInfo& FI : fileList) {
+        QString filePath = FI.filePath();
         if(FI.isDir()) {
-            list.append(listPathRecursively(FI.filePath(), nameFilters));
+            list.append(listPathRecursively(filePath, nameFilters));
         }
         else {
-            QString filePath = FI.filePath();
             if(nameFilters.isEmpty()) {
                 list << filePath;
             }

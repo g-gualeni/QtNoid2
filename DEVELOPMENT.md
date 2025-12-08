@@ -1,5 +1,5 @@
 # QtNoid Development Status
-&nbsp;
+
 ## Current Sprint (Sprint-004)
 
 ### Sprint Goals
@@ -8,28 +8,16 @@
      - Main goal is to handle all YAML Suite test without crash.     
 - Implementation of QtNoid::App::Config class from Parameters
 - Implementation of appConfig global instance 
-- Implementation of QtNoid::App::Development class to help the application 
-     development
-- Review of Parameter / ParameterList after 
-  deriving Config / ConfigFile / ConfigGlobal
-
+- Implementation of QtNoid::App::Development class to help the application    development
+- Review of Parameter / ParameterList after deriving Config / ConfigFile / ConfigGlobal
 - Release of QtNoid2 version 2.2.0
-
-&nbsp;
 
 ### Progress Status
 
---> La documentazione va creata per ogni esempio, altrimenti manutenerla è impossibile
     Valutare la creazione di una API per mostrare un file md
     auto *browser = new QTextBrowser(&dialog);
     browser->setMarkdown(markdown);
     browser->setOpenExternalLinks(true);  // i link si aprono nel browser
-
-Pensare a come semplificare listPathRecursively
-QtNoid::Common::File QtNoidFile;
-auto fileList = QtNoidFile.listPathRecursively(ui->txtProjectFolder->text(), {".qrc"});
--> Farla diventare statica
--> Restituire il path relativo o assoluto
 
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
@@ -163,16 +151,17 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [ ] class Development Documentation
 
 
-&nbsp;
 # QtNoidCommon
 - [ ] class **Text** 
      - [x] TestQtNoidCommonText::testTokenizeJsonArray() adding
           more test cases with string or a mixture of strings and numbers 
           (mixed types array)
 - [ ] class **File** 
-     - [x] File::listPathRecursively() converted to static to simplify usage
+     - [x] listPathRecursively() converted to static to simplify usage
+     - [ ] create listSubPathRecursively() to return relative path
+     - [ ] listPathRecursively(): optimization for speed
 
-# Older Examples
+# Examples
 - [x] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
 - [x] AppSettingsBasicUsage update labels using bold 
 - [ ] Update all examples with the new auto identification of os in the screenshot name
@@ -314,19 +303,16 @@ key: [
 
 
 
-&nbsp;
-
-&nbsp;
-
 # Next Sprint Ideas
 
-Yaml to Json validation test
+## Yaml to Json validation test
 - [ ] Add a run feature that run through all examples and generate a report
 
 ## New QtNoid::AppUI library 
  - Generate recent files menu
  - Generate About dialog
  - Generate Config UI from Config class
+ - MD viewer to display example documentation
  
 ## New QtNoid::CmdUI library 
  - File Move/Copy/Rename/Marshal using pattern matching
@@ -344,7 +330,7 @@ Yaml to Json validation test
 
 ## Upgrade QtNoid::Common::File
 - [ ] Massive File Copy / Rename / Move could became Copy Move Marshal
-      Si trova in Deep  
-- [ ] Massive File Rename: replace token in huge file list above multipe folders
-      Forse è solo in DeepImageLoader
+      
+- [ ] Massive File Rename: replace token in huge file list in multiple folders
+      
     

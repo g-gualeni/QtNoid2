@@ -41,8 +41,8 @@ private:
 
 private:
     void setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent);
-
-    bool generateTestDataFromResource(const QString &dataPrefix, const QString &mapFilePath);
+    
+    bool generateTestDataFromResource(const QString &dataPrefix);
     void updateUI_loadYamlFile(const QString &filePath);
     void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);

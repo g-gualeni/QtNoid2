@@ -39,14 +39,14 @@ set(PROJECT_SOURCES
         frmmanageprojectresources.cpp
         frmmanageprojectresources.h
         frmmanageprojectresources.ui
-        JsonYamlToJsonTestSuite.qrc
+        resources/JsonYamlToJsonTestSuite.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(JsonYamlToJsonTestSuite
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        JsonYamlToJsonTestSuite.qrc
+        resources/JsonYamlToJsonTestSuite.qrc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET JsonYamlToJsonTestSuite APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -100,3 +100,12 @@ install(TARGETS JsonYamlToJsonTestSuite
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(JsonYamlToJsonTestSuite)
 endif()
+
+
+# =============================================================================
+# Project Docs
+# =============================================================================
+set(PROJECT_DOCS
+    doc/JsonYamlToJsonTestSuite.md
+)
+add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

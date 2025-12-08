@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QStringList>
+#include <QStandardItemModel>
 
 namespace Ui {
 class frmManageProjectResources;
@@ -16,35 +17,37 @@ public:
     explicit frmManageProjectResources(QWidget *parent = nullptr);
     ~frmManageProjectResources();
 
-    void setSourceFolder(const QString &folder);
-    QString sourceFolder() const;
+    QString projectFolder() const;
+    void setProjectFolder(const QString &newProjectFolder);
 
-    void setResourcePrefix(const QString &prefix);
-    QString resourcePrefix() const;
+    QString localFolder() const;
+    void setLocalFolder(const QString &newLocalFolder);
 
-    void setQrcPrefix(const QString &prefix);
-    QString qrcPrefix() const;
+    QString projectResFile() const;
+    void setProjectResFile(const QString &newProjectResFile);
 
-    void setMapFileName(const QString &fileName);
-    QString mapFileName() const;
+    QString projectResPrefix() const;
+    void setProjectResPrefix(const QString &newProjectResPrefix);
+
+    // File comparison model methods
+    void addFileComparison(const QString &sourceFile, const QString &destinationFile);
+    void addDestinationFiles(const QStringList &sourceFiles);
+
+    void clearFileComparisons();
+    int fileComparisonCount() const;
 
 private slots:
-    void onCmdBrowseSourceFolder();
-    void onCmdScanFolder();
-    void onCmdGenerateMapFile();
-    void onCmdGenerateQrcEntries();
+
+    void on_txtProjectResPrefix_currentTextChanged(const QString &arg1);
 
 private:
-    void scanFolderRecursively(const QString &path, QStringList &fileList);
-    void updateStatistics();
-    QString generateMapFileContent();
-    QString generateQrcEntriesContent();
-    QString getRelativePath(const QString &fullPath);
+    void updateUi_resourceFileList();
+    void updateUi_resourceFilePrefix();
+    void updateUi_filesInPrefix();
 
 private:
     Ui::frmManageProjectResources *ui;
-    QStringList m_fileList;
-    int m_folderCount;
+    QStandardItemModel *m_fileComparisonModel;
 };
 
 #endif // FRMMANAGEPROJECTRESOURCES_H

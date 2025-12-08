@@ -18,10 +18,10 @@ the first public release.
 &nbsp;
 
 ## Modules in the library
-* **[QtNoidCore](QtNoidCore.md)**:
+* **[QtNoidCore](QtNoidCore/doc/QtNoidCore.md):**
   This is a simple class to control the library life cycle.
   
-* **[QtNoidCommon](QtNoidCommon.md)**:
+* **[QtNoidCommon](QtNoidCommon/doc/QtNoidCommon.md)**:
   This is a collection of class (Text, Scale, 
   File) to help on general tasks.
 
@@ -29,7 +29,7 @@ the first public release.
     This is a collection of class (Settings, ...) to simplify the
     the implementation of common feature of a Desktop Application.
 
-* **[QtNoidJson](QtNoidJson.md)**:
+* **[QtNoidJson](QtNoidJson/doc/QtNoidJson.md)**:
     This lib contains the class Txt2Json that simplify the creation of simple
     JSON doc, starting from a quick textual description with a few rules.
     

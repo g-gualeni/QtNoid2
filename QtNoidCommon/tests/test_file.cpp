@@ -554,8 +554,7 @@ void TestQtNoidCommonFile::testListPathRecursively()
     }
     expected.sort();
 
-    File QtNoidFIle;
-    auto resList = QtNoidFIle.listPathRecursively(dir.absolutePath());
+    auto resList = File::listPathRecursively(dir.absolutePath());
     resList.sort();
     QCOMPARE(resList, expected);
 }
@@ -573,9 +572,7 @@ void TestQtNoidCommonFile::testListPathRecursively_PathIsAFileInTheFolder()
         expected << dir.absoluteFilePath(item);
     }
     expected.sort();
-
-    File QtNoidFIle;
-    auto resList = QtNoidFIle.listPathRecursively(expected.first());
+    auto resList = File::listPathRecursively(expected.first());
     resList.sort();
 
     QCOMPARE(resList, expected);
@@ -594,8 +591,7 @@ void TestQtNoidCommonFile::testListPathRecursively_InvalidPath()
     QFETCH(QString, path);
 
     // Invalid path should give an empty list
-    File QtNoidFIle;
-    auto resList = QtNoidFIle.listPathRecursively(path);
+    auto resList = File::listPathRecursively(path);
 
     QCOMPARE(resList, {});
 }
@@ -629,8 +625,7 @@ void TestQtNoidCommonFile::testListPathRecursively_UsingFiltes()
     }
     expectedGood.sort();
 
-    File QtNoidFIle;
-    auto resGood = QtNoidFIle.listPathRecursively(dir.absolutePath(), filters);
+    auto resGood = File::listPathRecursively(dir.absolutePath(), filters);
     resGood.sort();
     QCOMPARE(resGood, expectedGood);
 }

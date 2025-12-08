@@ -17,6 +17,15 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_cmdSelectFolder_clicked();
+    void on_cmdListPathRecursively_clicked();
+    void on_cmdListSubPathRecursively_clicked();
+
+private:
+    void initFromAppConfig();
+    void update_txtPathList(const QStringList &list, qint64 elapsedTime);
+
 private:
     Ui::MainWindow *ui;
 };

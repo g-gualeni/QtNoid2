@@ -5,7 +5,7 @@
                 "Settings": {
                     "parameters": [
                         {
-                            "Geometry": "AdnQywADAAAAAACEAAAAfgAABFQAAAMKAAAAhAAAAJ0AAARUAAADCgAAAAAAAAAAB4AAAACEAAAAnQAABFQAAAMK"
+                            "Geometry": "AdnQywADAAAAAAIsAAAArwAABfwAAAM7AAACLAAAAM4AAAX8AAADOwAAAAAAAAAAB4AAAAIsAAAAzgAABfwAAAM7"
                         },
                         {
                             "CollectionFolderList": [
@@ -15,7 +15,7 @@
                             "CollectionFolderListCurrent": ""
                         },
                         {
-                            "yamlTestCollectionListCurrent": 0
+                            "yamlTestCollectionListCurrent": -1
                         }
                     ]
                 }
