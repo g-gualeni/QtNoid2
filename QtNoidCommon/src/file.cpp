@@ -3,6 +3,7 @@
 #include "QtNoidCommon/text.h"
 #include <QCoreApplication>
 #include <QDir>
+#include <QDirIterator>
 #include <QFileInfo>
 #include <QTime>
 #include <QUrl>
@@ -222,6 +223,7 @@ QFileInfo File::saveAsTextFileCreatePath(const QString &filePath, const QString 
     return fileInfo;
 }
 
+
 QString File::saveAsTextFile(const QString &data, const QString &filePath, const QString &basePath, const QString &fileSuffix)
 {
     auto path = saveAsTextFileCreatePath(filePath, basePath, fileSuffix).absoluteFilePath();
@@ -270,53 +272,102 @@ QStringList File::readAsStringList(const QString &absoluteFilePath)
     return lines;
 }
 
+
 QStringList File::listPathRecursively(const QString &path, const QStringList &nameFilters)
 {
-    QStringList list;
     QFileInfo pathFI(path);
-    QDir dir;
+    QString basePath;
+    QStringList list;
 
-    // If we have a path then we look for siblings and all
-    // sub-folders
     if(path.isEmpty()) {
         // Sanity check on empty path
         return {};
     }
-    else if(pathFI.exists() && pathFI.isFile()) {
-        dir.setPath(pathFI.absolutePath());
-    }
-    else {
-        dir.setPath(path);
+    else if (pathFI.exists() && pathFI.isFile()) {
+        // It's a file, let's get its path
+        basePath = pathFI.absolutePath();
+    } else {
+        // It's a path
+        basePath = QDir(path).absolutePath();
     }
 
-    // We have a folder, scan it!
     // Use System to list also broken .lnk files
-    constexpr QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System;
+    constexpr QDir::Filters filters = QDir::Files | QDir::NoDotAndDotDot | QDir::System;
 
-    // entryInfoList(nameFilters, ...) skip filter also folders name
-    const QFileInfoList fileList = dir.entryInfoList(filters);
-    for(const QFileInfo& FI : fileList) {
-        QString filePath = FI.filePath();
-        if(FI.isDir()) {
-            list.append(listPathRecursively(filePath, nameFilters));
-        }
-        else {
-            if(nameFilters.isEmpty()) {
-                list << filePath;
-            }
-            // else not needed
-            for(const QString &ext : nameFilters) {
-                if(filePath.endsWith(ext, Qt::CaseInsensitive)) {
-                    list << filePath;
+    // Iterate also on sub directories
+    QDirIterator it(basePath, filters, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QString filePath = it.next();
+        bool matches = nameFilters.isEmpty();
+        if (!matches) {
+            for (const QString &ext : nameFilters) {
+                if (filePath.endsWith(ext, Qt::CaseInsensitive)) {
+                    matches = true;
                     break;
                 }
             }
+        }
+        if (matches) {
+            // Speed-up avoiding a copy of the string
+            list.append(std::move(filePath));
         }
     }
 
     return list;
 }
 
+
+QStringList File::listSubPathRecursively(const QString &path, const QStringList &nameFilters)
+{
+    QFileInfo pathFI(path);
+    QString basePath;
+    QStringList list;
+
+    if(path.isEmpty()) {
+        // Sanity check on empty path
+        return {};
+    }
+    else if (pathFI.exists() && pathFI.isFile()) {
+        // It's a file, let's get its path
+        basePath = pathFI.absolutePath();
+    } else {
+        // It's a path
+        basePath = QDir(path).absolutePath();
+    }
+
+    // Use System to list also broken .lnk files
+    constexpr QDir::Filters filters = QDir::Files | QDir::NoDotAndDotDot | QDir::System;
+
+    // Iterate also on sub directories
+    QDirIterator it(basePath, filters, QDirIterator::Subdirectories);
+    int basePathLen;
+    if(basePath.endsWith('/') || basePath.endsWith('\\')) {
+        basePathLen = basePath.length();
+    }
+    else {
+        basePathLen = basePath.length() + 1;
+    }
+
+    while (it.hasNext()) {
+        QString filePath = it.next();
+        bool matches = nameFilters.isEmpty();
+        if (!matches) {
+            for (const QString &ext : nameFilters) {
+                if (filePath.endsWith(ext, Qt::CaseInsensitive)) {
+                    matches = true;
+                    break;
+                }
+            }
+        }
+        if (matches) {
+            // Speed-up avoiding a copy of the string
+            filePath.remove(0, basePathLen);
+            list.append(std::move(filePath));
+        }
+    }
+
+    return list;
+}
 
 } // namespace Common
 } // namespace QtNoid

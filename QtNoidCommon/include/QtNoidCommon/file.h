@@ -30,9 +30,11 @@ public:
     static QStringList readAsStringList(const QString &absoluteFilePath);
 
     static QStringList listPathRecursively(const QString &path, const QStringList &nameFilters={});
+    static QStringList listSubPathRecursively(const QString &path, const QStringList &nameFilters={});
 
 private:
     static QFileInfo saveAsTextFileCreatePath(const QString &filePath, const QString &basePath, const QString &fileSuffix);
+
 
 };
 

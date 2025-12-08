@@ -4,6 +4,9 @@
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
+
+class QShortcut;
+
 namespace Ui {
 class MainWindow;
 }
@@ -24,9 +27,11 @@ private slots:
 
 private:
     void initFromAppConfig();
+    QStringList txtFolderList();
     void update_txtPathList(const QStringList &list, qint64 elapsedTime);
 
 private:
     Ui::MainWindow *ui;
+    QShortcut *m_screenshotShortcut = nullptr;
 };
 #endif // MAINWINDOW_H
