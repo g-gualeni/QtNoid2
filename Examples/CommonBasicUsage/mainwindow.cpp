@@ -52,6 +52,7 @@ void MainWindow::on_cmdSelectFolder_clicked()
                                                        ui->txtFolder->currentText());
     if (!folder.isEmpty()) {
         ui->txtFolder->addItem(folder);
+        ui->txtFolder->setCurrentText(folder);
     }
 }
 

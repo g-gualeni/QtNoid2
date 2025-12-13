@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "c0e36f6ef90f3ffb",
+        "id": "c7590cd4ec2c3c4f",
         "type": "tabs",
         "children": [
           {
-            "id": "77ba7703a999660a",
+            "id": "702ed94cbbbb470d",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -19,6 +19,20 @@
               },
               "icon": "lucide-file",
               "title": "DEVELOPMENT"
+            }
+          },
+          {
+            "id": "8a2376c4c2c46b90",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "QtNoidApp/doc/QtNoidApp.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "QtNoidApp"
             }
           }
         ]
@@ -41,7 +55,7 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": true
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -53,7 +67,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "recur",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -74,8 +88,7 @@
               "title": "Bookmarks"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -183,19 +196,26 @@
       "bases:Create new base": false
     }
   },
-  "active": "77ba7703a999660a",
+  "active": "702ed94cbbbb470d",
   "lastOpenFiles": [
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/a/lst2.txt",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/a/lst2.ini",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/a/lst1.txt",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/a/lst1.ini",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/SingleFile+Filter/lst.txt",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/lst2.txt",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/lst2.ini",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/lst1.txt",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/lst1.ini",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/NestedDirs+Filters/a",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testListSubPathRecursively_UsingFiltes/MultipleFiles+Filter/lst2.txt",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite/JsonYamlToJsonTestSuite.exe",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite/JsonYamlToJsonTestSuite.json",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/9KAX/out.yaml",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/9KAX/in.json",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/9KAX/test.event",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/9KAX/in.yaml",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/9KAX/===",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/9KAX",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/ZCZ6/test.event",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/ZCZ6/in.yaml",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/TestData/yaml-test-suite/data-2022-01-17/ZCZ6/error",
+    "QtNoidCommon/doc/QtNoidCommon.md",
+    "QtNoidApp/doc/QtNoidApp.md",
+    "QtNoidCommon/doc/File.md",
+    "Examples/CommonBasicUsage/doc/CommonBasicUsage.md",
+    "DEVELOPMENT.md",
+    "Examples/CommonBasicUsage/doc/Common Basic Usage-windows.png",
+    "Examples/CommonBasicUsage/Common Basic Usage-windows.png",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/CommonBasicUsage/Common Basic Usage-windows.png",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testIsTextFile_ImagesShouldBeFalse/Image JPG.JPG",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidCommon/tests/TestQtNoidCommonFile/testIsTextFile_ImagesShouldBeFalse/Image PNG.PNG",
@@ -204,19 +224,12 @@
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidApp/tests/testInitFullDialogGrabShortcut-windows.png",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidApp/tests/testFullDialogGrab_Actual.bmp",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidApp/tests/testFullDialogGrab_Expected.png",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidApp/tests/testMainWindowsFromWidget_usingTheMainWindow.png",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/QtNoidApp/tests/testMainWindowsFromWidget.png",
-    "Examples/CommonBasicUsage/doc/CommonBasicUsage.md",
-    "DEVELOPMENT.md",
     "BUILD-INSTRUCTIONS.md",
-    "QtNoidCommon/doc/File.md",
     "QtNoidCommon/doc/Scale.md",
     "QtNoidCommon/doc/Text.md",
-    "QtNoidCommon/doc/QtNoidCommon.md",
     "README.md",
     "QtNoidCore/doc/QtNoidCore.md",
     "QtNoidJson/doc/QtNoidJson.md",
-    "QtNoidApp/doc/QtNoidApp.md",
     "[[]].md",
     "Examples/CoreBasicUsage/doc/CoreBasicUsage.md",
     "CLOC-REPORT.md",

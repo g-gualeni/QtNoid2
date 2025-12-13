@@ -20,4 +20,8 @@ target_link_libraries: QtNoid::QtNoidCommon
 using namespace QtNoid::Common;
 ```
 
-
+## Examples
+**[CommonBasicUsage](../../Examples/CommonBasicUsage/doc/CommonBasicUsage.md)**
+This simple application shows how to use: 
+`QtNoid::Common::File::listPathRecursively()` 
+`QtNoid::Common::File::listSubPathRecursively`

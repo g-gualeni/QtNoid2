@@ -39,6 +39,8 @@ This class contains a set of helper methods to work with files
   a text file and return it as a string list.
   
 - `QStringList listPathRecursively(const QString &path, const QStringList &nameFilters)`: returns a string list containing the full path of all files found recursively under the specified path that match the given nameFilters. If path refers to a file, the method also returns all siblings files in the same directory.
+
+- - `QStringList listSubPathRecursively(const QString &path, const QStringList &nameFilters)`: returns a string list containing the **relative** path of all files found recursively under the specified path that match the given nameFilters. If path refers to a file, the method also returns all siblings files in the same directory. 
   
 ### Non Static Methods
 None

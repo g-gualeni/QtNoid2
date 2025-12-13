@@ -18,6 +18,10 @@
     auto *browser = new QTextBrowser(&dialog);
     browser->setMarkdown(markdown);
     browser->setOpenExternalLinks(true);  // i link si aprono nel browser
+    -> La potrei mettere nel menu development per stavolta
+    
+    
+ListSubPath-> documentazione
 
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
@@ -30,20 +34,7 @@ Avanti con YamlExample
      -> devo rappresentare un blu quelli nuovi
 
  
-iterare sulle risorse usando QDir
-QDirIterator it(prefixQrc, QDirIterator::Subdirectories);
-   while (it.hasNext()) {
-       QString sourceFile = it.next();
-       
-       // Salta le directory, copia solo i file
-       if (it.fileInfo().isFile()) {
-           QString fileName = it.fileName();
-           QString destFile = destPath + "/" + fileName;
-           QFile::copy(sourceFile, destFile);
-       }
-   }
 
-&nbsp;
 
 # QtNoidJson
 finire implementation Yaml2Json library 
@@ -158,15 +149,29 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
           (mixed types array)
 - [ ] class **File** 
      - [x] listPathRecursively() converted to static to simplify usage
-     - [ ] create listSubPathRecursively() to return relative path
-     - [ ] listPathRecursively(): optimization for speed
+     - [x] listPathRecursively(): optimization for speed
+     - [x] create listSubPathRecursively() to return relative path
+     - [x] Doc for listSubPathRecursively()
+     - [x] Test for listSubPathRecursively()
 
 # Examples
-- [x] AppSettingsBasicUsage update to support the new appExeOrAppBundleDirPath API
-- [x] AppSettingsBasicUsage update labels using bold 
+- [x] AppSettingsBasicUsage 
+	- [ ] update to support the new appExeOrAppBundleDirPath API
+	- [x] Update labels using bold 
+	- [ ] Update Screenshot win11
+	- [ ] Update screenshot macOS
+
+- [ ] [[CommonBasicUsage]]:
+	- [x] Dialog review with testing for relative and absolute path
+	- [x] Form Geometry stored in JSON
+	- [x] Recent folder list stored
+	- [x] Example documentation
+	- [x] Screenshot Win11
+	- [ ] Screenshot macOS
+
+
 - [ ] Update all examples with the new auto identification of os in the screenshot name
      - [ ] CoreBasicUsage
-     - [ ] CommonBasicUsage
      - [ ] AppSettingsBasicUsage
      - [ ] AppParameterBasicUsage
      - [ ] AppParameterListBasicUsage

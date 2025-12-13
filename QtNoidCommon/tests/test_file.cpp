@@ -666,7 +666,7 @@ void TestQtNoidCommonFile::testListSubPathRecursively()
     }
     expected.sort();
 
-    qDebug() << dir.absolutePath();
+    // qDebug() << __func__ << dir.absolutePath();
     auto resList = File::listSubPathRecursively(dir.absolutePath());
     resList.sort();
     QCOMPARE(resList, expected);
@@ -674,22 +674,21 @@ void TestQtNoidCommonFile::testListSubPathRecursively()
 
 void TestQtNoidCommonFile::testListSubPathRecursively_PathIsAFileInTheFolder()
 {
-    QStringList fileList({"a.txt, b.txt"});
+    QStringList fileList({"a.txt", "b.txt"});
 
     QDir dir = testDataDir(__func__, QTest::currentDataTag());
     auto res = testDataDirInit(dir, fileList);
     QCOMPARE(res, true);
 
-    QStringList expected;
-    for(const auto &item : std::as_const(fileList)) {
-        expected << QDir::separator() + item;
-    }
-    expected.sort();
+    qDebug() << __func__ << dir.absolutePath();
+
 
     auto resList = File::listSubPathRecursively(dir.absoluteFilePath(fileList.first()));
     resList.sort();
 
-    QCOMPARE(resList, expected);
+    // qDebug() << __func__ << resList;
+
+    QCOMPARE(resList, fileList);
 }
 
 void TestQtNoidCommonFile::testListSubPathRecursively_InvalidPath_data()
@@ -733,10 +732,7 @@ void TestQtNoidCommonFile::testListSubPathRecursively_UsingFiltes()
     auto res = testDataDirInit(dir, goodList+badList);
     QCOMPARE(res, true);
 
-    QStringList expectedGood;
-    for(const auto &item : std::as_const(goodList)) {
-        expectedGood << QDir::separator() + item;
-    }
+    QStringList expectedGood = goodList;
     expectedGood.sort();
 
     auto resGood = File::listSubPathRecursively(dir.absolutePath(), filters);

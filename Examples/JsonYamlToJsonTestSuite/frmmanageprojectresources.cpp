@@ -62,12 +62,7 @@ void frmManageProjectResources::updateUi_resourceFileList()
     QtNoid::Common::File QtNoidFile;
     auto projectFolder = ui->txtProjectFolder->text();
     auto projectFolderLength = projectFolder.length();
-    auto fileList = QtNoidFile.listPathRecursively(projectFolder, {".qrc"});
-    QStringList relativeFileList;
-    for (const QString &filePath : std::as_const(fileList)) {
-        relativeFileList << filePath.sliced(projectFolderLength);
-    }
-    // qDebug() << __func__ << relativeFileList;
+    auto relativeFileList = QtNoidFile.listSubPathRecursively(projectFolder, {".qrc"});
     ui->txtProjectRes->clear();
     ui->txtProjectRes->addItems(relativeFileList);
 }

@@ -160,14 +160,11 @@ void MainWindow::updateUI_scanTestCollectionFolder(const QString &folder)
 
     QtNoid::Common::File QtNoidFile;
     QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath() + QDir::separator() + folder;
-    m_yamlTestCollectionList = QtNoidFile.listPathRecursively(root, {"in.yaml"});
+    m_yamlTestCollectionList = QtNoidFile.listSubPathRecursively(root, {"in.yaml"});
     // qDebug() << __func__ << root << "count:" << m_yamlTestCollectionList.count();
     ui->txtCurrentFile->clear();
-    QDir dir(root);
     for(auto it = m_yamlTestCollectionList.constBegin(); it < m_yamlTestCollectionList.constEnd(); ++it) {
-        auto file = *it;
-        auto relFile = dir.relativeFilePath(file);
-        ui->txtCurrentFile->addItem(dir.relativeFilePath(*it));
+        ui->txtCurrentFile->addItem(*it);
     }
 }
 
