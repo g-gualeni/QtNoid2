@@ -32,6 +32,8 @@ private slots:
     void on_actionConvert_To_Json_triggered();
     void on_actionSave_Dataset_triggered();
 
+    void on_actionOpen_JsonYamlToJsonTestSuite_md_triggered();
+
 private:
     Ui::MainWindow *ui;
     QShortcut* m_screenshotShortcut;

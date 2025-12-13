@@ -402,6 +402,7 @@
      <string>Development</string>
     </property>
     <addaction name="actionManageProjectResources"/>
+    <addaction name="actionOpen_JsonYamlToJsonTestSuite_md"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTest"/>
@@ -476,6 +477,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionOpen_JsonYamlToJsonTestSuite_md">
+   <property name="text">
+    <string>Open JsonYamlToJsonTestSuite.md</string>
    </property>
   </action>
  </widget>

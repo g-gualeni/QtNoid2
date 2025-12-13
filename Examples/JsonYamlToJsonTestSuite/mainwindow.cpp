@@ -18,6 +18,8 @@
 #include <QUrl>
 
 #include <QColorSpace>
+#include <QStringLiteral>
+#include <QTextBrowser>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -319,8 +321,12 @@ bool MainWindow::generateTestDataFromResource(const QString &dataPrefix)
 
 void MainWindow::on_actionTestDataFolder_triggered()
 {
-    QString appPath = QtNoid::App::Settings::appExeOrAppBundleDirPath() + "/Data/resources";
+    QString appPath = QtNoid::App::Settings::appExeOrAppBundleDirPath() ;
 
+    auto res = QDesktopServices::openUrl(QUrl::fromLocalFile(appPath + "/TestData"));
+    if(res) return;
+
+    // If fails, let's open the application folder
     QDesktopServices::openUrl(QUrl::fromLocalFile(appPath));
 }
 
@@ -702,4 +708,38 @@ void MainWindow::onCreateNewTest()
 
 }
 
+
+
+void MainWindow::on_actionOpen_JsonYamlToJsonTestSuite_md_triggered()
+{
+    QDialog dialog(this);
+    QString fileName = qAppName() + ".md";
+    dialog.setWindowTitle(this->windowTitle() + ": " +  fileName);
+    dialog.resize(800, 600);
+    dialog.restoreGeometry(appConfig->restoreAsByteArray("Geometry", dialog.saveGeometry(), "MdViewer"));
+
+
+    auto *browser = new QTextBrowser(&dialog);
+    // open link in the same text browser
+    browser->setOpenExternalLinks(true);
+
+    auto *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(browser);
+
+    QString path = QStringLiteral(SOURCE_FILES_PATH  "/doc/");
+    QFile file(path + fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Error", "Unable to open: " + path);
+        return;
+    }
+    QString markdown = QString::fromUtf8(file.readAll());
+    browser->setMarkdown(markdown);
+
+    dialog.exec();
+
+    appConfig->saveValue("Geometry", dialog.saveGeometry(), "MdViewer");
+
+    dialog.saveGeometry();
+
+}
 
