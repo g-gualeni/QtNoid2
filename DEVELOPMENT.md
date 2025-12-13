@@ -13,15 +13,10 @@
 - Release of QtNoid2 version 2.2.0
 
 ### Progress Status
+Aggiungi una riga sotto col conteggio dei files
+Fare la scansione dei file, usando percorso relativo e aggiungendo la base
+Poi aggiungo file per coppie.
 
-    Valutare la creazione di una API per mostrare un file md
-    auto *browser = new QTextBrowser(&dialog);
-    browser->setMarkdown(markdown);
-    browser->setOpenExternalLinks(true);  // i link si aprono nel browser
-    -> La potrei mettere nel menu development per stavolta
-    
-    
-ListSubPath-> documentazione
 
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example

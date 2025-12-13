@@ -34,11 +34,9 @@ the first public release.
     JSON doc, starting from a quick textual description with a few rules.
     
 
-&nbsp;
 
 * ***More modules are coming soon.***
 
-&nbsp;
 
 
 ## Quick Start

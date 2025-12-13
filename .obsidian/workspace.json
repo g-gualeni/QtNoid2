@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Examples/JsonYamlToJsonTestSuite/doc/JsonYamlToJsonTestSuite.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "JsonYamlToJsonTestSuite"
+              "title": "README"
             }
           },
           {
@@ -35,8 +35,7 @@
               "title": "DEVELOPMENT"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -170,13 +169,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "DEVELOPMENT.md",
+                "file": "README.md",
                 "followCursor": true,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of DEVELOPMENT"
+              "title": "Outline of README"
             }
           }
         ],
@@ -197,8 +196,15 @@
       "bases:Create new base": false
     }
   },
-  "active": "8a2376c4c2c46b90",
+  "active": "702ed94cbbbb470d",
   "lastOpenFiles": [
+    "QtNoidCommon/doc/QtNoidCommon.md",
+    "QtNoidCore/doc/QtNoidCore.md",
+    "Examples/CommonBasicUsage/doc/CommonBasicUsage.md",
+    "QtNoidCommon/doc/File.md",
+    "README.md",
+    "Examples/JsonYamlToJsonTestSuite/doc/JsonYamlToJsonTestSuite.md",
+    "DEVELOPMENT.md",
     "Examples/JsonYamlToJsonTestSuite/mainwindow.cpp.DzmhvJ",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite/CMakeFiles/JsonYamlToJsonTestSuite.dir/mainwindow.cpp.obj.d",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite/CMakeFiles/JsonYamlToJsonTestSuite.dir/frmmanageprojectresources.cpp.obj.d",
@@ -209,14 +215,8 @@
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite/CMakeFiles/JsonYamlToJsonTestSuite.dir/mainwindow.cpp-c8957dc8.obj.tmp",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite/CMakeFiles/JsonYamlToJsonTestSuite.dir/frmnewdataset.cpp-b0301287.obj.tmp",
     "Examples/JsonYamlToJsonTestSuite/mainwindow.cpp.MfkGJL",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/Examples/JsonYamlToJsonTestSuite/CMakeFiles/JsonYamlToJsonTestSuite.dir/frmmanageprojectresources.cpp-dc90af0a.obj.tmp",
     "QtNoidApp/doc/QtNoidApp.md",
-    "Examples/JsonYamlToJsonTestSuite/doc/JsonYamlToJsonTestSuite.md",
-    "DEVELOPMENT.md",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/Examples/CommonBasicUsage/Common Basic Usage-windows.png",
-    "QtNoidCommon/doc/QtNoidCommon.md",
-    "QtNoidCommon/doc/File.md",
-    "Examples/CommonBasicUsage/doc/CommonBasicUsage.md",
     "Examples/CommonBasicUsage/doc/Common Basic Usage-windows.png",
     "Examples/CommonBasicUsage/Common Basic Usage-windows.png",
     "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/CommonBasicUsage/Common Basic Usage-windows.png",
@@ -229,8 +229,6 @@
     "BUILD-INSTRUCTIONS.md",
     "QtNoidCommon/doc/Scale.md",
     "QtNoidCommon/doc/Text.md",
-    "README.md",
-    "QtNoidCore/doc/QtNoidCore.md",
     "QtNoidJson/doc/QtNoidJson.md",
     "[[]].md",
     "Examples/CoreBasicUsage/doc/CoreBasicUsage.md",
