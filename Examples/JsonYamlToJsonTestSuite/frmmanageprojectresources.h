@@ -20,8 +20,13 @@ public:
     QString projectFolder() const;
     void setProjectFolder(const QString &newProjectFolder);
 
-    QString localFolder() const;
-    void setLocalFolder(const QString &newLocalFolder);
+    QString sourceBaseFolder() const;
+    void setSourceBaseFolder(const QString &newSourceBaseFolder);
+
+    QString sourceSubFolder() const;
+    void setSourceSubFolder(const QString &newSourceSubFolder);
+
+    QString sourceFolder() const;
 
     QString projectResFile() const;
     void setProjectResFile(const QString &newProjectResFile);
@@ -30,24 +35,33 @@ public:
     void setProjectResPrefix(const QString &newProjectResPrefix);
 
     // File comparison model methods
-    void addFileComparison(const QString &sourceFile, const QString &destinationFile);
-    void addDestinationFiles(const QStringList &sourceFiles);
+    void addFileComparison(const QString &sourceFile, const QString &status, const QString &destinationFile);
 
+    void updateFileCompare();
     void clearFileComparisons();
     int fileComparisonCount() const;
 
-private slots:
 
+
+private slots:
     void on_txtProjectResPrefix_currentTextChanged(const QString &arg1);
+    void on_cmdUpdate_clicked();
+    void onCopyButtonClicked(const QModelIndex &index);
 
 private:
     void updateUi_resourceFileList();
     void updateUi_resourceFilePrefix();
     void updateUi_filesInPrefix();
 
+    void loadSourceFileList();
+    void loadDestinationFileList();
+
 private:
     Ui::frmManageProjectResources *ui;
     QStandardItemModel *m_fileComparisonModel;
+    QSet<QString> m_sourceFileList;
+    QSet<QString> m_destinationFileList;
+
 };
 
 #endif // FRMMANAGEPROJECTRESOURCES_H

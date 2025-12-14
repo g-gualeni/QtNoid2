@@ -23,16 +23,34 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="4">
-      <widget class="QComboBox" name="txtProjectRes"/>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="txtLocalFolder"/>
-     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Source</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QComboBox" name="txtProjectResPrefix"/>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="lblSourceFolder_2">
+       <property name="text">
+        <string>Project Folder:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Resource File Prefix</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Sub Folder</string>
        </property>
       </widget>
      </item>
@@ -46,12 +64,8 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QLabel" name="lblSourceFolder_2">
-       <property name="text">
-        <string>Project Folder:</string>
-       </property>
-      </widget>
+     <item row="2" column="4">
+      <widget class="QComboBox" name="txtProjectRes"/>
      </item>
      <item row="2" column="2">
       <widget class="QLabel" name="lblSourceFolder_3">
@@ -60,20 +74,23 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
-      <widget class="QLabel" name="label">
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="txtSourceSubFolder"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="txtSourceBaseFolder"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Resource File Prefix</string>
+        <string>Base Folder</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="4">
-      <widget class="QComboBox" name="txtProjectResPrefix"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
+     <item row="3" column="1">
+      <widget class="QToolButton" name="cmdUpdate">
        <property name="text">
-        <string>Local Folder</string>
+        <string>UPDATE</string>
        </property>
       </widget>
      </item>

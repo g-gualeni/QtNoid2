@@ -334,7 +334,9 @@ void MainWindow::on_actionManageProjectResources_triggered()
 {
     frmManageProjectResources dialog(this);
     dialog.setProjectFolder(SOURCE_FILES_PATH);
-    dialog.setLocalFolder(ui->txtCollectionFolder->currentText());
+    dialog.setSourceBaseFolder(QtNoid::App::Settings::appExeOrAppBundleDirPath());
+    dialog.setSourceSubFolder(ui->txtCollectionFolder->currentText());
+
 
 
     // QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
