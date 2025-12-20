@@ -19,9 +19,11 @@ class QTNOIDAPP_EXPORT Settings
 public:
     static QString appExeOrAppBundleDirPath();
     static QString appExeOrAppBundleFilePath();
-    static QString filePathAsAppSibling(const QString& fileName={});
+    static QString filePathAsAppSibling(const QString &fileName={});
+    static QMainWindow *mainWindowFromWidget(QWidget &ref);
     static QMainWindow *mainWindowFromWidget(QWidget *ref);
-    static QString groupNameFromObjectOrClass(const QObject* ref);
+    static QString groupNameFromObjectOrClass(const QObject &ref);
+    static QString groupNameFromObjectOrClass(const QObject *ref);
     static bool updateMainWindowTitle(bool changed, QWidget *ref);
     static QImage fullDialogGrab(QWidget *ref);
 

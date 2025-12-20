@@ -39,6 +39,8 @@ set(PROJECT_SOURCES
         frmmanageprojectresources.cpp
         frmmanageprojectresources.h
         frmmanageprojectresources.ui
+        dlgfilediff.cpp
+        dlgfilediff.h
         resources/JsonYamlToJsonTestSuite.qrc
 )
 

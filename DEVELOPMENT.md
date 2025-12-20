@@ -13,20 +13,22 @@
 - Release of QtNoid2 version 2.2.0
 
 ### Progress Status
-Aggiungi una riga sotto col conteggio dei files
-Fare la scansione dei file, usando percorso relativo e aggiungendo la base
-Poi aggiungo file per coppie.
-
+static QString groupNameFromObjectOrClass(const QObject* ref); - 
+--> servirebbe il caso (const QObject &ref) per le finestre di dialogo modali
 
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
  - Creare il dataset per i numeri
- - fare il compare dei files e mettere il comando per la copia
- - Aggiornare anche qrc
- - Come faccio a mostrare che i files sono diversi?
-     -> devo stampare in rosso quelli che sono nella colonna source
-     -> devo rappresentare un blu quelli nuovi
+ - Aggiornare anche qrc: 
+	 - creo un nuovo file e faccio in modo di inserirlo dentro alle risorse in modo che basta ricompilare e il nuovo file è presente
+- Aggiungere override (magari chiedere conferma se la cartella esiste) per la creazione di un dataset locale.
+-  Sistemare il caricamento dei dati con le frecce nella form principale
+- Allineare file-> apri con la selezione dei files.
+- 
+ - 
+    
+    
 
  
 
@@ -50,6 +52,8 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] test for appExeOrAppBundleDirPath
      - [x] test update for appExeOrAppBundleFilePath
      - [x] fullDialogGrab: now returns QImage and fix the QColorSpace          
+     - [x] mainWindowFromWidget(): reference instead of pointer version
+     - [x] groupNameFromObjectOrClass(): reference instead of pointer version
      - [ ] check Settings Documentation
      
 - [ ] class **Parameter** update

@@ -22,16 +22,16 @@ application or of the application bundle for macOS.
 - `QWidget* mainWindowsFromWidget(QWidget *ref)`: returns the main dialog of the
 current widget. It basically scans all parents until it finds a MainDialog widget.
 It works also with `QMainWindow` pointer, since this class inherits QWidget. This
-can be used in conjunction with __**groupNameFromObjectOrClass()**__ to dynamically
+can be used in conjunction with `groupNameFromObjectOrClass()` to dynamically
 calculate a group name to be used in the configuration file for storing the configuration.
 
-- `QString groupNameFromObjectOrClass(const QObject* ref)`: generates a name for a
-group of settings using the object name if present, or the class name. This is
-perfect for storing settings for a pop-up dialog or even for the main dialog.
+* `QWidget* mainWindowsFromWidget(QWidget &ref)`: this version of `mainWindowsFromWidget()` uses a reference instead of a pointer
 
-- `bool updateMainWindowTitle(bool changed, QWidget *ref)`: starting from a widget,
-it updates the main dialog title, adding an * if changed is true, or removing
-the * if false.
+- `QString groupNameFromObjectOrClass(const QObject* ref)`: generates a name for a group of settings using the object name if present, or the class name. This is perfect for storing settings for a pop-up dialog or even for the main dialog. 
+
+* `QString groupNameFromObjectOrClass(const QObject &ref)`: this version of `groupNameFromObjectOrClass()` uses a reference instead of a pointer
+
+- `bool updateMainWindowTitle(bool changed, QWidget *ref)`: starting from a widget, it updates the main dialog title, adding an * character if changed parameter is true, or removing the * if it is false.
 
 - `QImage fullDialogGrab(QWidget *ref)`: Starting from a widget, captures the
 full dialog as seen in the operating system. This is perfect for creating screenshots
@@ -41,16 +41,16 @@ the borders. The parameter 'ref' can be even a `QMainWindow` pointer, since this
 class inherits QWidget. Since 2.2.0 returns a QImage, because of a problem with macOS.
 With QImage we can apply QColorSpace() and avoid a crash saving as PNG.
 
-**Note**: For an automated screenshot shortcut, see [Development::initFullDialogGrabShortcut](Development.md).
+**Note**: For an automated screenshot shortcut, see [Development::initFullDialogGrabShortcut](Development.md)
 
 
-&nbsp;
+
 
 ## Non Static Methods
-
+None
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)
 
-&nbsp;
+
 
 [← Back to Main Page](../../README.md)

@@ -333,24 +333,21 @@ void MainWindow::on_actionTestDataFolder_triggered()
 void MainWindow::on_actionManageProjectResources_triggered()
 {
     frmManageProjectResources dialog(this);
-    dialog.setProjectFolder(SOURCE_FILES_PATH);
+    dialog.setDestinationFolder(SOURCE_FILES_PATH "/resources");
+    dialog.setDestinationResourceFile("JsonYamlToJsonTestSuite.qrc");
     dialog.setSourceBaseFolder(QtNoid::App::Settings::appExeOrAppBundleDirPath());
     dialog.setSourceSubFolder(ui->txtCollectionFolder->currentText());
 
-
-
-    // QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
-    // QString currentFolder = ui->txtCollectionFolder->currentText();
-
-    // if (!currentFolder.isEmpty()) {
-    //     QString sourcePath = QDir::cleanPath(root + QDir::separator() + currentFolder);
-
-    //     QDir dir(root);
-    //     QString relativePrefix = dir.relativeFilePath(sourcePath);
-    //     relativePrefix.replace('\\', '/');
-    // }
-
+    // Restore Geometry
+    auto pageName = QtNoid::App::Settings::groupNameFromObjectOrClass(&dialog);
+    dialog.restoreGeometry(appConfig->restoreAsByteArray(
+        "Geometry", dialog.saveGeometry(), pageName));
+    dialog.setProjectResPrefix(appConfig->restoreAsString(
+        "LastPrefix", dialog.projectResPrefix(), pageName));
     dialog.exec();
+
+    appConfig->saveValue("Geometry", dialog.saveGeometry(), pageName);
+    appConfig->saveValue("LastPrefix", dialog.projectResPrefix(), pageName);
 }
 
 void MainWindow::on_actionConvert_To_Json_triggered()
@@ -490,6 +487,8 @@ void MainWindow::updateUI_convertYamlToJson()
 
 void MainWindow::onFolderComboBoxDoubleClicked()
 {
+    qDebug() << __func__ ;
+
     QString folderPath = ui->txtCollectionFolder->currentText();
     QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
     folderPath = QFileDialog::getExistingDirectory(this, tr("Select the main folder"), root + QDir::separator() + folderPath);

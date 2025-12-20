@@ -5,6 +5,8 @@
 #include <QStringList>
 #include <QStandardItemModel>
 
+class DlgFileDiff;
+
 namespace Ui {
 class frmManageProjectResources;
 }
@@ -14,22 +16,33 @@ class frmManageProjectResources : public QDialog
     Q_OBJECT
 
 public:
+    enum Column {
+        ColSource = 0,
+        ColUpdateSource,
+        ColStatus,
+        ColAction,
+        ColDestination,
+        ColCount
+    };
+
     explicit frmManageProjectResources(QWidget *parent = nullptr);
     ~frmManageProjectResources();
 
-    QString projectFolder() const;
-    void setProjectFolder(const QString &newProjectFolder);
-
     QString sourceBaseFolder() const;
     void setSourceBaseFolder(const QString &newSourceBaseFolder);
-
     QString sourceSubFolder() const;
     void setSourceSubFolder(const QString &newSourceSubFolder);
-
     QString sourceFolder() const;
+    QString sourceAbsoluteFile(const QString &relFile) const;
 
-    QString projectResFile() const;
-    void setProjectResFile(const QString &newProjectResFile);
+    QString destinationFolder() const;
+    void setDestinationFolder(const QString &newDestinationFolder);
+
+    QString destinationResourceFile() const;
+    QString destinationResourceAbsoluteFile() const;
+    void setDestinationResourceFile(const QString& newDestinationResourceFile);
+
+    QString destinationAbsoluteFile(const QString &relFile) const;
 
     QString projectResPrefix() const;
     void setProjectResPrefix(const QString &newProjectResPrefix);
@@ -42,25 +55,38 @@ public:
     int fileComparisonCount() const;
 
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
-    void on_txtProjectResPrefix_currentTextChanged(const QString &arg1);
     void on_cmdUpdate_clicked();
-    void onCopyButtonClicked(const QModelIndex &index);
+    void onCopyButtonClicked(int row);
+    void onUpdateSourceButtonClicked(int row);
+    void createVisibleButtons();
+    void onTableDoubleClicked(const QModelIndex &index);
+    void onPreviousFile();
+    void onNextFile();
 
 private:
-    void updateUi_resourceFileList();
     void updateUi_resourceFilePrefix();
-    void updateUi_filesInPrefix();
+    void updateTableFooter();
 
     void loadSourceFileList();
     void loadDestinationFileList();
+    void createButtonForRow(int row);
+    void compareFileForRow(int row);
+    void updateVisibleRows();
+    void showDiffForRow(int row);
+    int findNextDiffRow(int fromRow, int direction);
 
 private:
     Ui::frmManageProjectResources *ui;
     QStandardItemModel *m_fileComparisonModel;
     QSet<QString> m_sourceFileList;
     QSet<QString> m_destinationFileList;
+    QSet<int> m_comparedRows;
+    DlgFileDiff *m_diffDialog = nullptr;
+    int m_currentDiffRow = -1;
 
 };
 

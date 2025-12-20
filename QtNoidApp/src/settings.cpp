@@ -68,6 +68,13 @@ QString Settings::filePathAsAppSibling(const QString &fileName)
     return res;
 }
 
+
+
+QMainWindow *Settings::mainWindowFromWidget(QWidget &ref)
+{
+    return mainWindowFromWidget(&ref);
+}
+
 QMainWindow *Settings::mainWindowFromWidget(QWidget *ref)
 {
     if (ref == nullptr)
@@ -88,6 +95,12 @@ QMainWindow *Settings::mainWindowFromWidget(QWidget *ref)
     return qobject_cast<QMainWindow *>(parent);
 }
 
+
+
+QString Settings::groupNameFromObjectOrClass(const QObject &ref)
+{
+    return groupNameFromObjectOrClass(&ref);
+}
 
 QString Settings::groupNameFromObjectOrClass(const QObject *ref)
 {
