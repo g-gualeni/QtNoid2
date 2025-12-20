@@ -182,22 +182,23 @@
       "bases:Create new base": false
     }
   },
-  "active": "f5b6c3637ea2a947",
+  "active": "702ed94cbbbb470d",
   "lastOpenFiles": [
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/CMakeFiles/JsonYamlToJsonTestSuite.dir/frmmanageprojectresources.cpp.obj.d",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/AppParameterBasicUsage/CMakeFiles/AppParameterBasicUsage.dir/mainwindow.cpp.obj.d",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/AppParameterListBasicUsage/AppParameterListBasicUsage.exe.tmpb03fd3e",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/CMakeFiles/JsonYamlToJsonTestSuite.dir/mainwindow.cpp.obj.d",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/AppParameterListBasicUsage/CMakeFiles/AppParameterListBasicUsage.dir/mainwindow.cpp.obj.d",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/JsonYamlToJsonTestSuite/CMakeFiles/JsonYamlToJsonTestSuite.dir/frmsavedataset.cpp.obj.d",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/AppParameterBasicUsage/CMakeFiles/AppParameterBasicUsage.dir/AppParameterBasicUsage_autogen/mocs_compilation.cpp-2e275dba.obj.tmp",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/AppParameterBasicUsage/CMakeFiles/AppParameterBasicUsage.dir/mainwindow.cpp-556f76fe.obj.tmp",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/AppParameterListBasicUsage/CMakeFiles/AppParameterListBasicUsage.dir/main.cpp-e3b3eb9a.obj.tmp",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/AppParameterListBasicUsage/CMakeFiles/AppParameterListBasicUsage.dir/mainwindow.cpp-2d469c21.obj.tmp",
+    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Release/Examples/AppParameterListBasicUsage/CMakeFiles/AppParameterListBasicUsage.dir/AppParameterListBasicUsage_autogen/mocs_compilation.cpp-58f31ca5.obj.tmp",
     "README.md",
     "QtNoidApp/doc/QtNoidApp.md",
     "DEVELOPMENT.md",
     "QtNoidApp/doc/Settings.md",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/test_parameter.exe.tmpf1af32a",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_parameter.dir/test_parameter.cpp.obj.d",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_config.dir/test_config.cpp.obj.d",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_settings.dir/test_settings.cpp.obj.d",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_configfile.dir/test_configfile.cpp.obj.d",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_configglobal.dir/test_configglobal.cpp.obj.d",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_parameterlist.dir/test_parameterlist.cpp-e1975987.obj.tmp",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_settings.dir/test_settings.cpp-031c95a6.obj.tmp",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_configglobal.dir/test_configglobal.cpp-8030921d.obj.tmp",
-    "build/Desktop_Qt_6_10_1_llvm_mingw_64_bit-Debug/QtNoidApp/tests/CMakeFiles/test_parameter.dir/test_parameter.cpp-6628fb32.obj.tmp",
     "BUILD-INSTRUCTIONS.md",
     "QtNoidCommon/doc/QtNoidCommon.md",
     "QtNoidCore/doc/QtNoidCore.md",
@@ -228,7 +229,6 @@
     "Examples/AppSettingsBasicUsage/doc/AppSettingsBasicUsage 1.md",
     "Examples/AppParameterBasicUsage/doc/AppSettingsBasicUsage.md",
     "Examples/AppParameterBasicUsage/doc/AppSettingsBasicUsage 1.md",
-    "Examples/AppParameterListBenchmark/doc/AppParameterListBenchmark 1.md",
-    "Examples/AppParameterBasicUsage/doc/AppParameterListBenchmark.md"
+    "Examples/AppParameterListBenchmark/doc/AppParameterListBenchmark 1.md"
   ]
 }

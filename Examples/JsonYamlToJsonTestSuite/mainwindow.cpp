@@ -339,7 +339,7 @@ void MainWindow::on_actionManageProjectResources_triggered()
     dialog.setSourceSubFolder(ui->txtCollectionFolder->currentText());
 
     // Restore Geometry
-    auto pageName = QtNoid::App::Settings::groupNameFromObjectOrClass(&dialog);
+    auto pageName = QtNoid::App::Settings::groupNameFromObjectOrClass(dialog);
     dialog.restoreGeometry(appConfig->restoreAsByteArray(
         "Geometry", dialog.saveGeometry(), pageName));
     dialog.setProjectResPrefix(appConfig->restoreAsString(
