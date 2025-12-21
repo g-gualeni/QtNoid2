@@ -13,10 +13,9 @@ This is an helper method to simplify adding screenshot functionality to an appli
 Initializes and returns a keyboard shortcut for capturing full dialog screenshots, with
 the lambda to intercept the shortcut and save the screen to a file.
 When triggered, this shortcut captures a screenshot of the entire dialog window and
-saves it to the specified destination path. Optionally, the captured image can also be
-copied to the system clipboard for immediate use.
-
-  Parameters:
+saves it to the specified destination path. 
+Optionally, the captured image can also be copied to the system clipboard for immediate use.
+Parameters:
    - **parent**: the parent widget that will own the shortcut
    - **keySequence**: the keyboard combination that triggers the screenshot;
    if empty the default value "Ctrl+Shift+S" will be used. This is translated as
@@ -26,6 +25,7 @@ copied to the system clipboard for immediate use.
    saved in the application execution folder. If it doesn't contains a
    FileName, the image file name will be the application window title followed
    by -windows or by -macOS depending on the operating system.
+   If the **destinationPath** is empty then the screenshot will be saved in appExeOrAppBundleDirPath(). Multiple screenshot are managed using [QtNoid::Common::File::autoNaming()](../../QtNoidCommon/doc/File.md).
    - **saveToClipboard**: If true, copies the captured image to clipboard, as an
    image, in addition to saving to the file.
 

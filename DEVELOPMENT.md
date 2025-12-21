@@ -13,8 +13,7 @@
 - Release of QtNoid2 version 2.2.0
 
 ### Progress Status
-static QString groupNameFromObjectOrClass(const QObject* ref); - 
---> servirebbe il caso (const QObject &ref) per le finestre di dialogo modali
+Sistemare i campi nella finestra di dialogo principale
 
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
@@ -127,6 +126,8 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
           - [x] fix keySequence usage
           - [x] Add a test that verify the keysequence are correct
           - [x] update to handle also a filepath     
+          - [x] update handling for macOs destination path
+          - [x] update handling multiple screenshot using autoNaming().
           
      - [ ] saveConfigToProject() -> Copy current configuration file into resources 
           - [x] Method implementation

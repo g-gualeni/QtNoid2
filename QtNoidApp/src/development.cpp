@@ -26,29 +26,34 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
         auto screenshot =  Settings::fullDialogGrab(parent);
 
         QFileInfo FI(destinationFileOrPath);
-        QString fileName = destinationFileOrPath;
+        QString fullFilePath = destinationFileOrPath;
         // if(!FI.isFile()) {
         if (FI.suffix().isEmpty()) {
             // Gather the class / window name
-            if(!fileName.isEmpty()) {
-                fileName += "/";
+            if(fullFilePath.isEmpty())
+            {
+                fullFilePath = QtNoid::App::Settings::appExeOrAppBundleDirPath();
             }
-            QString os = QSysInfo::productType();
+
+            QString osName = QSysInfo::productType();
             auto mainWindow = Settings::mainWindowFromWidget(parent);
             if(mainWindow == nullptr){
-                fileName +=  "Screenshot-" + os + ".png";
+                osName =  "Screenshot-" + osName + ".png";
             }
             else {
-                fileName += mainWindow->windowTitle() + "-" + os + ".png";
+                osName = mainWindow->windowTitle() + "-" + osName + ".png";
             }
+            fullFilePath = QDir::cleanPath(fullFilePath + "/" + osName);
+
         }
-        bool res = screenshot.save(fileName);
+        fullFilePath = QtNoid::Common::File::autoNaming(fullFilePath);
+        bool res = screenshot.save(fullFilePath);
         if(saveToClipboard) {
             QClipboard *clipboard = QApplication::clipboard();
             clipboard->setImage(screenshot);
         }
         qDebug() << "saveToClipboard:" << saveToClipboard <<
-            "Destination:" << fileName << "Res:" << res;
+            "Destination:" << fullFilePath << "Res:" << res;
     } );
 
     return shortCut;
