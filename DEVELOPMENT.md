@@ -13,24 +13,30 @@
 - Release of QtNoid2 version 2.2.0
 
 ### Progress Status
-Sistemare i campi nella finestra di dialogo principale
+
+Folder Compare
+- 
+Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale
+    - void restoreComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings") const;
+    - void saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings");
+
+Fare il test di:
+     - [x] mainWindowFromWidget(): reference instead of pointer version
+     - [x] groupNameFromObjectOrClass(): reference instead of pointer version
 
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
 Avanti con YamlExample
+* Sistemare i campi nella finestra di dialogo principale
  - Creare il dataset per i numeri
  - Aggiornare anche qrc: 
 	 - creo un nuovo file e faccio in modo di inserirlo dentro alle risorse in modo che basta ricompilare e il nuovo file è presente
-- Aggiungere override (magari chiedere conferma se la cartella esiste) per la creazione di un dataset locale.
+- Aggiungere override (magari chiedere conferma se la cartella esiste) per la creazione di un dataset locale. Al momento fallisce e basta
 -  Sistemare il caricamento dei dati con le frecce nella form principale
-- Allineare file-> apri con la selezione dei files.
-- 
- - 
-    
-    
+	- Nel compare gestire il caso cancellazione ovvero dal lato del file esistente orfano mettere ->x
+	- Gestire il file compare nel caso in cui il file sia solo da un lato.   
 
  
-
 
 # QtNoidJson
 finire implementation Yaml2Json library 
@@ -128,17 +134,14 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
           - [x] update to handle also a filepath     
           - [x] update handling for macOs destination path
           - [x] update handling multiple screenshot using autoNaming().
-          
      - [ ] saveConfigToProject() -> Copy current configuration file into resources 
           - [x] Method implementation
           - [ ] Method test
           - [x] Method doc
-          
      - [ ] initConfigFromResources -> init application config file from resources
           - [x] Method implementation
           - [ ] Method test
           - [x] Method doc     
-          
      - [ ] class Development Documentation
 
 
@@ -318,6 +321,7 @@ key: [
  - Generate About dialog
  - Generate Config UI from Config class
  - MD viewer to display example documentation
+ - Folder comboBox Widget control with button to open file from folder and keep recent list
  
 ## New QtNoid::CmdUI library 
  - File Move/Copy/Rename/Marshal using pattern matching

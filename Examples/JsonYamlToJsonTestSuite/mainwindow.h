@@ -41,11 +41,15 @@ private:
     QStringList m_yamlTestCollectionList;
     int m_yamlTestCollectionListCurrent = 0;
 
+protected:
+    void setCollectionFolder(const QString &absolutePath);
+    QString collectionFolderAbsolutePath() const;
+
 private:
     void setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent);
     
     bool generateTestDataFromResource(const QString &dataPrefix);
-    void updateUI_loadYamlFile(const QString &filePath);
+    void updateUI_loadYamlFile(const QString &yamlFilePath);
     void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);
     void updateUI_scanTestCollectionFolder(const QString &folder);

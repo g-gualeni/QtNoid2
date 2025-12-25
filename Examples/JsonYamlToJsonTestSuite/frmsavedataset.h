@@ -14,20 +14,21 @@ class frmSaveDataset : public QDialog
 public:
     explicit frmSaveDataset(QWidget *parent = nullptr);
     ~frmSaveDataset();
+    void setCollectionFolder(const QString &collectionFolder);
+    QString collectionFolder() const;
+    void setDatasetFolder(const QString &datasetFolder);
+    QString datasetFolder() const;
 
-    QString destinationFolder() const;
     bool saveDescription() const;
     bool saveInputYAML() const;
     bool saveExpectedJSON() const;
     bool saveExpectedTokens() const;
     bool saveErrorEmptyFile() const;
 
-    void setBaseFolderPath(const QString &baseFolderPath);
-
-    void setFilePath(const QString &newFilePath);
-
 private slots:
+    void on_cmdBrowseCollection_clicked();
     void on_cmdBrowseDestination_clicked();
+
 private:
     void updateUI_dataSetFolder();
 

@@ -1,6 +1,7 @@
 #include "frmsavedataset.h"
 #include "ui_frmsavedataset.h"
 #include <QFileDialog>
+#include <QtNoidApp/QtNoidApp>
 
 frmSaveDataset::frmSaveDataset(QWidget *parent)
     : QDialog(parent)
@@ -14,23 +15,66 @@ frmSaveDataset::~frmSaveDataset()
     delete ui;
 }
 
+void frmSaveDataset::setCollectionFolder(const QString &collectionFolder)
+{
+    ui->txtCollectionFolder->setText(collectionFolder);
+}
+
+QString frmSaveDataset::collectionFolder() const
+{
+    auto current = ui->txtCollectionFolder->text();
+    if(!current.isEmpty()) {
+        current = QtNoid::App::Settings::appExeOrAppBundleDirPath() +"/" + current;
+    }
+    return current;
+}
+
+
+void frmSaveDataset::setDatasetFolder(const QString &datasetFolder)
+{
+    ui->txtDatasetFolder->setText(datasetFolder);
+}
+
+QString frmSaveDataset::datasetFolder() const
+{
+    return ui->txtDatasetFolder->text();
+}
+
+void frmSaveDataset::on_cmdBrowseCollection_clicked()
+{
+    QString currentFolder = collectionFolder();
+    currentFolder = QFileDialog::getExistingDirectory(
+        this,
+        tr("Select Collection Folder"),
+        currentFolder
+        );
+
+
+    if (currentFolder.isEmpty()) {
+        return;
+    }
+
+    currentFolder = QDir(QtNoid::App::Settings::appExeOrAppBundleDirPath()).relativeFilePath(currentFolder);
+    ui->txtCollectionFolder->setText(currentFolder);
+}
+
+
 void frmSaveDataset::on_cmdBrowseDestination_clicked()
 {
-
-    auto currentFolder = m_baseFolderPath + QDir::separator() + ui->txtDestinationFolder->text();
-    QString dataSetFolderPath = QFileDialog::getExistingDirectory(
+    QString currentFolder = collectionFolder() + "/" + datasetFolder();
+    currentFolder = QFileDialog::getExistingDirectory(
         this,
-        tr("Select Destination Folder"),
+        tr("Select Dataset Folder"),
         currentFolder
     );
 
-
-    if (dataSetFolderPath.isEmpty()) {
+    if (currentFolder.isEmpty()) {
         return;
     }
-    QDir dir(m_baseFolderPath);
-    ui->txtDestinationFolder->setText(dir.relativeFilePath(dataSetFolderPath));
+    currentFolder = QDir(collectionFolder()).relativeFilePath(currentFolder);
+    ui->txtDatasetFolder->setText(currentFolder);
 }
+
 
 void frmSaveDataset::updateUI_dataSetFolder()
 {
@@ -42,26 +86,10 @@ void frmSaveDataset::updateUI_dataSetFolder()
     QDir dir(m_baseFolderPath);
     QFileInfo FI(m_filePath);
     auto destinationFolder = dir.relativeFilePath(FI.absolutePath());
-    ui->txtDestinationFolder->setText(destinationFolder);
+    ui->txtDatasetFolder->setText(destinationFolder);
 
 }
 
-void frmSaveDataset::setFilePath(const QString &newFilePath)
-{
-    m_filePath = newFilePath;
-    updateUI_dataSetFolder();
-}
-
-void frmSaveDataset::setBaseFolderPath(const QString &baseFolderPath)
-{
-    m_baseFolderPath = baseFolderPath;
-    updateUI_dataSetFolder();
-}
-
-QString frmSaveDataset::destinationFolder() const
-{
-    return ui->txtDestinationFolder->text();
-}
 
 bool frmSaveDataset::saveDescription() const
 {
@@ -87,3 +115,5 @@ bool frmSaveDataset::saveErrorEmptyFile() const
 {
     return ui->chkSaveErrorEmptyFile->isChecked();
 }
+
+

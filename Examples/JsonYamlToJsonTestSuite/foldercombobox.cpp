@@ -22,7 +22,7 @@ bool FolderComboBox::event(QEvent *event)
         return true;
     }
     else if (event->type() == QEvent::MouseButtonDblClick) {
-        qDebug() << __func__ << event;
+        // qDebug() << __func__ << event;
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
         if (mouseEvent->button() == Qt::LeftButton) {
             emit doubleClicked();

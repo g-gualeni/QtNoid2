@@ -3,6 +3,18 @@
 ## Overview
 
 This module contains:
+* Yaml2Json: this is a class that parse Yaml text into JSON
+* 
+
+The basic application is to help humans to generate JSON files using YAML that is more readable, less redundant and faster to write.
+There are a plenty of resources available to convert YAML to JSON, such as:
+https://onlineyamltools.com/convert-yaml-to-json
+
+
+
+
+---------------------------------------------------
+
 - [**Txt2Json**](#class-txt2json): that simplify the creation of JSON docs using
 a simple plain text description.
 
