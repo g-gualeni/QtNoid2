@@ -12,7 +12,4 @@ This can be used to test the speed of the API on different platforms.
 
 
 
-## See Also
-
-- [QtNoidCommon](../../../QtNoidCommon/doc/QtNoidCommon.md) library documentation
 [← Back to README](../../../README.md)

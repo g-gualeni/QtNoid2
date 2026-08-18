@@ -25,9 +25,12 @@ private slots:
     void on_cmdListPathRecursively_clicked();
     void on_cmdListSubPathRecursively_clicked();
 
+    void on_cmdClearNameFilters_clicked();
+
 private:
-    void initFromAppConfig();
+    void restoreFromAppConfig();
     QStringList txtFolderList();
+    QStringList txtNameFilters();
     void update_txtPathList(const QStringList &list, qint64 elapsedTime);
 
 private:

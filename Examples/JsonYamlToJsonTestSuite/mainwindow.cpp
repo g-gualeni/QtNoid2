@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     initAppConfigFile();
     connect(appConfig, &QtNoid::App::ConfigFile::fileLoaded, this, [&](const QString& fName){
-        initFromAppConfig();
+        restoreFromAppConfig();
     });
     appConfig->load();
 
@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 
-void MainWindow::initFromAppConfig()
+void MainWindow::restoreFromAppConfig()
 {
     // qDebug() << __func__ ;
 

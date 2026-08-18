@@ -29,6 +29,12 @@
     </item>
     <item row="1" column="0">
      <widget class="QComboBox" name="txtFolder">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="toolTip">
        <string>const QString &amp;path</string>
       </property>
@@ -45,14 +51,17 @@
      </widget>
     </item>
     <item row="1" column="2">
-     <widget class="QComboBox" name="comboBox">
+     <widget class="QComboBox" name="txtNameFilters">
       <property name="toolTip">
        <string>const QStringList &amp;nameFilters</string>
+      </property>
+      <property name="editable">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
     <item row="1" column="3">
-     <widget class="QPushButton" name="cmdClearFilter">
+     <widget class="QPushButton" name="cmdClearNameFilters">
       <property name="toolTip">
        <string>Clear Filter</string>
       </property>

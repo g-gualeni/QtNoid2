@@ -14,14 +14,14 @@ namespace App {
 ConfigFile::ConfigFile(QObject *parent)
     : Config(parent)
 {
-    // qDebug() << __func__ ;
+    // qDebug() << Q_FUNC_INFO;
 }
 
 
 ConfigFile::ConfigFile(const QString &fileName, QObject *parent)
     : Config(parent)
 {
-    // qDebug() << __func__ << this;
+    // qDebug() << Q_FUNC_INFO << "|" << this;
     initFileName(fileName);
     load();
 }
@@ -29,7 +29,7 @@ ConfigFile::ConfigFile(const QString &fileName, QObject *parent)
 
 ConfigFile::~ConfigFile()
 {
-    // qDebug() << __func__;
+    // qDebug() << Q_FUNC_INFO;
     save();
 }
 
@@ -63,7 +63,7 @@ bool ConfigFile::isValid()
 
 bool ConfigFile::load()
 {
-    // qDebug() << __func__ ;
+    // qDebug() << Q_FUNC_INFO;
     if(!isValid())
         return false;
 
@@ -103,7 +103,7 @@ bool ConfigFile::save()
     QTextStream text(&file);
     text << doc.toJson();
 
-    // qDebug() << __func__;
+    // qDebug() << Q_FUNC_INFO;
     return true;
 }
 

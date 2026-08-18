@@ -11,8 +11,7 @@ Each example is a standalone CMake project with its own documentation page, link
 ## QtNoidCommon examples
 
 * **[CommonBasicUsage](CommonBasicUsage/doc/CommonBasicUsage.md)**:
-  Shows how to use `QtNoid::Common::File::listPathRecursively()` and `listSubPathRecursively()`,
-  including a live benchmark of their speed on different platforms.
+  Shows how to use `QtNoid::Common::File::listPathRecursively()` and `listSubPathRecursively()`, including a live benchmark of their speed on different platforms.
 
 ## QtNoidApp examples
 
@@ -36,6 +35,5 @@ Each example is a standalone CMake project with its own documentation page, link
 * **[JsonYamlToJsonTestSuite](JsonYamlToJsonTestSuite/doc/JsonYamlToJsonTestSuite.md)**:
   Comprehensive test suite that validates YAML to JSON conversion across various formats and edge cases.
 
-&nbsp;
 
 [← Back to README](../README.md)

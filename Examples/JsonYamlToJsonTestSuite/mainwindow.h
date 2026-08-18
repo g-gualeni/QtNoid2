@@ -66,7 +66,7 @@ private:
     void onCmdSaveTestDataset();
     void onCreateNewTest();
     void initAppConfigFile();
-    void initFromAppConfig();
+    void restoreFromAppConfig();
 
 };
 #endif // MAINWINDOW_H
