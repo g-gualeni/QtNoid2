@@ -28,3 +28,7 @@ Build and run the application to see the Parameter features in action.
 - QtNoidApp library documentation
 - Parameter class documentation
 - Other examples in the Examples directory
+
+&nbsp;
+
+[← Back to README](../../../README.md)

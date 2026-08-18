@@ -4,4 +4,4 @@
 
 &nbsp;
 
-[← Back to Main Page](../../README.md)
+[← Back to README](../../README.md)

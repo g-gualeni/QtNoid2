@@ -9,15 +9,11 @@ find_package: QtNoidCore
 target_link_libraries: QtNoid::QtNoidCore
 ```
 
-&nbsp;
-
 ## Header
 
 ```cpp
 #include "QtNoidCore/QtNoidCore"
 ```
-
-&nbsp;
 
 ## Namespace
 
@@ -25,12 +21,8 @@ target_link_libraries: QtNoid::QtNoidCore
 using namespace QtNoid;
 ```
 
-&nbsp;
-
 ## Examples
 - **[[CoreBasicUsage]]:** use this example to understand how the library can be integrated in your project
-
-&nbsp;
 
 ## Class: Core
 
@@ -45,5 +37,5 @@ using namespace QtNoid;
   - Project copyright information
 
 
-[← Back to Main Page](README.md)
+[← Back to README](../../README.md)
 

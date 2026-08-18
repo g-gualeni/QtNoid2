@@ -17,13 +17,13 @@ a human readable text.
     G and so on. This static method consider 1 kByte as 1024 bytes.
 
  - `QString scaleAutoUpToExa(qint64 value, const QString& unitOfMeasure)`: 
-    Converts the value into a string with 2 decimal places. The scale prefix is attached to the unitOfMeasure as in this example: 1.00 [kg]
+    Converts the value into a string with 2 decimal places. The scale prefix is attached to the unitOfMeasure. So if unitOfMeasure is "g" the results is: 1.00 [kg]
  
  - `QString scaleNanoSecsUpToDays(quint64 ns)`: 
-    Convert ns elapsed time as unsigned value to a more readable value using the best combinations of ms, seconds, minutes, hours, days. 
+    Convert ns elapsed time as **unsigned value** to a more readable value using the best combinations of ms, seconds, minutes, hours, days. 
     
  - `static QString scaleNanoSecsUpToDays(qint64 ns)`: 
-    Convert ns elapsed time as signed value to a readable value using ms, seconds, minutes, hours, days. 
+    Convert ns elapsed time as **signed value** to a readable value using ms, seconds, minutes, hours, days. 
      
 ⬆[[QtNoidCommon]]
 

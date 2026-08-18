@@ -18,11 +18,9 @@ This example uses CMake for building. Ensure you have:
 
 Build and run the application to see the QtNoidCore features in action.
 
-## Documentation Structure
-
-- **CoreBasicUsage.md** - Main documentation file (this file)
-
 ## See Also
 
 - QtNoidCore library documentation
 - Other examples in the Examples directory
+
+[← Back to README](../../../README.md)

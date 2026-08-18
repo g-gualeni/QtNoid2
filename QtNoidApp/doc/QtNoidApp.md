@@ -15,34 +15,23 @@ This module contains:
 
 - [**Development**](doc/Development.md): this is a collection of methods that help creating an application and are not intended to be customer facing. API like saveConfigToProject() that saves config file into the development project resources, or initFullDialogGrabShortcut() that create a shortcut to print the application screen and save it in the application or bundle folder.
 
-
-
-
-
 ## CMake
 ```
 find_package: QtNoidApp
 
 target_link_libraries: QtNoid::QtNoidApp
 ```
-
-&nbsp;
-
 ## Header
 
 ```cpp
 #include "QtNoidApp/QtNoidApp"
 ```
 
-&nbsp;
-
 ## Namespace
 
 ```cpp
 using namespace QtNoid::App;
 ```
-
-&nbsp;
 
 ## Examples
 
@@ -63,6 +52,4 @@ This example can be used to understand the cost of the creation of a Parameter
 object and the cost of linking multiple objects.
 
 
-&nbsp;
-
-[← Back to Main Page](./../README.md)
+[← Back to README](../../README.md)

@@ -27,4 +27,4 @@ This simple application shows how to use:
 `QtNoid::Common::File::listSubPathRecursively`
 
 
-[← Back to Main Page](README.md)
+[← Back to README](../../README.md)

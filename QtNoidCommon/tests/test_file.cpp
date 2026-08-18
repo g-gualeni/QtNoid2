@@ -58,8 +58,8 @@ private slots:
     void testListPathRecursively_InvalidPath();
 
 
-    void testListPathRecursively_UsingFiltes_data();
-    void testListPathRecursively_UsingFiltes();
+    void testListPathRecursively_UsingFilters_data();
+    void testListPathRecursively_UsingFilters();
 
 
     void testListSubPathRecursively_data();
@@ -70,8 +70,8 @@ private slots:
     void testListSubPathRecursively_InvalidPath_data();
     void testListSubPathRecursively_InvalidPath();
 
-    void testListSubPathRecursively_UsingFiltes_data();
-    void testListSubPathRecursively_UsingFiltes();
+    void testListSubPathRecursively_UsingFilters_data();
+    void testListSubPathRecursively_UsingFilters();
 
 
 private:
@@ -607,7 +607,7 @@ void TestQtNoidCommonFile::testListPathRecursively_InvalidPath()
     QCOMPARE(resList, {});
 }
 
-void TestQtNoidCommonFile::testListPathRecursively_UsingFiltes_data()
+void TestQtNoidCommonFile::testListPathRecursively_UsingFilters_data()
 {
     QTest::addColumn<QStringList>("goodList");
     QTest::addColumn<QStringList>("badList");
@@ -615,12 +615,12 @@ void TestQtNoidCommonFile::testListPathRecursively_UsingFiltes_data()
 
     QTest::newRow("EmptyFolders+Filter" ) << QStringList() << QStringList() << QStringList("ini");
     QTest::newRow("SingleFile+Filter"   ) << QStringList({"lst.txt"}) << QStringList() << QStringList(".txt");
-    QTest::newRow("MultipleFiles+Filter") << QStringList({"lst1.txt", "lst2.txt"})<< QStringList() << QStringList(".txt");;
+    QTest::newRow("MultipleFiles+Filter") << QStringList({"lst1.txt", "lst2.txt"})<< QStringList() << QStringList(".txt");
     QTest::newRow("NestedDirs+Filters"  ) << QStringList({"lst1.txt", "lst2.txt", "a/lst1.txt", "a/lst2.txt"})
                                         << QStringList({"lst1.ini", "lst2.ini", "a/lst1.ini", "a/lst2.ini"}) << QStringList("TXT");
 }
 
-void TestQtNoidCommonFile::testListPathRecursively_UsingFiltes()
+void TestQtNoidCommonFile::testListPathRecursively_UsingFilters()
 {
     QFETCH(QStringList, goodList);
     QFETCH(QStringList, badList);
@@ -709,7 +709,7 @@ void TestQtNoidCommonFile::testListSubPathRecursively_InvalidPath()
     QCOMPARE(resList, {});
 }
 
-void TestQtNoidCommonFile::testListSubPathRecursively_UsingFiltes_data()
+void TestQtNoidCommonFile::testListSubPathRecursively_UsingFilters_data()
 {
     QTest::addColumn<QStringList>("goodList");
     QTest::addColumn<QStringList>("badList");
@@ -722,7 +722,7 @@ void TestQtNoidCommonFile::testListSubPathRecursively_UsingFiltes_data()
                                         << QStringList({"lst1.ini", "lst2.ini", "a/lst1.ini", "a/lst2.ini"}) << QStringList("TXT");
 }
 
-void TestQtNoidCommonFile::testListSubPathRecursively_UsingFiltes()
+void TestQtNoidCommonFile::testListSubPathRecursively_UsingFilters()
 {
     QFETCH(QStringList, goodList);
     QFETCH(QStringList, badList);

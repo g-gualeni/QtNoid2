@@ -29,6 +29,11 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
 * ***More modules are coming soon.***
 
 
+# Examples
+Sample Qt applications showing how to use each module are available in the
+* **[Examples](Examples/Examples.md)**  
+folder.
+
 
 # Quick Start
 Download latest version of QtNoid2 from the Releases section on GitHub.

@@ -44,7 +44,34 @@ Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 
-&nbsp;
+
+
+# Project Documentation check status
+* [x] QtNoidCore
+* [x] QtNoidCommon
+	* [x] File
+	* [x] Scale
+	* [x] Text
+* [x] QtNoidApp
+	* [x] Settings
+	* [x] Parameter
+	* [x] ParameterList
+	* [ ] Config: è un abbozzo
+	* [ ] ConfigFIle è abbozzata
+	* [ ] ConfigGlobal è abbozzata
+* [ ] QtNoidJson: - è ancora in sviluppo
+* [ ] Development è da finire di controllare
+* [ ] Esempi 
+	* [ ] AppParameterBasicUsage
+	* [ ] AppParameterListBasicUsage
+	* [ ] AppParameterListBenchmark
+	* [ ] AppSettingsBasicUsage
+	* [ ] CommonBasicUsage
+	* [ ] CoreBasicUsage
+	* [ ] JsonTxt2JsonBasicUsage
+	* [ ] JsonYamlToJsonTestSuite
+
+
 
 # QtNoidApp
 - [x] Split the documentation into 1 file for each class

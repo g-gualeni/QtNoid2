@@ -28,3 +28,7 @@ Build and run the application to see the Txt2Json conversion features in action.
 - QtNoidJson library documentation
 - Txt2Json functionality documentation
 - Other examples in the Examples directory
+
+&nbsp;
+
+[← Back to README](../../../README.md)
