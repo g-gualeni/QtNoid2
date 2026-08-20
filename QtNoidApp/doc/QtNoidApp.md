@@ -8,7 +8,6 @@ This module contains:
 - [**ParameterList**](doc/ParameterList.md): Container class for managing multiple Parameter instances with binding support and serialization. This class can be used to manage a page of parameters.
 
 - [**Config**](doc/Config.md): Container class for managing multiple ParameterList instances with binding support and serialization. This class can be used to manage a bunch of pages of parameters.
-- 
 
 - [**ConfigFile**](doc/ConfigFile.md): Wrapper around Config with methods to support the automation of read and write of a configuration file.
 
@@ -34,15 +33,11 @@ target_link_libraries: QtNoid::QtNoidApp
 using namespace QtNoid::App;
 ```
 
-## Examples
+## Examples Using this module
 
-- **[AppSettingsBasicUsage:](doc/AppSettingsBasicUsage.md)**
-This a rough application that showcases most of the methods of the
-class [**Settings**](doc/Settings.md).
+- [AppSettingsBasicUsage:](doc/AppSettingsBasicUsage.md)
 
-- **[AppParameterBasicUsage:](doc/AppParameterBasicUsage.md)**
-use this example to visualize properties of the class
-[**Parameter**](doc/Parameter.md) and to see how conversion to and from JSON works.
+- **[AppParameterBasicUsage:](doc/AppParameterBasicUsage.md)** use this example to visualize properties of the class [**Parameter**](doc/Parameter.md) and to see how conversion to and from JSON works.
 
 - **[AppParameterListBasicUsage:](doc/AppParameterListBasicUsage.md)**
 This example showcase how a [**ParameterList**](doc/ParameterList.md) class can be use to create an

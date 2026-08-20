@@ -21,7 +21,8 @@ class QTNOIDAPP_EXPORT Development
 {
 public:
     static QShortcut *initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence = "Ctrl+Shift+S",
-                                                 QString destinationFileOrPath = {}, bool saveToClipboard = true);
+                                                 QString destinationFileOrPath = {}, bool saveToClipboard = true,
+                                                 bool openDestinationPath = true);
 
     static QAction *saveConfigToProject(QMenu *developmentMenu, const QString &projectFolder);
     static QAction *initConfigFromResources(QMenu *developmentMenu, const QString &resFileOrPrefix);

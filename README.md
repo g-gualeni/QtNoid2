@@ -19,7 +19,7 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
     This is a collection of class to simplify the implementation of common feature of a Desktop Application. Main classes are:
     * **Settings**: class to manage the application initial configuration file.
     * **Config**: container class to manage a list of parameters with binding support and serialization.
-    * **Development**: API collection to simplify the application development
+    * **Development**: API collection to simplify the application development and not intended to be customer facing.
 
 * **[QtNoidJson](QtNoidJson/doc/QtNoidJson.md)**:
     This lib contains the class Yaml2Json that simplify the creation of simple
@@ -27,12 +27,6 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
     This is still under development.
     
 * ***More modules are coming soon.***
-
-
-# Examples
-Sample Qt applications showing how to use each module are available in the
-* **[Examples](Examples/Examples.md)**  
-folder.
 
 
 # Quick Start
@@ -83,6 +77,8 @@ int main(int argc, char *argv[])
 ```
 
 
+# See also
+**[Examples](Examples/Examples.md)**: Sample Qt applications showing how to use each module are available in the folder.
 
 
 

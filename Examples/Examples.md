@@ -5,8 +5,7 @@ Each example is a standalone CMake project with its own documentation page, link
 
 ## QtNoidCore examples
 
-* **[CoreBasicUsage](CoreBasicUsage/doc/CoreBasicUsage.md)**:
-  Demonstrates the basic usage of the QtNoidCore library features.
+* **[CoreBasicUsage](CoreBasicUsage/doc/CoreBasicUsage.md)**: Demonstrates the basic usage of the QtNoidCore library features.
 
 ## QtNoidCommon examples
 

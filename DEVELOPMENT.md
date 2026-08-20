@@ -14,6 +14,10 @@
 
 ### Progress Status
 
+* [ ] PrintScreen Mi sbaglia lo schermo quando sono su mac
+- [x] Aggiungere a QtNoidApp la dipendenza da QtNoidCommon
+
+
 Folder Compare
 - 
 Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale

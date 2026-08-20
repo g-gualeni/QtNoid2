@@ -13,13 +13,16 @@
 #include <QMenu>
 #include <QDir>
 #include <QCoreApplication>
+#include <QDesktopServices>
+#include <QUrl>
 
 namespace QtNoid {
 namespace App {
 
 
-QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence, QString destinationFileOrPath,
-                                                bool saveToClipboard)
+QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence,
+                                                   QString destinationFileOrPath,
+                                                   bool saveToClipboard, bool openDestinationPath)
 {
     QShortcut* shortCut = new QShortcut(QKeySequence(keySequence), parent);
     parent->connect(shortCut, &QShortcut::activated, parent, [=](){
@@ -27,6 +30,7 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
 
         QFileInfo FI(destinationFileOrPath);
         QString fullFilePath = destinationFileOrPath;
+        QString finalFilePath;
         // if(!FI.isFile()) {
         if (FI.suffix().isEmpty()) {
             // Gather the class / window name
@@ -43,17 +47,20 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
             else {
                 osName = mainWindow->windowTitle() + "-" + osName + ".png";
             }
-            fullFilePath = QDir::cleanPath(fullFilePath + "/" + osName);
+            finalFilePath = QDir::cleanPath(fullFilePath + "/" + osName);
 
         }
-        fullFilePath = QtNoid::Common::File::autoNaming(fullFilePath);
-        bool res = screenshot.save(fullFilePath);
+        finalFilePath = QtNoid::Common::File::autoNaming(finalFilePath);
+        bool res = screenshot.save(finalFilePath);
         if(saveToClipboard) {
             QClipboard *clipboard = QApplication::clipboard();
             clipboard->setImage(screenshot);
         }
+        if(res && openDestinationPath) {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(fullFilePath));
+        }
         qDebug() << "saveToClipboard:" << saveToClipboard <<
-            "Destination:" << fullFilePath << "Res:" << res;
+            "Destination:" << finalFilePath << "Res:" << res;
     } );
 
     return shortCut;

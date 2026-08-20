@@ -8,6 +8,9 @@ include(CMakeFindDependencyMacro)
 # Find required Qt6 components
 find_dependency(Qt6 COMPONENTS Core)
 
+# QtNoidCommon is installed alongside this package under the same prefix
+find_dependency(QtNoidCommon PATHS "${PACKAGE_PREFIX_DIR}/lib/cmake/QtNoidCommon" NO_DEFAULT_PATH)
+
 # Include the target definitions
 include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
 

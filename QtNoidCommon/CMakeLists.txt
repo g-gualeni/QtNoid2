@@ -19,7 +19,7 @@ endif()
 # =============================================================================
 project(QtNoidCommon
     VERSION ${PARENT_PROJECT_VERSION}
-    DESCRIPTION "QtNoidCommon - Text and File helping API"
+    DESCRIPTION "QtNoidCommon - Text Processing and File helping API"
     LANGUAGES CXX
 )
 

@@ -1,26 +1,12 @@
-# CoreBasicUsage
+# Overview
+This example demonstrates the basic usage of QtNoidCore library printing on screen the result of `QtNoid::Core::buildInfo()`
 
-## Overview
+## macOs
+![[g-gualeni QtNoid2 public/Examples/CoreBasicUsage/doc/CORE Basic Usage-macos.png]]
 
-This example demonstrates the basic usage of QtNoidCore library features.
-
-## Description
-
-CoreBasicUsage provides a simple Qt application that showcases the fundamental capabilities of the QtNoidCore library.
-
-## Building
-
-This example uses CMake for building. Ensure you have:
-- Qt 6.x installed
-- QtNoidCore library available
-
-## Usage
-
-Build and run the application to see the QtNoidCore features in action.
 
 ## See Also
+-  [[QtNoidCore]] library documentation
 
-- QtNoidCore library documentation
-- Other examples in the Examples directory
-
+⬆[[Examples]]
 [← Back to README](../../../README.md)

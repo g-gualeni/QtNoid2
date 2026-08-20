@@ -1,6 +1,4 @@
-# CommonBasicUsage
-
-## Overview
+# Overview
 This example implement shows how QtNoid::Common features can be used.
 Currently it shows a live example of 
 `QtNoid::Common::File::listPathRecursively()`

@@ -1,8 +1,7 @@
 # AppSettingsBasicUsage
 
-&nbsp;
-[QtNoidApp](QtNoidApp.md)
-&nbsp;
+## Used libraries
+* [QtNoidApp](QtNoidApp.md) 
 
 ## Windows 11
 
@@ -13,8 +12,5 @@
 
 ![AppSettingsBasicUsage-macOS](AppSettingsBasicUsage-macOS.png)
 
-
-
-&nbsp;
 
 [← Back to README](../../../README.md)
