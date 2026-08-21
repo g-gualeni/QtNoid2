@@ -9,7 +9,8 @@ This example demonstrates the basic usage of QtNoidCore library printing on scre
 
 
 ## See Also
--  [[QtNoidCore]] library documentation
+- [QtNoidCore](../../../QtNoidCore/doc/QtNoidCore.md): library documentation
 
-⬆[[Examples]]
+⬆[Examples](../../Examples.md)
+
 [← Back to README](../../../README.md)
