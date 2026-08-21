@@ -33,7 +33,8 @@ using namespace QtNoid;
 ```
 
 ## Examples
-- **[[CoreBasicUsage]]:** use this example to understand how the library can be integrated in your project
+- [**CoreBasicUsage**](../../Examples/CoreBasicUsage/doc/CoreBasicUsage.md): use this example to understand how the library can be integrated in your project
+
 
 
 [← Back to README](../../README.md)
