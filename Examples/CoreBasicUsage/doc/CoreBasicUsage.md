@@ -5,9 +5,7 @@ This example demonstrates the basic usage of QtNoidCore library printing on scre
 ![](QtNoidCoreBasicUsage-windows.png)
 
 ## macOs
-![](CORE%20Basic%20Usage-macos.png)
-
-
+![](QtNoidCoreBasicUsage-macos.png)
 
 
 ## See Also
