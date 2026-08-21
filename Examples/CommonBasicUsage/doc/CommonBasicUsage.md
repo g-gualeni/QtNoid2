@@ -9,6 +9,7 @@ This can be used to test the speed of the API on different platforms.
 ![](QtNoidCommonBasicUsage-windows.png)
 
 ## macOS
+![](QtNoidCommonBasicUsage-macos.png)
 
 
 [← Back to README](../../../README.md)
