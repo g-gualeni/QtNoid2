@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     restoreFromAppConfig();
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
-    setWindowTitle("Common Basic Usage");    
+    setWindowTitle("QtNoid Common Basic Usage");
 }
 
 MainWindow::~MainWindow()
