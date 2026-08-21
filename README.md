@@ -11,9 +11,9 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
   
 * **[QtNoidCommon](QtNoidCommon/doc/QtNoidCommon.md)**:
   This is a collection of class to help on general tasks. 
-	* **File**: methods to list and manage files, rename, read and write text files. 
-	* **Scale**: this class convert numbers to a human readable format using suffix like kilo, Mega, and so on.
-	* **Text**: methods to clean-up text, tokenize, convert to camel case or snake case.
+	* [**File**](QtNoidCommon/doc/File.md): methods to list and manage files, rename, read and write text files. 
+	* [**Scale**](QtNoidCommon/doc/Scale): this class convert numbers to a human readable format using suffix like kilo, Mega, and so on.
+	* [**Text**](QtNoidCommon/doc/Text): methods to clean-up text, tokenize, convert to camel case or snake case.
 
 * **[QtNoidApp](QtNoidApp.md)**:
     This is a collection of class to simplify the implementation of common feature of a Desktop Application. Main classes are:

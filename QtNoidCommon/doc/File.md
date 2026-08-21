@@ -37,7 +37,6 @@ This class contains a set of helper methods to work with files
 * None
 
 ⬆ [[QtNoidCommon]]
-
 [← Back to README](../../README.md)
 
 
