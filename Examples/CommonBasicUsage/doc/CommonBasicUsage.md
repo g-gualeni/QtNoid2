@@ -12,4 +12,5 @@ This can be used to test the speed of the API on different platforms.
 ![](QtNoidCommonBasicUsage-macos.png)
 
 
+⬆[Examples](../../Examples.md)
 [← Back to README](../../../README.md)

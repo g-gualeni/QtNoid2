@@ -197,7 +197,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	- [ ] Update Screenshot win11
 	- [ ] Update screenshot macOS
 
-- [ ] [[CommonBasicUsage]]:
+- [ ] [[Examples/CommonBasicUsage/doc/CommonBasicUsage]]:
 	- [x] Dialog review with testing for relative and absolute path
 	- [x] Form Geometry stored in JSON
 	- [x] Recent folder list stored
