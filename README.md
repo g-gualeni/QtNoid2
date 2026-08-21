@@ -12,14 +12,14 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
 * **[QtNoidCommon](QtNoidCommon/doc/QtNoidCommon.md)**:
   This is a collection of class to help on general tasks. 
 	* [**File**](QtNoidCommon/doc/File.md): methods to list and manage files, rename, read and write text files. 
-	* [**Scale**](QtNoidCommon/doc/Scale): this class convert numbers to a human readable format using suffix like kilo, Mega, and so on.
-	* [**Text**](QtNoidCommon/doc/Text): methods to clean-up text, tokenize, convert to camel case or snake case.
+	* [**Scale**](QtNoidCommon/doc/Scale.md): this class convert numbers to a human readable format using suffix like kilo, Mega, and so on.
+	* [**Text**](QtNoidCommon/doc/Text.md): methods to clean-up text, tokenize, convert to camel case or snake case.
 
 * **[QtNoidApp](QtNoidApp.md)**:
     This is a collection of class to simplify the implementation of common feature of a Desktop Application. Main classes are:
-    * **Settings**: class to manage the application initial configuration file.
-    * **Config**: container class to manage a list of parameters with binding support and serialization.
-    * **Development**: API collection to simplify the application development and not intended to be customer facing.
+    * [**Settings**](QtNoidApp/doc/Settings.md): class to manage the application initial configuration file.
+    * [**Config**](QtNoidApp/doc/Config.md): container class to manage a list of parameters with binding support and serialization.
+    * [**Development**](QtNoidApp/doc/Development.md): API collection to simplify the application development and not intended to be customer facing.
 
 * **[QtNoidJson](QtNoidJson/doc/QtNoidJson.md)**:
     This lib contains the class Yaml2Json that simplify the creation of simple
