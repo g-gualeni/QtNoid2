@@ -1,8 +1,13 @@
 # Overview
 This example demonstrates the basic usage of QtNoidCore library printing on screen the result of `QtNoid::Core::buildInfo()`
 
+## Win11
+![](QtNoidCoreBasicUsage-windows.png)
+
 ## macOs
-![[g-gualeni QtNoid2 public/Examples/CoreBasicUsage/doc/CORE Basic Usage-macos.png]]
+![](CORE%20Basic%20Usage-macos.png)
+
+
 
 
 ## See Also

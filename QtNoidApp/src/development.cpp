@@ -45,10 +45,11 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
                 osName =  "Screenshot-" + osName + ".png";
             }
             else {
-                osName = mainWindow->windowTitle() + "-" + osName + ".png";
+                osName = QtNoid::Common::Text::convertToCamelCase(mainWindow->windowTitle())
+                         + "-" + osName + ".png";
+                // qDebug() << Q_FUNC_INFO << osName;
             }
-            finalFilePath = QDir::cleanPath(fullFilePath + "/" + osName);
-
+            finalFilePath = QDir::cleanPath(fullFilePath + "/" + osName);            
         }
         finalFilePath = QtNoid::Common::File::autoNaming(finalFilePath);
         bool res = screenshot.save(finalFilePath);

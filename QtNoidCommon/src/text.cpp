@@ -224,7 +224,9 @@ QStringList Text::tokenize(const QString &text, const QString &splittersString,
 QString Text::convertToCamelCase(const QString &text)
 {
     QString camelCase;
-    auto tokenList = text.split('_', Qt::SkipEmptyParts);
+    auto tokenList = tokenize(text, "_ ");
+    // auto tokenList = text.split('_', Qt::SkipEmptyParts);
+    // Using tokenize is probably slower but more robust
 
     // Convert first character to UpperCase
     camelCase = std::accumulate(tokenList.begin(), tokenList.end(), QString(),

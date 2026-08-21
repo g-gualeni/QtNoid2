@@ -14,7 +14,7 @@
 
 ### Progress Status
 
-* [ ] PrintScreen Mi sbaglia lo schermo quando sono su mac
+* [ ] PrintScreen Mi sbaglia lo schermo quando non sono sullo schermo principale (solo sul macOs)
 - [x] Aggiungere a QtNoidApp la dipendenza da QtNoidCommon
 
 
@@ -25,8 +25,8 @@ Non sono convinto che questi metodi siamo corretti dentro alla classe config. Fo
     - void saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings");
 
 Fare il test di:
-     - [x] mainWindowFromWidget(): reference instead of pointer version
-     - [x] groupNameFromObjectOrClass(): reference instead of pointer version
+   - [x] mainWindowFromWidget(): reference instead of pointer version
+   - [x] groupNameFromObjectOrClass(): reference instead of pointer version
 
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
@@ -52,6 +52,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 # Project Documentation check status
 * [x] QtNoidCore
+	* [ ] Check again
 * [x] QtNoidCommon
 	* [x] File
 	* [x] Scale
@@ -65,13 +66,14 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	* [ ] ConfigGlobal è abbozzata
 * [ ] QtNoidJson: - è ancora in sviluppo
 * [ ] Development è da finire di controllare
-* [ ] Esempi 
+* [ ] Example
 	* [ ] AppParameterBasicUsage
 	* [ ] AppParameterListBasicUsage
 	* [ ] AppParameterListBenchmark
 	* [ ] AppSettingsBasicUsage
 	* [ ] CommonBasicUsage
 	* [ ] CoreBasicUsage
+		* [ ] Update the macOs screenshot
 	* [ ] JsonTxt2JsonBasicUsage
 	* [ ] JsonYamlToJsonTestSuite
 

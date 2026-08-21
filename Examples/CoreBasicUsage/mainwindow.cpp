@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowTitle("CORE Basic Usage");
+    setWindowTitle("QtNoid Core Basic Usage");
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
     ui->plainTextEdit->setPlainText(QtNoid::Core::buildInfo());
@@ -20,3 +20,5 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+

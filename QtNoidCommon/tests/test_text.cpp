@@ -406,6 +406,10 @@ void TestQtNoidCommonText::testConvertToCamelCase_data()
                                       << "ThisIsASnakeCase";
     QTest::newRow("snake123_turtle_") << "snake123_turtle_"
                                       << "Snake123Turtle";
+    QTest::newRow("Core Basic Usage") << "Core Basic Usage"
+                                      << "CoreBasicUsage";
+
+
 }
 
 void TestQtNoidCommonText::testConvertToCamelCase()
