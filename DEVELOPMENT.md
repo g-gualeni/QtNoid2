@@ -14,12 +14,10 @@
 
 ### Progress Status
 
-* [ ] PrintScreen Mi sbaglia lo schermo quando non sono sullo schermo principale (solo sul macOs)
-- [x] Aggiungere a QtNoidApp la dipendenza da QtNoidCommon
 
 
-Folder Compare
-- 
+
+ 
 Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale
     - void restoreComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings") const;
     - void saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings");
@@ -52,12 +50,13 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 # Project Documentation check status
 * [x] QtNoidCore
-	* [ ] Check again
+	* [x] Check again
 * [x] QtNoidCommon
 	* [x] File
 	* [x] Scale
 	* [x] Text
 * [x] QtNoidApp
+	* [x] Split the documentation into 1 file for each class
 	* [x] Settings
 	* [x] Parameter
 	* [x] ParameterList
@@ -66,21 +65,28 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	* [ ] ConfigGlobal è abbozzata
 * [ ] QtNoidJson: - è ancora in sviluppo
 * [ ] Development è da finire di controllare
-* [ ] Example
+* [ ] Examples
+	* [ ] Examples.md
 	* [ ] AppParameterBasicUsage
 	* [ ] AppParameterListBasicUsage
 	* [ ] AppParameterListBenchmark
 	* [ ] AppSettingsBasicUsage
-	* [ ] CommonBasicUsage
-	* [ ] CoreBasicUsage
-		* [ ] Update the macOs screenshot
+	* [x] CommonBasicUsage:
+		* [x] CommonBasicUsage.md
+		* [x] Win11 Screenshot
+		* [x] macOS Screenshot
+	* [x] CoreBasicUsage
+		* [x] CoreBasicUsage.md
+		* [x] Win11 Screenshot
+		* [x] macOS Screenshot
 	* [ ] JsonTxt2JsonBasicUsage
 	* [ ] JsonYamlToJsonTestSuite
 
 
 
 # QtNoidApp
-- [x] Split the documentation into 1 file for each class
+
+- [x] Aggiungere a QtNoidApp la dipendenza da QtNoidCommon
 - [ ] class **Settings** update
      - [x] appExeOrAppBundleDirPath();
      - [x] appExeOrAppBundleFilePath();
@@ -179,6 +185,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 
 # QtNoidCommon
+- [ ] Create and example for QtNoid::Common::Text
 - [ ] class **Text** 
      - [x] TestQtNoidCommonText::testTokenizeJsonArray() adding
           more test cases with string or a mixture of strings and numbers 
@@ -190,6 +197,12 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] Doc for listSubPathRecursively()
      - [x] Test for listSubPathRecursively()
 
+
+
+
+
+
+---
 # Examples
 - [x] AppSettingsBasicUsage 
 	- [ ] update to support the new appExeOrAppBundleDirPath API
@@ -241,6 +254,8 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 
 
+---
+
 
 # Release Drafting
 - [ ] Doc update
@@ -253,6 +268,18 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 
 
+
+
+
+
+
+
+
+---
+---
+---
+
+This is planned to be removed
 ### Todo Txt2Json
 - [x] textNumberToJson: to parse numbers and convert to Json valid numbers
 - [x] testTextNumberToJson: test for textNumberToJson
@@ -343,8 +370,9 @@ key: [
 
 
 
-
+---
 # Next Sprint Ideas
+
 
 ## Yaml to Json validation test
 - [ ] Add a run feature that run through all examples and generate a report
@@ -371,8 +399,11 @@ key: [
 - Yaml / JSON UI editor
 
 ## Upgrade QtNoid::Common::File
-- [ ] Massive File Copy / Rename / Move could became Copy Move Marshal
-      
+- [ ] Massive File Copy / Rename / Move could became Copy Move Marshal 
 - [ ] Massive File Rename: replace token in huge file list in multiple folders
-      
-    
+
+## QtNoid::App::Settings
+- [ ] Move fullDialogGrab from settings to Development
+
+# Known Issue
+* [ ] fullDialogGrab()  wrong display captured on macOs. It take a screenshot from the main display of the computer.

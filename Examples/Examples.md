@@ -5,11 +5,11 @@ Each example is a standalone CMake project with its own documentation page, link
 
 ## QtNoidCore examples
 
-* **[CoreBasicUsage](CoreBasicUsage/doc/CoreBasicUsage.md)**: Demonstrates the basic usage of the QtNoidCore library features.
+* **[QtNoid::CoreBasicUsage](CoreBasicUsage/doc/CoreBasicUsage.md)**: Demonstrates the basic usage of the QtNoidCore library features.
 
 ## QtNoidCommon examples
 
-* **[CommonBasicUsage](CommonBasicUsage/doc/CommonBasicUsage.md)**:
+* **[QtNoid::Common Basic Usage](CommonBasicUsage/doc/CommonBasicUsage.md)**:
   Shows how to use `QtNoid::Common::File::listPathRecursively()` and `listSubPathRecursively()`, including a live benchmark of their speed on different platforms.
 
 ## QtNoidApp examples

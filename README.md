@@ -6,14 +6,14 @@ In an effort to avoid repeating myself, I created this library.
 This is **QtNoid2**, because it is the second iteration of the project, and  the first public release.
 
 # Modules in the library
-* **[QtNoidCore](QtNoidCore/doc/QtNoidCore.md):**
+* **[QtNoid::Core](QtNoidCore/doc/QtNoidCore.md):**
   This is a simple class to control the library life cycle.
   
-* **[QtNoidCommon](QtNoidCommon/doc/QtNoidCommon.md)**:
+* **[QtNoid::Common](QtNoidCommon/doc/QtNoidCommon.md)**:
   This is a collection of class to help on general tasks. 
-	* [**File**](QtNoidCommon/doc/File.md): methods to list and manage files, rename, read and write text files. 
-	* [**Scale**](QtNoidCommon/doc/Scale.md): this class convert numbers to a human readable format using suffix like kilo, Mega, and so on.
-	* [**Text**](QtNoidCommon/doc/Text.md): methods to clean-up text, tokenize, convert to camel case or snake case.
+	* [**QtNoid::Common::File**](QtNoidCommon/doc/File.md): methods to list and manage files, rename, read and write text files. 
+	* [**QtNoid::Common::Scale**](QtNoidCommon/doc/Scale.md): this class convert numbers to a human readable format using suffix like kilo, Mega, and so on.
+	* [**QtNoid::Common::Text**](QtNoidCommon/doc/Text.md): methods to clean-up text, tokenize, convert to camel case or snake case.
 
 * **[QtNoidApp](QtNoidApp.md)**:
     This is a collection of class to simplify the implementation of common feature of a Desktop Application. Main classes are:

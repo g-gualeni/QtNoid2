@@ -1,8 +1,9 @@
-# QtNoidCore
+# QtNoid::Core
 This is a simple class to control the library life cycle.
 It provides static methods to access project version and build information.
 ## Class: Core
-
+### Non Static Methods
+* None
 ### Static Methods
 
 - `static QString version()`: Returns the current version of the QtNoid library as a QString.
@@ -33,7 +34,7 @@ using namespace QtNoid;
 ```
 
 ## Examples
-- [**CoreBasicUsage**](../../Examples/CoreBasicUsage/doc/CoreBasicUsage.md): use this example to understand how the library can be integrated in your project
+- [**QtNoid::Core Basic Usage**](../../Examples/CoreBasicUsage/doc/CoreBasicUsage.md): use this example to understand how the library can be integrated in your project
 
 
 

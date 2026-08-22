@@ -1,12 +1,5 @@
-# AppParameterBasicUsage
-
-## Overview
-
-This example demonstrates the basic usage of QtNoidApp Parameter features.
-
-## Description
-
-AppParameterBasicUsage provides a simple Qt application that showcases how to use the Parameter class from QtNoidApp library for managing application parameters.
+# QtNoid::App::Parameter Basic Usage
+This is a simple Qt application that showcases how to use the QtNoid::App::Parameter class from QtNoidApp library for managing application parameters.
 
 ## Building
 
