@@ -1,7 +1,7 @@
 # QtNoidApp
 This module contains:
 
-- [**Settings**](doc/Settings.md): collection of methods to simplify the management of the application settings, or collecting app information like the app or bundle path.
+- [**Core**](doc/Core.md): collection of methods to simplify the management of the application settings, or collecting app information like the app or bundle path.
 
 - [**Parameter**](doc/Parameter.md): Generic application parameter class with value storage, range validation, presets, description, tooltip and Qt property binding. This class can be used to manage a single parameter.
 

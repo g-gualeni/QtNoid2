@@ -61,7 +61,7 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut()
     initMainDialog(&frm, __func__);
 
     // Actitate shortcut
-    QShortcut *shortcut = Development::initFullDialogGrabShortcut(&frm);
+    QShortcut *shortcut = Development::initFullDialogGrabShortcut(&frm, {}, {}, false, false);
 
     // Check the shortcut creation
     QVERIFY(shortcut != nullptr);
@@ -99,8 +99,8 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut()
 
 void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withFileName()
 {
-    QString sstFile = Settings::appExeOrAppBundleDirPath() + "/" + __func__ + ".png";
-    // qDebug() << __func__ << sstFile;
+    QString sstFile = Core::appExeOrAppBundleDirPath() + "/" + __func__ + ".png";
+    qDebug() << __func__ << sstFile;
 
     QMainWindow frm;
     initMainDialog(&frm, __func__);
@@ -111,6 +111,7 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withFileName()
     QShortcut *shortcut = Development::initFullDialogGrabShortcut(&frm,
                                                                keySeq,
                                                                sstFile,
+                                                               false,
                                                                false);
 
     // Check the shortcut creation

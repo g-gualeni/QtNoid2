@@ -1,6 +1,6 @@
 
-#ifndef QTNOID_SETTINGS_H
-#define QTNOID_SETTINGS_H
+#ifndef QTNOID_CORE_H
+#define QTNOID_CORE_H
 
 #include "global.h"
 #include <QObject>
@@ -14,7 +14,7 @@ namespace QtNoid {
 namespace App {
 
 
-class QTNOIDAPP_EXPORT Settings
+class QTNOIDAPP_EXPORT Core
 {
 public:
     static QString appExeOrAppBundleDirPath();
@@ -34,4 +34,4 @@ private:
 } // namespace App
 } // namespace QtNoid
 
-#endif // QTNOID_SETTINGS_H
+#endif // QTNOID_CORE_H

@@ -24,13 +24,13 @@ frmNewDataset::~frmNewDataset()
 
 void frmNewDataset::setRootFolder(const QString &rootFolder)
 {
-    QDir dir(QtNoid::App::Settings::appExeOrAppBundleDirPath());
+    QDir dir(QtNoid::App::Core::appExeOrAppBundleDirPath());
     auto relativeRootFolder = dir.relativeFilePath(rootFolder);
     ui->txtRootFolder->setText(relativeRootFolder);
 }
 QString frmNewDataset::rootFolder() const
 {
-    auto res =  QtNoid::App::Settings::appExeOrAppBundleDirPath() + QDir::separator() + ui->txtRootFolder->text();
+    auto res =  QtNoid::App::Core::appExeOrAppBundleDirPath() + QDir::separator() + ui->txtRootFolder->text();
     return QDir::cleanPath(res);
 }
 

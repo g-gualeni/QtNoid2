@@ -10,7 +10,7 @@
 #include <QPdfWriter>
 #include <QPushButton>
 
-class TestQtNoidAppSettings : public QObject
+class TestQtNoidAppCore : public QObject
 {
     Q_OBJECT
 
@@ -46,33 +46,33 @@ private:
 using namespace QtNoid::App;
 
 
-void TestQtNoidAppSettings::initTestCase()
+void TestQtNoidAppCore::initTestCase()
 {}
 
-void TestQtNoidAppSettings::cleanupTestCase()
+void TestQtNoidAppCore::cleanupTestCase()
 {}
 
-void TestQtNoidAppSettings::init()
+void TestQtNoidAppCore::init()
 {}
 
-void TestQtNoidAppSettings::cleanup()
+void TestQtNoidAppCore::cleanup()
 {}
 
-void TestQtNoidAppSettings::testAppExeOrAppBundleFilePath()
+void TestQtNoidAppCore::testAppExeOrAppBundleFilePath()
 {
-    auto actual = QtNoid::App::Settings::appExeOrAppBundleFilePath();
+    auto actual = QtNoid::App::Core::appExeOrAppBundleFilePath();
     auto expected = qApp->applicationFilePath();
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testAppExeOrAppBundleDirPath()
+void TestQtNoidAppCore::testAppExeOrAppBundleDirPath()
 {
-    auto actual = Settings::appExeOrAppBundleDirPath();
+    auto actual = Core::appExeOrAppBundleDirPath();
     auto expected = qApp->applicationDirPath();
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testFilePathAsAppSibling_data()
+void TestQtNoidAppCore::testFilePathAsAppSibling_data()
 {
     QTest::addColumn<QString>("fileName");
 
@@ -80,10 +80,10 @@ void TestQtNoidAppSettings::testFilePathAsAppSibling_data()
     QTest::addRow("FileName WithPath") <<"c:/a/b/c/mars.ini";
 }
 
-void TestQtNoidAppSettings::testFilePathAsAppSibling()
+void TestQtNoidAppCore::testFilePathAsAppSibling()
 {
     QFETCH(QString, fileName);
-    auto actual = Settings::filePathAsAppSibling(fileName);
+    auto actual = Core::filePathAsAppSibling(fileName);
 
     QString expected = qApp->applicationDirPath();
     auto split = fileName.split("/").last();
@@ -91,14 +91,14 @@ void TestQtNoidAppSettings::testFilePathAsAppSibling()
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testFilePathAsAppSiblingWithEmptyFileName()
+void TestQtNoidAppCore::testFilePathAsAppSiblingWithEmptyFileName()
 {
-    auto actual = Settings::filePathAsAppSibling();
+    auto actual = Core::filePathAsAppSibling();
     auto expected = qApp->applicationDirPath() + "/" + qApp->applicationName() + ".json";
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testMainWindowsFromWidget()
+void TestQtNoidAppCore::testMainWindowsFromWidget()
 {
     QMainWindow frm;
     frm.setCentralWidget(new QWidget());
@@ -111,12 +111,12 @@ void TestQtNoidAppSettings::testMainWindowsFromWidget()
     auto path = qApp->applicationDirPath() + "/" + __func__ + ".png";
     pixMap.save(path);
 
-    auto actual = Settings::mainWindowFromWidget(myWidget);
+    auto actual = Core::mainWindowFromWidget(myWidget);
     auto expected = &frm;
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testMainWindowsFromWidget_usingTheMainWindow()
+void TestQtNoidAppCore::testMainWindowsFromWidget_usingTheMainWindow()
 {
     QMainWindow frm;
     frm.setCentralWidget(new QWidget());
@@ -129,36 +129,36 @@ void TestQtNoidAppSettings::testMainWindowsFromWidget_usingTheMainWindow()
     auto path = qApp->applicationDirPath() + "/" + __func__ + ".png";
     pixMap.save(path);
 
-    auto actual = Settings::mainWindowFromWidget(&frm);
+    auto actual = Core::mainWindowFromWidget(&frm);
     auto expected = &frm;
     QCOMPARE(actual, expected);
 
 }
 
-void TestQtNoidAppSettings::testGroupNameFromObjectOrClassUsingClass()
+void TestQtNoidAppCore::testGroupNameFromObjectOrClassUsingClass()
 {
-    auto actual = Settings::groupNameFromObjectOrClass(new QLabel("Test"));
+    auto actual = Core::groupNameFromObjectOrClass(new QLabel("Test"));
     auto expected ="QLabel";
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testGroupNameFromObjectOrClassUsingObjectName()
+void TestQtNoidAppCore::testGroupNameFromObjectOrClassUsingObjectName()
 {
     auto lbl = new QLabel("Test");
     lbl->setObjectName("MyObjectIsBetter");
 
-    auto actual = Settings::groupNameFromObjectOrClass(lbl);
+    auto actual = Core::groupNameFromObjectOrClass(lbl);
     auto expected ="MyObjectIsBetter";
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testUpdateMainWindowTitle_shouldFail()
+void TestQtNoidAppCore::testUpdateMainWindowTitle_shouldFail()
 {
-    auto res = Settings::updateMainWindowTitle(true, nullptr);
+    auto res = Core::updateMainWindowTitle(true, nullptr);
     QCOMPARE(res, false);
 }
 
-void TestQtNoidAppSettings::testUpdateMainWindowTitle_data()
+void TestQtNoidAppCore::testUpdateMainWindowTitle_data()
 {
     QTest::addColumn<QString>("title");
     QTest::addColumn<bool>("modified");
@@ -168,10 +168,11 @@ void TestQtNoidAppSettings::testUpdateMainWindowTitle_data()
     QTest::addRow("Set Changed") <<"MoonApp" << true << "MoonApp*";
     QTest::addRow("With Space and Not Changed") <<"MoonApp " << false << "MoonApp";
     QTest::addRow("With Space and Set Changed") <<"MoonApp " << true << "MoonApp*";
+    QTest::addRow("Empty Title Should Not Crash") <<"" << true << "*";
 }
 
 
-void TestQtNoidAppSettings::testUpdateMainWindowTitle()
+void TestQtNoidAppCore::testUpdateMainWindowTitle()
 {
     QFETCH(QString, title);
     QFETCH(bool, modified);
@@ -180,36 +181,36 @@ void TestQtNoidAppSettings::testUpdateMainWindowTitle()
     QMainWindow frm;
     frm.setWindowTitle(title);
     frm.setCentralWidget(new QWidget());
-    auto res = Settings::updateMainWindowTitle(modified, frm.centralWidget());
+    auto res = Core::updateMainWindowTitle(modified, frm.centralWidget());
     QCOMPARE(res, true);
 
     QCOMPARE(frm.windowTitle(), expected);
 }
 
-void TestQtNoidAppSettings::testUpdateMainWindowTitle_multipleChange()
+void TestQtNoidAppCore::testUpdateMainWindowTitle_multipleChange()
 {
     QMainWindow frm;
 
     frm.setWindowTitle("We Are Ready");
     frm.setCentralWidget(new QWidget());
-    auto res = Settings::updateMainWindowTitle(true, frm.centralWidget());
+    auto res = Core::updateMainWindowTitle(true, frm.centralWidget());
     QCOMPARE(res, true);
-    res = Settings::updateMainWindowTitle(false, frm.centralWidget());
+    res = Core::updateMainWindowTitle(false, frm.centralWidget());
     QCOMPARE(res, true);
-    res = Settings::updateMainWindowTitle(true, frm.centralWidget());
+    res = Core::updateMainWindowTitle(true, frm.centralWidget());
     QCOMPARE(res, true);
     auto expected = "We Are Ready*";
     QCOMPARE(frm.windowTitle(), expected);
 }
 
-void TestQtNoidAppSettings::testFullDialogGrab_shouldBeEmpty()
+void TestQtNoidAppCore::testFullDialogGrab_shouldBeEmpty()
 {
     auto expected = QImage();
-    auto actual = Settings::fullDialogGrab(nullptr);
+    auto actual = Core::fullDialogGrab(nullptr);
     QCOMPARE(actual, expected);
 }
 
-void TestQtNoidAppSettings::testFullDialogGrab()
+void TestQtNoidAppCore::testFullDialogGrab()
 {
     QMainWindow frm;
     frm.setWindowTitle("MyMainWindowsCaption");
@@ -243,14 +244,14 @@ void TestQtNoidAppSettings::testFullDialogGrab()
     image.save(path  + "_Expected.png");
     auto expected = image;
 
-    auto actual = Settings::fullDialogGrab(&frm);
+    auto actual = Core::fullDialogGrab(&frm);
     actual.save(path + "_Actual.bmp");
 
     QCOMPARE(actual, expected);
 }
 
 
-QTEST_MAIN(TestQtNoidAppSettings)
-#include "test_settings.moc"
+QTEST_MAIN(TestQtNoidAppCore)
+#include "test_app_core.moc"
 
 

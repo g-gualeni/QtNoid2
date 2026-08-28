@@ -3,6 +3,7 @@
 #include "QtNoidApp/QtNoidApp"
 
 #include <QShortcut>
+#include <QtNoidCommon/text.h>
 
 using namespace QtNoid::App;
 
@@ -13,17 +14,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
-    QString appBundleFolderPath = Settings::appExeOrAppBundleDirPath();
+    QString appBundleFolderPath = Core::appExeOrAppBundleDirPath();
     ui->txtAppBundleDirPath->setText(appBundleFolderPath);
 
-    QString appBundleFilePath = Settings::appExeOrAppBundleFilePath();
+    QString appBundleFilePath = Core::appExeOrAppBundleFilePath();
     ui->txtAppBundleFilePath->setText(appBundleFilePath);
 
-    qApp->setApplicationDisplayName("This Is App Settings Basic Usage");
-    QString config = Settings::filePathAsAppSibling();
-    ui->txtConfigPath->setText(config);
+    setWindowTitle("QtNoid::App::Core Basic Usage");
 
-    ui->txtGroupName->setText(Settings::groupNameFromObjectOrClass(this));
+    QString config = Core::filePathAsAppSibling();
+    ui->txtConfigPath->setText(config);
+    ui->txtFullDialogGrab->setText({});
+
+    ui->txtGroupName->setText(Core::groupNameFromObjectOrClass(this));
 
     m_screenshotShortcut = Development::initFullDialogGrabShortcut(this);
 }
@@ -35,14 +38,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_cmdGroupName_clicked()
 {
-    this->setObjectName("AppSettingsBasicUsage");
-    ui->txtGroupName->setText(Settings::groupNameFromObjectOrClass(this));
+    // qDebug() << Q_FUNC_INFO;
+    auto newName = QtNoid::Common::Text::convertToCamelCase(ui->txtGroupName->text());
+    this->setObjectName(newName);
+    ui->txtGroupName->setText(Core::groupNameFromObjectOrClass(this));
 }
 
 void MainWindow::on_optUpdateWindowTitle_clicked(bool checked)
 {
     // I use the central widget as the simplest way to get the main window.
-    Settings::updateMainWindowTitle(checked, ui->centralwidget);
+    Core::updateMainWindowTitle(checked, ui->centralwidget);
 }
 
 void MainWindow::on_cmdFullDialogGrab_clicked()
@@ -55,7 +60,7 @@ void MainWindow::on_cmdFullDialogGrab_clicked()
         ui->txtFullDialogGrab->setStyleSheet({});
     }
     else {
-        auto pixMap = Settings::fullDialogGrab(this);
+        auto pixMap = Core::fullDialogGrab(this);
         ui->txtFullDialogGrab->setStyleSheet("border: 2px solid blue;");
         ui->txtFullDialogGrab->setScaledContents(true);
         ui->txtFullDialogGrab->setPixmap(QPixmap::fromImage(pixMap));

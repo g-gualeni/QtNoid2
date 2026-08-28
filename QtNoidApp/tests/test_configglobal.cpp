@@ -79,7 +79,7 @@ void TestQtNoidAppConfigGlobal::testConfigGlobalProvidesAccessToConfig()
 
 void TestQtNoidAppConfigGlobal::testAppConfigFileName()
 {
-    QString expected = Settings::filePathAsAppSibling();
+    QString expected = Core::filePathAsAppSibling();
     // qDebug() << appConfig->fileName();
     QCOMPARE(appConfig->fileName(), expected);
 }
@@ -88,7 +88,7 @@ void TestQtNoidAppConfigGlobal::testAppConfigFileName()
 void TestQtNoidAppConfigGlobal::testAppConfigSaveAndLoad()
 {
     // Clear existing files
-    auto fileName = Settings::filePathAsAppSibling();
+    auto fileName = Core::filePathAsAppSibling();
     QFile::remove(fileName);
 
     // Set config name and add a parameter

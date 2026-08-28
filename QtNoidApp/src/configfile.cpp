@@ -2,7 +2,7 @@
 // configfile.cpp
 //=============================================================================
 #include "QtNoidApp/configfile.h"
-#include "QtNoidApp/settings.h"
+#include "QtNoidApp/core.h"
 
 #include <QFile>
 #include <QJsonObject>
@@ -111,7 +111,7 @@ bool ConfigFile::save()
 void ConfigFile::initFileName(const QString &fileName)
 {
     if(fileName.isEmpty()) {
-        m_fileName = Settings::filePathAsAppSibling();
+        m_fileName = Core::filePathAsAppSibling();
     }
     else {
         m_fileName = fileName;

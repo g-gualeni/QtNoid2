@@ -17,7 +17,7 @@
 #include <QCryptographicHash>
 #include <QMouseEvent>
 #include <QtNoidApp/configglobal.h>
-#include <QtNoidApp/settings.h>
+#include <QtNoidApp/core.h>
 #include <QtNoidCommon/QtNoidCommon>
 
 frmManageProjectResources::frmManageProjectResources(QWidget *parent)

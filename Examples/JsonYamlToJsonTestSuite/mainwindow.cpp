@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->txtCurrentFile, &QComboBox::currentIndexChanged, this, [&](int index){
         // QString folder = ui->txtCollectionFolder->currentText();
-        // QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+        // QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
         m_yamlTestCollectionListCurrent = index;
         updateUI_progressBar();
         updateUI_txtCurrentFile();
@@ -286,7 +286,7 @@ bool MainWindow::generateTestDataFromResource(const QString &dataPrefix)
     // Destination path is in CWD + dataPrefix
     QString baseOutputPath = dataPrefix;
     baseOutputPath.remove(":");
-    baseOutputPath = QtNoid::App::Settings::appExeOrAppBundleDirPath() + baseOutputPath;
+    baseOutputPath = QtNoid::App::Core::appExeOrAppBundleDirPath() + baseOutputPath;
 
     QDir dir;
     dir.mkpath(baseOutputPath);
@@ -334,7 +334,7 @@ bool MainWindow::generateTestDataFromResource(const QString &dataPrefix)
 
 void MainWindow::on_actionTestDataFolder_triggered()
 {
-    QString appPath = QtNoid::App::Settings::appExeOrAppBundleDirPath() ;
+    QString appPath = QtNoid::App::Core::appExeOrAppBundleDirPath() ;
 
     auto res = QDesktopServices::openUrl(QUrl::fromLocalFile(appPath + "/TestData"));
     if(res) return;
@@ -348,11 +348,11 @@ void MainWindow::on_actionManageProjectResources_triggered()
     frmManageProjectResources dialog(this);
     dialog.setDestinationFolder(SOURCE_FILES_PATH "/resources");
     dialog.setDestinationResourceFile("JsonYamlToJsonTestSuite.qrc");
-    dialog.setSourceBaseFolder(QtNoid::App::Settings::appExeOrAppBundleDirPath());
+    dialog.setSourceBaseFolder(QtNoid::App::Core::appExeOrAppBundleDirPath());
     dialog.setSourceSubFolder(ui->txtCollectionFolder->currentText());
 
     // Restore Geometry
-    auto pageName = QtNoid::App::Settings::groupNameFromObjectOrClass(dialog);
+    auto pageName = QtNoid::App::Core::groupNameFromObjectOrClass(dialog);
     dialog.restoreGeometry(appConfig->restoreAsByteArray(
         "Geometry", dialog.saveGeometry(), pageName));
     dialog.setProjectResPrefix(appConfig->restoreAsString(
@@ -682,7 +682,7 @@ void MainWindow::onCreateNewTest()
     qDebug() << __func__ << "DA FINIRE";
 
     frmNewDataset dialog(this);
-    QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+    QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
     auto rootFolder = collectionFolderAbsolutePath();
     dialog.setRootFolder(rootFolder);
     if(dialog.exec() == 0) {
@@ -797,7 +797,7 @@ void MainWindow::setCollectionFolder(const QString &absolutePath)
     }
 
     // Remove root
-    QString root = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+    QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
     auto folderPath = QDir(root).relativeFilePath(absolutePath);
 
     // Add the folder to the comboBox if it's not already there
@@ -817,7 +817,7 @@ QString MainWindow::collectionFolderAbsolutePath() const
     if(relPath.isEmpty()) {
         return {};
     }
-    auto resPath = QDir::cleanPath(QtNoid::App::Settings::appExeOrAppBundleDirPath() +
+    auto resPath = QDir::cleanPath(QtNoid::App::Core::appExeOrAppBundleDirPath() +
                                    QDir::separator() + relPath);
 
     return resPath;

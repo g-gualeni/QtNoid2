@@ -24,7 +24,7 @@ Each example is a standalone CMake project with its own documentation page, link
   Benchmark of the `Parameter` list performance.
 
 * **[AppSettingsBasicUsage](AppSettingsBasicUsage/doc/AppSettingsBasicUsage.md)**:
-  Basic usage of the `Settings` class to manage the application configuration file.
+  Basic usage of the `Core` class to manage the application configuration file.
 
 ## QtNoidJson examples
 

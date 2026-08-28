@@ -1,4 +1,4 @@
-#include "QtNoidApp/settings.h"
+#include "QtNoidApp/core.h"
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -14,12 +14,12 @@ namespace QtNoid {
 namespace App {
 
 /**
- * @brief Settings::appExeOrAppBundlePath is used to manage files into the
+ * @brief Core::appExeOrAppBundlePath is used to manage files into the
  * application exectuion folder or the Application Bundle folder.
  * This is helpful to save cunfiguration files or resources for the application.
  * @return the Application Executable or the Application Boundle folder
  */
-QString Settings::appExeOrAppBundleDirPath()
+QString Core::appExeOrAppBundleDirPath()
 {
     auto appFilePath = qApp->applicationDirPath();
     if(appFilePath.contains(".app/Contents/MacOS")){
@@ -35,7 +35,7 @@ QString Settings::appExeOrAppBundleDirPath()
 }
 
 
-QString Settings::appExeOrAppBundleFilePath()
+QString Core::appExeOrAppBundleFilePath()
 {
     auto appFilePath = qApp->applicationFilePath();
     if(appFilePath.contains(".app/Contents/MacOS")){
@@ -51,7 +51,7 @@ QString Settings::appExeOrAppBundleFilePath()
 }
 
 
-QString Settings::filePathAsAppSibling(const QString &fileName)
+QString Core::filePathAsAppSibling(const QString &fileName)
 {
 
     QString cleanFName;
@@ -70,12 +70,12 @@ QString Settings::filePathAsAppSibling(const QString &fileName)
 
 
 
-QMainWindow *Settings::mainWindowFromWidget(QWidget &ref)
+QMainWindow *Core::mainWindowFromWidget(QWidget &ref)
 {
     return mainWindowFromWidget(&ref);
 }
 
-QMainWindow *Settings::mainWindowFromWidget(QWidget *ref)
+QMainWindow *Core::mainWindowFromWidget(QWidget *ref)
 {
     if (ref == nullptr)
         return nullptr;
@@ -97,12 +97,12 @@ QMainWindow *Settings::mainWindowFromWidget(QWidget *ref)
 
 
 
-QString Settings::groupNameFromObjectOrClass(const QObject &ref)
+QString Core::groupNameFromObjectOrClass(const QObject &ref)
 {
     return groupNameFromObjectOrClass(&ref);
 }
 
-QString Settings::groupNameFromObjectOrClass(const QObject *ref)
+QString Core::groupNameFromObjectOrClass(const QObject *ref)
 {
     if (ref == nullptr)
         return QString();
@@ -116,7 +116,7 @@ QString Settings::groupNameFromObjectOrClass(const QObject *ref)
     }
 }
 
-bool Settings::updateMainWindowTitle(bool changed, QWidget *ref)
+bool Core::updateMainWindowTitle(bool changed, QWidget *ref)
 {
     auto mainWindow = mainWindowFromWidget(ref);
     if(mainWindow == nullptr)
@@ -125,7 +125,7 @@ bool Settings::updateMainWindowTitle(bool changed, QWidget *ref)
     }
 
     auto current = mainWindow->windowTitle();
-    if(current.last(1) == "*") {
+    if(!current.isEmpty() && current.last(1) == "*") {
         current = current.removeLast();
     }
     current = current.trimmed();
@@ -138,7 +138,7 @@ bool Settings::updateMainWindowTitle(bool changed, QWidget *ref)
     return true;
 }
 
-QImage Settings::fullDialogGrab(QWidget *ref)
+QImage Core::fullDialogGrab(QWidget *ref)
 {
     auto mainWindow = mainWindowFromWidget(ref);
     if(mainWindow == nullptr)

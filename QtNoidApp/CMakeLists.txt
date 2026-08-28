@@ -35,7 +35,7 @@ set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # Source Files
 # =============================================================================
 set(SOURCES
-    ${SOURCES_DIR}/settings.cpp
+    ${SOURCES_DIR}/core.cpp
     ${SOURCES_DIR}/parameter.cpp
     ${SOURCES_DIR}/parameterlist.cpp
     ${SOURCES_DIR}/config.cpp
@@ -48,7 +48,7 @@ set(SOURCES
 set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/settings.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/core.h
     ${HEADERS_DIR}/${PROJECT_NAME}/parameter.h
     ${HEADERS_DIR}/${PROJECT_NAME}/parameterlist.h
     ${HEADERS_DIR}/${PROJECT_NAME}/config.h
@@ -155,7 +155,7 @@ endif()
 # =============================================================================
 set(PROJECT_DOCS
     QtNoidApp.md
-    doc/Settings.md
+    doc/Core.md
     doc/Parameter.md
     doc/ParameterList.md
     doc/Config.md

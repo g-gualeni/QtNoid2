@@ -10,28 +10,15 @@
     <height>600</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>AppSettingsBasicUsage</string>
-  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="styleSheet">
-       <string notr="true">color: blue;  font-weight: bold;</string>
-      </property>
-      <property name="text">
-       <string>Basic Usage Example for QtNoidApp Settings Class</string>
-      </property>
-     </widget>
-    </item>
     <item>
      <widget class="QLabel" name="label_2">
       <property name="styleSheet">
        <string notr="true">font-weight: bold</string>
       </property>
       <property name="text">
-       <string>Application or Application Bundle folder path</string>
+       <string>appExeOrAppBundleDirPath() -&gt; Application or Application Bundle folder path</string>
       </property>
      </widget>
     </item>
@@ -44,7 +31,7 @@
        <string notr="true">font-weight: bold</string>
       </property>
       <property name="text">
-       <string>Application or Application Bundle File Path</string>
+       <string>appExeOrAppBundleFilePath() -&gt; Application or Application Bundle File Path</string>
       </property>
      </widget>
     </item>
@@ -53,11 +40,16 @@
     </item>
     <item>
      <widget class="QLabel" name="label_3">
+      <property name="font">
+       <font>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">font-weight: bold</string>
       </property>
       <property name="text">
-       <string>Config.json file path using filePathAsAppSibling</string>
+       <string>filePathAsAppSibling() -&gt; Config.json file path as Exe or Bundle sibling</string>
       </property>
      </widget>
     </item>
@@ -70,7 +62,7 @@
        <string notr="true">font-weight: bold</string>
       </property>
       <property name="text">
-       <string>groupNameFromObjectOrClass</string>
+       <string>groupNameFromObjectOrClass()</string>
       </property>
      </widget>
     </item>
@@ -82,7 +74,7 @@
       <item>
        <widget class="QPushButton" name="cmdGroupName">
         <property name="text">
-         <string>Set MainWindow Name to AppSettingsBasicUsage</string>
+         <string>Change MainWindow Object Name </string>
         </property>
        </widget>
       </item>
@@ -113,14 +105,14 @@
          <string notr="true">font-weight: bold</string>
         </property>
         <property name="text">
-         <string>FullDialogGrab Result</string>
+         <string>FullDialogGrab() Test</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="cmdFullDialogGrab">
         <property name="text">
-         <string>-&gt;fullDialogGrab</string>
+         <string>-&gt;fullDialogGrab()</string>
         </property>
        </widget>
       </item>

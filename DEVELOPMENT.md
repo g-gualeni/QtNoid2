@@ -13,7 +13,7 @@
 - Release of QtNoid2 version 2.2.0
 
 ### Progress Status
-
+-> Rename settings to QtNoid::App::Core
 
 
 
@@ -57,7 +57,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	* [x] Text
 * [x] QtNoidApp
 	* [x] Split the documentation into 1 file for each class
-	* [x] Settings
+	* [x] Core
 	* [x] Parameter
 	* [x] ParameterList
 	* [ ] Config: è un abbozzo
@@ -87,7 +87,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 # QtNoidApp
 
 - [x] Aggiungere a QtNoidApp la dipendenza da QtNoidCommon
-- [ ] class **Settings** update
+- [ ] class **Core** update
      - [x] appExeOrAppBundleDirPath();
      - [x] appExeOrAppBundleFilePath();
      - [x] filePathAsAppSibling() not correct under macOs
@@ -98,7 +98,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] fullDialogGrab: now returns QImage and fix the QColorSpace          
      - [x] mainWindowFromWidget(): reference instead of pointer version
      - [x] groupNameFromObjectOrClass(): reference instead of pointer version
-     - [ ] check Settings Documentation
+     - [ ] check Core Documentation
      
 - [ ] class **Parameter** update
      - [x] all json names should be camelCase lowercase
@@ -402,8 +402,8 @@ key: [
 - [ ] Massive File Copy / Rename / Move could became Copy Move Marshal 
 - [ ] Massive File Rename: replace token in huge file list in multiple folders
 
-## QtNoid::App::Settings
-- [ ] Move fullDialogGrab from settings to Development
+## QtNoid::App::Core
+- [ ] Move fullDialogGrab from Core to Development
 
 # Known Issue
 * [ ] fullDialogGrab()  wrong display captured on macOs. It take a screenshot from the main display of the computer.

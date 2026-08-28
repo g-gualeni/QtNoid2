@@ -17,7 +17,7 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
 
 * **[QtNoidApp](QtNoidApp.md)**:
     This is a collection of class to simplify the implementation of common feature of a Desktop Application. Main classes are:
-    * [**Settings**](QtNoidApp/doc/Settings.md): class to manage the application initial configuration file.
+    * [**Core**](QtNoidApp/doc/Core.md): class to manage the application initial configuration file.
     * [**Config**](QtNoidApp/doc/Config.md): container class to manage a list of parameters with binding support and serialization.
     * [**Development**](QtNoidApp/doc/Development.md): API collection to simplify the application development and not intended to be customer facing.
 

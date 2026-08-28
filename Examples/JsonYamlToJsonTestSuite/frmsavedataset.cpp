@@ -24,7 +24,7 @@ QString frmSaveDataset::collectionFolder() const
 {
     auto current = ui->txtCollectionFolder->text();
     if(!current.isEmpty()) {
-        current = QtNoid::App::Settings::appExeOrAppBundleDirPath() +"/" + current;
+        current = QtNoid::App::Core::appExeOrAppBundleDirPath() +"/" + current;
     }
     return current;
 }
@@ -54,7 +54,7 @@ void frmSaveDataset::on_cmdBrowseCollection_clicked()
         return;
     }
 
-    currentFolder = QDir(QtNoid::App::Settings::appExeOrAppBundleDirPath()).relativeFilePath(currentFolder);
+    currentFolder = QDir(QtNoid::App::Core::appExeOrAppBundleDirPath()).relativeFilePath(currentFolder);
     ui->txtCollectionFolder->setText(currentFolder);
 }
 

@@ -142,7 +142,7 @@ void MainWindow::restoreFromAppConfig()
     auto current = appConfig->restoreAsString("RecentListCurrent", ui->txtFolder->currentText());
     if(current.isEmpty() && list.isEmpty()) {
         // qDebug() << Q_FUNC_INFO;
-        current = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+        current = QtNoid::App::Core::appExeOrAppBundleDirPath();
     }
     ui->txtFolder->setCurrentText(current);
 

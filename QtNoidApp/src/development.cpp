@@ -1,5 +1,5 @@
 #include "QtNoidApp/development.h"
-#include "QtNoidApp/settings.h"
+#include "QtNoidApp/core.h"
 #include "QtNoidApp/configglobal.h"
 #include "QtNoidCommon/QtNoidCommon"
 #include <QApplication>
@@ -26,7 +26,7 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
 {
     QShortcut* shortCut = new QShortcut(QKeySequence(keySequence), parent);
     parent->connect(shortCut, &QShortcut::activated, parent, [=](){
-        auto screenshot =  Settings::fullDialogGrab(parent);
+        auto screenshot =  Core::fullDialogGrab(parent);
 
         QFileInfo FI(destinationFileOrPath);
         QString fullFilePath = destinationFileOrPath;
@@ -36,11 +36,11 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
             // Gather the class / window name
             if(fullFilePath.isEmpty())
             {
-                fullFilePath = QtNoid::App::Settings::appExeOrAppBundleDirPath();
+                fullFilePath = QtNoid::App::Core::appExeOrAppBundleDirPath();
             }
 
             QString osName = QSysInfo::productType();
-            auto mainWindow = Settings::mainWindowFromWidget(parent);
+            auto mainWindow = Core::mainWindowFromWidget(parent);
             if(mainWindow == nullptr){
                 osName =  "Screenshot-" + osName + ".png";
             }
@@ -50,6 +50,9 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
                 // qDebug() << Q_FUNC_INFO << osName;
             }
             finalFilePath = QDir::cleanPath(fullFilePath + "/" + osName);            
+        }
+        else {
+            finalFilePath = FI.absoluteFilePath();
         }
         finalFilePath = QtNoid::Common::File::autoNaming(finalFilePath);
         bool res = screenshot.save(finalFilePath);
@@ -61,7 +64,7 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
             QDesktopServices::openUrl(QUrl::fromLocalFile(fullFilePath));
         }
         qDebug() << "saveToClipboard:" << saveToClipboard <<
-            "Destination:" << finalFilePath << "Res:" << res;
+            "Destination:" << finalFilePath << "Save Res:" << res;
     } );
 
     return shortCut;

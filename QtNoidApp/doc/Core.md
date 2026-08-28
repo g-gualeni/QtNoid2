@@ -1,5 +1,5 @@
-# Class: Settings
-This class contains a set of helper methods to work with the application settings
+# Class: Core
+This class contains a set of helper methods to gather information from the application like the path, the windows name or the windows screenshot.
 ## Static Methods
 
 - `QString appExeOrAppBundleDirPath()`: returns the **folder** of the application executable file or of the Application Bundle on macOS. This is used to manage configuration files or resource files.

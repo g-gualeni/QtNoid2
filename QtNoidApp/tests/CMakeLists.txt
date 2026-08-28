@@ -31,9 +31,9 @@ function(create_qt_test test_name)
 endfunction()
 
 # =============================================================================
-# Tesing QtNoid::App::Settings
+# Tesing QtNoid::App::Core
 # =============================================================================
-create_qt_test(test_settings)
+create_qt_test(test_app_core)
 
 # =============================================================================
 # Tesing QtNoid::App::Parameter
