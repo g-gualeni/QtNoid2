@@ -13,9 +13,16 @@
 - Release of QtNoid2 version 2.2.0
 
 ### Progress Status
--> Rename settings to QtNoid::App::Core
+==Creare esempio per QtNoid::Common::Text==
+==--> Finire di studiare la classe Parameter==
 
+**UiName:** this can be an alias for the name or its translation in local language. Use this field for the user interface. 
 
+- `setPreset(const std::pair<QString, QString>& preset)`: Adds or updates a single preset.
+
+Rendere setValue uno slot ed Eliminare questo slot
+- `onValueChanged(const QVariant& newValue)`: Slot that can be connected to external signals to update the parameter value. It is basically a duplicate of setValue() I created for simplify tracking of the activation.
+- Forse anche altri setter andrebbero messi come slots
 
  
 Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale
@@ -82,12 +89,32 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	* [ ] JsonTxt2JsonBasicUsage
 	* [ ] JsonYamlToJsonTestSuite
 
+# QtNoidCommon
+- [ ] Create and example for QtNoid::Common::Text
+	- [ ] isValidUrl
+	- [ ] isValidEmail
+	- [ ] sanitizeString
+	- [ ] tokenize
+	- [ ] convertToCamelCase
+	- [ ] convertToSnakeCase
+
+- [ ] class **Text** 
+     - [x] TestQtNoidCommonText::testTokenizeJsonArray() adding
+          more test cases with string or a mixture of strings and numbers 
+          (mixed types array)
+- [ ] class **File** 
+     - [x] listPathRecursively() converted to static to simplify usage
+     - [x] listPathRecursively(): optimization for speed
+     - [x] create listSubPathRecursively() to return relative path
+     - [x] Doc for listSubPathRecursively()
+     - [x] Test for listSubPathRecursively()
 
 
 # QtNoidApp
 
 - [x] Aggiungere a QtNoidApp la dipendenza da QtNoidCommon
 - [ ] class **Core** update
+	 - [x] Rename QtNoid::App::Settings to QtNoid::App::Core
      - [x] appExeOrAppBundleDirPath();
      - [x] appExeOrAppBundleFilePath();
      - [x] filePathAsAppSibling() not correct under macOs
@@ -158,7 +185,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [ ] class ConfigFile documentation         
 
 
-- [ ] class **GlobalConfig** as static wrapper for a singletone Config
+- [ ] class **GlobalConfig** as static wrapper for a singleton Config
      - [x] appConfig macro for easy access
      - [x] class GlobalConfig test
      - [ ] class GlobalConfig Documentation
@@ -184,18 +211,6 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [ ] class Development Documentation
 
 
-# QtNoidCommon
-- [ ] Create and example for QtNoid::Common::Text
-- [ ] class **Text** 
-     - [x] TestQtNoidCommonText::testTokenizeJsonArray() adding
-          more test cases with string or a mixture of strings and numbers 
-          (mixed types array)
-- [ ] class **File** 
-     - [x] listPathRecursively() converted to static to simplify usage
-     - [x] listPathRecursively(): optimization for speed
-     - [x] create listSubPathRecursively() to return relative path
-     - [x] Doc for listSubPathRecursively()
-     - [x] Test for listSubPathRecursively()
 
 
 

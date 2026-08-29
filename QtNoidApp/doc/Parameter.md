@@ -1,47 +1,46 @@
 # Class: Parameter
-This class is a generic application parameter class with value storage, range validation, presets, and Qt property binding. Every property is bindable and fires a signal when changed. The class content can be exported in 2 types of JSON files:
+This class is a generic application parameter class with value storage, range validation, presets, and Qt property binding. Every property is bindable and fires a signal when changed. The class content can be exported in 2 types of JSON objects:
  * **Value** that contains just the name and the value
- * **Schema** that contains all the other properties that define the object.
+ * **Schema** that contains all the other properties that define the object, but not the value.
 
 A single Parameter has the following properties:
-- **value**: This is a QVariant object that represents the parameter value
-- **unit**: This is a QString that represents the unit of measure
-- **min**, **max**, **range**: These properties can be used to enforce limitations to the range of the value
-- **presets**: The parameter can have more than one default value, which are stored in a QVariantMap with preset name and value
-- **name**: This is a string that represents the parameter name as it is saved in a JSON object or as it can be visible in a dialog
+- **value**: This is a QVariant object that represents the parameter value.
+- **unit**: This is a QString that represents the unit of measure.
+- **min**, **max**, **range**: These properties can be used to enforce limitations to the range of the value. Any time a bigger or smaller value is set it is automatically clipped to the max or to the min.
+- **presets**: The parameter can have a list of default values, which are stored in a QVariantMap with preset name and preset value. This can be used for quick configuration change such as for light or dark theme.
+- **name**: This is a string that represents the parameter name as it is saved in a JSON object.
+- **UiName:** this can be an alias for the name or its translation in local language. Use this field for the user interface. 
 - **description**: This is the parameter description
 - **tooltip**: This is the parameter tooltip
-- **readOnly**: When true, the parameter value (only the value) cannot be modified
-- **visible**: This is an additional property that can be used to show or hide the parameter in a dialog.
+- **readOnly**: When true, the parameter value (only the value) cannot be modified. Trying to change it fires the signal writeAttemptedWhileReadOnly().
+- **visible**: use this flag to show or hide the parameter in a dialog.
 
 ## Static Methods
-* There are no static methods
+* There are no static methods.
 ## Constructors
-- `Parameter(QObject *parent = nullptr)`: Creates an empty parameter with default values and no initial configuration
+- `Parameter(QObject *parent = nullptr)`: Creates an empty parameter with default values and no initial configuration.
 
-- `Parameter(const QVariant& initialValue, QObject *parent = nullptr)`: Creates a parameter with a specified initial value
+- `Parameter(const QVariant& initialValue, QObject *parent = nullptr)`: Creates a parameter with a specified initial value.
 
-- `Parameter(const QVariant& initialValue, const QString &name, QObject *parent = nullptr)`: Creates a parameter with initial value and name
+- `Parameter(const QVariant& initialValue, const QString &name, QObject *parent = nullptr)`: Creates a parameter with initial value and name.
 
-- `Parameter(const QVariant& initialValue, const QString &name, const QString &description, QObject *parent = nullptr)`: Creates a parameter with initial value, name, and description
+- `Parameter(const QVariant& initialValue, const QString &name, const QString &description, QObject *parent = nullptr)`: Creates a parameter with initial value, name, and description.
 
-- `Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr)`: Creates a parameter by loading configuration from JSON schema and value objects
+- `Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr)`: Creates a parameter by loading configuration from the JSON schema and value from the JSON value object.
 
 ## Support methods
-- `uniqueId()`: Returns an int that represents the object unique ID
+- `uniqueId()`: Returns an integer that represents the object unique ID of the object.
 
 - `isValid()`: Returns true if the object meets all of the following conditions: 
 	- it has a name, 
-	- the value is valid, 
+	- the QVariant value is valid, 
 	- if a range is configured, the value falls within that range.
 
-- `isValueChanged()`: Returns true if the object's current value is different from the internal reference value. The reference value is either: the initial value of the object or a value from a preset application.
+- `isValueChanged()`: Returns true if the object's current value is different from the internal reference value. The internal reference value is either: the initial value of the object or the value of last preset applied.
 
 ## Properties management methods
 * `value()`: Returns the current value of the parameter as a QVariant
-
 - `setValue(const QVariant& val)`: Sets the parameter value, with range validation if configured.
-
 - `bindableValue()`: Returns a bindable property for the value, enabling Qt's property binding system.
 
 - `min()`: Returns the minimum allowed value for the parameter
@@ -57,11 +56,12 @@ A single Parameter has the following properties:
 - `setRange(const std::pair<QVariant, QVariant>& newRange)`: Sets the range using a pair of min/max values.
 - `rangeIsValid()`: Returns true if the current range configuration is valid (min <= max).
 
-- `presets()`: Returns the map of all available preset values (name -> value pairs).
+- `presets()`: Returns the map of all available preset values  as name and value pairs.
 - `setPresets(const QVariantMap& presets)`: Sets the complete map of preset values.
 - `clearPresets()`: Removes all preset values from the parameter.
 - `preset(const QString& name)`: Returns the value of a specific preset by name.
 - `setPreset(const QString& name, const QVariant& value)`: Adds or updates a single preset.
+- - `setPreset(const std::pair<QString, QString>& preset)`: Adds or updates a single preset.
 - `removePreset(const QString& name)`: Removes a specific preset by name.
 - `applyPreset(const QString& name)`: Sets the parameter value to the specified preset value, if the preset name exists.
 - `bindablePresets()`: Returns a bindable property for the presets map.
@@ -98,9 +98,9 @@ A single Parameter has the following properties:
 
 - `fromJson(const QJsonObject& schema, const QJsonObject& value)`: Restores the parameter from both schema and value JSON objects, reconstructing the complete parameter state.
 
-- `valueFromJson(const QJsonObject& json)`: Loads only the parameter value from a JSON object, leaving other properties unchanged.
+- `valueFromJson(const QJsonObject& json)`: Loads only the parameter value from a JSON object, leaving other properties unchanged. This update also the m_initialValue property and the isValueChanged Is set to false.
 
-- `schemaFromJson(const QJsonObject& json)`: Update the configuration of current Parameter object, from the JSON schema object.
+- `schemaFromJson(const QJsonObject& json)`: Update the configuration of current Parameter object (min, max, presets, description and so on), from the JSON schema object.
 
 
 ## Signals
@@ -132,7 +132,7 @@ A single Parameter has the following properties:
 
 
 ## Slots
-- `onValueChanged(const QVariant& newValue)`: Slot that can be connected to external signals to update the parameter value. It is basically a duplicate of setValue I created for simplify tracking of the activation.
+- `onValueChanged(const QVariant& newValue)`: Slot that can be connected to external signals to update the parameter value. It is basically a duplicate of setValue() I created for simplify tracking of the activation.
 
 
 

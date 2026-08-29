@@ -74,7 +74,7 @@ private slots:
     void testParameterValueFromJson();
     void testParameterValueFromJsonWithEmptyName();
     void testParameterValueFromJsonWithNonExistentKey();
-    void testParameterValueFromJsonWithDifferentTypes();
+    void testParameterValueFromJsonTestingDifferentDataTypes();
     
     // Schema fromJSON schema loading tests
     void testParameterSchemaFromJson();
@@ -1220,8 +1220,9 @@ void TestQtNoidAppParameter::testParameterValueFromJson()
     
     QCOMPARE(par.valueFromJson(json), true);
     QCOMPARE(par.value(), 30.5);
+    QCOMPARE(par.isValueChanged(), false);
     QCOMPARE(spy.count(), 1);
-    
+
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toDouble(), 30.5);
 }
@@ -1238,6 +1239,7 @@ void TestQtNoidAppParameter::testParameterValueFromJsonWithEmptyName()
     QCOMPARE(par.valueFromJson(json), true);
     QCOMPARE(par.value(), 100.0);
     QCOMPARE(par.name(), "NewParameterName");
+    QCOMPARE(par.isValueChanged(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(nameSpy.count(), 1);
 }
@@ -1252,10 +1254,11 @@ void TestQtNoidAppParameter::testParameterValueFromJsonWithNonExistentKey()
     
     QCOMPARE(par.valueFromJson(json), false);
     QCOMPARE(par.value(), 25.0);  // Value should not change
+    QCOMPARE(par.isValueChanged(), false);
     QCOMPARE(spy.count(), 0);     // No signal should be emitted
 }
 
-void TestQtNoidAppParameter::testParameterValueFromJsonWithDifferentTypes()
+void TestQtNoidAppParameter::testParameterValueFromJsonTestingDifferentDataTypes()
 {
     // Test with integer
     Parameter parInt(50, "IntParam", this);
@@ -1314,6 +1317,7 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValue()
     QCOMPARE(par.min().toDouble(), -273.15);
     QCOMPARE(par.max().toDouble(), 1000.0);
     QCOMPARE(par.value().toDouble(), 25.5);
+    QCOMPARE(par.isValueChanged(), false);
 }
 
 void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaOnly()
@@ -1350,12 +1354,13 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonValueOnly()
     value["Voltage"] = 12.5;
     
     // Create parameter from value only
-    Parameter par(QJsonObject(), value, this);
+    Parameter par({}, value, this);
     
     // Verify name and value were set
     QCOMPARE(par.name(), "Voltage");
     QCOMPARE(par.value().toDouble(), 12.5);
-    
+    QCOMPARE(par.isValueChanged(), false);
+
     // Other properties should be default values
     QCOMPARE(par.description(), QString());
     QCOMPARE(par.unit(), QString());
@@ -1404,6 +1409,7 @@ void TestQtNoidAppParameter::testParameterSchemaFromJson()
     // Apply schema to parameter
     bool result = par.schemaFromJson(schema);
     QCOMPARE(result, true);
+    QCOMPARE(par.isValueChanged(), false);
     
     // Verify all schema properties were applied
     QCOMPARE(par.name(), "Temperature");
@@ -1415,11 +1421,12 @@ void TestQtNoidAppParameter::testParameterSchemaFromJson()
     QCOMPARE(par.max().toDouble(), 100.0);
     auto presetList = par.presets();
     QCOMPARE(presetList.count(), 2);
-    QCOMPARE(par.preset("Low"), -40);
+    QCOMPARE(par.preset("Low"), -40);   
     QCOMPARE(par.preset("High"), 90);
+    QCOMPARE(par.isValueChanged(), false);
     
     // Value should remain unchanged
-    QCOMPARE(par.value().toDouble(), 20.0);
+    QCOMPARE(par.value().toDouble(), 20.0);    
 }
 
 void TestQtNoidAppParameter::testParameterSchemaFromJsonWithEmptyName()
@@ -1541,6 +1548,7 @@ void TestQtNoidAppParameter::testParameterSchemaFromJsonChangeANewRangeShouldFor
     // Apply schema - should clamp the current value to the new max
     bool result = par.schemaFromJson(schema);
     QCOMPARE(result, true);
+    QCOMPARE(par.isValueChanged(), true); // The range change the value
     
     // Verify schema was applied
     QCOMPARE(par.min().toDouble(), -50.0);
@@ -1564,7 +1572,8 @@ void TestQtNoidAppParameter::testParameterSchemaFromJsonChangeANewRangeShouldFor
     // Apply schema - should clamp the current value to the new min
     bool result2 = par2.schemaFromJson(schema2);
     QCOMPARE(result2, true);
-    
+    QCOMPARE(par.isValueChanged(), true); // The range change the value
+
     // Value should be clamped to the new minimum
     QCOMPARE(par2.value().toDouble(), -100.0);
     QCOMPARE(par2.min().toDouble(), -100.0);
@@ -1667,6 +1676,8 @@ void TestQtNoidAppParameter::testParameterFromJson()
     // Test fromJson method
     bool result = par.fromJson(schema, value);
     QCOMPARE(result, true);
+    QCOMPARE(par.isValueChanged(), false);
+
 
     // Verify all properties were set correctly
     QCOMPARE(par.name(), "Temperature");
@@ -1705,6 +1716,7 @@ void TestQtNoidAppParameter::testParameterFromJsonShouldUpdateAnExistingParamete
     // Test fromJson method - should update name and all properties
     bool result = par.fromJson(schema, value);
     QCOMPARE(result, true);
+    QCOMPARE(par.isValueChanged(), false);
 
     // Verify properties were updated to match the JSON
     QCOMPARE(par.name(), "Pressure");
@@ -1937,8 +1949,8 @@ void TestQtNoidAppParameter::testParameterIsValueChangedShouldBeTrueAfterLoading
     param2.setValue(4343);
     param2.valueFromJson(jsonValue2);
     QCOMPARE(param2.value(), 4242);
-    // It should be changed because it is different from the initialValue
-    QCOMPARE(param2.isValueChanged(), true);
+    // It is not changed because valueFromJson reset the flag and the initalValue
+    QCOMPARE(param2.isValueChanged(), false);
 }
 
 void TestQtNoidAppParameter::testParameterIsValueChangedSholdBeFalseAfterSettingTheSameValue()

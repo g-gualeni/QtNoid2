@@ -139,7 +139,7 @@ private:
     bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
     bool canModify() const; // Modification control
     void resetValueIsChanged(){m_isValueChanged=false;}
-    void setNewValIfChanged(const QVariant &newVal);
+    void updateIsValueChangedChangedFlag(const QVariant &newVal);
 
 private:
     static QAtomicInt s_nextUniqueId;

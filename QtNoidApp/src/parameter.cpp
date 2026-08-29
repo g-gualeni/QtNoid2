@@ -167,20 +167,23 @@ bool Parameter::fromJson(const QJsonObject &schema, const QJsonObject &value)
 
 bool Parameter::valueFromJson(const QJsonObject& json)
 {
-    //
     QString name = m_name.value();    
     if(name.isEmpty() && (json.count() == 1)) {
         // Get the unique JSON object and use it to set the name
         name = json.begin().key();
         setName(name);
         QVariant value = json.value(name).toVariant();
-        setValue(value);
+        m_initialValue = value;
+        m_value = value;
+        m_isValueChanged = false;
         return true;
     }
 
     if(json.contains(name)) {
         QVariant value = json[name].toVariant();
-        setValue(value);
+        m_initialValue = value;
+        m_value = value;
+        m_isValueChanged = false;
         return true;
     }
     return false;
@@ -287,7 +290,7 @@ void Parameter::setValue(const QVariant &val)
     if (canModify()) {
         // No needs for checking if different or to manually emit value changed
         auto newVal = clampValue(val);
-        setNewValIfChanged(newVal);
+        updateIsValueChangedChangedFlag(newVal);
     }
 }
 QBindable<QVariant> Parameter::bindableValue()
@@ -542,7 +545,7 @@ bool Parameter::canModify() const
     return true;
 }
 
-void Parameter::setNewValIfChanged(const QVariant &newVal)
+void Parameter::updateIsValueChangedChangedFlag(const QVariant &newVal)
 {
     if(newVal != m_value) {
         if(newVal == m_initialValue) {
@@ -593,7 +596,7 @@ void Parameter::enforceRange()
         return;
 
     auto newVal = clampValue(m_value);
-    setNewValIfChanged(newVal);
+    updateIsValueChangedChangedFlag(newVal);
 }
 
 QVariant Parameter::clampValue(const QVariant &value) const

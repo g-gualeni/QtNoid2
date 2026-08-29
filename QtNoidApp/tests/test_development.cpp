@@ -61,7 +61,9 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut()
     initMainDialog(&frm, __func__);
 
     // Actitate shortcut
-    QShortcut *shortcut = Development::initFullDialogGrabShortcut(&frm, {}, {}, false, false);
+    QShortcut *shortcut = Development::initFullDialogGrabShortcut(&frm, {}, {},
+                                                                  true,  // Save to clipboard
+                                                                  false);
 
     // Check the shortcut creation
     QVERIFY(shortcut != nullptr);
