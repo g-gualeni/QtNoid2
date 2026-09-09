@@ -50,7 +50,7 @@ Parameter::Parameter(const QVariant &initialValue, const QString &name, const QS
 Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
-    // Extract parameter name from schema (first key) or value (first key)
+    // Extract parameter name from schema Json (first key) or value Json (first key)
     QString paramName;
     if (!schema.isEmpty()) {
         paramName = schema.begin().key();
@@ -60,40 +60,11 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
     
     if (!paramName.isEmpty()) {
         m_name = paramName;
-        
-        // Initialize from schema using paramName as key
-        if (schema.contains(paramName)) {
-            QJsonObject schemaData = schema[paramName].toObject();
-            
-            if (schemaData.contains("description")) {
-                m_description = schemaData["description"].toString();
-            }
-            if (schemaData.contains("unit")) {
-                m_unit = schemaData["unit"].toString();
-            }
-            if (schemaData.contains("tooltip")) {
-                m_tooltip = schemaData["tooltip"].toString();
-            }
-            if (schemaData.contains("readOnly")) {
-                m_readOnly = schemaData["readOnly"].toBool();
-            }
-            if (schemaData.contains("visible")) {
-                m_visible = schemaData["visible"].toBool();
-            }
-            if (schemaData.contains("min")) {
-                m_min = schemaData["min"].toVariant();
-            }
-            if (schemaData.contains("max")) {
-                m_max = schemaData["max"].toVariant();
-            }
-        }
-        
-        // Initialize value if paramName is correct
-        if (value.contains(paramName)) {
-            m_value = value[paramName].toVariant();
-        }
+        valueFromJson(value);
+        schemaFromJson(schema);
     }
-    
+
+    // This is the final step in the constructor
     connectRangeChanged();
 }
 
@@ -334,21 +305,28 @@ std::pair<QVariant, QVariant> Parameter::range() const
 
 void Parameter::setRange(const QVariant &min, const QVariant &max)
 {
+    QVariant newMin = min;
+    QVariant newMax = max;
+
+    // Enoforce min lower than max
     if(min.isValid() && max.isValid()) {
-        if(compareVariants(min, max, -1)) {
-            m_min = min;
-            m_max = max;
+        if(!compareVariants(min, max, -1)) {
+            std::swap(newMin, newMax);
         }
-        else {
-            m_min = max;
-            m_max = min;
-        }
-        return;
     }
 
-    // If one of the two is invalid, I have no compare terms
-    m_min = min;
-    m_max = max;
+    // Are min and max going to change value?
+    const bool minWillChange = (newMin != m_min.value());
+    const bool maxWillChange = (newMax != m_max.value());
+
+    m_min.setValueBypassingBindings(newMin);
+    m_max.setValueBypassingBindings(newMax);
+
+    // Now both value are in place, we can notify.
+    // If changed, this will call also enforceRange
+    if (minWillChange) m_min.notify();
+    if (maxWillChange) m_max.notify();
+
     return;
 }
 void Parameter::setRange(const std::pair<QVariant, QVariant>& newRange)
@@ -596,6 +574,12 @@ void Parameter::enforceRange()
         return;
 
     auto newVal = clampValue(m_value);
+    if (newVal == m_value.value())
+        return;              // the value is coherent with the range
+
+    if (!canModify())
+        return;
+
     updateIsValueChangedChangedFlag(newVal);
 }
 

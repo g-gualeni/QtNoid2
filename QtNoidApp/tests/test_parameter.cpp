@@ -485,6 +485,8 @@ void TestQtNoidAppParameter::testParameterRange()
 
     // Apply Range to the value
     par.setRange(-10, 10);
+    QCOMPARE(par.min(), -10);
+    QCOMPARE(par.max(), 10);
     QCOMPARE(par.value(), 10);
 
     // Apply a value and check it is clipped to the max
@@ -714,12 +716,33 @@ void TestQtNoidAppParameter::testParameterReadOnly()
     QCOMPARE(valueChangeSpy.count(), 0);
     QCOMPARE(par.value(), 100.0); // Value should not change
     
+
+    // Changing max should not change the value and signal writeAttemptedWhileReadOnly
+    writeAttemptSpy.clear();
+    par.setMax(10);
+    QCOMPARE(writeAttemptSpy.count(), 1);
+    QCOMPARE(par.value(), 100.0); // Value should not change
+
+    // Changing min should not change the value and signal writeAttemptedWhileReadOnly
+    writeAttemptSpy.clear();
+    par.setMin(2000);
+    QCOMPARE(writeAttemptSpy.count(), 1);
+    QCOMPARE(par.value(), 100.0); // Value should not change
+
+
     // Test that setValue works normally when readOnly is false
+    writeAttemptSpy.clear();
     par.setReadOnly(false);
-    par.setValue(200.0);
+    // qDebug() << "setReadOnly" << valueChangeSpy.count() << par.value();
+    par.setRange(0, 400);
+    // qDebug() << "setRange" << valueChangeSpy.count() << par.value();
+    par.setValue(300.0);
+    // qDebug() << "setValue" <<  valueChangeSpy.count()  << par.value();
+
+
     QCOMPARE(writeAttemptSpy.count(), 0); // No additional signal
     QCOMPARE(valueChangeSpy.count(), 1);
-    QCOMPARE(par.value(), 200.0);
+    QCOMPARE(par.value(), 300.0);
 }
 
 void TestQtNoidAppParameter::testOnValueChangedSlot()
@@ -1292,16 +1315,22 @@ void TestQtNoidAppParameter::testParameterValueFromJsonTestingDifferentDataTypes
 void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValue()
 {
     // Create schema and value JSON objects
-    QJsonObject schema;
+    QJsonObject preset1{{"Winter", -10}};
+    QJsonObject preset2{{"Summer", +20}};
+    QJsonArray presetArray{preset1, preset2};
     QJsonObject temperatureSchema;
+    temperatureSchema["presets"] = presetArray;
     temperatureSchema["description"] = "Current temperature";
     temperatureSchema["unit"] = "°C";
     temperatureSchema["tooltip"] = "Temperature sensor reading in Celsius";
     temperatureSchema["readOnly"] = false;
     temperatureSchema["min"] = -273.15;
     temperatureSchema["max"] = 1000.0;
+    QJsonObject schema;
     schema["Temperature"] = temperatureSchema;
     
+    // qDebug() << schema;
+
     QJsonObject value;
     value["Temperature"] = 25.5;
     
@@ -1318,6 +1347,11 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValue()
     QCOMPARE(par.max().toDouble(), 1000.0);
     QCOMPARE(par.value().toDouble(), 25.5);
     QCOMPARE(par.isValueChanged(), false);
+    // QCOMPARE(par.presets(), presetArray);
+    // QCOMPARE(par.presets(), QVariantMap({{preset1.toVariantMap()},{preset2.toVariantMap()}}));
+    QVariantMap expected({preset1.toVariantMap()});
+    expected.insert(preset2.toVariantMap());
+    QCOMPARE(par.presets(), expected);
 }
 
 void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaOnly()
