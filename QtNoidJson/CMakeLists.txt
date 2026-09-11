@@ -154,6 +154,6 @@ endif()
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    QtNoidJson.md
+    doc/QtNoidJson.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

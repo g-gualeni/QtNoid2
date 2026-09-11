@@ -6,6 +6,9 @@
 #include <QProperty>
 #include <QPropertyNotifier>
 #include <QVariant>
+#include <qmutex.h>
+
+class TestQtNoidAppParameter;   // forward declaration, in the global namespace
 
 namespace QtNoid {
 namespace App {
@@ -21,10 +24,13 @@ class QTNOIDAPP_EXPORT Parameter : public QObject
     Q_PROPERTY(std::pair<QVariant, QVariant> range READ range WRITE setRange NOTIFY rangeChanged FINAL)
     Q_PROPERTY(QVariantMap presets READ presets WRITE setPresets BINDABLE bindablePresets NOTIFY presetsChanged FINAL)
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
+    Q_PROPERTY(QString label READ label WRITE setLabel BINDABLE bindableLabel NOTIFY labelChanged FINAL)
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
     Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
+    Q_PROPERTY(bool isValid READ isValid BINDABLE bindableIsValid NOTIFY isValidChanged FINAL)
+    Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
 
 public:
     explicit Parameter(QObject *parent = nullptr);
@@ -34,8 +40,6 @@ public:
     explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr);
 
     int uniqueId() const { return m_uniqueId; }
-    bool isValid() const;
-    bool isValueChanged() const{return m_isValueChanged;}
 
     // Serialization
     QJsonObject toJsonValue() const;
@@ -46,7 +50,7 @@ public:
 
     // Value management
     QVariant value() const;
-    void setValue(const QVariant& val);
+    // void setValue(const QVariant& val);  // Available as a public SLOT
     QBindable<QVariant> bindableValue();
 
     // Range management
@@ -65,10 +69,11 @@ public:
 
     // Presets management
     QVariantMap presets() const;
-    void setPresets(const QVariantMap& presets);
+    void setPresets(const QVariantMap& presets);    
     void clearPresets();
     QVariant preset(const QString& name) const;
     void setPreset(const QString& name, const QVariant& value);
+    void setPreset(const std::pair<QString, QVariant>& preset);
     void removePreset(const QString& name);
     bool applyPreset(const QString& name);
     QBindable<QVariantMap> bindablePresets();
@@ -77,6 +82,11 @@ public:
     QString name() const;
     void setName(const QString& value);
     QBindable<QString> bindableName();
+
+    // Label
+    QString label() const;
+    void setLabel(const QString& value);
+    QBindable<QString> bindableLabel();
 
     // Description
     QString description() const;
@@ -103,6 +113,14 @@ public:
     void setVisible(bool value);
     QBindable<bool> bindableVisible();
 
+    // isValid
+    bool isValid() const;
+    QBindable<bool> bindableIsValid();
+
+    // isValueChanged
+    bool isValueChanged() const;
+    QBindable<bool> bindableIsValueChanged();
+
 signals:
     void valueChanged(const QVariant &newValue);
     void minChanged(const QVariant &min);
@@ -111,42 +129,50 @@ signals:
     void presetsChanged(const QVariantMap &presets);
     void nameChanged(const QString &newName);
     void nameEdited(const QString &oldName, const QString &newName);
+    void labelChanged(const QString &value);
     void descriptionChanged(const QString &value);
     void unitChanged(const QString &value);
     void tooltipChanged(const QString &value);
     void readOnlyChanged(bool value);
     void visibleChanged(bool value);
     void writeAttemptedWhileReadOnly(const QString &parameterName);
+    void isValidChanged(bool isValid);
+    void isValueChangedChanged(bool changed);
+
 
 public slots:
-    void onValueChanged(const QVariant& newValue);
+    void setValue(const QVariant& val);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariant, m_value, &Parameter::valueChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariant, m_min, &Parameter::minChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariant, m_max, &Parameter::maxChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_name, &Parameter::nameChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_label, &Parameter::labelChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_description, &Parameter::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_unit, &Parameter::unitChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QString, m_tooltip, &Parameter::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_readOnly, &Parameter::readOnlyChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_visible, &Parameter::visibleChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariantMap, m_presets, &Parameter::presetsChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isValid, &Parameter::isValidChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isValueChanged, &Parameter::isValueChangedChanged)
 
+    friend class ::TestQtNoidAppParameter; // Only for White Box testing
+
+    void initInternalConnections();
+    bool computeIsValid() const;
     void enforceRange();
     QVariant clampValue(const QVariant &value) const;
-    void connectRangeChanged();
     bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
     bool canModify() const; // Modification control
-    void resetValueIsChanged(){m_isValueChanged=false;}
-    void updateIsValueChangedChangedFlag(const QVariant &newVal);
 
 private:
-    static QAtomicInt s_nextUniqueId;
+    static QMutex s_uniqueIdMutex;
+    static int s_nextUniqueId;
     int m_uniqueId;
-    QAtomicInt getNextUniqueId();
-    bool m_isValueChanged = false;
-    QVariant m_initialValue;
+    int getNextUniqueId();
+    QProperty<QVariant> m_initialValue;
 };
 
 } // namespace App

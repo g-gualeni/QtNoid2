@@ -250,7 +250,7 @@ quint64 MainWindow::benchmarkSignalsAndSlot(int iterations)
     QtNoid::App::Parameter leader(0, "leader", this);
     QtNoid::App::Parameter follower(0, "follower", this);
 
-    connect(&leader, &QtNoid::App::Parameter::valueChanged, &follower, &QtNoid::App::Parameter::onValueChanged);
+    connect(&leader, &QtNoid::App::Parameter::valueChanged, &follower, &QtNoid::App::Parameter::setValue);
 
     ET.start();
     for(int ii=0; ii<iterations; ++ii) {

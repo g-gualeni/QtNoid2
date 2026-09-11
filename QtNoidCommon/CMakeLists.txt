@@ -143,6 +143,9 @@ endif()
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    QtNoidCommon.md
+    doc/QtNoidCommon.md
+    doc/QtNoidCommonText.md
+    doc/QtNoidCommonScale.md
+    doc/QtNoidCommonFile.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

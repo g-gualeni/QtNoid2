@@ -62,7 +62,7 @@ A ParameterList has the following properties:
 
 - `setValue(const QString& name, const QVariant& value)`: Sets the value of the Parameter with the given name, returns true on success.
 
-- `applyPreset(const QString& presetName)`: Applies the specified preset if available, to all Parameters.
+- `applyPreset(const QString& presetName)`: Applies the specified preset if available, to all Parameters. Parameters without the preset name are left unchanged.
 
 ## Iterator methods
 - `begin()`: Returns an iterator to the beginning of the parameter list.

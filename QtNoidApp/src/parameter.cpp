@@ -5,14 +5,16 @@
 #include <QJsonValue>
 
 
+
 namespace QtNoid {
 namespace App {
 
-QAtomicInt Parameter::s_nextUniqueId(1000);  // Inizializzazione thread-safe
+QMutex Parameter::s_uniqueIdMutex;
+int Parameter::s_nextUniqueId(1000);  // thread-safe
 
-
-QAtomicInt Parameter::getNextUniqueId()
+int Parameter::getNextUniqueId()
 {
+    QMutexLocker locker(&s_uniqueIdMutex);
     if (s_nextUniqueId == INT_MAX) {
         s_nextUniqueId = 0;  // Reset if overflow
     }
@@ -23,33 +25,35 @@ QAtomicInt Parameter::getNextUniqueId()
 Parameter::Parameter(QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
-    connectRangeChanged();
+    initInternalConnections();
 }
 
 Parameter::Parameter(const QVariant &initialValue, QObject *parent)
     : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
     m_value(initialValue), m_visible(true)
 {
-    connectRangeChanged();
+    initInternalConnections();
 }
 
 Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject *parent)
     : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
     m_name(name), m_value(initialValue), m_visible(true)
 {
-    connectRangeChanged();
+    initInternalConnections();
 }
 
 Parameter::Parameter(const QVariant &initialValue, const QString &name, const QString &description, QObject *parent)
     : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
     m_name(name), m_description(description), m_value(initialValue), m_visible(true)
 {
-    connectRangeChanged();
+    initInternalConnections();
 }
 
 Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
+    initInternalConnections();
+
     // Extract parameter name from schema Json (first key) or value Json (first key)
     QString paramName;
     if (!schema.isEmpty()) {
@@ -57,6 +61,7 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
     } else if (!value.isEmpty()) {
         paramName = value.begin().key();
     }
+
     
     if (!paramName.isEmpty()) {
         m_name = paramName;
@@ -64,8 +69,6 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
         schemaFromJson(schema);
     }
 
-    // This is the final step in the constructor
-    connectRangeChanged();
 }
 
 QJsonObject Parameter::toJsonValue() const
@@ -102,10 +105,11 @@ QJsonObject Parameter::toJsonSchema() const
         schema["presets"] = presetsArray;
     }
 
+    schema["label"] = m_label.value();
     QString name = m_name;
     if(name.isEmpty()) {
         name = "Name";
-    }
+    }    
 
     QJsonObject res;
     res[name] = schema;
@@ -146,7 +150,7 @@ bool Parameter::valueFromJson(const QJsonObject& json)
         QVariant value = json.value(name).toVariant();
         m_initialValue = value;
         m_value = value;
-        m_isValueChanged = false;
+        // m_isValueChanged = false; Binding automatically upadate it
         return true;
     }
 
@@ -154,7 +158,7 @@ bool Parameter::valueFromJson(const QJsonObject& json)
         QVariant value = json[name].toVariant();
         m_initialValue = value;
         m_value = value;
-        m_isValueChanged = false;
+        // m_isValueChanged = false;
         return true;
     }
     return false;
@@ -178,7 +182,12 @@ bool Parameter::schemaFromJson(const QJsonObject &json)
     }
     
     QJsonObject schemaData = json[paramName].toObject();
-    
+    if (schemaData.contains("label")) {
+        setLabel(schemaData["label"].toString());
+    } else {
+        setLabel(QString());
+    }
+
     // Load schema properties
     if (schemaData.contains("description")) {
         setDescription(schemaData["description"].toString());
@@ -238,17 +247,19 @@ bool Parameter::schemaFromJson(const QJsonObject &json)
     return true;
 }
 
-void Parameter::connectRangeChanged()
+void Parameter::initInternalConnections()
 {
-    connect(this, &Parameter::minChanged, this, [this](const QVariant&) {
+    auto onRangeBoundaryChanged = [this](const QVariant&) {
         enforceRange();
         emit rangeChanged(m_min.value(), m_max.value());
-    });
+    };
+    connect(this, &Parameter::minChanged, this, onRangeBoundaryChanged);
+    connect(this, &Parameter::maxChanged, this, onRangeBoundaryChanged);
 
-    connect(this, &Parameter::maxChanged, this, [this](const QVariant&) {
-        enforceRange();
-        emit rangeChanged(m_min.value(), m_max.value());
-    });
+    // This automatically track any changes in parameters used by computeIsValid()
+    m_isValid.setBinding([this]{ return computeIsValid(); });
+    m_isValueChanged.setBinding([this]{ return m_value.value() != m_initialValue.value(); });
+
 }
 
 QVariant Parameter::value() const
@@ -261,7 +272,7 @@ void Parameter::setValue(const QVariant &val)
     if (canModify()) {
         // No needs for checking if different or to manually emit value changed
         auto newVal = clampValue(val);
-        updateIsValueChangedChangedFlag(newVal);
+        m_value = newVal;
     }
 }
 QBindable<QVariant> Parameter::bindableValue()
@@ -310,7 +321,7 @@ void Parameter::setRange(const QVariant &min, const QVariant &max)
 
     // Enoforce min lower than max
     if(min.isValid() && max.isValid()) {
-        if(!compareVariants(min, max, -1)) {
+        if(compareVariants(min, max, 1)) {
             std::swap(newMin, newMax);
         }
     }
@@ -384,6 +395,11 @@ void Parameter::setPreset(const QString &name, const QVariant &value)
     m_presets = current;
 }
 
+void Parameter::setPreset(const std::pair<QString, QVariant> &preset)
+{
+    setPreset(preset.first, preset.second);
+}
+
 void Parameter::removePreset(const QString &name)
 {
     if(m_presets.value().contains(name)) {
@@ -407,7 +423,6 @@ bool Parameter::applyPreset(const QString &name)
     auto val = m_presets.value()[name];
     auto newVal = clampValue(val);
     m_initialValue = newVal;
-    resetValueIsChanged();
     m_value = newVal;
 
     return true;
@@ -437,6 +452,21 @@ void Parameter::setName(const QString &newName)
 QBindable<QString> Parameter::bindableName()
 {
     return QBindable<QString>(&m_name);
+}
+
+QString Parameter::label() const
+{
+    return m_label.value();
+}
+
+void Parameter::setLabel(const QString &value)
+{
+    m_label = value;
+}
+
+QBindable<QString> Parameter::bindableLabel()
+{
+    return QBindable<QString>(&m_label);
 }
 
 QString Parameter::description() const
@@ -514,6 +544,26 @@ QBindable<bool> Parameter::bindableVisible()
     return QBindable<bool>(&m_visible);
 }
 
+bool Parameter::isValid() const
+{
+    return m_isValid.value();
+}
+
+QBindable<bool> Parameter::bindableIsValid()
+{
+    return QBindable<bool>(&m_isValid);
+}
+
+bool Parameter::isValueChanged() const
+{
+    return m_isValueChanged;
+}
+
+QBindable<bool> Parameter::bindableIsValueChanged()
+{
+    return QBindable<bool>(&m_isValueChanged);
+}
+
 bool Parameter::canModify() const
 {
     if(m_readOnly.value()) {
@@ -523,20 +573,7 @@ bool Parameter::canModify() const
     return true;
 }
 
-void Parameter::updateIsValueChangedChangedFlag(const QVariant &newVal)
-{
-    if(newVal != m_value) {
-        if(newVal == m_initialValue) {
-            m_isValueChanged=false;
-        }
-        else {
-            m_isValueChanged=true;
-        }
-        m_value = newVal;
-    }
-}
-
-bool Parameter::isValid() const
+bool Parameter::computeIsValid() const
 {
     if (!m_value.value().isValid()) {
         return false;
@@ -580,7 +617,7 @@ void Parameter::enforceRange()
     if (!canModify())
         return;
 
-    updateIsValueChangedChangedFlag(newVal);
+    m_value = newVal;
 }
 
 QVariant Parameter::clampValue(const QVariant &value) const
@@ -693,17 +730,6 @@ bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int compar
 
     return false;
 }
-
-/**
- * @brief Parameter::onValueChanged is the slot for UI changed values.
- * @param newValue
- */
-void Parameter::onValueChanged(const QVariant& newValue)
-{
-    // qDebug() << __func__ << newValue;
-    setValue(newValue);
-}
-
 
 
 } // namespace App

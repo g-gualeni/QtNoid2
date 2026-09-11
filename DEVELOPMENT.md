@@ -12,19 +12,26 @@
 - Review of Parameter / ParameterList after deriving Config / ConfigFile / ConfigGlobal
 - Release of QtNoid2 version 2.2.0
 
+# Hierarchy
+* QtNoidCore
+* QtNoidCommon
+* QtNoidApp
+
+
+
 ### Progress Status
+* ~~Controllo di tutti i progetti Documentazione~~
+* ~~Revisione QtNoid::App::Parameter~~
+* sistemare esempio QtNoidAppParameterUsage
 ==Creare esempio per QtNoid::Common::Text==
-==--> Finire di studiare la classe Parameter==
-
-**UiName:** this can be an alias for the name or its translation in local language. Use this field for the user interface. 
-
-- `setPreset(const std::pair<QString, QString>& preset)`: Adds or updates a single preset.
-
-Rendere setValue uno slot ed Eliminare questo slot
-- `onValueChanged(const QVariant& newValue)`: Slot that can be connected to external signals to update the parameter value. It is basically a duplicate of setValue() I created for simplify tracking of the activation.
-- Forse anche altri setter andrebbero messi come slots
-
+Studiare classe QtNoid::App::Parameterlist ==([cosa dice il sommo](sommo.md))==
+	-> aggiungere isChanged (con binding automatico?)
+	-> aggiungere label (ui label)
+	-> aggiungere bindable count
+	-> isEmpty dovrebbe diventare una read only property
  
+
+
 Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale
     - void restoreComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings") const;
     - void saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings");
@@ -225,7 +232,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	- [ ] Update Screenshot win11
 	- [ ] Update screenshot macOS
 
-- [ ] [[Examples/CommonBasicUsage/doc/CommonBasicUsage]]:
+- [ ] [[Examples/CommonBasicUsage/doc/QtNoidCommonBasicUsage]]:
 	- [x] Dialog review with testing for relative and absolute path
 	- [x] Form Geometry stored in JSON
 	- [x] Recent folder list stored

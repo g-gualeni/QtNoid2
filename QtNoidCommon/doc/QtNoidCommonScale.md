@@ -1,4 +1,4 @@
-## Class: Scale
+## Class: QtNoid::Common::Scale
 This class contains a set of helper methods to convert numbers to 
 a human readable text. 
 

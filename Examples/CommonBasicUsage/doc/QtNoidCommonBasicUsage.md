@@ -1,12 +1,11 @@
 # QtNoid::Common Basic Usage
-This example implement shows how QtNoid::Common features can be used.
+This example shows how QtNoid::Common features can be used.
 Currently it shows a live example of:
 - `QtNoid::Common::File::listPathRecursively()`
 - `QtNoid::Common::File::listSubPathRecursively`
-
-
-`QtNoid::Common::Scale::nanoSecsUpToDays(elapsedTime)`
-
+And of
+* `QtNoid::Common::Scale::nanoSecsUpToDays(elapsedTime)`
+that is used to evaluate the elapsed time.
 
 This can be used to test the speed of the API on different platforms.
 ## Windows 11

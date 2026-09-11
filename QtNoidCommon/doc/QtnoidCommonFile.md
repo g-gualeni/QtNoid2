@@ -1,4 +1,4 @@
-## Class: File
+## Class: QtNoid::Common::File
 This class contains a set of helper methods to work with files
 ### Static Methods
 - `QString File::autoNamingNextName(const QString &fileName)`: splits the file

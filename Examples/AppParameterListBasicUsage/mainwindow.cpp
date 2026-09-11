@@ -119,7 +119,7 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         }
         spinInt->setValue(par->value().toInt());
         spinInt->setReadOnly(par->readOnly());
-        connect(spinInt, &QSpinBox::valueChanged, par, &QtNoid::App::Parameter::onValueChanged);
+        connect(spinInt, &QSpinBox::valueChanged, par, &QtNoid::App::Parameter::setValue);
         connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
             updateStyleSheet(spinInt, par);
             if(spinInt->value() != val.toInt()){
@@ -140,7 +140,7 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         }
         spinDouble->setValue(par->value().toDouble());
         spinDouble->setReadOnly(par->readOnly());
-        connect(spinDouble, &QDoubleSpinBox::valueChanged, par, &QtNoid::App::Parameter::onValueChanged);
+        connect(spinDouble, &QDoubleSpinBox::valueChanged, par, &QtNoid::App::Parameter::setValue);
         connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
             updateStyleSheet(spinDouble, par);
             if(spinDouble->value() != val.toDouble()) {
@@ -153,7 +153,7 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         auto text = new QLineEdit();
         text->setText(par->value().toString());
         text->setReadOnly(par->readOnly());
-        connect(text, &QLineEdit::textEdited, par, &QtNoid::App::Parameter::onValueChanged);
+        connect(text, &QLineEdit::textEdited, par, &QtNoid::App::Parameter::setValue);
         connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
             updateStyleSheet(text, par);
             if(text->text() != val.toString()) {

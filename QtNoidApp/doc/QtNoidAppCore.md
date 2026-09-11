@@ -20,9 +20,7 @@ This class contains a set of helper methods to gather information from the appli
 
 - `QImage fullDialogGrab(QWidget *ref)`: Starting from a widget, captures the full dialog as seen in the operating system. This is perfect for creating screenshots for a user manuals or release notes. If you need to capture only the widget content, just use the QWidget method `grab()`. This method captures also the caption and the borders. The parameter 'ref' can be also a `QMainWindow` pointer, since this class inherits QWidget. Since 2.2.0 returns a QImage, because it works better with macOS. With QImage we can apply QColorSpace() and avoid a crash saving as PNG.
 
-**Note**: For an automated screenshot shortcut, see [Development::initFullDialogGrabShortcut](Development.md)
-
-
+**Note**: For an automated screenshot shortcut, see [Development::initFullDialogGrabShortcut](QtNoidAppDevelopment.md)
 
 
 ## Non Static Methods

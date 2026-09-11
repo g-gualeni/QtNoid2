@@ -288,6 +288,7 @@ void TestQtNoidAppParameterList::testAppendingParameterFromJsonObjects()
     tempSchema["max"] = 100.0;
     tempSchema["readOnly"] = true;
     tempSchema["visible"] = true;
+    tempSchema["label"] = "TS";
     schema["Temperature"] = tempSchema;
 
     QJsonObject value;
@@ -392,6 +393,8 @@ void TestQtNoidAppParameterList::testEmplaceWithJsonObjects()
     schemaObject["max"] = 100.0;
     schemaObject["readOnly"] = true;
     schemaObject["visible"] = true;
+    schemaObject["label"] = "TS";
+
     schema["Temperature"] = schemaObject;
 
     QJsonObject value;
@@ -786,6 +789,7 @@ void TestQtNoidAppParameterList::testSchemaFromJson()
     tempSchema["visible"] = true;
     tempSchema["min"] = -50.0;
     tempSchema["max"] = 100.0;
+    tempSchema["label"] = "CT";
 
     QJsonObject expectedTemp;
     expectedTemp["Temperature"] = tempSchema;
@@ -800,6 +804,7 @@ void TestQtNoidAppParameterList::testSchemaFromJson()
     pressSchema["visible"] = true;
     pressSchema["min"] = 800.0;
     pressSchema["max"] = 1100.0;
+    pressSchema["label"] = "AP";
     QJsonObject expectedPress;
     expectedPress["Pressure"] = pressSchema;
     parametersArray.append(expectedPress);
@@ -880,7 +885,8 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
                             {"readOnly", true},
                             {"visible", true},
                             {"min", -50.0},
-                            {"max", 100.0}
+                            {"max", 100.0},
+                            {"label", "CT"}
     };
     QJsonObject temperatureSchemaMain{{"Temperature", temperatureSchema}};
 
@@ -891,7 +897,8 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
                                 {"readOnly", false},
                                 {"visible", true},
                                 {"min", 800.0},
-                                {"max", 1100.0}
+                                {"max", 1100.0},
+                                {"label", "AP"}
     };
     QJsonObject pressureSchemaMain{{"Pressure", pressureSchema}};
 
@@ -929,7 +936,7 @@ void TestQtNoidAppParameterList::testConstructorWithSchemaAndValueJsonObjects()
 
     // Verify Temperature parameter
     Parameter* temperature = list.parameter("Temperature");
-    qDebug() << __func__ << temperature;
+    // qDebug() << __func__ << temperature;
 
     QVERIFY(temperature != nullptr);
     QCOMPARE(temperature->description(), "Current temperature");

@@ -5,11 +5,13 @@ This class is a generic application parameter class with value storage, range va
 
 A single Parameter has the following properties:
 - **value**: This is a QVariant object that represents the parameter value.
+- **isValid**: Read only property true when the parameter has a name, a valid value, and (if a range is configured) the value falls within range.
+- **isValueChanged**: Read-only property, true when the current value differs from the reference value (initial value, last applied preset, or last value loaded from JSON).
 - **unit**: This is a QString that represents the unit of measure.
 - **min**, **max**, **range**: These properties can be used to enforce limitations to the range of the value. Any time a bigger or smaller value is set it is automatically clipped to the max or to the min.
 - **presets**: The parameter can have a list of default values, which are stored in a QVariantMap with preset name and preset value. This can be used for quick configuration change such as for light or dark theme.
 - **name**: This is a string that represents the parameter name as it is saved in a JSON object.
-- **UiName:** this can be an alias for the name or its translation in local language. Use this field for the user interface. 
+- **label:** this can be an alias for the name or its translation in local language. Since it is not tied to the parameter name, it is the preferred one for the user interface. 
 - **description**: This is the parameter description
 - **tooltip**: This is the parameter tooltip
 - **readOnly**: When true, the parameter value (only the value) cannot be modified. Trying to change it fires the signal writeAttemptedWhileReadOnly().
@@ -31,17 +33,19 @@ A single Parameter has the following properties:
 ## Support methods
 - `uniqueId()`: Returns an integer that represents the object unique ID of the object.
 
-- `isValid()`: Returns true if the object meets all of the following conditions: 
-	- it has a name, 
-	- the QVariant value is valid, 
-	- if a range is configured, the value falls within that range.
-
-- `isValueChanged()`: Returns true if the object's current value is different from the internal reference value. The internal reference value is either: the initial value of the object or the value of last preset applied.
-
 ## Properties management methods
 * `value()`: Returns the current value of the parameter as a QVariant
 - `setValue(const QVariant& val)`: Sets the parameter value, with range validation if configured.
 - `bindableValue()`: Returns a bindable property for the value, enabling Qt's property binding system.
+
+* `isValid()`: Read only property that returns true if the object meets all of the following conditions: 
+	- it has a name, 
+	- the QVariant value is valid, 
+	- if a range is configured, the value falls within that range.
+* `bindableIsValid()`: Returns a bindable property for the read only property.
+
+* `isValueChanged()`: Returns true if the object's current value is different from the internal reference value. The internal reference value is either: the initial value of the object or the value of last preset applied or from the latest JSON object loaded.
+* `bindableIsValueChanged()`: Returns a bindable property for the read only property.
 
 - `min()`: Returns the minimum allowed value for the parameter
 - `setMin(const QVariant& val)`: Sets the minimum allowed value for range validation
@@ -61,7 +65,7 @@ A single Parameter has the following properties:
 - `clearPresets()`: Removes all preset values from the parameter.
 - `preset(const QString& name)`: Returns the value of a specific preset by name.
 - `setPreset(const QString& name, const QVariant& value)`: Adds or updates a single preset.
-- - `setPreset(const std::pair<QString, QString>& preset)`: Adds or updates a single preset.
+- `setPreset(const std::pair<QString, QVariant>& preset)`: Adds or updates a single preset.
 - `removePreset(const QString& name)`: Removes a specific preset by name.
 - `applyPreset(const QString& name)`: Sets the parameter value to the specified preset value, if the preset name exists.
 - `bindablePresets()`: Returns a bindable property for the presets map.
@@ -69,6 +73,10 @@ A single Parameter has the following properties:
 - `name()`: Returns the parameter name as displayed in dialogs and used in JSON serialization.
 - `setName(const QString& value)`: Sets the parameter name.
 - `bindableName()`: Returns a bindable property for the parameter name.
+
+- `label()`: Returns the parameter label to be used for dialogs with multilanguage translation instead of name.
+- `setLabel(const QString& value)`: Sets the parameter label.
+- `bindableLabel()`: Returns a bindable property for the parameter label.
 
 - `description()`: Returns the parameter description text.
 - `setDescription(const QString& value)`: Sets the parameter description.
@@ -91,14 +99,14 @@ A single Parameter has the following properties:
 - `bindableVisible()`: Returns a bindable property for the visibility state.
 
 
-## Serialization methods
+## Serialization / Deserialization methods
 - `toJsonValue()`: Returns a QJsonObject containing only the parameter name and current value. This is used to save the configuration in a configuration file.
 
 - `toJsonSchema()`: Returns a QJsonObject containing all parameter properties (min, max, presets, description, etc.) except the current value. This is the definition of the object.
 
 - `fromJson(const QJsonObject& schema, const QJsonObject& value)`: Restores the parameter from both schema and value JSON objects, reconstructing the complete parameter state.
 
-- `valueFromJson(const QJsonObject& json)`: Loads only the parameter value from a JSON object, leaving other properties unchanged. This update also the m_initialValue property and the isValueChanged Is set to false.
+- `valueFromJson(const QJsonObject& json)`: Loads only the parameter value from a JSON object, leaving other properties unchanged. This alse update the m_initialValue property so the isValueChanged becomes false as a result.
 
 - `schemaFromJson(const QJsonObject& json)`: Update the configuration of current Parameter object (min, max, presets, description and so on), from the JSON schema object.
 
@@ -116,7 +124,9 @@ A single Parameter has the following properties:
 
 - `nameChanged(const QString &newName)`: Emitted when the parameter name is changed.
 
-- `nameEdited(const QString &oldName, const QString &newName)`: Emitted during name editing, providing both old and new names.
+- `nameEdited(const QString &oldName, const QString &newName)`: Emitted during name editing, providing both old and new names. This simplify the rename of object collections, like the class ParameterList.
+
+- `labelChanged(const QString &value)`: Emitted when the parameter label is changed.
 
 - `descriptionChanged(const QString &value)`: Emitted when the parameter description is modified.
 
@@ -130,9 +140,12 @@ A single Parameter has the following properties:
 
 - `writeAttemptedWhileReadOnly(const QString &parameterName)`: Emitted when an attempt is made to modify a read-only parameter.
 
+- `isValidChanged(bool value)`: Emitted when the isValid state is changed.
+
+- `isValueChangedChanged(bool value)`: Emitted when the value is changed hence the isValueChanged flag changes his status.
 
 ## Slots
-- `onValueChanged(const QVariant& newValue)`: Slot that can be connected to external signals to update the parameter value. It is basically a duplicate of setValue() I created for simplify tracking of the activation.
+- `setValue(const QVariant& newValue)`: Slot that can be connected to external signals to update the parameter value.
 
 
 

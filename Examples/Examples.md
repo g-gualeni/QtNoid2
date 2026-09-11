@@ -9,8 +9,9 @@ Each example is a standalone CMake project with its own documentation page, link
 
 ## QtNoidCommon examples
 
-* **[QtNoid::Common Basic Usage](CommonBasicUsage/doc/CommonBasicUsage.md)**:
-  Shows how to use `QtNoid::Common::File::listPathRecursively()` and `listSubPathRecursively()`, including a live benchmark of their speed on different platforms.
+* **[QtNoid::Common Basic Usage](CommonBasicUsage/doc/QtNoidCommonBasicUsage.md)**:
+  Shows how to use `QtNoid::Common::File::listPathRecursively()` and `listSubPathRecursively()`. This can be used as a benchmark of their speed on different platforms.
+* **QtNoid::Common Text Usage:** this is a running demo for the basic usage of the class [QtNoid::Common::Text](../QtNoidCommon/doc/QtNoidCommonText.md).
 
 ## QtNoidApp examples
 

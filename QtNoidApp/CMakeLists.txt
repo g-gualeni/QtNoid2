@@ -154,17 +154,13 @@ endif()
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    QtNoidApp.md
-    doc/Core.md
-    doc/Parameter.md
-    doc/ParameterList.md
-    doc/Config.md
-    doc/ConfigFile.md
-    doc/ConfigGlobal.md
-    doc/Development.md
-    doc/AppParameterBasicUsage.md
-    doc/AppParameterListBasicUsage.md
-    doc/AppParameterListBenchmark.md
-    doc/AppSettingsBasicUsage.md
+    doc/QtNoidApp.md
+    doc/QtNoidAppCore.md
+    doc/QtNoidAppParameter.md
+    doc/QtNoidAppParameterList.md
+    doc/QtNoidAppConfig.md
+    doc/QtNoidAppConfigFile.md
+    doc/QtNoidAppConfigGlobal.md
+    doc/QtNoidAppDevelopment.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})
