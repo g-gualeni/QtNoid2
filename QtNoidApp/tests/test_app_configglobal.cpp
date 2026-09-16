@@ -111,4 +111,4 @@ void TestQtNoidAppConfigGlobal::testAppConfigSaveAndLoad()
 
 
 QTEST_MAIN(TestQtNoidAppConfigGlobal)
-#include "test_configglobal.moc"
+#include "test_app_configglobal.moc"

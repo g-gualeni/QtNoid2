@@ -15,10 +15,13 @@ class QTNOIDAPP_EXPORT ParameterList : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
+    Q_PROPERTY(QString label READ label WRITE setLabel BINDABLE bindableLabel NOTIFY labelChanged FINAL)
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
-    Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
+    Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
     Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
+    Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
+    Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
 
 public:
 
@@ -105,6 +108,11 @@ public:
     void setName(const QString& newName);
     QBindable<QString> bindableName();
 
+    // Label
+    QString label() const;
+    void setLabel(const QString& newLabel);
+    QBindable<QString> bindableLabel();
+
     // Description
     QString description() const;
     void setDescription(const QString& value);
@@ -116,9 +124,19 @@ public:
     QBindable<QString> bindableTooltip();
 
     // Visible
+    bool readOnly() const;
+    void setReadOnly(bool value);
+    QBindable<bool> bindableReadOnly();
+
+
+    // Visible
     bool visible() const;
     void setVisible(bool value);
     QBindable<bool> bindableVisible();
+
+    // isValueChanged: track modifications
+    bool isValueChanged();
+    QBindable<bool> bindableIsValueChanged();
 
     // List management
     int count() const;
@@ -178,6 +196,7 @@ public:
 signals:
     void nameChanged(const QString& value);
     void nameEdited(const QString &oldName, const QString &newName);
+    void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
     void countChanged(int count);
@@ -185,17 +204,24 @@ signals:
     void parameterRemoved(QtNoid::App::Parameter* parameter);
     void parameterRenameError(const QString& oldName, const QString& newName);
     void visibleChanged(bool value);
+    void readOnlyChanged(bool value);
+    void isValueChangedChanged(bool value);
+
 
 private slots:
     void onParameterDestroyed(QObject* parameter);
     void onParameterNameEdited(const QString& oldName, const QString& newName);
+    void onParameterIsValueChangedChanged(bool changed);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_name, &ParameterList::nameChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_label, &ParameterList::labelChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_description, &ParameterList::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_tooltip, &ParameterList::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, int, m_count, &ParameterList::countChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_visible, &ParameterList::visibleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_visible, &ParameterList::visibleChanged)    
+    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_readOnly, &ParameterList::readOnlyChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_isValueChanged, &ParameterList::isValueChangedChanged)
 
     QHash<int, Parameter*> m_parametersByUniqueId;
     QMap<int, Parameter*> m_parametersByIndex;
@@ -203,10 +229,14 @@ private:
     QHash<QString, Parameter*> m_parametersByName;
     int m_nextParameterIndex = 0;
     void appendParameterAndUpdateIndexs(Parameter *parameter);
+    void removeParameterInternal(Parameter *parameter);
 
-    static QAtomicInt s_nextUniqueId;
+    static QMutex s_uniqueIdMutex;
+    static int s_nextUniqueId;
     int m_uniqueId;
-    QAtomicInt getNextUniqueId();
+    int getNextUniqueId();
+
+    int m_valueChangedCounter = 0;
 };
 
 } // namespace App
@@ -215,7 +245,7 @@ private:
 inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace() << list.name()
+    debug.nospace() << list.name() << list.label()
                     << ":{ uniqueID:" << list.uniqueId()
                     << ", count: " << list.count()
                     << ", visible: " << list.visible();

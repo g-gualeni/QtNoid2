@@ -133,4 +133,4 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withFileName()
 
 
 QTEST_MAIN(TestQtNoidAppDevelopment)
-#include "test_development.moc"
+#include "test_app_development.moc"

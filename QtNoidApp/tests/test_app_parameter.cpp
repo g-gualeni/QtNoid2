@@ -2187,4 +2187,4 @@ void TestQtNoidAppParameter::testCompareVariants()
 
 
 QTEST_MAIN(TestQtNoidAppParameter)
-#include "test_parameter.moc"
+#include "test_app_parameter.moc"

@@ -2267,4 +2267,4 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
 
 
 QTEST_MAIN(TestQtNoidAppConfig)
-#include "test_config.moc"
+#include "test_app_config.moc"

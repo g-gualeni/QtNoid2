@@ -25,10 +25,11 @@
 * sistemare esempio QtNoidAppParameterUsage
 ==Creare esempio per QtNoid::Common::Text==
 Studiare classe QtNoid::App::Parameterlist ==([cosa dice il sommo](sommo.md))==
-	-> aggiungere isChanged (con binding automatico?)
-	-> aggiungere label (ui label)
-	-> aggiungere bindable count
-	-> isEmpty dovrebbe diventare una read only property
+
+Finire di creare i test e poi sistemare la storia del parametro cambiato
+
+
+Come faccio a controlllare che ci sia al più un parametro cambiato?
  
 
 

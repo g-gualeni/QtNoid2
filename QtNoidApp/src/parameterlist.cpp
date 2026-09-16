@@ -9,10 +9,13 @@
 namespace QtNoid {
 namespace App {
 
-QAtomicInt ParameterList::s_nextUniqueId(1);  // Inizializzazione thread-safe
+QMutex ParameterList::s_uniqueIdMutex;
+int ParameterList::s_nextUniqueId(10);  // thread-safe
 
-QAtomicInt ParameterList::getNextUniqueId()
+
+int ParameterList::getNextUniqueId()
 {
+    QMutexLocker locker(&s_uniqueIdMutex);
     if (s_nextUniqueId == INT_MAX) {
         s_nextUniqueId = 0;  // Reset if overflow
     }
@@ -34,69 +37,16 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
     // Scan schemaList and valueList to recreate the page
-    QString name = m_name.value();
-    if(name.isEmpty() && (schemaList.count() == 1)) {
-        // Get the unique JSON object and use it to set the name
-        name = schemaList.constBegin().key();
-        setName(name);
-    }
-    else if(name.isEmpty() && (valueList.count() == 1)) {
-        // Get the unique JSON object and use it to set the name
-        name = valueList.constBegin().key();
-        setName(name);
+    // Get the name from schema or from value
+    if (schemaList.count() == 1) {
+        setName(schemaList.constBegin().key());
+    } else if (valueList.count() == 1) {
+        setName(valueList.constBegin().key());
     }
 
-    // Load parameters from schemaList and merge with values in valueList
-    const QJsonObject schemaMain = schemaList[name].toObject();
-    if(schemaMain.contains("visible")) {
-        setVisible(schemaMain["visible"].toBool());
-    }
-    if(schemaMain.contains("description")) {
-        setDescription(schemaMain["description"].toString());
-    }
-    if(schemaMain.contains("tooltip")) {
-        setTooltip(schemaMain["tooltip"].toString());
-    }
-
-    // ADD PARAMETERS
-    // Start from the value content to initialize also read only paramters
-    const QJsonObject valueMain = valueList[name].toObject();
-    const QJsonArray valueArray = valueMain["parameters"].toArray();
-
-    for (const QJsonValue& value : valueArray) {
-        if (!value.isObject()) {
-            continue;
-        }
-        const QJsonObject valueObj = value.toObject();
-        auto valueName = valueObj.begin().key();
-        auto newParam = new Parameter(QJsonObject(), valueObj, this);
-        bool res = append(newParam);
-        if(!res) delete newParam;
-        // qDebug() << __func__ << "valueObj:" << valueObj;
-        // qDebug() << __func__ << m_parametersByName[valueName];
-
-    }
-
-    // Add the schema content
-    const QJsonArray schemaArray = schemaMain["parameters"].toArray();
-    for (const QJsonValue& schema : schemaArray) {
-        if (!schema.isObject()) {
-            continue;
-        }
-
-        const QJsonObject schemaObj = schema.toObject();
-        const QString& newParamName = schemaObj.constBegin().key();
-        if(contains(newParamName)){
-            m_parametersByName[newParamName]->schemaFromJson(schemaObj);
-        }
-        else {
-            auto newParam = new Parameter(schemaObj, {}, this);
-            bool res = append(newParam);
-            if(!res) delete newParam;
-        }
-        // qDebug() << __func__ << "valueObj:" << schemaObj;
-        // qDebug() << __func__ << m_parametersByName[newParamName];
-    }
+    // Get Value first to avoid ReadOnly blocking the update
+    valuesFromJson(valueList);
+    schemaFromJson(schemaList);
 }
 
 
@@ -136,6 +86,9 @@ QJsonObject ParameterList::toJsonSchema() const
     schemaObject["tooltip"] = m_tooltip.value();
     schemaObject["parameters"] = parametersArray;
     schemaObject["visible"] = m_visible.value();
+    schemaObject["label"] = m_label.value();
+    schemaObject["readOnly"] = m_readOnly.value();
+
 
     QJsonObject schema;
     schema[name] = schemaObject;
@@ -199,8 +152,26 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
         return false;
     }
 
+    const QJsonObject schemaMain = json[name].toObject();
+
+    if(schemaMain.contains("visible")) {
+        setVisible(schemaMain["visible"].toBool());
+    }
+    if(schemaMain.contains("description")) {
+        setDescription(schemaMain["description"].toString());
+    }
+    if(schemaMain.contains("tooltip")) {
+        setTooltip(schemaMain["tooltip"].toString());
+    }
+    if(schemaMain.contains("label")) {
+        setLabel(schemaMain["label"].toString());
+    }
+    if(schemaMain.contains("readOnly")) {
+        setReadOnly(schemaMain["readOnly"].toBool());
+    }
+
     // Load parameters from schema and update the object if present
-    const QJsonArray schemaArray = json[name].toArray();
+    const QJsonArray schemaArray = schemaMain["parameters"].toArray();
     for (const QJsonValue& schema : schemaArray) {
         if (schema.isObject()) {
             const QJsonObject schemaObj = schema.toObject();
@@ -243,6 +214,21 @@ QBindable<QString> ParameterList::bindableName()
     return QBindable<QString>(&m_name);
 }
 
+QString ParameterList::label() const
+{
+    return m_label.value();
+}
+
+void ParameterList::setLabel(const QString &newLabel)
+{
+    m_label = newLabel;
+}
+
+QBindable<QString> ParameterList::bindableLabel()
+{
+    return QBindable<QString>(&m_label);
+}
+
 QString ParameterList::description() const
 {
     return m_description.value();
@@ -273,6 +259,21 @@ QBindable<QString> ParameterList::bindableTooltip()
     return QBindable<QString>(&m_tooltip);
 }
 
+bool ParameterList::readOnly() const
+{
+    return m_readOnly.value();
+}
+
+void ParameterList::setReadOnly(bool value)
+{
+    m_readOnly = value;
+}
+
+QBindable<bool> ParameterList::bindableReadOnly()
+{
+    return QBindable<bool>(&m_readOnly);
+}
+
 bool ParameterList::visible() const
 {
     return m_visible.value();
@@ -286,6 +287,17 @@ void ParameterList::setVisible(bool value)
 QBindable<bool> ParameterList::bindableVisible()
 {
     return QBindable<bool>(&m_visible);
+}
+
+bool ParameterList::isValueChanged()
+{
+    // qDebug() << Q_FUNC_INFO  << "m_valueChangedCounter"  << m_valueChangedCounter;
+    return m_isValueChanged.value();
+}
+
+QBindable<bool> ParameterList::bindableIsValueChanged()
+{
+    return QBindable<bool>(&m_isValueChanged);
 }
 
 int ParameterList::count() const
@@ -358,51 +370,54 @@ Parameter* ParameterList::emplace(const QJsonObject& schema, const QJsonObject& 
     return parameter;
 }
 
+void ParameterList::removeParameterInternal(Parameter *parameter)
+{
+    m_parametersByUniqueId.remove(parameter->uniqueId());
+    m_parametersByName.remove(parameter->name());
+
+    int idx = m_parameterToIndex.value(parameter, -1);
+    if (idx != -1) {
+        m_parameterToIndex.remove(parameter);
+        m_parametersByIndex.remove(idx);
+    }
+
+    if (parameter->isValueChanged()) {
+        onParameterIsValueChangedChanged(false);
+    }
+
+    disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+    disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
+    disconnect(parameter, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
+
+    emit parameterRemoved(parameter);
+    m_count = m_parametersByIndex.count();
+
+    if (m_parametersByIndex.isEmpty()) {
+        m_nextParameterIndex = 0;
+    }
+
+}
+
+
 void ParameterList::removeParameter(Parameter *parameter)
 {
     if (parameter == nullptr) {
         return;
     }
-    int paramterId = parameter->uniqueId();
-    if (m_parametersByUniqueId.remove(paramterId) == false) {
-        // ID not found
+    if (!m_parametersByUniqueId.contains(parameter->uniqueId())) {
+        // Not part of this list
         return;
     }
-
-    m_parametersByName.remove(parameter->name());
-
-    int idx = m_parameterToIndex.value(parameter, -1);
-    if(idx != -1) {
-        m_parameterToIndex.remove(parameter);
-        m_parametersByIndex.remove(idx);
-    }
-
-    disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
-    disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
-
-    emit parameterRemoved(parameter);
-    m_count = m_parametersByIndex.count();
+    removeParameterInternal(parameter);
 }
 
 void ParameterList::removeParameter(const QString &name)
 {
     Parameter* parameter = m_parametersByName.value(name, nullptr);
-    if(parameter == nullptr) {
+    if (parameter == nullptr) {
         return;
     }
-
-    m_parametersByName.remove(name);
-    m_parametersByUniqueId.remove(parameter->uniqueId());
-    int idx = m_parameterToIndex.value(parameter, -1);
-    if(idx > 0) {
-        m_parameterToIndex.remove(parameter);
-        m_parametersByIndex.remove(idx);
-    }
-
-    disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
-    disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
-    emit parameterRemoved(parameter);
-    m_count = m_parametersByIndex.count();
+    removeParameterInternal(parameter);
 }
 
 void ParameterList::clear()
@@ -413,13 +428,19 @@ void ParameterList::clear()
         Parameter* param = it.value();
         disconnect(param, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
         disconnect(param, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
+        disconnect(param, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
         emit parameterRemoved(param);
     }
+
+    m_valueChangedCounter = 0;
+    m_isValueChanged = false;
+
     m_parametersByUniqueId.clear();
     m_parametersByIndex.clear();
     m_parameterToIndex.clear();
     m_parametersByName.clear();
 
+    m_nextParameterIndex = 0;
     m_count = 0;
 }
 
@@ -536,6 +557,17 @@ void ParameterList::onParameterNameEdited(const QString &oldName, const QString 
     return;
 }
 
+void ParameterList::onParameterIsValueChangedChanged(bool changed)
+{
+    if(changed) {
+        ++m_valueChangedCounter;
+    }
+    else {
+        --m_valueChangedCounter;
+    }
+    m_isValueChanged = (m_valueChangedCounter >0);
+}
+
 void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
 {
     m_parametersByUniqueId.insert(parameter->uniqueId(), parameter);
@@ -545,10 +577,15 @@ void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
     m_parametersByName.insert(parameter->name(), parameter);
     connect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
     connect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
+    connect(parameter, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
+    if(parameter->isValueChanged()) {
+        onParameterIsValueChangedChanged(true);
+    }
 
     emit parameterAdded(parameter);
     m_count = m_parametersByIndex.count();
 }
+
 
 
 

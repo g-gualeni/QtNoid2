@@ -413,4 +413,4 @@ void TestQtNoidAppConfigFile::testConfigFileDebugOutput()
 
 
 QTEST_MAIN(TestQtNoidAppConfigFile)
-#include "test_configfile.moc"
+#include "test_app_configfile.moc"

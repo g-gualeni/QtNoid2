@@ -38,32 +38,32 @@ create_qt_test(test_app_core)
 # =============================================================================
 # Tesing QtNoid::App::Parameter
 # =============================================================================
-create_qt_test(test_parameter)
+create_qt_test(test_app_parameter)
 
 # =============================================================================
 # Tesing QtNoid::App::ParameterList
 # =============================================================================
-create_qt_test(test_parameterlist)
+create_qt_test(test_app_parameterlist)
 
 # =============================================================================
 # Tesing QtNoid::App::ConfigFile
 # =============================================================================
-create_qt_test(test_config)
+create_qt_test(test_app_config)
 
 # =============================================================================
 # Tesing QtNoid::App::ConfigFile
 # =============================================================================
-create_qt_test(test_configfile)
+create_qt_test(test_app_configfile)
 
 # =============================================================================
 # Tesing QtNoid::App::ConfigGlobal
 # =============================================================================
-create_qt_test(test_configglobal)
+create_qt_test(test_app_configglobal)
 
 # =============================================================================
 # Tesing QtNoid::App::Development
 # =============================================================================
-create_qt_test(test_development)
+create_qt_test(test_app_development)
 
 
 

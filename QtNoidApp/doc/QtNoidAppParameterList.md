@@ -2,9 +2,13 @@
 This class is a container for managing multiple Parameter instances with support for binding and serialization. It provides a comprehensive API for adding, removing, accessing, and managing Parameter objects, along with JSON serialization capabilities for both values and schema definitions. The class supports Qt's property binding system and provides STL-compatible iterators for efficient traversal. 
 A ParameterList has the following properties:
 - **name**: String identifier for the parameter list.
+- **label:** this can be an alias for the name or its translation in local language. Since it is not tied to the parameter name, it is the preferred one for the user interface.
 - **description**: Descriptive text explaining the purpose of the parameter list.
 - **tooltip**: Tooltip text for UI elements.
+- **isChanged**: Read-only property, true when at leas one the internal parameters differs from the reference value (initial value, last applied preset, or last value loaded from JSON).
 - **count**: Read-only property indicating the number of parameters in the list.
+- **readOnly**: When true, the parameter list of values cannot be modified. Trying to change it fires the signal writeAttemptedWhileReadOnly().
+* **visible:** use this flag to show or hide the parameterList in a dialog.
 
 ## Static Methods
 * There are no static methods
@@ -21,6 +25,10 @@ A ParameterList has the following properties:
 - `setName(const QString& value)`: Sets the parameter list name.
 - `bindableName()`: Returns a bindable property for the name.
 
+* `label()`: Returns the label of the parameter list.
+- `setLabel(const QString& value)`: Sets the parameter list label.
+- `bindableLabel()`: Returns a bindable property for the label
+
 - `description()`: Returns the description text of the parameter list.
 - `setDescription(const QString& value)`: Sets the parameter list description.
 - `bindableDescription()`: Returns a bindable property for the description.
@@ -29,7 +37,12 @@ A ParameterList has the following properties:
 - `setTooltip(const QString& value)`: Sets the tooltip text.
 - `bindableTooltip()`: Returns a bindable property for the tooltip.
 
+* **visible():** 
+* **setVisible(bool value):** 
+* **bindableVisible():** 
+    
 - `count()`: Returns the number of parameters in the list.
+-  **bindableCount():** Returns a bindable property for count
 
 ## List management methods
 - `append(Parameter *parameter)`: Adds an existing Parameter to the list, returns true on success.
@@ -38,7 +51,7 @@ A ParameterList has the following properties:
 - `emplace(const QVariant& initialValue, const QString& name, const QString& description = {})`: Creates a new Parameter with the given properties and adds it to the list, returning the pointer to the created Parameter.
 - `emplace(const QJsonObject& schema, const QJsonObject& value)`: Creates a new Parameter from JSON objects and adds it to the list, returns pointer to created Parameter.
 
-- `removeParameter(Parameter* parameter)`: Removes the specified Parameter from the list.
+- `removeParameter(Parameter* parameter)`: Removes the Parameter specified by the pointer from the list .
 - `removeParameter(const QString& name)`: Removes the Parameter with the given name from the list.
 
 - `clear()`: Removes all Parameters from the list.
@@ -62,7 +75,7 @@ A ParameterList has the following properties:
 
 - `setValue(const QString& name, const QVariant& value)`: Sets the value of the Parameter with the given name, returns true on success.
 
-- `applyPreset(const QString& presetName)`: Applies the specified preset if available, to all Parameters. Parameters without the preset name are left unchanged.
+- `applyPreset(const QString& presetName)`: Applies the specified preset to all Parameters. where the preset name is available. Parameters without the preset name are left unchanged.
 
 ## Iterator methods
 - `begin()`: Returns an iterator to the beginning of the parameter list.
@@ -93,6 +106,9 @@ A ParameterList has the following properties:
 
 ## Signals
 - `nameChanged(const QString& value)`: Emitted when the parameter list name is changed.
+- nameEdited(const QString &oldName, const QString &newName):
+
+- labelChanged(const QString& value): 
 
 - `descriptionChanged(const QString& value)`: Emitted when the parameter list description is modified.
 
@@ -105,6 +121,8 @@ A ParameterList has the following properties:
 - `parameterRemoved(QtNoid::App::Parameter* parameter)`: Emitted when a parameter is removed from the list.
 
 - `parameterRenameError(const QString& oldName, const QString& newName)`: Emitted when a parameter rename operation fails due to name conflicts.
+
+* **visibleChanged(bool value):**
 
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)
