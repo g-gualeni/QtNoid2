@@ -71,6 +71,11 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
 
 }
 
+Parameter::~Parameter()
+{
+    emit aboutToBeDestroyed(this, m_uniqueId, m_isValueChanged);
+}
+
 QJsonObject Parameter::toJsonValue() const
 {
     QJsonObject res;

@@ -1,15 +1,7 @@
 
 
-Revisione finale
+==Revisione finale
+manca anche il segnale writeAttemptedWhileReadOnly(). Mi aiuti ad implementare correttamente la property readOnly?
 
-**Gap non ancora coperto: `onParameterDestroyed`**
 
-Se un `Parameter` viene distrutto direttamente (`delete param`, non tramite `removeParameter`), scatta `onParameterDestroyed` — che rimuove il parametro dalle mappe ma **non** sincronizza `m_valueChangedCounter`/`m_isValueChanged` né resetta `m_nextParameterIndex` quando la lista torna vuota, a differenza di `removeParameterInternal`. Risultato: se elimini direttamente un parametro attualmente "changed", il contatore resta gonfiato per sempre e `isValueChanged()` potrebbe restare bloccato su `true`. `testParameterDestruction()` copre solo `count`/segnali, non questo scenario.
 
-C'è però una complicazione: dentro `onParameterDestroyed` il codice già esistente chiama `param->uniqueId()` su un oggetto il cui `~Parameter()` è già stato eseguito (siamo nel `destroyed()` di `QObject`, emesso da `~QObject()` a valle) — la documentazione Qt è esplicita nel dire che a quel punto non si dovrebbe chiamare nessun metodo sull'oggetto. In pratica "funziona" solo perché `uniqueId()` legge un `int` banale la cui memoria non è ancora stata riusata, ma è undefined behavior, e blocca anche la soluzione più ovvia (chiamare `param->isValueChanged()` per sincronizzare il contatore). La correzione pulita sarebbe tracciare i parametri "changed" con un `QSet<Parameter*>` popolato/svuotato in `onParameterIsValueChangedChanged`, così `onParameterDestroyed` può rimuovere il puntatore dal set senza invocare metodi sull'oggetto morente. Dimmi se vuoi che la implementiamo.
-
-**Documentazione (`QtNoidAppParameterList.md`)**
-
-Il paragrafo introduttivo chiama la proprietà "isChanged", ma nel codice si chiama `isValueChanged` (getter, bindable e segnale) — va allineato il nome. Più serio: la voce `readOnly` dichiara che "la lista di valori non può essere modificata" e che tentare di farlo emette un segnale `writeAttemptedWhileReadOnly()` — ma quel segnale non esiste da nessuna parte nella classe, e soprattutto **`ParameterList::readOnly` oggi non blocca nulla**: `setValue()`, `append()`, `emplace()` non controllano mai `m_readOnly`. È un flag puramente decorativo, a differenza del `readOnly` del singolo `Parameter` che è correttamente applicato tramite `canModify()`. Va deciso: o si implementa davvero il blocco (e si aggiorna/crea il segnale se serve), o si corregge la doc per riflettere lo stato attuale. Mancano inoltre, nella sezione "Properties management methods", le voci per `readOnly()`/`setReadOnly()`/`bindableReadOnly()` e per `isValueChanged()`/`bindableIsValueChanged()`; e nella sezione "Signals" mancano `readOnlyChanged(bool)` e `isValueChangedChanged(bool)`. Nota minore: "at leas one" → "at least one".
-
-Da dove vuoi ripartire: tolgo prima io i due `QVERIFY(false)` (dimmi e te lo confermo), oppure preferisci affrontare subito l'enforcement di `readOnly` sulla lista?

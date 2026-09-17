@@ -36,6 +36,8 @@ private slots:
     void testEmplaceAfterRemoveParameterShouldAddAtIndexZero();
     void testAppendAfterRemoveParameterShouldAddAtIndexZero();
 
+    void testUsingDeleteDirectlyOnTheParameterPointer();
+
     void testParameterAccess();
 
     void testParameterListSetValueConvenienceMethods();
@@ -221,7 +223,7 @@ void TestQtNoidAppParameterList::testAppendingParameters()
     QSignalSpy addedSpy(&list, &ParameterList::parameterAdded);
     
     auto param1 = new Parameter(100.0, "Param1", this);
-    list.append(param1);
+    list << param1;
     QCOMPARE(list.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
@@ -230,13 +232,13 @@ void TestQtNoidAppParameterList::testAppendingParameters()
     QCOMPARE(list.contains("Param1"), true);
     
     auto param2 = new Parameter(200.0, "Param2", this);
-    list.append(param2);
+    list << param2;
     QCOMPARE(list.count(), 2);
     QCOMPARE(countSpy.count(), 2);
     QCOMPARE(addedSpy.count(), 2);
     
     // Adding same parameter again should not change anything
-    list.append(param1);
+    list << param1;
     QCOMPARE(list.count(), 2);
     QCOMPARE(countSpy.count(), 2);
     QCOMPARE(addedSpy.count(), 2);
@@ -591,6 +593,32 @@ void TestQtNoidAppParameterList::testAppendAfterRemoveParameterShouldAddAtIndexZ
     QCOMPARE(list.parameter(0), third);
 }
 
+void TestQtNoidAppParameterList::testUsingDeleteDirectlyOnTheParameterPointer()
+{
+    Parameter* par = new Parameter(10, "par", this);
+    ParameterList list("myList", this);
+
+    list.append(par);
+    par->setValue(100);
+    QCOMPARE(list.isValueChanged(), true);
+
+    QSignalSpy removedSpy(&list, &ParameterList::parameterRemoved);
+    QSignalSpy countSpy(&list, &ParameterList::countChanged);
+
+    delete par;
+
+    QCOMPARE(list.count(), 0);
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(removedSpy.count(), 1);
+
+    // Check the isValueChanged of the list is false
+    QCOMPARE(list.isValueChanged(), false);
+
+    // Check the the first parameter of an empty list is 0
+    Parameter* emPlace = list.emplace(123, "Emplace");
+    QCOMPARE(list.indexOf(emPlace), 0);
+}
+
 void TestQtNoidAppParameterList::testParameterAccess()
 {
     ParameterList list(this);
@@ -598,9 +626,7 @@ void TestQtNoidAppParameterList::testParameterAccess()
     auto param2 = new Parameter(1013.25, "Pressure", this);
     auto param3 = new Parameter( 60.0, "Humidity",this);
     
-    list.append(param1);
-    list.append(param2);
-    list.append(param3);
+    list << param1 << param2 << param3;
     
     // Test access by index
     QCOMPARE(list.parameter(0), param1);

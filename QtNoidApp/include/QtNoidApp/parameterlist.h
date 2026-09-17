@@ -209,9 +209,10 @@ signals:
 
 
 private slots:
-    void onParameterDestroyed(QObject* parameter);
+    void onParameterAboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged);
     void onParameterNameEdited(const QString& oldName, const QString& newName);
     void onParameterIsValueChangedChanged(bool changed);
+
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_name, &ParameterList::nameChanged)

@@ -385,7 +385,7 @@ void ParameterList::removeParameterInternal(Parameter *parameter)
         onParameterIsValueChangedChanged(false);
     }
 
-    disconnect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+    disconnect(parameter, &Parameter::aboutToBeDestroyed, this, &ParameterList::onParameterAboutToBeDestroyed);
     disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
     disconnect(parameter, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
 
@@ -426,7 +426,7 @@ void ParameterList::clear()
 
     for (auto it = m_parametersByIndex.begin(); it != m_parametersByIndex.end(); ++it) {
         Parameter* param = it.value();
-        disconnect(param, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+        disconnect(param, &Parameter::aboutToBeDestroyed, this, &ParameterList::onParameterAboutToBeDestroyed);
         disconnect(param, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
         disconnect(param, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
         emit parameterRemoved(param);
@@ -519,24 +519,31 @@ void ParameterList::applyPreset(const QString &presetName)
     }
 }
 
-void ParameterList::onParameterDestroyed(QObject *parameter)
+
+void ParameterList::onParameterAboutToBeDestroyed(Parameter *parameter, int uniqueId, bool wasChanged)
 {
-    Parameter *param = static_cast<Parameter*>(parameter);
-    int idx = m_parameterToIndex.value(param, -1);
+    int idx = m_parameterToIndex.value(parameter, -1);
     if(idx == -1) {
         return;
     }
-    m_parameterToIndex.remove(param);
+    m_parameterToIndex.remove(parameter);
+    m_parametersByUniqueId.remove(uniqueId);
     m_parametersByIndex.remove(idx);
-    m_parametersByUniqueId.remove(param->uniqueId());
 
     // Remove from m_parametersByName using param
     // because param->name() could be modified
-    QString key = m_parametersByName.key(param);
+    QString key = m_parametersByName.key(parameter);
     m_parametersByName.remove(key);
 
-    emit parameterRemoved(param);
+    if (wasChanged) {
+        onParameterIsValueChangedChanged(false);
+    }
+
+    emit parameterRemoved(parameter);
     m_count = m_parametersByIndex.count();
+    if (isEmpty()) {
+        m_nextParameterIndex = 0;
+    }
 }
 
 void ParameterList::onParameterNameEdited(const QString &oldName, const QString &newName)
@@ -575,7 +582,7 @@ void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
     m_parametersByIndex.insert(m_nextParameterIndex, parameter);
     m_nextParameterIndex++;
     m_parametersByName.insert(parameter->name(), parameter);
-    connect(parameter, &QObject::destroyed, this, &ParameterList::onParameterDestroyed);
+    connect(parameter, &Parameter::aboutToBeDestroyed, this, &ParameterList::onParameterAboutToBeDestroyed);
     connect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
     connect(parameter, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
     if(parameter->isValueChanged()) {

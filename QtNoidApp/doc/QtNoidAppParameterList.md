@@ -5,10 +5,10 @@ A ParameterList has the following properties:
 - **label:** this can be an alias for the name or its translation in local language. Since it is not tied to the parameter name, it is the preferred one for the user interface.
 - **description**: Descriptive text explaining the purpose of the parameter list.
 - **tooltip**: Tooltip text for UI elements.
-- **isChanged**: Read-only property, true when at leas one the internal parameters differs from the reference value (initial value, last applied preset, or last value loaded from JSON).
+- **readOnly**: Indicates that the values in this parameter list should not be modified.  Trying to change it fires the signal writeAttemptedWhileReadOnly().
+- **visible:** use this flag to show or hide the parameterList in a dialog.
+- **isValueChanged**: Read-only property, true when at leas one the internal parameters differs from the reference value. The reference value can be: the initial value, last applied preset, or last value loaded from JSON.
 - **count**: Read-only property indicating the number of parameters in the list.
-- **readOnly**: When true, the parameter list of values cannot be modified. Trying to change it fires the signal writeAttemptedWhileReadOnly().
-* **visible:** use this flag to show or hide the parameterList in a dialog.
 
 ## Static Methods
 * There are no static methods
@@ -27,7 +27,7 @@ A ParameterList has the following properties:
 
 * `label()`: Returns the label of the parameter list.
 - `setLabel(const QString& value)`: Sets the parameter list label.
-- `bindableLabel()`: Returns a bindable property for the label
+- `bindableLabel()`: Returns a bindable property for the label.
 
 - `description()`: Returns the description text of the parameter list.
 - `setDescription(const QString& value)`: Sets the parameter list description.
@@ -37,12 +37,19 @@ A ParameterList has the following properties:
 - `setTooltip(const QString& value)`: Sets the tooltip text.
 - `bindableTooltip()`: Returns a bindable property for the tooltip.
 
-* **visible():** 
-* **setVisible(bool value):** 
-* **bindableVisible():** 
+- `readOnly()`: Returns whether the parameter list is marked as read-only.
+- `setReadOnly(bool value)`: Sets the read-only flag.
+- `bindableReadOnly()`: Returns a bindable property for readOnly.
+
+- `visible()`: Returns whether the parameter list is visible.
+- `setVisible(bool value)`: Sets the visible flag.
+- `bindableVisible()`: Returns a bindable property for visible.
+
+- `isValueChanged()`: Returns true if at least one parameter in the list currently differs from its reference value.
+- `bindableIsValueChanged()`: Returns a bindable property for isValueChanged.
     
 - `count()`: Returns the number of parameters in the list.
--  **bindableCount():** Returns a bindable property for count
+-  `bindableCount():` Returns a bindable property for count.
 
 ## List management methods
 - `append(Parameter *parameter)`: Adds an existing Parameter to the list, returns true on success.
@@ -106,13 +113,19 @@ A ParameterList has the following properties:
 
 ## Signals
 - `nameChanged(const QString& value)`: Emitted when the parameter list name is changed.
-- nameEdited(const QString &oldName, const QString &newName):
+- `nameEdited(const QString &oldName, const QString &newName)`: emitted when the parameter list name is edited, passing both the old and new name.
 
-- labelChanged(const QString& value): 
+- **labelChanged(const QString& value):** Emitted when the parameter list label is changed.
 
 - `descriptionChanged(const QString& value)`: Emitted when the parameter list description is modified.
 
 - `tooltipChanged(const QString& value)`: Emitted when the parameter list tooltip is changed.
+
+* `readOnlyChanged(bool value)`: Emitted when the readOnly flag is changed.
+
+- `visibleChanged(bool value)`: Emitted when the visible flag is changed.
+
+* `isValueChangedChanged(bool value)`: Emitted when the aggregate isValueChanged state changes, i.e. when the list goes from "no parameter changed" to "at least one parameter changed", or back.
 
 - `countChanged(int count)`: Emitted when the number of parameters in the list changes.
 
@@ -122,8 +135,7 @@ A ParameterList has the following properties:
 
 - `parameterRenameError(const QString& oldName, const QString& newName)`: Emitted when a parameter rename operation fails due to name conflicts.
 
-* **visibleChanged(bool value):**
-
+- `writeAttemptedWhileReadOnly(const QString &parameterName)`: Emitted when `setValue()` is called while the list is read-only; carries the name of the parameter whose modification was blocked.
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)
 [← Back to README](../../README.md)

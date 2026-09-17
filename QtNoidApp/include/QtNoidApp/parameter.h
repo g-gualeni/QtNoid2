@@ -38,6 +38,7 @@ public:
     explicit Parameter(const QVariant& initialValue, const QString &name, QObject *parent = nullptr);
     explicit Parameter(const QVariant& initialValue, const QString &name, const QString &description, QObject *parent = nullptr);
     explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr);
+     ~Parameter() override;
 
     int uniqueId() const { return m_uniqueId; }
 
@@ -138,6 +139,7 @@ signals:
     void writeAttemptedWhileReadOnly(const QString &parameterName);
     void isValidChanged(bool isValid);
     void isValueChangedChanged(bool changed);
+    void aboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged);
 
 
 public slots:
