@@ -123,7 +123,7 @@ public:
     void setTooltip(const QString& value);
     QBindable<QString> bindableTooltip();
 
-    // Visible
+    // ReadOnly
     bool readOnly() const;
     void setReadOnly(bool value);
     QBindable<bool> bindableReadOnly();

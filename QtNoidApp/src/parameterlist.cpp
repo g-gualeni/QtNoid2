@@ -289,7 +289,7 @@ QBindable<bool> ParameterList::bindableVisible()
     return QBindable<bool>(&m_visible);
 }
 
-bool ParameterList::isValueChanged()
+bool ParameterList::isValueChanged() const
 {
     // qDebug() << Q_FUNC_INFO  << "m_valueChangedCounter"  << m_valueChangedCounter;
     return m_isValueChanged.value();

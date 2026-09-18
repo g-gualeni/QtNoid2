@@ -24,15 +24,11 @@
 * ~~Revisione QtNoid::App::Parameter~~
 * sistemare esempio QtNoidAppParameterUsage
 ==Creare esempio per QtNoid::Common::Text==
-Studiare classe QtNoid::App::Parameterlist ==([cosa dice il sommo](sommo.md))==
-
+Studiare classe QtNoid::App::Parameterlist
 -> Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile
 
-te
 
-
-Come faccio a controlllare che ci sia al più un parametro cambiato?
- 
+ Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==
 
 
 Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale
