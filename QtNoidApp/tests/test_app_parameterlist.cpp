@@ -41,6 +41,7 @@ private slots:
     void testParameterAccess();
 
     void testParameterListSetValueConvenienceMethods();
+    void testParameterListSetValueWhileReadOnlyShouldFail();
 
     void testParameterDestruction();
 
@@ -89,11 +90,12 @@ private slots:
     void testParameterRenameError();
     void testIsEmpty();
     void testApplyPreset();
+    void testApplyPresetShouldBypassReadOnly();
+
     void testOperatorLeftShiftWithParameterReference();
 
     void testApplyJsonValuesToExistingParameterListShouldUpdateValues();
     void testApplyJsonSchemaToExistingParameterListShouldUpdateSchema();
-
     void testListOwnershipDeleteListDestroyParameters();
 
     // Iterator tests
@@ -674,6 +676,36 @@ void TestQtNoidAppParameterList::testParameterListSetValueConvenienceMethods()
     QCOMPARE(list.setValue("Temperature", 30.0), true);
     QCOMPARE(param1->value(), 30.0);
     QCOMPARE(list.setValue("NonExistent", 123), false);
+}
+
+void TestQtNoidAppParameterList::testParameterListSetValueWhileReadOnlyShouldFail()
+{
+    ParameterList list(this);
+    Parameter param1(25.0, "Temperature", this);
+    list << param1;
+
+    // setValue should fail and not modify the parameter
+    list.setReadOnly(true);
+    QSignalSpy writeAttemptSpy(&list, &ParameterList::writeAttemptedWhileReadOnly);
+    QCOMPARE(list.setValue("Temperature", 99.0), false);
+    QCOMPARE(list.value("Temperature"), 25.0);
+    QCOMPARE(writeAttemptSpy.count(), 1);
+
+    // Signal must carry the name of the parameter whose modification was blocked
+    QList<QVariant> arguments = writeAttemptSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "Temperature");
+
+    // A non-existent parameter should just fail silently: no write-attempt signal
+    QCOMPARE(list.setValue("NonExistent", 1), false);
+    QCOMPARE(writeAttemptSpy.count(), 0);
+
+    // Turning readOnly off should let setValue succeed again
+    list.setReadOnly(false);
+    QCOMPARE(list.setValue("Temperature", 99.0), true);
+    QCOMPARE(list.value("Temperature"), 99.0);
+    QCOMPARE(writeAttemptSpy.count(), 0);
+
+
 }
 
 void TestQtNoidAppParameterList::testParameterDestruction()
@@ -1739,6 +1771,27 @@ void TestQtNoidAppParameterList::testApplyPreset()
     // Test empty list
     ParameterList emptyList(this);
     emptyList.applyPreset("AnyPreset"); // Should not crash
+}
+
+void TestQtNoidAppParameterList::testApplyPresetShouldBypassReadOnly()
+{
+    ParameterList list(this);
+
+    Parameter param1(50.0, "Temperature", this);
+    param1.setPreset("Low", 10.0);
+
+    list << param1;
+    list.setReadOnly(true);
+
+    QSignalSpy valueChangedSpy(&param1, &Parameter::valueChanged);
+    QSignalSpy writeAttemptSpy(&list, &ParameterList::writeAttemptedWhileReadOnly);
+
+    // applyPreset must still work even if the list is readOnly
+    list.applyPreset("Low");
+
+    QCOMPARE(list.value("Temperature"), 10.0);
+    QCOMPARE(valueChangedSpy.count(), 1);
+    QCOMPARE(writeAttemptSpy.count(), 0);
 }
 
 void TestQtNoidAppParameterList::testOperatorLeftShiftWithParameterReference()

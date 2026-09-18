@@ -15,6 +15,8 @@ signals:
     void pageRemoved(QtNoid::App::ParameterList* parameterList);
     void pageRenameError(const QString& oldName, const QString& newName);
 
+
+
 [⬆ Back to QtNoidApp](QtNoidApp.md)
 
 &nbsp;

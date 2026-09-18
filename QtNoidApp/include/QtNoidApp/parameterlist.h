@@ -206,6 +206,7 @@ signals:
     void visibleChanged(bool value);
     void readOnlyChanged(bool value);
     void isValueChangedChanged(bool value);
+    void writeAttemptedWhileReadOnly(const QString &parameterName);
 
 
 private slots:
@@ -231,6 +232,7 @@ private:
     int m_nextParameterIndex = 0;
     void appendParameterAndUpdateIndexs(Parameter *parameter);
     void removeParameterInternal(Parameter *parameter);
+    bool canModify(const QString &parameterName) const; // Modification control
 
     static QMutex s_uniqueIdMutex;
     static int s_nextUniqueId;

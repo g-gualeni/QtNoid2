@@ -26,7 +26,9 @@
 ==Creare esempio per QtNoid::Common::Text==
 Studiare classe QtNoid::App::Parameterlist ==([cosa dice il sommo](sommo.md))==
 
-Finire di creare i test e poi sistemare la storia del parametro cambiato
+-> Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile
+
+te
 
 
 Come faccio a controlllare che ci sia al più un parametro cambiato?

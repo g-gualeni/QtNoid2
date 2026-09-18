@@ -5,7 +5,7 @@ A ParameterList has the following properties:
 - **label:** this can be an alias for the name or its translation in local language. Since it is not tied to the parameter name, it is the preferred one for the user interface.
 - **description**: Descriptive text explaining the purpose of the parameter list.
 - **tooltip**: Tooltip text for UI elements.
-- **readOnly**: Indicates that the values in this parameter list should not be modified.  Trying to change it fires the signal writeAttemptedWhileReadOnly().
+- **readOnly**: When true, values in this parameter list cannot be modified through setValue(). Trying to change a value while readOnly is true, fires writeAttemptedWhileReadOnly(). All other methods are not considering this flag.
 - **visible:** use this flag to show or hide the parameterList in a dialog.
 - **isValueChanged**: Read-only property, true when at leas one the internal parameters differs from the reference value. The reference value can be: the initial value, last applied preset, or last value loaded from JSON.
 - **count**: Read-only property indicating the number of parameters in the list.
@@ -135,7 +135,7 @@ A ParameterList has the following properties:
 
 - `parameterRenameError(const QString& oldName, const QString& newName)`: Emitted when a parameter rename operation fails due to name conflicts.
 
-- `writeAttemptedWhileReadOnly(const QString &parameterName)`: Emitted when `setValue()` is called while the list is read-only; carries the name of the parameter whose modification was blocked.
+- `writeAttemptedWhileReadOnly(const QString &parameterName)`: Emitted when setValue() is called while the list is read-only; carries the name of the parameter whose modification was blocked.
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)
 [← Back to README](../../README.md)

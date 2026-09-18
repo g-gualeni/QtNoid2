@@ -398,6 +398,15 @@ void ParameterList::removeParameterInternal(Parameter *parameter)
 
 }
 
+bool ParameterList::canModify(const QString &parameterName) const
+{
+    if (m_readOnly.value()) {
+        emit const_cast<ParameterList*>(this)->writeAttemptedWhileReadOnly(parameterName);
+        return false;
+    }
+    return true;
+}
+
 
 void ParameterList::removeParameter(Parameter *parameter)
 {
@@ -507,6 +516,9 @@ bool ParameterList::setValue(const QString &name, const QVariant &value)
         return false;
     }
 
+    if (!canModify(name)) {
+        return false;
+    }
     param->setValue(value);
     return true;
 }
