@@ -135,7 +135,7 @@ public:
     QBindable<bool> bindableVisible();
 
     // isValueChanged: track modifications
-    bool isValueChanged();
+    bool isValueChanged() const;
     QBindable<bool> bindableIsValueChanged();
 
     // List management
