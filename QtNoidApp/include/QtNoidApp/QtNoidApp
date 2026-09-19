@@ -3,7 +3,7 @@
 
 #include "core.h"  // IWYU pragma: export
 #include "parameter.h" // IWYU pragma: export
-#include "parameterlist.h" // IWYU pragma: export
+#include "parameterspage.h" // IWYU pragma: export
 #include "config.h" // IWYU pragma: export
 #include "configglobal.h" // IWYU pragma: export
 #include "development.h" // IWYU pragma: export

@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+    setWindowTitle("QtNoid::App::ParametersPage Basic Usage");
     createList();
     createUiFromList();
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
@@ -22,44 +24,44 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    appConfig->saveValue("Geometry", saveGeometry());
     delete ui;
 }
 
 void MainWindow::createList()
 {
-    m_list.setName("Setup");
+    m_list.setName("App Setup Page");
 
     QtNoid::App::Parameter* par = nullptr;
 
-    par = m_list.emplace(123, "Counter");
+    par = m_list.emplace(123, "Counter", "Integer Counter as read only");
     par->setReadOnly(true);
     par->setPreset("Default01", 123);
     par->setPreset("Default02", 223);
-
     par->setTooltip("This is a read only counter");
 
-    par = m_list.emplace("test.ini", "FileName", "Configuration File Name");
+    par = m_list.emplace("test.ini", "FileName", "Configuration File Name as string");
     par->setPreset("Default01", "test.ini");
     par->setPreset("Default02", "results.ini");
     par->setTooltip("This is an example of string containing a file name");
 
-    par = m_list.emplace(10.5, "Light", "Current Light Intensity");
+    par = m_list.emplace(10.5, "Light", "Current Light Intensity as Double");
     par->setTooltip("Light Intensity tooltip");
     par->setPreset("Default01", 10.5);
     par->setPreset("Default02", 22.22);
     par->setRange(0,100);
 
-    par = m_list.emplace(11, "Dark", "Dark Light Intensity");
-    par->setTooltip("This is an example paramter");
-    par->setPreset("Default01", 11);
-    par->setPreset("Default02", 21);
+    par = m_list.emplace(11.0, "Dark", "Dark Light Intensity as Double");
+    par->setTooltip("This is an example parameter");
+    par->setPreset("Default01", 11.0);
+    par->setPreset("Default02", 21.0);
     par->setRange(0,100);
 
-    par = m_list.emplace(12, "Bright", "Bright Light Intensity");
+    par = m_list.emplace(12, "Font Size", "Font Size as Integer");
     par->setTooltip("This is another example paramter");
     par->setPreset("Default01", 12);
-    par->setPreset("Default02", 22);
-    par->setRange(10,200);
+    par->setPreset("Default02", 16);
+    par->setRange(10,20);
 }
 
 void MainWindow::createUiFromList()
@@ -67,7 +69,7 @@ void MainWindow::createUiFromList()
     QLayout* currentLayout = nullptr;
     QWidget* currentCentral = centralWidget();
     if (currentCentral) {
-        // Salva il contenuto esistente se necessario
+        // Preserve existing content
         currentLayout = currentCentral->layout();
     }
     if(!currentLayout) {
@@ -86,7 +88,6 @@ QWidget* MainWindow::createUiTabFromList()
     QWidget* tab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(tab);
 
-    // const auto& parameters = m_list.parameters();
     for(const auto par : m_list) {
         layout->addLayout(createUiParamterGroupFromParameter(par, 120));
         auto desc = createUiDescriptionFromParameter(par);
@@ -208,7 +209,7 @@ void MainWindow::on_cmdDefault02_clicked()
 void MainWindow::on_cmdSaveToJson_clicked()
 {
     QString fileName = QFileDialog::getSaveFileName(
-        this, "Save values as JSON", "ParameterListValues.json",
+        this, "Save values as JSON", "ParametersPage.json",
         "File JSON (*.json)"
         );
 

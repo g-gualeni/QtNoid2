@@ -182,8 +182,8 @@ void TestQtNoidAppConfigFile::testConfigFileInheritsFromConfig()
     QVERIFY(configFile.isEmpty());
     QCOMPARE(configFile.count(), 0);
 
-    // Add a ParameterList
-    ParameterList* paramList = configFile.emplace("TestList", "Test description");
+    // Add a ParametersPage
+    ParametersPage* paramList = configFile.emplace("TestList", "Test description");
     QVERIFY(paramList != nullptr);
     QCOMPARE(configFile.count(), 1);
     QVERIFY(!configFile.isEmpty());

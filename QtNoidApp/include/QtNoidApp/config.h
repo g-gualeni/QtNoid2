@@ -3,7 +3,7 @@
 
 
 #include "global.h"
-#include "parameterlist.h"
+#include "parameterspage.h"
 #include <QObject>
 #include <QHash>
 #include <QList>
@@ -28,16 +28,16 @@ public:
     class iterator {
     public:
         using iterator_category = std::bidirectional_iterator_tag;
-        using value_type = ParameterList*;
+        using value_type = ParametersPage*;
         using difference_type = std::ptrdiff_t;
-        using pointer = ParameterList**;
-        using reference = ParameterList*&;
+        using pointer = ParametersPage**;
+        using reference = ParametersPage*&;
 
         iterator() = default;
-        explicit iterator(QMap<int, ParameterList*>::iterator it) : m_it(it) {}
+        explicit iterator(QMap<int, ParametersPage*>::iterator it) : m_it(it) {}
 
-        ParameterList* operator*() const { return m_it.value(); }
-        ParameterList* operator->() const { return m_it.value(); }
+        ParametersPage* operator*() const { return m_it.value(); }
+        ParametersPage* operator->() const { return m_it.value(); }
 
         iterator& operator++() { ++m_it; return *this; }
         iterator operator++(int) { iterator tmp = *this; ++m_it; return tmp; }
@@ -50,7 +50,7 @@ public:
         int index() const { return m_it.key(); }
 
     private:
-        QMap<int, ParameterList*>::iterator m_it;
+        QMap<int, ParametersPage*>::iterator m_it;
         friend class const_iterator;
         friend class Config;
     };
@@ -58,17 +58,17 @@ public:
     class const_iterator {
     public:
         using iterator_category = std::bidirectional_iterator_tag;
-        using value_type = const ParameterList*;
+        using value_type = const ParametersPage*;
         using difference_type = std::ptrdiff_t;
-        using pointer = const ParameterList**;
-        using reference = const ParameterList*&;
+        using pointer = const ParametersPage**;
+        using reference = const ParametersPage*&;
 
         const_iterator() = default;
-        explicit const_iterator(QMap<int, ParameterList*>::const_iterator it) : m_it(it) {}
+        explicit const_iterator(QMap<int, ParametersPage*>::const_iterator it) : m_it(it) {}
         const_iterator(const iterator& it) : m_it(it.m_it) {}
 
-        const ParameterList* operator*() const { return m_it.value(); }
-        const ParameterList* operator->() const { return m_it.value(); }
+        const ParametersPage* operator*() const { return m_it.value(); }
+        const ParametersPage* operator->() const { return m_it.value(); }
 
         const_iterator& operator++() { ++m_it; return *this; }
         const_iterator operator++(int) { const_iterator tmp = *this; ++m_it; return tmp; }
@@ -81,7 +81,7 @@ public:
         int index() const { return m_it.key(); }
 
     private:
-        QMap<int, ParameterList*>::const_iterator m_it;
+        QMap<int, ParametersPage*>::const_iterator m_it;
     };
 
     // Reverse iterators
@@ -119,25 +119,25 @@ public:
     int count() const;
     QBindable<int> bindableCount();
 
-    bool append(ParameterList *page);
+    bool append(ParametersPage *page);
     bool append(const QJsonObject& schema, const QJsonObject& value);
-    ParameterList* emplace(const QString& name, const QString& description = {});
-    ParameterList* emplace(const QJsonObject& schema, const QJsonObject& values);
-    void remove(ParameterList* page);
+    ParametersPage* emplace(const QString& name, const QString& description = {});
+    ParametersPage* emplace(const QJsonObject& schema, const QJsonObject& values);
+    void remove(ParametersPage* page);
     void remove(const QString& pageName);
     void clear();
     bool isEmpty() const;
 
     // Access methods
-    ParameterList* page(int index) const;
-    ParameterList* page(const QString& pageName) const;
-    int indexOf(ParameterList* page) const;
+    ParametersPage* page(int index) const;
+    ParametersPage* page(const QString& pageName) const;
+    int indexOf(ParametersPage* page) const;
     int indexOf(const QString& pageName) const;
-    bool contains(ParameterList* page) const;
+    bool contains(ParametersPage* page) const;
     bool contains(const QString& pageName) const;
 
     // List access
-    QList<ParameterList*> pages() const;
+    QList<ParametersPage*> pages() const;
 
     // Convenience methods for nested access
     int parametersCount(const QString& pageName = "Settings") const;
@@ -189,11 +189,11 @@ public:
     const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
 
 public:
-    Config &operator<<(ParameterList& page){
+    Config &operator<<(ParametersPage& page){
         append(&page);
         return *this;
     };
-    Config &operator<<(ParameterList* page){
+    Config &operator<<(ParametersPage* page){
         if(page) append(page);
         return *this;
     };
@@ -203,8 +203,8 @@ signals:
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
     void countChanged(int count);
-    void pageAdded(const QtNoid::App::ParameterList* parameterList);
-    void pageRemoved(QtNoid::App::ParameterList* parameterList);
+    void pageAdded(const QtNoid::App::ParametersPage* parameterList);
+    void pageRemoved(QtNoid::App::ParametersPage* parameterList);
     void pageRenameError(const QString& oldName, const QString& newName);
 
 private slots:
@@ -216,12 +216,12 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_description, &Config::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_tooltip, &Config::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, int, m_count, &Config::countChanged)
-    QHash<int, ParameterList*> m_pagesByUniqueId;
-    QMap<int, ParameterList*> m_pagesByIndex;
-    QHash<ParameterList*, int> m_pageToIndex; // ParameterList -> sortIndex
-    QHash<QString, ParameterList*> m_pagesByName;
+    QHash<int, ParametersPage*> m_pagesByUniqueId;
+    QMap<int, ParametersPage*> m_pagesByIndex;
+    QHash<ParametersPage*, int> m_pageToIndex; // ParametersPage -> sortIndex
+    QHash<QString, ParametersPage*> m_pagesByName;
     int m_nextPageIndex = 0;
-    void appendPageAndUpdateIndexs(ParameterList *page);
+    void appendPageAndUpdateIndexs(ParametersPage *page);
 
     bool saveValuePrivate(const QString &paramName, const QVariant &value, const QString &pageName);
 
@@ -247,7 +247,7 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Config &config)
         debug << ", pages: [";
         for (int ii = 0; ii < config.count(); ++ii) {
             if (ii > 0) debug << ", ";
-            QtNoid::App::ParameterList* page = config.page(ii);
+            QtNoid::App::ParametersPage* page = config.page(ii);
             if (page) {
                 debug <<   " {";
                 debug << page;

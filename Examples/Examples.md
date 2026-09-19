@@ -9,23 +9,18 @@ Each example is a standalone CMake project with its own documentation page, link
 
 ## QtNoidCommon examples
 
-* **[QtNoid::Common Basic Usage](CommonBasicUsage/doc/QtNoidCommonBasicUsage.md)**:
-  Shows how to use `QtNoid::Common::File::listPathRecursively()` and `listSubPathRecursively()`. This can be used as a benchmark of their speed on different platforms.
+* **[QtNoid::Common Basic Usage](CommonBasicUsage/doc/QtNoidCommonBasicUsage.md)**: Shows how to use `QtNoid::Common::File::listPathRecursively()` and `listSubPathRecursively()`. This can be used as a benchmark of their speed on different platforms.
 * **QtNoid::Common Text Usage:** this is a running demo for the basic usage of the class [QtNoid::Common::Text](../QtNoidCommon/doc/QtNoidCommonText.md).
 
 ## QtNoidApp examples
 
-* **[AppParameterBasicUsage](AppParameterBasicUsage/doc/AppParameterBasicUsage.md)**:
-  Basic usage of the `Parameter` class from QtNoidApp.
+* **[QtNoid::App::Core Basic Usage](AppCoreBasicUsage/doc/QtNoidAppCoreBasicUsage.md)**: Basic usage of the `Core` class to manage the application configuration file.
 
-* **[AppParameterListBasicUsage](AppParameterListBasicUsage/doc/AppParameterListBasicUsage.md)**:
-  Basic usage of a list of `Parameter` objects.
+* **[QtNoid::App::Parameter Basic Usage](AppParameterBasicUsage/doc/AppParameterBasicUsage.md)**: Basic usage of the `Parameter` class from QtNoidApp.
 
-* **[AppParameterListBenchmark](AppParameterListBenchmark/doc/AppParameterListBenchmark.md)**:
-  Benchmark of the `Parameter` list performance.
+* **[QtNoid::App::ParametersPage Basic Usage](AppParametersPageBasicUsage/doc/AppParametersPageBasicUsage.md)**: Basic usage of a list of `ParametersPage` objects.
 
-* **[AppSettingsBasicUsage](AppSettingsBasicUsage/doc/AppSettingsBasicUsage.md)**:
-  Basic usage of the `Core` class to manage the application configuration file.
+* **[QtNoid::App::ParametersPage Benchmark](AppParametersPageBenchmark/doc/QtNoidAppParametersPageBenchmark.md)**: Benchmark of the `ParametersPage` performance. 
 
 ## QtNoidJson examples
 

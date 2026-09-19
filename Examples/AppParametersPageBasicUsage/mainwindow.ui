@@ -6,12 +6,9 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>583</width>
+    <height>435</height>
    </rect>
-  </property>
-  <property name="windowTitle">
-   <string>AppParameterListBasicUsage</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -20,7 +17,7 @@
       <item>
        <widget class="QPushButton" name="cmdQDebug">
         <property name="text">
-         <string>Test QDebug &lt;&lt; for ParameterList</string>
+         <string>Test QDebug &lt;&lt; for ParametersPage</string>
         </property>
        </widget>
       </item>
@@ -61,7 +58,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>583</width>
      <height>22</height>
     </rect>
    </property>

@@ -1,5 +1,5 @@
-#ifndef QTNOID_APP_PARAMETERLIST_H
-#define QTNOID_APP_PARAMETERLIST_H
+#ifndef QTNOID_APP_PARAMETERSPAGE_H
+#define QTNOID_APP_PARAMETERSPAGE_H
 
 
 #include "global.h"
@@ -11,7 +11,7 @@
 namespace QtNoid {
 namespace App {
 
-class QTNOIDAPP_EXPORT ParameterList : public QObject
+class QTNOIDAPP_EXPORT ParametersPage : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
@@ -53,7 +53,7 @@ public:
     private:
         QMap<int, Parameter*>::iterator m_it;
         friend class const_iterator;
-        friend class ParameterList;
+        friend class ParametersPage;
     };
 
     class const_iterator {
@@ -91,9 +91,9 @@ public:
 
     // ===== END ITERATOR CLASSES =====
 
-    explicit ParameterList(QObject *parent = nullptr);
-    explicit ParameterList(const QString& name, QObject *parent = nullptr);
-    explicit ParameterList(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr);
+    explicit ParametersPage(QObject *parent = nullptr);
+    explicit ParametersPage(const QString& name, QObject *parent = nullptr);
+    explicit ParametersPage(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr);
 
     int uniqueId() const { return m_uniqueId; }
 
@@ -183,11 +183,11 @@ public:
     const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
 
 public:
-    ParameterList &operator<<(Parameter& param){
+    ParametersPage &operator<<(Parameter& param){
         append(&param);
         return *this;
     };
-    ParameterList &operator<<(Parameter* param){
+    ParametersPage &operator<<(Parameter* param){
         if(param) append(param);
         return *this;
     };
@@ -216,14 +216,14 @@ private slots:
 
 
 private:
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_name, &ParameterList::nameChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_label, &ParameterList::labelChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_description, &ParameterList::descriptionChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, QString, m_tooltip, &ParameterList::tooltipChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, int, m_count, &ParameterList::countChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_visible, &ParameterList::visibleChanged)    
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_readOnly, &ParameterList::readOnlyChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(ParameterList, bool, m_isValueChanged, &ParameterList::isValueChangedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, QString, m_name, &ParametersPage::nameChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, QString, m_label, &ParametersPage::labelChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, QString, m_description, &ParametersPage::descriptionChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, QString, m_tooltip, &ParametersPage::tooltipChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, int, m_count, &ParametersPage::countChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_visible, &ParametersPage::visibleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_readOnly, &ParametersPage::readOnlyChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_isValueChanged, &ParametersPage::isValueChangedChanged)
 
     QHash<int, Parameter*> m_parametersByUniqueId;
     QMap<int, Parameter*> m_parametersByIndex;
@@ -245,7 +245,7 @@ private:
 } // namespace App
 } // namespace QtNoid
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ParametersPage &list)
 {
     QDebugStateSaver saver(debug);
     debug.nospace() << list.name() << list.label()
@@ -278,14 +278,14 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList &list)
     return debug;
 }
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::ParameterList *list)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ParametersPage *list)
 {
     if (list) {
         return ::operator<<(debug, *list);
     } else {
-        return debug << "ParameterList(nullptr)";
+        return debug << "ParametersPage(nullptr)";
     }
 }
 
 
-#endif // QTNOID_APP_PARAMETERLIST_H
+#endif // QTNOID_APP_PARAMETERSPAGE_H

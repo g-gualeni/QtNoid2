@@ -409,6 +409,8 @@ void TestQtNoidCommonText::testConvertToCamelCase_data()
     QTest::newRow("Core Basic Usage") << "Core Basic Usage"
                                       << "CoreBasicUsage";
 
+    QTest::newRow("Tokenize ::") << "QtNoid::App::ParametersPage Basic Usage"
+                                      << "QtNoidAppParametersPageBasicUsage";
 
 }
 

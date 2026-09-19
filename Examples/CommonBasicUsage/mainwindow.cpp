@@ -14,12 +14,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-
+    setWindowTitle("QtNoid::Common Basic Usage");
     restoreFromAppConfig();
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
-    setWindowTitle("QtNoid Common Basic Usage");
 }
 
 MainWindow::~MainWindow()

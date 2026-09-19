@@ -1,12 +1,12 @@
-# Class: ParameterList
+# Class: ParametersPage
 This class is a container for managing multiple Parameter instances with support for binding and serialization. It provides a comprehensive API for adding, removing, accessing, and managing Parameter objects, along with JSON serialization capabilities for both values and schema definitions. The class supports Qt's property binding system and provides STL-compatible iterators for efficient traversal. 
-A ParameterList has the following properties:
+A ParametersPage has the following properties:
 - **name**: String identifier for the parameter list.
 - **label:** this can be an alias for the name or its translation in local language. Since it is not tied to the parameter name, it is the preferred one for the user interface.
 - **description**: Descriptive text explaining the purpose of the parameter list.
 - **tooltip**: Tooltip text for UI elements.
 - **readOnly**: When true, values in this parameter list cannot be modified through setValue(). Trying to change a value while readOnly is true, fires writeAttemptedWhileReadOnly(). All other methods are not considering this flag.
-- **visible:** use this flag to show or hide the parameterList in a dialog.
+- **visible:** use this flag to show or hide the parametersPage in a dialog.
 - **isValueChanged**: Read-only property, true when at leas one the internal parameters differs from the reference value. The reference value can be: the initial value, last applied preset, or last value loaded from JSON.
 - **count**: Read-only property indicating the number of parameters in the list.
 
@@ -14,11 +14,11 @@ A ParameterList has the following properties:
 * There are no static methods
 
 ## Constructors
-- `ParameterList(QObject *parent = nullptr)`: Creates an empty parameter list with default values.
+- `ParametersPage(QObject *parent = nullptr)`: Creates an empty parameter list with default values.
 
-- `ParameterList(const QString& name, QObject *parent = nullptr)`: Creates a parameter list with a specified name.
+- `ParametersPage(const QString& name, QObject *parent = nullptr)`: Creates a parameter list with a specified name.
 
-- `ParameterList(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr)`: Creates a parameter list by loading configuration from JSON schema and JSON values objects.
+- `ParametersPage(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr)`: Creates a parameter list by loading configuration from JSON schema and JSON values objects.
 
 ## Properties management methods
 - `name()`: Returns the name of the parameter list.
@@ -61,7 +61,7 @@ A ParameterList has the following properties:
 - `removeParameter(Parameter* parameter)`: Removes the Parameter specified by the pointer from the list .
 - `removeParameter(const QString& name)`: Removes the Parameter with the given name from the list.
 
-- `clear()`: Removes all Parameters from the list.
+- `clear()`: Removes all Parameters from the collection.
 
 - `isEmpty()`: Returns true if the list contains no Parameters.
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(AppParameterListBenchmark VERSION 2.0.1 LANGUAGES CXX)
+project(AppParametersPageBenchmark VERSION 2.0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -26,29 +26,29 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(AppParameterListBenchmark
+    qt_add_executable(AppParametersPageBenchmark
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
 # Define target properties for Android with Qt 6 as:
-#    set_property(TARGET AppParameterListBenchmark APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
+#    set_property(TARGET AppParametersPageBenchmark APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(AppParameterListBenchmark SHARED
+        add_library(AppParametersPageBenchmark SHARED
             ${PROJECT_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        add_executable(AppParameterListBenchmark
+        add_executable(AppParametersPageBenchmark
             ${PROJECT_SOURCES}
         )
     endif()
 endif()
 
-target_link_libraries(AppParameterListBenchmark
+target_link_libraries(AppParametersPageBenchmark
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     QtNoid::QtNoidCommon
     QtNoid::QtNoidApp
@@ -58,9 +58,9 @@ target_link_libraries(AppParameterListBenchmark
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.AppParameterListBenchmark)
+  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.AppParametersPageBenchmark)
 endif()
-set_target_properties(AppParameterListBenchmark PROPERTIES
+set_target_properties(AppParametersPageBenchmark PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -70,7 +70,7 @@ set_target_properties(AppParameterListBenchmark PROPERTIES
 
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(AppParameterListBenchmark)
+    qt_finalize_executable(AppParametersPageBenchmark)
 endif()
 
 
@@ -78,6 +78,6 @@ endif()
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    doc/AppParameterListBenchmark.md
+    doc/AppParametersPageBenchmark.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

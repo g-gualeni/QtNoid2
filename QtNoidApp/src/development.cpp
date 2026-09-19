@@ -64,7 +64,7 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
             QDesktopServices::openUrl(QUrl::fromLocalFile(fullFilePath));
         }
         qDebug() << "saveToClipboard:" << saveToClipboard <<
-            "Destination:" << finalFilePath << "Save Res:" << res;
+            "Destination:" << finalFilePath << "->SaveResult:" << res;
     } );
 
     return shortCut;

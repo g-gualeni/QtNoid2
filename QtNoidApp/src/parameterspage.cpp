@@ -1,7 +1,7 @@
 //=============================================================================
-// parameterlist.cpp
+// parameterspage.cpp
 //=============================================================================
-#include "QtNoidApp/parameterlist.h"
+#include "QtNoidApp/parameterspage.h"
 #include <QDebug>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -9,11 +9,11 @@
 namespace QtNoid {
 namespace App {
 
-QMutex ParameterList::s_uniqueIdMutex;
-int ParameterList::s_nextUniqueId(10);  // thread-safe
+QMutex ParametersPage::s_uniqueIdMutex;
+int ParametersPage::s_nextUniqueId(10);  // thread-safe
 
 
-int ParameterList::getNextUniqueId()
+int ParametersPage::getNextUniqueId()
 {
     QMutexLocker locker(&s_uniqueIdMutex);
     if (s_nextUniqueId == INT_MAX) {
@@ -23,17 +23,17 @@ int ParameterList::getNextUniqueId()
 }
 
 
-ParameterList::ParameterList(QObject *parent)
+ParametersPage::ParametersPage(QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
 }
 
-ParameterList::ParameterList(const QString &name, QObject *parent)
+ParametersPage::ParametersPage(const QString &name, QObject *parent)
     : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
 }
 
-ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
+ParametersPage::ParametersPage(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
     // Scan schemaList and valueList to recreate the page
@@ -50,7 +50,7 @@ ParameterList::ParameterList(const QJsonObject &schemaList, const QJsonObject &v
 }
 
 
-QJsonObject ParameterList::toJsonValues() const
+QJsonObject ParametersPage::toJsonValues() const
 {
     QString name = m_name;
     if(name.isEmpty()) {
@@ -68,7 +68,7 @@ QJsonObject ParameterList::toJsonValues() const
     return json;
 }
 
-QJsonObject ParameterList::toJsonSchema() const
+QJsonObject ParametersPage::toJsonSchema() const
 {
     QString name = m_name;
     if(name.isEmpty()) {
@@ -101,7 +101,7 @@ QJsonObject ParameterList::toJsonSchema() const
  * @param json
  * @return
  */
-bool ParameterList::valuesFromJson(const QJsonObject &json)
+bool ParametersPage::valuesFromJson(const QJsonObject &json)
 {
     QString name = m_name.value();
     if(name.isEmpty() && (json.count() == 1)) {
@@ -139,7 +139,7 @@ bool ParameterList::valuesFromJson(const QJsonObject &json)
     return true;
 }
 
-bool ParameterList::schemaFromJson(const QJsonObject &json)
+bool ParametersPage::schemaFromJson(const QJsonObject &json)
 {
     QString name = m_name.value();
     if(name.isEmpty() && (json.count() == 1)) {
@@ -192,13 +192,13 @@ bool ParameterList::schemaFromJson(const QJsonObject &json)
 }
 
 
-QString ParameterList::name() const
+QString ParametersPage::name() const
 {
     return m_name.value();
 }
 
 
-void ParameterList::setName(const QString &newName)
+void ParametersPage::setName(const QString &newName)
 {
     if(m_name == newName)
         return;
@@ -209,108 +209,108 @@ void ParameterList::setName(const QString &newName)
 }
 
 
-QBindable<QString> ParameterList::bindableName()
+QBindable<QString> ParametersPage::bindableName()
 {
     return QBindable<QString>(&m_name);
 }
 
-QString ParameterList::label() const
+QString ParametersPage::label() const
 {
     return m_label.value();
 }
 
-void ParameterList::setLabel(const QString &newLabel)
+void ParametersPage::setLabel(const QString &newLabel)
 {
     m_label = newLabel;
 }
 
-QBindable<QString> ParameterList::bindableLabel()
+QBindable<QString> ParametersPage::bindableLabel()
 {
     return QBindable<QString>(&m_label);
 }
 
-QString ParameterList::description() const
+QString ParametersPage::description() const
 {
     return m_description.value();
 }
 
-void ParameterList::setDescription(const QString &value)
+void ParametersPage::setDescription(const QString &value)
 {
     m_description = value;
 }
 
-QBindable<QString> ParameterList::bindableDescription()
+QBindable<QString> ParametersPage::bindableDescription()
 {
     return QBindable<QString>(&m_description);
 }
 
-QString ParameterList::tooltip() const
+QString ParametersPage::tooltip() const
 {
     return m_tooltip.value();
 }
 
-void ParameterList::setTooltip(const QString &value)
+void ParametersPage::setTooltip(const QString &value)
 {
     m_tooltip = value;
 }
 
-QBindable<QString> ParameterList::bindableTooltip()
+QBindable<QString> ParametersPage::bindableTooltip()
 {
     return QBindable<QString>(&m_tooltip);
 }
 
-bool ParameterList::readOnly() const
+bool ParametersPage::readOnly() const
 {
     return m_readOnly.value();
 }
 
-void ParameterList::setReadOnly(bool value)
+void ParametersPage::setReadOnly(bool value)
 {
     m_readOnly = value;
 }
 
-QBindable<bool> ParameterList::bindableReadOnly()
+QBindable<bool> ParametersPage::bindableReadOnly()
 {
     return QBindable<bool>(&m_readOnly);
 }
 
-bool ParameterList::visible() const
+bool ParametersPage::visible() const
 {
     return m_visible.value();
 }
 
-void ParameterList::setVisible(bool value)
+void ParametersPage::setVisible(bool value)
 {
     m_visible = value;
 }
 
-QBindable<bool> ParameterList::bindableVisible()
+QBindable<bool> ParametersPage::bindableVisible()
 {
     return QBindable<bool>(&m_visible);
 }
 
-bool ParameterList::isValueChanged() const
+bool ParametersPage::isValueChanged() const
 {
     // qDebug() << Q_FUNC_INFO  << "m_valueChangedCounter"  << m_valueChangedCounter;
     return m_isValueChanged.value();
 }
 
-QBindable<bool> ParameterList::bindableIsValueChanged()
+QBindable<bool> ParametersPage::bindableIsValueChanged()
 {
     return QBindable<bool>(&m_isValueChanged);
 }
 
-int ParameterList::count() const
+int ParametersPage::count() const
 {
     return m_count.value();
 }
 
-QBindable<int> ParameterList::bindableCount()
+QBindable<int> ParametersPage::bindableCount()
 {
     return QBindable<int>(&m_count);
 }
 
-bool ParameterList::append(Parameter *parameter)
+bool ParametersPage::append(Parameter *parameter)
 {
     if (parameter == nullptr) {
         return false;
@@ -334,7 +334,7 @@ bool ParameterList::append(Parameter *parameter)
     return true;
 }
 
-bool ParameterList::append(const QJsonObject& schema, const QJsonObject& value)
+bool ParametersPage::append(const QJsonObject& schema, const QJsonObject& value)
 {
     Parameter* parameter = new Parameter(schema, value, this);
     auto res = append(parameter);
@@ -344,7 +344,7 @@ bool ParameterList::append(const QJsonObject& schema, const QJsonObject& value)
     return res;
 }
 
-Parameter* ParameterList::emplace(const QVariant& initialValue, const QString& name, const QString& description)
+Parameter* ParametersPage::emplace(const QVariant& initialValue, const QString& name, const QString& description)
 {
     if(name.isEmpty()) {
         return {};
@@ -359,7 +359,7 @@ Parameter* ParameterList::emplace(const QVariant& initialValue, const QString& n
     return parameter;
 }
 
-Parameter* ParameterList::emplace(const QJsonObject& schema, const QJsonObject& value)
+Parameter* ParametersPage::emplace(const QJsonObject& schema, const QJsonObject& value)
 {
     Parameter* parameter = new Parameter(schema, value, this);
     bool res = append(parameter);
@@ -370,7 +370,7 @@ Parameter* ParameterList::emplace(const QJsonObject& schema, const QJsonObject& 
     return parameter;
 }
 
-void ParameterList::removeParameterInternal(Parameter *parameter)
+void ParametersPage::removeParameterInternal(Parameter *parameter)
 {
     m_parametersByUniqueId.remove(parameter->uniqueId());
     m_parametersByName.remove(parameter->name());
@@ -385,9 +385,9 @@ void ParameterList::removeParameterInternal(Parameter *parameter)
         onParameterIsValueChangedChanged(false);
     }
 
-    disconnect(parameter, &Parameter::aboutToBeDestroyed, this, &ParameterList::onParameterAboutToBeDestroyed);
-    disconnect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
-    disconnect(parameter, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
+    disconnect(parameter, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
+    disconnect(parameter, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
+    disconnect(parameter, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
 
     emit parameterRemoved(parameter);
     m_count = m_parametersByIndex.count();
@@ -398,17 +398,17 @@ void ParameterList::removeParameterInternal(Parameter *parameter)
 
 }
 
-bool ParameterList::canModify(const QString &parameterName) const
+bool ParametersPage::canModify(const QString &parameterName) const
 {
     if (m_readOnly.value()) {
-        emit const_cast<ParameterList*>(this)->writeAttemptedWhileReadOnly(parameterName);
+        emit const_cast<ParametersPage*>(this)->writeAttemptedWhileReadOnly(parameterName);
         return false;
     }
     return true;
 }
 
 
-void ParameterList::removeParameter(Parameter *parameter)
+void ParametersPage::removeParameter(Parameter *parameter)
 {
     if (parameter == nullptr) {
         return;
@@ -420,7 +420,7 @@ void ParameterList::removeParameter(Parameter *parameter)
     removeParameterInternal(parameter);
 }
 
-void ParameterList::removeParameter(const QString &name)
+void ParametersPage::removeParameter(const QString &name)
 {
     Parameter* parameter = m_parametersByName.value(name, nullptr);
     if (parameter == nullptr) {
@@ -429,15 +429,15 @@ void ParameterList::removeParameter(const QString &name)
     removeParameterInternal(parameter);
 }
 
-void ParameterList::clear()
+void ParametersPage::clear()
 {
     if(isEmpty()) return;
 
     for (auto it = m_parametersByIndex.begin(); it != m_parametersByIndex.end(); ++it) {
         Parameter* param = it.value();
-        disconnect(param, &Parameter::aboutToBeDestroyed, this, &ParameterList::onParameterAboutToBeDestroyed);
-        disconnect(param, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
-        disconnect(param, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
+        disconnect(param, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
+        disconnect(param, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
+        disconnect(param, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
         emit parameterRemoved(param);
     }
 
@@ -453,44 +453,44 @@ void ParameterList::clear()
     m_count = 0;
 }
 
-bool ParameterList::isEmpty() const
+bool ParametersPage::isEmpty() const
 {
     return m_parametersByIndex.isEmpty();
 }
 
-Parameter *ParameterList::parameter(int index) const
+Parameter *ParametersPage::parameter(int index) const
 {
     return m_parametersByIndex.value(index, nullptr);
 }
 
-Parameter *ParameterList::parameter(const QString &name) const
+Parameter *ParametersPage::parameter(const QString &name) const
 {
     return m_parametersByName.value(name, nullptr);
 }
 
-int ParameterList::indexOf(Parameter *parameter) const
+int ParametersPage::indexOf(Parameter *parameter) const
 {
     return m_parameterToIndex.value(parameter, -1);
 }
 
-int ParameterList::indexOf(const QString &name) const
+int ParametersPage::indexOf(const QString &name) const
 {
     Parameter *param = m_parametersByName.value(name, nullptr);
 
     return m_parameterToIndex.value(param, -1);
 }
 
-bool ParameterList::contains(Parameter *parameter) const
+bool ParametersPage::contains(Parameter *parameter) const
 {
     return m_parameterToIndex.contains(parameter);
 }
 
-bool ParameterList::contains(const QString &name) const
+bool ParametersPage::contains(const QString &name) const
 {
     return m_parametersByName.contains(name);
 }
 
-QList<Parameter *> ParameterList::parameters() const
+QList<Parameter *> ParametersPage::parameters() const
 {
     // return m_parameterToIndex.keys(); -> this doesn't guarantee the sorting
     QList<Parameter*> res;
@@ -500,7 +500,7 @@ QList<Parameter *> ParameterList::parameters() const
     return res;
 }
 
-QVariant ParameterList::value(const QString &name) const
+QVariant ParametersPage::value(const QString &name) const
 {
     Parameter *param = m_parametersByName.value(name, nullptr);
     if(param == nullptr)
@@ -509,7 +509,7 @@ QVariant ParameterList::value(const QString &name) const
     return param->value();
 }
 
-bool ParameterList::setValue(const QString &name, const QVariant &value)
+bool ParametersPage::setValue(const QString &name, const QVariant &value)
 {
     Parameter *param = m_parametersByName.value(name, nullptr);
     if(param == nullptr) {
@@ -523,7 +523,7 @@ bool ParameterList::setValue(const QString &name, const QVariant &value)
     return true;
 }
 
-void ParameterList::applyPreset(const QString &presetName)
+void ParametersPage::applyPreset(const QString &presetName)
 {
     for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
         Parameter* param = it.value();
@@ -532,7 +532,7 @@ void ParameterList::applyPreset(const QString &presetName)
 }
 
 
-void ParameterList::onParameterAboutToBeDestroyed(Parameter *parameter, int uniqueId, bool wasChanged)
+void ParametersPage::onParameterAboutToBeDestroyed(Parameter *parameter, int uniqueId, bool wasChanged)
 {
     int idx = m_parameterToIndex.value(parameter, -1);
     if(idx == -1) {
@@ -558,7 +558,7 @@ void ParameterList::onParameterAboutToBeDestroyed(Parameter *parameter, int uniq
     }
 }
 
-void ParameterList::onParameterNameEdited(const QString &oldName, const QString &newName)
+void ParametersPage::onParameterNameEdited(const QString &oldName, const QString &newName)
 {
     if(!m_parametersByName.contains(oldName)) {
         emit parameterRenameError(oldName, newName);
@@ -576,7 +576,7 @@ void ParameterList::onParameterNameEdited(const QString &oldName, const QString 
     return;
 }
 
-void ParameterList::onParameterIsValueChangedChanged(bool changed)
+void ParametersPage::onParameterIsValueChangedChanged(bool changed)
 {
     if(changed) {
         ++m_valueChangedCounter;
@@ -587,16 +587,16 @@ void ParameterList::onParameterIsValueChangedChanged(bool changed)
     m_isValueChanged = (m_valueChangedCounter >0);
 }
 
-void ParameterList::appendParameterAndUpdateIndexs(Parameter *parameter)
+void ParametersPage::appendParameterAndUpdateIndexs(Parameter *parameter)
 {
     m_parametersByUniqueId.insert(parameter->uniqueId(), parameter);
     m_parameterToIndex.insert(parameter, m_nextParameterIndex);
     m_parametersByIndex.insert(m_nextParameterIndex, parameter);
     m_nextParameterIndex++;
     m_parametersByName.insert(parameter->name(), parameter);
-    connect(parameter, &Parameter::aboutToBeDestroyed, this, &ParameterList::onParameterAboutToBeDestroyed);
-    connect(parameter, &Parameter::nameEdited, this, &ParameterList::onParameterNameEdited);
-    connect(parameter, &Parameter::isValueChangedChanged, this, &ParameterList::onParameterIsValueChangedChanged);
+    connect(parameter, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
+    connect(parameter, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
+    connect(parameter, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
     if(parameter->isValueChanged()) {
         onParameterIsValueChangedChanged(true);
     }

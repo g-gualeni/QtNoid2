@@ -43,7 +43,7 @@ create_qt_test(test_app_parameter)
 # =============================================================================
 # Tesing QtNoid::App::ParameterList
 # =============================================================================
-create_qt_test(test_app_parameterlist)
+create_qt_test(test_app_parameterspage)
 
 # =============================================================================
 # Tesing QtNoid::App::ConfigFile

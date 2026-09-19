@@ -43,7 +43,7 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    QtNoid::App::ParameterList m_list;
+    QtNoid::App::ParametersPage m_list;
 
     QTabWidget* m_tabWidget;
     QShortcut *m_screenshotShortcut = nullptr;

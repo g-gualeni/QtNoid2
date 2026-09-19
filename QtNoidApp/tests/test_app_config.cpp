@@ -603,7 +603,7 @@ void TestQtNoidAppConfig::testConfigBindableCountProperty()
     QCOMPARE(countChangedSpy.count(), 1);
 
     // Add a page using append
-    ParameterList* page2 = new ParameterList("Page2", &config);
+    ParametersPage* page2 = new ParametersPage("Page2", &config);
     config.append(page2);
     QCOMPARE(config.count(), 2);
     QCOMPARE(bindableCount.value(), 2);
@@ -766,13 +766,13 @@ void TestQtNoidAppConfig::testAppendPage()
     QSignalSpy pageSpy(&config, &Config::pageAdded);
     QVERIFY(pageSpy.isValid());
 
-    ParameterList* page = new ParameterList("Page1", &config);
+    ParametersPage* page = new ParametersPage("Page1", &config);
     bool result = config.append(page);
 
     QVERIFY(result);
     QCOMPARE(pageSpy.count(), 1);
     auto argument = pageSpy.takeFirst();
-    auto actual = argument.at(0).value<ParameterList*>();
+    auto actual = argument.at(0).value<ParametersPage*>();
     QCOMPARE(actual, page);
 
     QCOMPARE(config.count(), 1);
@@ -784,14 +784,14 @@ void TestQtNoidAppConfig::testAppendPage()
     QCOMPARE(config.count(), 1);
 
     // Test appending page with duplicate name
-    ParameterList* duplicate = new ParameterList("Page1", &config);
+    ParametersPage* duplicate = new ParametersPage("Page1", &config);
     result = config.append(duplicate);
     QVERIFY(!result);
     QCOMPARE(config.count(), 1);
     delete duplicate;
 
     // Test appending page with empty name
-    ParameterList* emptyName = new ParameterList("", &config);
+    ParametersPage* emptyName = new ParametersPage("", &config);
     result = config.append(emptyName);
     QVERIFY(!result);
     delete emptyName;
@@ -825,7 +825,7 @@ void TestQtNoidAppConfig::testEmplacePage()
 {
     Config config(this);
 
-    ParameterList* page = config.emplace("Page1", "Page 1 description");
+    ParametersPage* page = config.emplace("Page1", "Page 1 description");
 
     QVERIFY(page != nullptr);
     QCOMPARE(config.count(), 1);
@@ -834,12 +834,12 @@ void TestQtNoidAppConfig::testEmplacePage()
     QVERIFY(config.contains("Page1"));
 
     // Test emplace with empty name
-    ParameterList* emptyPage = config.emplace("");
+    ParametersPage* emptyPage = config.emplace("");
     QVERIFY(emptyPage == nullptr);
     QCOMPARE(config.count(), 1);
 
     // Test emplace with duplicate name
-    ParameterList* duplicate = config.emplace("Page1");
+    ParametersPage* duplicate = config.emplace("Page1");
     QVERIFY(duplicate == nullptr);
     QCOMPARE(config.count(), 1);
 }
@@ -857,7 +857,7 @@ void TestQtNoidAppConfig::testEmplaceWithJson()
     QJsonObject valueMain({{"parameters", QJsonArray({value1, value2})}});
     QJsonObject value({{"DriversPage", valueMain}});
 
-    ParameterList* page = config.emplace(schemaPage, value);
+    ParametersPage* page = config.emplace(schemaPage, value);
     // qDebug() << __func__ << page;
 
     QVERIFY(page != nullptr);
@@ -873,22 +873,22 @@ void TestQtNoidAppConfig::testRemovePage()
     Config config(this);
     QSignalSpy spy(&config, &Config::pageRemoved);
 
-    ParameterList* page1 = config.emplace("Page1");
-    ParameterList* page2 = config.emplace("Page2");
-    ParameterList* page3 = config.emplace("Page3");
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
+    ParametersPage* page3 = config.emplace("Page3");
     QCOMPARE(config.count(), 3);
 
     config.remove(page1);   // Remove by reference
     QCOMPARE(spy.count(), 1);
     auto args = spy.takeFirst();
-    auto actual = args.at(0).value<ParameterList*>();
+    auto actual = args.at(0).value<ParametersPage*>();
     QCOMPARE(actual, page1);
 
 
     config.remove("Page2"); // Remove by Name
     QCOMPARE(spy.count(), 1);
     args = spy.takeFirst();
-    actual = args.at(0).value<ParameterList*>();
+    actual = args.at(0).value<ParametersPage*>();
     QCOMPARE(actual, page2);
 
     // I left Page3 on purpose
@@ -908,14 +908,14 @@ void TestQtNoidAppConfig::testRemoveNonExistentPage()
     config.emplace("Page2");
 
     // Test removing nullptr
-    config.remove(static_cast<ParameterList*>(nullptr));
+    config.remove(static_cast<ParametersPage*>(nullptr));
     QCOMPARE(config.count(), 2);
 
     config.remove("NonExistentPage");
     QCOMPARE(config.count(), 2);
 
     // Test removing not related page
-    ParameterList list(this);
+    ParametersPage list(this);
     config.remove(&list);
     QCOMPARE(config.count(), 2);
 }
@@ -959,8 +959,8 @@ void TestQtNoidAppConfig::testPageByIndex()
 {
     Config config(this);
 
-    ParameterList* page1 = config.emplace("Page1");
-    ParameterList* page2 = config.emplace("Page2");
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
 
     QCOMPARE(config.page(0), page1);
     QCOMPARE(config.page(1), page2);
@@ -974,8 +974,8 @@ void TestQtNoidAppConfig::testPageByName()
 {
     Config config(this);
 
-    ParameterList* page1 = config.emplace("Page1");
-    ParameterList* page2 = config.emplace("Page2");
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
 
     QCOMPARE(config.page("Page1"), page1);
     QCOMPARE(config.page("Page2"), page2);
@@ -989,8 +989,8 @@ void TestQtNoidAppConfig::testIndexOfPage()
 {
     Config config(this);
 
-    ParameterList* page1 = config.emplace("Page1");
-    ParameterList* page2 = config.emplace("Page2");
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
 
     // index using object
     QCOMPARE(config.indexOf(page1), 0);
@@ -1001,7 +1001,7 @@ void TestQtNoidAppConfig::testIndexOfPage()
     QCOMPARE(config.indexOf("Page2"), 1);
 
     // Test non-existent page
-    ParameterList* external = new ParameterList("External");
+    ParametersPage* external = new ParametersPage("External");
     QCOMPARE(config.indexOf(external), -1);
     QCOMPARE(config.indexOf("external"), -1);
 
@@ -1014,13 +1014,13 @@ void TestQtNoidAppConfig::testContainsPage()
 {
     Config config(this);
 
-    ParameterList* page1 = config.emplace("Page1");
+    ParametersPage* page1 = config.emplace("Page1");
 
     QVERIFY(config.contains(page1));
     QVERIFY(config.contains("Page1"));
 
     // Test non-existent page
-    ParameterList* external = new ParameterList("External");
+    ParametersPage* external = new ParametersPage("External");
     QVERIFY(!config.contains(external));
     QVERIFY(!config.contains("external"));
     delete external;
@@ -1031,11 +1031,11 @@ void TestQtNoidAppConfig::testPagesList()
 {
     Config config(this);
 
-    ParameterList* page1 = config.emplace("Page1");
-    ParameterList* page2 = config.emplace("Page2");
-    ParameterList* page3 = config.emplace("Page3");
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
+    ParametersPage* page3 = config.emplace("Page3");
 
-    QList<ParameterList*> pages = config.pages();
+    QList<ParametersPage*> pages = config.pages();
 
 
     QCOMPARE(pages.size(), 3);
@@ -1051,7 +1051,7 @@ void TestQtNoidAppConfig::testParameterAndPageRenameShouldAutomaticallyUpdate()
 
     // Create parameter and page
     Parameter parameter(123, "PARAM", this);
-    ParameterList page("PAGE", this);
+    ParametersPage page("PAGE", this);
     page << parameter;
     config << page;
     // qDebug() << __func__ << config;
@@ -1146,8 +1146,8 @@ void TestQtNoidAppConfig::testOperatorStreamInsert()
     QSignalSpy pageAddedSpy(&config, &Config::pageAdded);
     QSignalSpy countSpy(&config, &Config::countChanged);
 
-    // Test 1: operator<< with ParameterList reference
-    ParameterList page1("Page1", &config);
+    // Test 1: operator<< with ParametersPage reference
+    ParametersPage page1("Page1", &config);
     config << page1;
 
     QCOMPARE(config.count(), 1);
@@ -1156,8 +1156,8 @@ void TestQtNoidAppConfig::testOperatorStreamInsert()
     QCOMPARE(pageAddedSpy.count(), 1);
     QCOMPARE(countSpy.count(), 1);
 
-    // Test 2: operator<< with ParameterList pointer
-    ParameterList* page2 = new ParameterList("Page2", &config);
+    // Test 2: operator<< with ParametersPage pointer
+    ParametersPage* page2 = new ParametersPage("Page2", &config);
     config << page2;
 
     QCOMPARE(config.count(), 2);
@@ -1167,8 +1167,8 @@ void TestQtNoidAppConfig::testOperatorStreamInsert()
     QCOMPARE(countSpy.count(), 2);
 
     // Test 3: Chaining operator<< calls
-    ParameterList* page3 = new ParameterList("Page3", &config);
-    ParameterList* page4 = new ParameterList("Page4", &config);
+    ParametersPage* page3 = new ParametersPage("Page3", &config);
+    ParametersPage* page4 = new ParametersPage("Page4", &config);
     config << page3 << page4;
 
     QCOMPARE(config.count(), 4);
@@ -1178,14 +1178,14 @@ void TestQtNoidAppConfig::testOperatorStreamInsert()
     QCOMPARE(countSpy.count(), 4);
 
     // Test 4: operator<< with nullptr pointer (should do nothing)
-    ParameterList* nullPage = nullptr;
+    ParametersPage* nullPage = nullptr;
     config << nullPage;
 
     QCOMPARE(config.count(), 4); // Count should not change
     QCOMPARE(pageAddedSpy.count(), 4); // No signal should be emitted
 
     // Test 5: operator<< with duplicate name (should fail but not crash)
-    ParameterList* duplicate = new ParameterList("Page1", &config);
+    ParametersPage* duplicate = new ParametersPage("Page1", &config);
     config << duplicate;
 
     QCOMPARE(config.count(), 4); // Count should not change
@@ -1193,7 +1193,7 @@ void TestQtNoidAppConfig::testOperatorStreamInsert()
     delete duplicate; // Clean up since it wasn't added
 
     // Test 6: operator<< with empty name (should fail)
-    ParameterList* emptyName = new ParameterList("", &config);
+    ParametersPage* emptyName = new ParametersPage("", &config);
     config << emptyName;
 
     QCOMPARE(config.count(), 4); // Count should not change
@@ -1202,8 +1202,8 @@ void TestQtNoidAppConfig::testOperatorStreamInsert()
 
     // Test 7: Verify that operator<< returns Config reference for chaining
     Config config2(this);
-    ParameterList page5("Page5", &config2);
-    ParameterList page6("Page6", &config2);
+    ParametersPage page5("Page5", &config2);
+    ParametersPage page6("Page6", &config2);
 
     Config& result = (config2 << page5 << page6);
 
@@ -1212,8 +1212,8 @@ void TestQtNoidAppConfig::testOperatorStreamInsert()
 
     // Test 8: Mixed reference and pointer chaining
     Config config3(this);
-    ParameterList pageRef("PageRef", &config3);
-    ParameterList* pagePtr = new ParameterList("PagePtr", &config3);
+    ParametersPage pageRef("PageRef", &config3);
+    ParametersPage* pagePtr = new ParametersPage("PagePtr", &config3);
 
     config3 << pageRef << pagePtr;
 
@@ -1412,12 +1412,12 @@ void TestQtNoidAppConfig::testPageAddedSignal()
     auto page1 = config.emplace("Page1");
     QCOMPARE(spy.count(), 1);
     auto param = spy.takeFirst();
-    QCOMPARE(param.at(0).value<ParameterList*>(), page1);
+    QCOMPARE(param.at(0).value<ParametersPage*>(), page1);
 
     auto page2 = config.emplace("Page2");
     QCOMPARE(spy.count(), 1);
     param = spy.takeFirst();
-    QCOMPARE(param.at(0).value<ParameterList*>(), page2);
+    QCOMPARE(param.at(0).value<ParametersPage*>(), page2);
 }
 
 
@@ -1426,19 +1426,19 @@ void TestQtNoidAppConfig::testPageRemovedSignal()
     Config config(this);
     QSignalSpy spy(&config, &Config::pageRemoved);
 
-    ParameterList* page1 = config.emplace("Page1");
-    ParameterList* page2 = config.emplace("Page2");
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
 
     config.remove(page1);
     QCOMPARE(spy.count(), 1);
     auto param = spy.takeFirst();
-    QCOMPARE(param.at(0).value<ParameterList*>(), page1);
+    QCOMPARE(param.at(0).value<ParametersPage*>(), page1);
 
 
     config.remove("Page2");
     QCOMPARE(spy.count(), 1);
     param = spy.takeFirst();
-    QCOMPARE(param.at(0).value<ParameterList*>(), page2);
+    QCOMPARE(param.at(0).value<ParametersPage*>(), page2);
 
 }
 
@@ -1451,7 +1451,7 @@ void TestQtNoidAppConfig::testPageRenameErrorSignal()
 
     QSignalSpy spy(&config, &Config::pageRenameError);
 
-    ParameterList* page1 = config.page("Page1");
+    ParametersPage* page1 = config.page("Page1");
 
     // Try to rename to an existing name - should trigger error
     page1->setName("Page2");
@@ -1790,7 +1790,7 @@ void TestQtNoidAppConfig::testConfigBeginAndEndAndRangeLoop()
     Config::iterator it = config.begin();
     QVERIFY(it != config.end());
 
-    ParameterList* firstPage = *it;
+    ParametersPage* firstPage = *it;
     QVERIFY(firstPage != nullptr);
     QCOMPARE(firstPage->name(), "First");
     QCOMPARE(firstPage->description(), "First page");
@@ -1798,7 +1798,7 @@ void TestQtNoidAppConfig::testConfigBeginAndEndAndRangeLoop()
     // Test iterator increment
     ++it;
     QVERIFY(it != config.end());
-    ParameterList* secondPage = *it;
+    ParametersPage* secondPage = *it;
     QVERIFY(secondPage != nullptr);
     QCOMPARE(secondPage->name(), "Second");
     QCOMPARE(secondPage->description(), "Second page");
@@ -1807,7 +1807,7 @@ void TestQtNoidAppConfig::testConfigBeginAndEndAndRangeLoop()
     auto prevIt = it++;
     QVERIFY(it != config.end());
     QVERIFY(prevIt != it);
-    ParameterList* thirdPage = *it;
+    ParametersPage* thirdPage = *it;
     QVERIFY(thirdPage != nullptr);
     QCOMPARE(thirdPage->name(), "Third");
     QCOMPARE(thirdPage->description(), "Third page");
@@ -1821,7 +1821,7 @@ void TestQtNoidAppConfig::testConfigBeginAndEndAndRangeLoop()
     // Test bidirectional iterator (decrement)
     auto lastIt = config.end();
     --lastIt;
-    ParameterList* lastPage = *lastIt;
+    ParametersPage* lastPage = *lastIt;
     QVERIFY(lastPage != nullptr);
     QCOMPARE(lastPage->name(), "Third");
     QCOMPARE(lastPage->description(), "Third page");
@@ -1858,7 +1858,7 @@ void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
 
     // Test const iterator dereferencing
     Config::const_iterator cit = constConfig.begin();
-    const ParameterList* firstPage = *cit;
+    const ParametersPage* firstPage = *cit;
     QVERIFY(firstPage != nullptr);
     QCOMPARE(firstPage->name(), "Alpha");
     QCOMPARE(firstPage->description(), "Alpha page");
@@ -1866,7 +1866,7 @@ void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
     // Test const iterator increment
     ++cit;
     QVERIFY(cit != constConfig.end());
-    const ParameterList* secondPage = *cit;
+    const ParametersPage* secondPage = *cit;
     QVERIFY(secondPage != nullptr);
     QCOMPARE(secondPage->name(), "Beta");
     QCOMPARE(secondPage->description(), "Beta page");
@@ -1874,7 +1874,7 @@ void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
     // Test post-increment
     auto prevCit = cit++;
     QVERIFY(prevCit != cit);
-    const ParameterList* thirdPage = *cit;
+    const ParametersPage* thirdPage = *cit;
     QVERIFY(thirdPage != nullptr);
     QCOMPARE(thirdPage->name(), "Gamma");
     QCOMPARE(thirdPage->description(), "Gamma page");
@@ -1889,7 +1889,7 @@ void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
 
     // Test cbegin() dereferencing
     auto cbegIt = constConfig.cbegin();
-    const ParameterList* cbegPage = *cbegIt;
+    const ParametersPage* cbegPage = *cbegIt;
     QVERIFY(cbegPage != nullptr);
     QCOMPARE(cbegPage->name(), "Alpha");
     QCOMPARE(cbegPage->description(), "Alpha page");
@@ -1904,7 +1904,7 @@ void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
     // Test decrement from end
     auto lastCit = constConfig.cend();
     --lastCit;
-    const ParameterList* lastPage = *lastCit;
+    const ParametersPage* lastPage = *lastCit;
     QVERIFY(lastPage != nullptr);
     QCOMPARE(lastPage->name(), "Gamma");
     QCOMPARE(lastPage->description(), "Gamma page");
@@ -1930,7 +1930,7 @@ void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
     QStringList constDescriptions;
 
     // Test const range-based for loop
-    for (const ParameterList* page : constConfig) {
+    for (const ParametersPage* page : constConfig) {
         QVERIFY(page != nullptr);
         constNames << page->name();
         constDescriptions << page->description();
@@ -1955,7 +1955,7 @@ void TestQtNoidAppConfig::testConfigConstIteratorsAndConstRangeLoop()
 
     // Test const range-based for loop with empty config
     int constCount = 0;
-    for ([[maybe_unused]] const ParameterList* page : constEmptyConfig) {
+    for ([[maybe_unused]] const ParametersPage* page : constEmptyConfig) {
         constCount++;
     }
     QCOMPARE(constCount, 0);
@@ -1976,7 +1976,7 @@ void TestQtNoidAppConfig::testConfigReverseIteratorsAndRangeLoop()
 
     // Test reverse iterator dereferencing - should start from last element
     Config::reverse_iterator rit = config.rbegin();
-    ParameterList* lastPage = *rit;
+    ParametersPage* lastPage = *rit;
     QVERIFY(lastPage != nullptr);
     QCOMPARE(lastPage->name(), "Fourth");  // Should be the last element
     QCOMPARE(lastPage->description(), "Fourth page");
@@ -1984,7 +1984,7 @@ void TestQtNoidAppConfig::testConfigReverseIteratorsAndRangeLoop()
     // ===== Test reverse iterator increment (moves backward through config) =====
     ++rit;
     QVERIFY(rit != config.rend());
-    ParameterList* thirdPage = *rit;
+    ParametersPage* thirdPage = *rit;
     QVERIFY(thirdPage != nullptr);
     QCOMPARE(thirdPage->name(), "Third");
     QCOMPARE(thirdPage->description(), "Third page");
@@ -1993,7 +1993,7 @@ void TestQtNoidAppConfig::testConfigReverseIteratorsAndRangeLoop()
     auto prevRit = rit++;
     QVERIFY(rit != config.rend());
     QVERIFY(prevRit != rit);
-    ParameterList* secondPage = *rit;
+    ParametersPage* secondPage = *rit;
     QVERIFY(secondPage != nullptr);
     QCOMPARE(secondPage->name(), "Second");
     QCOMPARE(secondPage->description(), "Second page");
@@ -2001,7 +2001,7 @@ void TestQtNoidAppConfig::testConfigReverseIteratorsAndRangeLoop()
     // Continue to first element
     ++rit;
     QVERIFY(rit != config.rend());
-    ParameterList* firstPage = *rit;
+    ParametersPage* firstPage = *rit;
     QVERIFY(firstPage != nullptr);
     QCOMPARE(firstPage->name(), "First");
     QCOMPARE(firstPage->description(), "First page");
@@ -2016,7 +2016,7 @@ void TestQtNoidAppConfig::testConfigReverseIteratorsAndRangeLoop()
 
     // Manually iterate through reverse iterators
     for (auto revIt = config.rbegin(); revIt != config.rend(); ++revIt) {
-        ParameterList* page = *revIt;
+        ParametersPage* page = *revIt;
         QVERIFY(page != nullptr);
         reverseNames << page->name();
         reverseDescriptions << page->description();
@@ -2107,7 +2107,7 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
     Config::const_reverse_iterator crit = constConfig.rbegin();
     QVERIFY(crit != constConfig.rend());
 
-    const ParameterList* lastPage = *crit;
+    const ParametersPage* lastPage = *crit;
     QVERIFY(lastPage != nullptr);
     QCOMPARE(lastPage->name(), "Fourth");  // Should be the last element
     QCOMPARE(lastPage->description(), "Fourth page");
@@ -2116,7 +2116,7 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
     // Test pre-increment (moves to previous element in normal order)
     ++crit;
     QVERIFY(crit != constConfig.rend());
-    const ParameterList* thirdPage = *crit;
+    const ParametersPage* thirdPage = *crit;
     QVERIFY(thirdPage != nullptr);
     QCOMPARE(thirdPage->name(), "Third");
     QCOMPARE(thirdPage->description(), "Third page");
@@ -2125,7 +2125,7 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
     auto prevCrit = crit++;
     QVERIFY(crit != constConfig.rend());
     QVERIFY(prevCrit != crit);
-    const ParameterList* secondPage = *crit;
+    const ParametersPage* secondPage = *crit;
     QVERIFY(secondPage != nullptr);
     QCOMPARE(secondPage->name(), "Second");
     QCOMPARE(secondPage->description(), "Second page");
@@ -2133,7 +2133,7 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
     // Continue to first element
     ++crit;
     QVERIFY(crit != constConfig.rend());
-    const ParameterList* firstPage = *crit;
+    const ParametersPage* firstPage = *crit;
     QVERIFY(firstPage != nullptr);
     QCOMPARE(firstPage->name(), "First");
     QCOMPARE(firstPage->description(), "First page");
@@ -2150,7 +2150,7 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
     Config::const_reverse_iterator crbit = constConfig.crbegin();
     QVERIFY(crbit != constConfig.crend());
 
-    const ParameterList* crbPage = *crbit;
+    const ParametersPage* crbPage = *crbit;
     QVERIFY(crbPage != nullptr);
     QCOMPARE(crbPage->name(), "Fourth");
     QCOMPARE(crbPage->description(), "Fourth page");
@@ -2158,7 +2158,7 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
     // Test crbegin() increment
     ++crbit;
     QVERIFY(crbit != constConfig.crend());
-    const ParameterList* crbSecondPage = *crbit;
+    const ParametersPage* crbSecondPage = *crbit;
     QVERIFY(crbSecondPage != nullptr);
     QCOMPARE(crbSecondPage->name(), "Third");
     QCOMPARE(crbSecondPage->description(), "Third page");
@@ -2169,7 +2169,7 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
 
     // Manually iterate through const reverse iterators using rbegin() const
     for (auto constRevIt = constConfig.rbegin(); constRevIt != constConfig.rend(); ++constRevIt) {
-        const ParameterList* page = *constRevIt;
+        const ParametersPage* page = *constRevIt;
         QVERIFY(page != nullptr);
         constReverseNames << page->name();
         constReverseDescriptions << page->description();
@@ -2186,7 +2186,7 @@ void TestQtNoidAppConfig::testConfigConstReverseIterators()
 
     // Manually iterate through const reverse iterators using crbegin()/crend()
     for (auto crIt = constConfig.crbegin(); crIt != constConfig.crend(); ++crIt) {
-        const ParameterList* page = *crIt;
+        const ParametersPage* page = *crIt;
         QVERIFY(page != nullptr);
         crNames << page->name();
         crDescriptions << page->description();

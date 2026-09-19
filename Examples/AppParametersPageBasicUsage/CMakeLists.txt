@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(AppParameterListBasicUsage VERSION 0.1 LANGUAGES CXX)
+project(AppParametersPageBasicUsage VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -24,7 +24,7 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(AppParameterListBasicUsage
+    qt_add_executable(AppParametersPageBasicUsage
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
@@ -34,19 +34,19 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(AppParameterListBasicUsage SHARED
+        add_library(AppParametersPageBasicUsage SHARED
             ${PROJECT_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        add_executable(AppParameterListBasicUsage
+        add_executable(AppParametersPageBasicUsage
             ${PROJECT_SOURCES}
         )
     endif()
 endif()
 
-target_link_libraries(AppParameterListBasicUsage
+target_link_libraries(AppParametersPageBasicUsage
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     QtNoid::QtNoidCommon
     QtNoid::QtNoidApp
@@ -56,9 +56,9 @@ target_link_libraries(AppParameterListBasicUsage
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.AppParameterListBasicUsage)
+  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.AppParametersPageBasicUsage)
 endif()
-set_target_properties(AppParameterListBasicUsage PROPERTIES
+set_target_properties(AppParametersPageBasicUsage PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -68,7 +68,7 @@ set_target_properties(AppParameterListBasicUsage PROPERTIES
 
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(AppParameterListBasicUsage)
+    qt_finalize_executable(AppParametersPageBasicUsage)
 endif()
 
 
@@ -76,6 +76,6 @@ endif()
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    doc/AppParameterListBasicUsage.md
+    doc/AppParametersPageBasicUsage.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

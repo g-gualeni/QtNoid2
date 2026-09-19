@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
     ui->setupUi(this);
+    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+
 
     QString appBundleFolderPath = Core::appExeOrAppBundleDirPath();
     ui->txtAppBundleDirPath->setText(appBundleFolderPath);
@@ -33,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    appConfig->saveValue("Geometry", saveGeometry());
     delete ui;
 }
 

@@ -25,7 +25,12 @@
 * sistemare esempio QtNoidAppParameterUsage
 ==Creare esempio per QtNoid::Common::Text==
 Studiare classe QtNoid::App::Parameterlist
--> Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile
+~~-> Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile~~
+
+Sistemare esempio QtNoid::App:ParametersPage Basic Usage
+
+    setWindowTitle("QtNoid::App::ParametersPage Benchmark"); forse è Parameter e non ParamtetersPage
+
 
 
  Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==

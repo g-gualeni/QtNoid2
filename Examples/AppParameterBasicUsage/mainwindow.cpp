@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowTitle("App Parameter Basic Usage");
+    setWindowTitle("QtNoid::App::Parameter Basic Usage");
 
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
@@ -121,6 +121,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    appConfig->saveValue("Geometry", saveGeometry());
     delete ui;
 }
 

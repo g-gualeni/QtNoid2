@@ -5,7 +5,7 @@ This module contains:
 
 - [**Parameter**](QtNoidAppParameter.md): Generic application parameter class with value storage, range validation, presets, description, tooltip and Qt property binding. This class can be used to manage a single parameter.
 
-- [**ParameterList**](QtNoidAppParameterList.md): Container class for managing multiple Parameter instances with binding support and serialization. This class can be used to manage a page of parameters.
+- [**ParameterList**](QtNoidAppParametersPage.md): Container class for managing multiple Parameter instances with binding support and serialization. This class can be used to manage a page of parameters.
 
 - [**Config**](QtNoidAppConfig.md): Container class for managing multiple ParameterList instances with binding support and serialization. This class can be used to manage a bunch of pages of parameters.
 
@@ -35,12 +35,12 @@ using namespace QtNoid::App;
 
 ## Examples Using this module
 
-- [AppSettingsBasicUsage:](doc/AppSettingsBasicUsage.md)
+- [AppSettingsBasicUsage:](../../AppSettingsBasicUsage/doc/AppSettingsBasicUsage.md)
 
 - **[AppParameterBasicUsage:](doc/AppParameterBasicUsage.md)** use this example to visualize properties of the class [**Parameter**](QtNoidAppParameter.md) and to see how conversion to and from JSON works.
 
 - **[AppParameterListBasicUsage:](doc/AppParameterListBasicUsage.md)**
-This example showcase how a [**ParameterList**](QtNoidAppParameterList.md) class can be use to create an
+This example showcase how a [**ParameterList**](QtNoidAppParametersPage.md) class can be use to create an
 application configuration page, linking the form content to ParameterList.
 
 - **[AppParameterListBenchmark:](doc/AppParameterListBenchmark.md)**

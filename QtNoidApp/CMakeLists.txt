@@ -37,7 +37,7 @@ set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SOURCES
     ${SOURCES_DIR}/core.cpp
     ${SOURCES_DIR}/parameter.cpp
-    ${SOURCES_DIR}/parameterlist.cpp
+    ${SOURCES_DIR}/parameterspage.cpp
     ${SOURCES_DIR}/config.cpp
     ${SOURCES_DIR}/configglobal.cpp
     ${SOURCES_DIR}/configfile.cpp
@@ -50,7 +50,7 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
     ${HEADERS_DIR}/${PROJECT_NAME}/core.h
     ${HEADERS_DIR}/${PROJECT_NAME}/parameter.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/parameterlist.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/parameterspage.h
     ${HEADERS_DIR}/${PROJECT_NAME}/config.h
     ${HEADERS_DIR}/${PROJECT_NAME}/configglobal.h
     ${HEADERS_DIR}/${PROJECT_NAME}/configfile.h
@@ -157,7 +157,7 @@ set(PROJECT_DOCS
     doc/QtNoidApp.md
     doc/QtNoidAppCore.md
     doc/QtNoidAppParameter.md
-    doc/QtNoidAppParameterList.md
+    doc/QtNoidAppParametersPage.md
     doc/QtNoidAppConfig.md
     doc/QtNoidAppConfigFile.md
     doc/QtNoidAppConfigGlobal.md

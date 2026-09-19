@@ -26,7 +26,7 @@ This class contains a set of helper methods to cleanup, tokenize, convert to cam
 - `QStringList tokenize(const QString &text, const QString &splittersString="_-. /\\", bool splitCamelCase=true, int minNumBlockLen=2)`: 
     Split the text into a list of tokens. CamelCase and numeric blocks can be activated or disabled. The default values should cover 90% of use cases for paths or symbols.
 
-- `QString convertToCamelCase(const QString &text)`: convert text into a `camelCase` string. This means spaces and _ characters are removed and replaced with a change in character capitalization.
+- `QString convertToCamelCase(const QString &text)`: convert text into a `camelCase` string. This means spaces, ":" and _ characters are removed and replaced with a change in character capitalization.
 
 - `QString convertToSnakeCase(const QString &text, int minNumBlockLen=2)`:  
     convert text from whatEver_Case to **snake_case**. Numbers block longer than minNumBlockLen are split from text. If minNumBlockLen is 0, number blocks are left untouched.

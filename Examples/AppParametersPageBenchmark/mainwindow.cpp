@@ -14,7 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowTitle("App Parameter List Benchmark");
+    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+    setWindowTitle("QtNoid::App::ParametersPage Benchmark");
 
     QValidator *validator = new QIntValidator(0, 1000000, this);
     ui->txtIterationsNew->setValidator(validator);
@@ -26,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    appConfig->saveValue("Geometry", saveGeometry());
     delete ui;
 }
 
@@ -196,8 +198,8 @@ quint64 MainWindow::benchmarkParameterListUsingJSON(int paramtersCount)
     mainValue["BenchmarkParameterList"] = valueArray;
 
     ET.start();
-    // Create ParameterList using schema and values
-    QtNoid::App::ParameterList paramList(mainSchema, mainValue, this);
+    // Create ParametersPage using schema and values
+    QtNoid::App::ParametersPage paramList(mainSchema, mainValue, this);
 
     // Use the parameter list to prevent optimization
     Q_UNUSED(paramList)
@@ -208,7 +210,7 @@ quint64 MainWindow::benchmarkParameterListUsingJSON(int paramtersCount)
 quint64 MainWindow::benchmarkParameterListToJSON(int paramtersCount)
 {
     QElapsedTimer ET;
-    QtNoid::App::ParameterList paramList(this);
+    QtNoid::App::ParametersPage paramList(this);
 
     ET.start();
     for(int ii=0; ii < paramtersCount; ii++) {
