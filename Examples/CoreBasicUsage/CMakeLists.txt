@@ -82,6 +82,6 @@ endif()
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    doc/CoreBasicUsage.md
+    doc/QtNoidCoreBasicUsage.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

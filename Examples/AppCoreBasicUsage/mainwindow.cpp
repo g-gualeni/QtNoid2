@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+    setWindowTitle("QtNoid::App::Core Basic Usage");
 
 
     QString appBundleFolderPath = Core::appExeOrAppBundleDirPath();
@@ -22,7 +23,6 @@ MainWindow::MainWindow(QWidget *parent)
     QString appBundleFilePath = Core::appExeOrAppBundleFilePath();
     ui->txtAppBundleFilePath->setText(appBundleFilePath);
 
-    setWindowTitle("QtNoid::App::Core Basic Usage");
 
     QString config = Core::filePathAsAppSibling();
     ui->txtConfigPath->setText(config);

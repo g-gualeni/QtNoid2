@@ -10,7 +10,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowTitle("QtNoid Core Basic Usage");
+    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+    setWindowTitle("QtNoid::Core Basic Usage");
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
     ui->plainTextEdit->setPlainText(QtNoid::Core::buildInfo());
@@ -18,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    appConfig->saveValue("Geometry", saveGeometry());
     delete ui;
 }
 

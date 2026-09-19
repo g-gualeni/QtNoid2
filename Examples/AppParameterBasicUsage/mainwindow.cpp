@@ -9,8 +9,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setWindowTitle("QtNoid::App::Parameter Basic Usage");
-
+    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
+
 
     // Listening to UI modifications
     connect(ui->txtName, &QLineEdit::textChanged, this,
