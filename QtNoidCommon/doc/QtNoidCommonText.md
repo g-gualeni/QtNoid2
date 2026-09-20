@@ -1,5 +1,5 @@
 ## Class: QtNoid::Common::Text
-This class contains a set of helper methods to cleanup, tokenize, convert to camelCase or s_n_a_k_e case text strings.
+This class contains a set of helper methods to cleanup, tokenize, convert to CaMeL case or s_n_a_k_e case text strings.
 
 ### Static Methods
 
