@@ -248,11 +248,7 @@ QString Text::convertToCamelCase(const QString &text)
  */
 QString Text::convertToSnakeCase(const QString &text, int minNumBlockLen)
 {
-    auto tokenList = tokenizeCamelCase(text);
-    if(minNumBlockLen > 0) {
-        tokenList = tokenizeNumberBlocks(tokenList, minNumBlockLen);
-    }
-
+    auto tokenList = tokenize(text, "_.: ", true, minNumBlockLen);
     return tokenList.join('_').toLower();
 }
 

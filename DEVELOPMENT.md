@@ -33,6 +33,24 @@ Sistemare esempio QtNoid::App:ParametersPage Basic Usage
 
 
 
+install(TARGETS CommonTextBasicUsage
+    BUNDLE  DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+qt_generate_deploy_app_script(
+    TARGET CommonTextBasicUsage
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})
+
+
+
+
+
+
  Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==
 
 

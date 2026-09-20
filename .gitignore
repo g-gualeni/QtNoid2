@@ -37,3 +37,4 @@ CMakeLists.txt.user
 .DS_Store
 
 /.obsidian/
+/Releases/*/Examples/Bin/

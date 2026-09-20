@@ -434,6 +434,8 @@ void TestQtNoidCommonText::testConvertToSnakeCase_data()
                                            << "snake1_turtle";
     QTest::newRow("TCPSnakeIp127-2Numbers") << 2 << "TCPSnakeIp127"
                                             << "tcp_snake_ip_127";
+    QTest::newRow("QtNoid::Common::Text example456") << 2 << "QtNoid::Common::Text example456"
+                                            << "qt_noid_common_text_example_456";
 }
 
 void TestQtNoidCommonText::testConvertToSnakeCase()
