@@ -6,6 +6,8 @@
 QT_BEGIN_NAMESPACE
 
 class QShortcut;
+class QPushButton;
+
 namespace Ui {
 class MainWindow;
 }
@@ -28,9 +30,10 @@ private slots:
     void on_cmdGOSignalAndSlots_clicked();
 
 private:
+    void setCmdGORunning(QPushButton *btn, bool running);
     quint64 benchmarkParameterUsingNewAndDelete(int iterations);
-    quint64 benchmarkParameterUsingJSON(int iterations);
-    quint64 benchmarkParameterListUsingJSON(int paramtersCount);
+    std::pair<quint64, quint64> benchmarkParameterUsingJsonValueAndSchema(int iterations);
+    quint64 benchmarkParametersPageUsingJSON(int paramtersCount);
     quint64 benchmarkParameterListToJSON(int paramtersCount);
     quint64 benchmarkBindings(int iterations);
     quint64 benchmarkSignalsAndSlot(int iterations);

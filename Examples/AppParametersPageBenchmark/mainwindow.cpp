@@ -8,6 +8,8 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QElapsedTimer>
+#include <QTimer>
+#include <QStyle>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,13 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
     setWindowTitle("QtNoid::App::ParametersPage Benchmark");
-
-    QValidator *validator = new QIntValidator(0, 1000000, this);
-    ui->txtIterationsNew->setValidator(validator);
-    ui->txtIterationsJson->setValidator(validator);
-    ui->txtParametersCountJson->setValidator(validator);
-
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
+
 }
 
 MainWindow::~MainWindow()
@@ -31,9 +28,32 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setCmdGORunning(QPushButton *btn, bool running)
+{
+    if(running) {
+        btn->setStyleSheet(R"(
+            background-color: #2e7d32;
+            color: white;
+            font-weight: bold;
+            border: 1px solid #1b5e20;
+            border-radius: 3px;
+        )");
+    }
+    else {
+        btn->setStyleSheet("");
+    }
+    btn->style()->unpolish(btn);   // force Qt to re-evaluate the stylesheet
+    btn->style()->polish(btn);
+    btn->repaint();
+}
+
+
 void MainWindow::on_cmdGONew_clicked()
 {
-    int iterations = ui->txtIterationsNew->text().toInt();
+    setCmdGORunning(ui->cmdGONew, true);
+    QTimer::singleShot(300, this, [this] { setCmdGORunning(ui->cmdGONew, false); });
+
+    int iterations = ui->txtIterationsNew->value();
     auto ns = benchmarkParameterUsingNewAndDelete(iterations);
     auto singleRunTime = ns / iterations;
     auto txt = QString("Total Time: %1, singleTime: %2")
@@ -45,11 +65,15 @@ void MainWindow::on_cmdGONew_clicked()
 }
 void MainWindow::on_cmdGOJson_clicked()
 {
-    int iterations = ui->txtIterationsJson->text().toInt();
-    auto ns = benchmarkParameterUsingJSON(iterations);
-    auto singleRunTime = ns / iterations;
-    auto txt = QString("Total Time: %1, singleTime: %2")
-                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
+    setCmdGORunning(ui->cmdGOJson, true);
+    QTimer::singleShot(300, this, [this] { setCmdGORunning(ui->cmdGOJson, false); });
+
+    int iterations = ui->txtIterationsJson->value();
+    auto [ns1, ns2] = benchmarkParameterUsingJsonValueAndSchema(iterations);
+    auto singleRunTime = ns2 / iterations;
+    auto txt = QString("Preparation %1 Total Time: %2, singleTime: %3")
+                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns1),
+                       QtNoid::Common::Scale::nanoSecsUpToDays(ns2),
                         QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
 
     ui->txtElapsedTimeJson->setText(txt);
@@ -57,8 +81,11 @@ void MainWindow::on_cmdGOJson_clicked()
 }
 void MainWindow::on_cmdGOJsonList_clicked()
 {
+    setCmdGORunning(ui->cmdGOJsonList, true);
+    QTimer::singleShot(300, this, [this] { setCmdGORunning(ui->cmdGOJsonList, false); });
+
     int parametersCount = ui->txtParametersCountJson->text().toInt();
-    auto ns = benchmarkParameterListUsingJSON(parametersCount);
+    auto ns = benchmarkParametersPageUsingJSON(parametersCount);
     auto singleRunTime = ns / parametersCount;
     auto txt = QString("Total Time: %1, AverageParameterTime: %2")
                    .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
@@ -70,7 +97,7 @@ void MainWindow::on_cmdGOJsonList_clicked()
 
 void MainWindow::on_cmdGOToJson_clicked()
 {
-    int parametersCount = ui->txtParametersCountToJson->text().toInt();
+    int parametersCount = ui->txtParametersCountJson->text().toInt();
     auto ns = benchmarkParameterListToJSON(parametersCount);
     auto singleRunTime = ns / parametersCount;
     auto txt = QString("Total Time: %1, AverageParameterTime: %2")
@@ -113,6 +140,7 @@ void MainWindow::on_cmdGOSignalAndSlots_clicked()
 
 
 
+
 quint64 MainWindow::benchmarkParameterUsingNewAndDelete(int iterations)
 {
     QElapsedTimer ET;
@@ -133,13 +161,18 @@ quint64 MainWindow::benchmarkParameterUsingNewAndDelete(int iterations)
 
 
 
-quint64 MainWindow::benchmarkParameterUsingJSON(int iterations)
+std::pair<quint64, quint64> MainWindow::benchmarkParameterUsingJsonValueAndSchema(int iterations)
 {
     QElapsedTimer ET;
     ET.start();
 
-    QJsonObject value;
-    value["Test"] = 12345;
+    QList<QJsonObject> valueList;
+    valueList.reserve(iterations);
+    for(int ii = 0; ii<iterations; ii++) {
+        QJsonObject value;
+        value["Test-" + QString::number(ii)] = ii;
+        valueList.append(std::move(value));   // o emplace_back
+    }
 
     QJsonObject schema;
     QJsonObject schemaParameters;
@@ -150,16 +183,19 @@ quint64 MainWindow::benchmarkParameterUsingJSON(int iterations)
     schemaParameters["max"] = 1000.0;
     schema["Temperature"] = schemaParameters;
 
-    for(int ii = 0; ii < iterations; ii++)
+    auto preparation = ET.nsecsElapsed();
+
+    ET.start();
+    for(const QJsonObject &val : std::as_const(valueList))
     {
-        QtNoid::App::Parameter p(schema, value, this);
+        QtNoid::App::Parameter p(schema, val, this);
         Q_UNUSED(p)
     }
 
-    return ET.nsecsElapsed();
+    return {preparation, ET.nsecsElapsed()};
 }
 
-quint64 MainWindow::benchmarkParameterListUsingJSON(int paramtersCount)
+quint64 MainWindow::benchmarkParametersPageUsingJSON(int paramtersCount)
 {
     QElapsedTimer ET;
 

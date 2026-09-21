@@ -20,32 +20,15 @@
 
 
 ### Progress Status
-* ~~Controllo di tutti i progetti Documentazione~~
-* ~~Revisione QtNoid::App::Parameter~~
-* sistemare esempio QtNoidAppParameterUsage
-==Creare esempio per QtNoid::Common::Text==
-Studiare classe QtNoid::App::Parameterlist
-~~-> Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile~~
 
-Sistemare esempio QtNoid::App:ParametersPage Basic Usage
-
-    setWindowTitle("QtNoid::App::ParametersPage Benchmark"); forse è Parameter e non ParamtetersPage
-
-
-
-install(TARGETS CommonTextBasicUsage
-    BUNDLE  DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
-qt_generate_deploy_app_script(
-    TARGET CommonTextBasicUsage
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})
-
+- [x] Controllo di tutti i progetti Documentazione
+- [x] Revisione QtNoid::App::Parameter
+- [x] Creare esempio per QtNoid::Common::Text
+- [x] Sistemare esempio QtNoid::App:ParametersPage Basic Usage
+- [x] Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile
+- [ ] Studiare classe QtNoid::App::Parameterlist
+- [ ] sistemare esempio QtNoidAppParameterBasicUsage
+- [ ] sistemare QtNoidAppParametersPageBenchmark
 
 
 

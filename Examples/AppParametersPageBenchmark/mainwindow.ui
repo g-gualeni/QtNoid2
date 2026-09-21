@@ -23,7 +23,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Creating Parameter using new and delete</string>
+       <string>Creating and Destroing a Parameter Object using new and delete</string>
       </property>
      </widget>
     </item>
@@ -37,23 +37,23 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="txtIterationsNew">
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>16777215</height>
-         </size>
+       <widget class="QSpinBox" name="txtIterationsNew">
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
         </property>
-        <property name="text">
-         <string>100000</string>
+        <property name="maximum">
+         <number>1000000</number>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        <property name="value">
+         <number>100000</number>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="cmdGONew">
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
         <property name="text">
          <string>GO!</string>
         </property>
@@ -79,6 +79,13 @@
      </layout>
     </item>
     <item>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label_7">
       <property name="font">
        <font>
@@ -86,7 +93,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Creating Parameter using JSON+SCHEMA</string>
+       <string>Creating and Destroing a Parameter Object using JSON+SCHEMA</string>
       </property>
      </widget>
     </item>
@@ -100,18 +107,15 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="txtIterationsJson">
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>16777215</height>
-         </size>
+       <widget class="QSpinBox" name="txtIterationsJson">
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
         </property>
-        <property name="text">
-         <string>100000</string>
+        <property name="maximum">
+         <number>1000000</number>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        <property name="value">
+         <number>10000</number>
         </property>
        </widget>
       </item>
@@ -142,6 +146,13 @@
      </layout>
     </item>
     <item>
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label_8">
       <property name="font">
        <font>
@@ -149,7 +160,10 @@
        </font>
       </property>
       <property name="text">
-       <string>Creating Parameter List using JSON+SCHEMA (as in application init + reading config from file)</string>
+       <string>Creating a ParametersPage object with a desired number of paramters, from JSON+SCHEMA (as in application init + reading config from file)</string>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
@@ -163,18 +177,15 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="txtParametersCountJson">
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>16777215</height>
-         </size>
+       <widget class="QSpinBox" name="txtParametersCountJson">
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
         </property>
-        <property name="text">
-         <string>100000</string>
+        <property name="maximum">
+         <number>1000000</number>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        <property name="value">
+         <number>100000</number>
         </property>
        </widget>
       </item>
@@ -205,6 +216,13 @@
      </layout>
     </item>
     <item>
+     <widget class="Line" name="line_3">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label_12">
       <property name="font">
        <font>
@@ -212,7 +230,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Creating JSON from Parameter List (as in saving app configuration to a file)</string>
+       <string>Creating JSON from ParametersPage (as in saving app configuration to a file)</string>
       </property>
      </widget>
     </item>
@@ -226,18 +244,15 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="txtParametersCountToJson">
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>16777215</height>
-         </size>
+       <widget class="QSpinBox" name="txtParametersCountToJson_2">
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
         </property>
-        <property name="text">
-         <string>100000</string>
+        <property name="maximum">
+         <number>1000000</number>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        <property name="value">
+         <number>100000</number>
         </property>
        </widget>
       </item>
@@ -266,6 +281,13 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_4">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="label_13">
@@ -331,6 +353,13 @@
      </layout>
     </item>
     <item>
+     <widget class="Line" name="line_5">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label_16">
       <property name="font">
        <font>
@@ -392,6 +421,13 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_6">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">
