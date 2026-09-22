@@ -30,20 +30,25 @@ MainWindow::~MainWindow()
 
 void MainWindow::setCmdGORunning(QPushButton *btn, bool running)
 {
+    QSize sizehint = btn->sizeHint();
     if(running) {
         btn->setStyleSheet(R"(
-            background-color: #2e7d32;
+            background-color: #2ead32;
             color: white;
             font-weight: bold;
-            border: 1px solid #1b5e20;
+            border: 2px solid #1bce20;
             border-radius: 3px;
         )");
     }
     else {
         btn->setStyleSheet("");
     }
+
     btn->style()->unpolish(btn);   // force Qt to re-evaluate the stylesheet
     btn->style()->polish(btn);
+
+    btn->setMinimumSize(sizehint);
+
     btn->repaint();
 }
 
@@ -56,7 +61,7 @@ void MainWindow::on_cmdGONew_clicked()
     int iterations = ui->txtIterationsNew->value();
     auto ns = benchmarkParameterUsingNewAndDelete(iterations);
     auto singleRunTime = ns / iterations;
-    auto txt = QString("Total Time: %1, singleTime: %2")
+    auto txt = QString("TotalTime: %1, SingleTime: %2")
                    .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
                         QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
 
@@ -71,7 +76,7 @@ void MainWindow::on_cmdGOJson_clicked()
     int iterations = ui->txtIterationsJson->value();
     auto [ns1, ns2] = benchmarkParameterUsingJsonValueAndSchema(iterations);
     auto singleRunTime = ns2 / iterations;
-    auto txt = QString("Preparation %1 Total Time: %2, singleTime: %3")
+    auto txt = QString("Preparation %1 TotalTime: %2, SingleTime: %3")
                    .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns1),
                        QtNoid::Common::Scale::nanoSecsUpToDays(ns2),
                         QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
@@ -79,16 +84,19 @@ void MainWindow::on_cmdGOJson_clicked()
     ui->txtElapsedTimeJson->setText(txt);
     ui->txtElapsedTimeJson->setEnabled(true);
 }
-void MainWindow::on_cmdGOJsonList_clicked()
-{
-    setCmdGORunning(ui->cmdGOJsonList, true);
-    QTimer::singleShot(300, this, [this] { setCmdGORunning(ui->cmdGOJsonList, false); });
 
-    int parametersCount = ui->txtParametersCountJson->text().toInt();
-    auto ns = benchmarkParametersPageUsingJSON(parametersCount);
+
+void MainWindow::on_cmdGOParametersPageFromJson_clicked()
+{
+    setCmdGORunning(ui->cmdGOParametersPageFromJson, true);
+    QTimer::singleShot(300, this, [this] { setCmdGORunning(ui->cmdGOParametersPageFromJson, false); });
+
+    int parametersCount = ui->txtParametersCountCreateFromJson->value();
+    auto [preparation, ns] = benchmarkParametersPageUsingJSON(parametersCount);
     auto singleRunTime = ns / parametersCount;
-    auto txt = QString("Total Time: %1, AverageParameterTime: %2")
-                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
+    auto txt = QString("Preparation %1 TotalTime: %2, singleTime: %3")
+                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(preparation),
+                       QtNoid::Common::Scale::nanoSecsUpToDays(ns),
                         QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
 
     ui->txtElapsedTimeJsonList->setText(txt);
@@ -97,24 +105,30 @@ void MainWindow::on_cmdGOJsonList_clicked()
 
 void MainWindow::on_cmdGOToJson_clicked()
 {
-    int parametersCount = ui->txtParametersCountJson->text().toInt();
-    auto ns = benchmarkParameterListToJSON(parametersCount);
+    setCmdGORunning(ui->cmdGOToJson, true);
+    QTimer::singleShot(300, this, [this] { setCmdGORunning(ui->cmdGOToJson, false); });
+
+    int parametersCount = ui->txtParametersCountToJson->value();
+    auto [preparation, ns] = benchmarkParameterListToJSON(parametersCount);
     auto singleRunTime = ns / parametersCount;
-    auto txt = QString("Total Time: %1, AverageParameterTime: %2")
-                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
+    auto txt = QString("Preparation %1 TotalTime: %2, SingleTime: %3")
+                   .arg(QtNoid::Common::Scale::nanoSecsUpToDays(preparation),
+                       QtNoid::Common::Scale::nanoSecsUpToDays(ns),
                         QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
 
     ui->txtElapsedTimeToJson->setText(txt);
     ui->txtElapsedTimeToJson->setEnabled(true);
-
 }
 
 void MainWindow::on_cmdGOBinding_clicked()
 {
-    int iterations = ui->txtIterationsCountBinding->text().toInt();
+    setCmdGORunning(ui->cmdGOBinding, true);
+    QTimer::singleShot(300, this, [this] { setCmdGORunning(ui->cmdGOBinding, false); });
+
+    int iterations = ui->txtIterationsCountBinding->value();
     auto ns = benchmarkBindings(iterations);
     auto singleRunTime = ns / iterations;
-    auto txt = QString("Total Time: %1, AverageTime: %2")
+    auto txt = QString("TotalTime: %1, SingleTime: %2")
                    .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
                         QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
 
@@ -125,10 +139,13 @@ void MainWindow::on_cmdGOBinding_clicked()
 
 void MainWindow::on_cmdGOSignalAndSlots_clicked()
 {
-    int iterations = ui->txtIterationsSignalsAndSlots->text().toInt();
+    setCmdGORunning(ui->cmdGOSignalAndSlots, true);
+    QTimer::singleShot(300, this, [this] { setCmdGORunning(ui->cmdGOSignalAndSlots, false); });
+
+    int iterations = ui->txtIterationsSignalsAndSlots->value();
     auto ns = benchmarkSignalsAndSlot(iterations);
     auto singleRunTime = ns / iterations;
-    auto txt = QString("Total Time: %1, AverageTime: %2")
+    auto txt = QString("TotalTime: %1, SingleTime: %2")
                    .arg(QtNoid::Common::Scale::nanoSecsUpToDays(ns),
                         QtNoid::Common::Scale::nanoSecsUpToDays(singleRunTime));
 
@@ -195,7 +212,7 @@ std::pair<quint64, quint64> MainWindow::benchmarkParameterUsingJsonValueAndSchem
     return {preparation, ET.nsecsElapsed()};
 }
 
-quint64 MainWindow::benchmarkParametersPageUsingJSON(int paramtersCount)
+std::pair<quint64, quint64> MainWindow::benchmarkParametersPageUsingJSON(int paramtersCount)
 {
     QElapsedTimer ET;
 
@@ -223,27 +240,36 @@ quint64 MainWindow::benchmarkParametersPageUsingJSON(int paramtersCount)
         paramValue[paramName] = i * 10.0; // Some test value
         valueArray.append(paramValue);
     }
-    qDebug() << __func__ << "Creating schema and value array" << QtNoid::Common::Scale::nanoSecsUpToDays(ET.nsecsElapsed());
 
 
     // Create the main schema and value objects
-    QJsonObject mainSchema;
-    mainSchema["BenchmarkParameterList"] = schemaArray;
+    QJsonObject schemaMain;
+    schemaMain["parameters"] = schemaArray;
+    QJsonObject schemaJson;
+    schemaJson["BenchmarkParameterList"] = schemaMain;
 
-    QJsonObject mainValue;
-    mainValue["BenchmarkParameterList"] = valueArray;
+    QJsonObject valueMain;
+    valueMain["parameters"] = valueArray;
+    QJsonObject valueJson;
+    valueJson["BenchmarkParameterList"] = valueMain;
+
+    auto preparation = ET.nsecsElapsed();
+    // qDebug() << __func__ << "Creating schema and value array" << QtNoid::Common::Scale::nanoSecsUpToDays(ET.nsecsElapsed());
+    // qDebug() << __func__ << valueArray.last() << schemaArray.last();
 
     ET.start();
     // Create ParametersPage using schema and values
-    QtNoid::App::ParametersPage paramList(mainSchema, mainValue, this);
+    QtNoid::App::ParametersPage paramsPage(schemaJson, valueJson, this);
+
+    // qDebug() << __func__ << paramsPage.count() << *paramsPage.rbegin();
 
     // Use the parameter list to prevent optimization
-    Q_UNUSED(paramList)
+    Q_UNUSED(paramsPage)
 
-    return ET.nsecsElapsed();
+    return {preparation, ET.nsecsElapsed()};
 }
 
-quint64 MainWindow::benchmarkParameterListToJSON(int paramtersCount)
+std::pair<quint64, quint64> MainWindow::benchmarkParameterListToJSON(int paramtersCount)
 {
     QElapsedTimer ET;
     QtNoid::App::ParametersPage paramList(this);
@@ -252,14 +278,16 @@ quint64 MainWindow::benchmarkParameterListToJSON(int paramtersCount)
     for(int ii=0; ii < paramtersCount; ii++) {
         paramList.emplace(ii, QString::number(ii), {});
     }
-    qDebug() << __func__ << "Creating ParameterList" << QtNoid::Common::Scale::nanoSecsUpToDays(ET.nsecsElapsed());
+    auto preparation = ET.nsecsElapsed();
 
     ET.start();
     QJsonObject values = paramList.toJsonValues();
+
     // Use values to prevent optimization
     Q_UNUSED(values)
 
-    return ET.nsecsElapsed();
+
+    return {preparation, ET.nsecsElapsed()};
 }
 
 quint64 MainWindow::benchmarkBindings(int iterations)
@@ -269,15 +297,11 @@ quint64 MainWindow::benchmarkBindings(int iterations)
     QtNoid::App::Parameter follower(0, "follower", this);
 
     auto bindableLeader = leader.bindableValue();
-    // externalProperty.setBinding([&]() { return par.bindableValue().value(); });
     follower.bindableValue().setBinding([&]() { return bindableLeader.value(); });
-    // qDebug() << __func__ << "\n" << leader << "\n" << follower;
 
     ET.start();
     for(int ii=0; ii<iterations; ++ii) {
         leader.setValue(ii);
-        // Check the value
-        // if(follower.value() != ii) break;
     }
     return ET.nsecsElapsed();
 }
@@ -297,6 +321,8 @@ quint64 MainWindow::benchmarkSignalsAndSlot(int iterations)
     }
     return ET.nsecsElapsed();
 }
+
+
 
 
 

@@ -20,7 +20,8 @@ Each example is a standalone CMake project with its own documentation page, link
 
 * **[QtNoid::App::ParametersPage Basic Usage](AppParametersPageBasicUsage/doc/QtNoidAppParametersPageBasicUsage.md)**: Basic usage of a list of `ParametersPage` objects.
 
-* **[QtNoid::App::ParametersPage Benchmark](AppParametersPageBenchmark/doc/QtNoidAppParametersPageBenchmark.md)**: Benchmark of the `ParametersPage` performance. 
+* **[QtNoid::App::ParametersPage Benchmark](AppParametersPageBenchmark/doc/QtNoidAppParametersPageBenchmark.md)**: Benchmark of the `Parameter` class and the `ParametersPage` class performance. 
+
 
 ## QtNoidJson examples
 

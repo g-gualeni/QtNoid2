@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>854</width>
     <height>600</height>
    </rect>
   </property>
@@ -28,7 +28,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0">
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
@@ -38,14 +38,20 @@
       </item>
       <item>
        <widget class="QSpinBox" name="txtIterationsNew">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="showGroupSeparator" stdset="0">
          <bool>true</bool>
         </property>
         <property name="maximum">
-         <number>1000000</number>
+         <number>100000000</number>
         </property>
         <property name="value">
-         <number>100000</number>
+         <number>1000000</number>
         </property>
        </widget>
       </item>
@@ -108,14 +114,20 @@
       </item>
       <item>
        <widget class="QSpinBox" name="txtIterationsJson">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="showGroupSeparator" stdset="0">
          <bool>true</bool>
         </property>
         <property name="maximum">
-         <number>1000000</number>
+         <number>100000000</number>
         </property>
         <property name="value">
-         <number>10000</number>
+         <number>1000000</number>
         </property>
        </widget>
       </item>
@@ -172,17 +184,23 @@
       <item>
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Parameters</string>
+         <string>Iterations: </string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="txtParametersCountJson">
+       <widget class="QSpinBox" name="txtParametersCountCreateFromJson">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="showGroupSeparator" stdset="0">
          <bool>true</bool>
         </property>
         <property name="maximum">
-         <number>1000000</number>
+         <number>100000000</number>
         </property>
         <property name="value">
          <number>100000</number>
@@ -190,7 +208,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="cmdGOJsonList">
+       <widget class="QPushButton" name="cmdGOParametersPageFromJson">
         <property name="text">
          <string>GO!</string>
         </property>
@@ -239,20 +257,26 @@
       <item>
        <widget class="QLabel" name="label_10">
         <property name="text">
-         <string>Parameters</string>
+         <string>Iterations: </string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="txtParametersCountToJson_2">
+       <widget class="QSpinBox" name="txtParametersCountToJson">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="showGroupSeparator" stdset="0">
          <bool>true</bool>
         </property>
         <property name="maximum">
-         <number>1000000</number>
+         <number>100000000</number>
         </property>
         <property name="value">
-         <number>100000</number>
+         <number>1000000</number>
         </property>
        </widget>
       </item>
@@ -306,23 +330,26 @@
       <item>
        <widget class="QLabel" name="label_14">
         <property name="text">
-         <string>Parameters</string>
+         <string>Iterations: </string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="txtIterationsCountBinding">
-        <property name="maximumSize">
+       <widget class="QSpinBox" name="txtIterationsCountBinding">
+        <property name="minimumSize">
          <size>
-          <width>100</width>
-          <height>16777215</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
-        <property name="text">
-         <string>10000000</string>
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        <property name="maximum">
+         <number>100000000</number>
+        </property>
+        <property name="value">
+         <number>10000000</number>
         </property>
        </widget>
       </item>
@@ -376,23 +403,26 @@
       <item>
        <widget class="QLabel" name="label_17">
         <property name="text">
-         <string>Parameters</string>
+         <string>Iterations: </string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="txtIterationsSignalsAndSlots">
-        <property name="maximumSize">
+       <widget class="QSpinBox" name="txtIterationsSignalsAndSlots">
+        <property name="minimumSize">
          <size>
-          <width>100</width>
-          <height>16777215</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
-        <property name="text">
-         <string>10000000</string>
+        <property name="showGroupSeparator" stdset="0">
+         <bool>true</bool>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        <property name="maximum">
+         <number>100000000</number>
+        </property>
+        <property name="value">
+         <number>10000000</number>
         </property>
        </widget>
       </item>
@@ -449,7 +479,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>854</width>
      <height>22</height>
     </rect>
    </property>

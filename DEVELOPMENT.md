@@ -23,18 +23,39 @@
 
 - [x] Controllo di tutti i progetti Documentazione
 - [x] Revisione QtNoid::App::Parameter
-- [x] Creare esempio per QtNoid::Common::Text
-- [x] Sistemare esempio QtNoid::App:ParametersPage Basic Usage
 - [x] Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile
-- [ ] Studiare classe QtNoid::App::Parameterlist
-- [ ] sistemare esempio QtNoidAppParameterBasicUsage
-- [ ] sistemare QtNoidAppParametersPageBenchmark
+
+- [ ] Aggiornare esempio QtNoid::Core Basic Usage
+	- [ ] Aggiornare screenshot macOS
+- [ ] Aggiornare esempio QtNoid::Common Basic Usage
+	- [ ] Aggiornare screenshot macOS
+- [ ] Creare esempio per QtNoid::Common::Text Basic Usage
+	- [ ] Aggiornare screenshot macOS
+
+- [ ] Aggiornare esempio QtNoid::App:Core Basic Usage
+	- [x] Aggiornare UI
+	- [x] Aggiornare Doc
+	- [ ] Aggiornare screenshot macOS
+- [ ] Sistemare esempio QtNoid::App:Parameter Basic Usage
+	- [ ] ==WIP
+	- [ ] Aggiornare UI
+	- [ ] Aggiornare Doc
+	- [ ] Aggiornare screenshot macOS
+- [ ] Sistemare esempio QtNoid::App:ParametersPage Basic Usage
+	- [x] Aggiornare UI
+	- [x] Aggiornare documentazione
+	- [x] Aggiornare screenshot Win11
+	- [ ] Aggiornare screenshot macOS
+- [ ] Sistemare esempio QtNoid::App::ParametersPage Benchmark
+	- [x] Aggiornare UI
+	- [x] Scrivere la documentazione
+	- [x] Screenshot Win11
+	- [ ] Screenshot masOs
 
 
+- [x] Revisione classe QtNoid::App::Config
+	- [ ] Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==
 
-
-
- Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==
 
 
 Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale
