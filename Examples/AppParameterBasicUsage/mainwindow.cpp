@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "presetsdialog.h"
 #include <QJsonObject>
 #include <QDebug>
 
@@ -10,63 +11,75 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("QtNoid::App::Parameter Basic Usage");
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+    ui->splitter->restoreState(appConfig->restoreAsByteArray("Splitter", ui->splitter->saveState()));
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
+    ui->optIsValueChanged->setEnabled(false);
 
     // Listening to UI modifications
     connect(ui->txtName, &QLineEdit::textChanged, this,
             [&](const QString& val){
                 m_parameter.setName(val);
-                updateStatusBar("txtName::textChanged");
+                updateStatusBar("ui->txtName::textChanged");
             });
+    connect(ui->txtLabel, &QLineEdit::textChanged, this,
+            [&](const QString& val){
+                m_parameter.setLabel(val);
+                updateStatusBar("ui->txLabel::textChanged");
+            });
+
     connect(ui->txtDescription, &QLineEdit::textChanged, this,
             [&](const QString& val){
                 m_parameter.setDescription(val);
-                updateStatusBar("txtDescription::textChanged");
+                updateStatusBar("ui->txtDescription::textChanged");
             });
     connect(ui->txtTooltip, &QLineEdit::textChanged, this,
             [&](const QString& val){
                 m_parameter.setTooltip(val);
-                updateStatusBar("txtTooltip::textChanged");
+                updateStatusBar("ui->txtTooltip::textChanged");
             });
     connect(ui->txtRange, &QLineEdit::textChanged, this,
             [&](const QString& val){
                 setRangeFromText(val);
-                updateStatusBar("txtRange::textChanged");
+                updateStatusBar("ui->txtRange::textChanged");
             });
     connect(ui->txtUnit, &QLineEdit::textChanged, this,
             [&](const QString& val){
                 m_parameter.setUnit(val);
-                updateStatusBar("txtUnit::textChanged");
+                updateStatusBar("ui->txtUnit::textChanged");
             });
     connect(ui->txtValue, &QDoubleSpinBox::valueChanged, this,
             [&](double val){
                 m_parameter.setValue(val);
-                updateStatusBar("txtValue::valueChanged");
+                updateStatusBar("ui->txtValue::valueChanged");
             });
     connect(ui->optReadOnly, &QCheckBox::clicked, this,
             [&](bool val){
                 m_parameter.setReadOnly(val);
-                updateStatusBar("optReadOnly::clicked");
+                updateStatusBar("ui->optReadOnly::clicked");
             });
     connect(ui->optVisible, &QCheckBox::clicked, this,
             [&](bool val){
                 m_parameter.setVisible(val);
-                updateStatusBar("optVisible::clicked");
+                updateStatusBar("ui->optVisible::clicked");
             });
-    // connect(ui->txtPresets, &QPlainTextEdit::textChanged, this,
-    //         [&](){
-    //             setPresetsFromText(ui->txtPresets->toPlainText());
-    //             updateStatusBar("txtPresets::textChanged");
-    //         });
-
-
+    connect(ui->cboPresets, &QComboBox::currentIndexChanged, this,
+             [&](){
+                auto presetName = ui->cboPresets->currentText().split(" ").first();
+                m_parameter.applyPreset(presetName);
+                updateStatusBar("ui->cboPresets::currentIndexChanged");
+            });
 
     // Listening to m_paramter modifications
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
             [&](QString val){
                 ui->txtName->setText((val));
                 updateStatusBar("QtNoid::App::Parameter::nameChanged");
+            });
+    connect(&m_parameter, &QtNoid::App::Parameter::labelChanged, this,
+            [&](QString val){
+                ui->txtLabel->setText((val));
+                updateStatusBar("QtNoid::App::Parameter::labelChanged");
             });
     connect(&m_parameter, &QtNoid::App::Parameter::descriptionChanged, this,
             [&](QString val){
@@ -104,31 +117,39 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->optVisible->setChecked(val);
                 updateStatusBar("QtNoid::App::Parameter::visibleChanged");
             });
-
+    connect(&m_parameter, &QtNoid::App::Parameter::isValueChangedChanged, this,
+            [&](bool val){
+                ui->optIsValueChanged->setChecked(val);
+                updateStatusBar("QtNoid::App::Parameter::optIsValueChanged");
+            });
     connect(&m_parameter, &QtNoid::App::Parameter::presetsChanged, this,
-            [&](const QVariantMap &presets){
-                QString txt;
-                for(auto it = presets.begin(); it != presets.end(); ++it) {
-                    QString key = it.key();
-                    QVariant value = it.value();
-                    txt += QString("%1 %2\n").arg(key, value.toString());
-                }
-                ui->txtPresets->setPlainText(txt);
-                updateStatusBar("QtNoid::App::Parameter::presetsChanged");
+            [&](const QVariantMap&){
+                updatePresetList();
             });
 
+    // Listening to m_paramter errors
+    connect(&m_parameter, &QtNoid::App::Parameter::writeAttemptedWhileReadOnly, this,
+            [&](const QString& val) {
+            updateStatusBar("QtNoid::App::Parameter::writeAttemptedWhileReadOnly");
+    });
+
     updateFromGui();
+
+    // Set the reference value for m_paramter
+    m_parameter.valueFromJson(QJsonObject{{m_parameter.name(), 0}});
 }
 
 MainWindow::~MainWindow()
 {
     appConfig->saveValue("Geometry", saveGeometry());
+    appConfig->saveValue("Splitter", ui->splitter->saveState());
     delete ui;
 }
 
 void MainWindow::updateFromGui()
 {
     m_parameter.setName(ui->txtName->text());
+    m_parameter.setLabel(ui->txtLabel->text());
     m_parameter.setDescription(ui->txtDescription->text());
     m_parameter.setTooltip(ui->txtTooltip->text());
     setRangeFromText(ui->txtRange->text());
@@ -136,20 +157,35 @@ void MainWindow::updateFromGui()
     m_parameter.setValue(ui->txtValue->value());
     m_parameter.setReadOnly(ui->optReadOnly->checkState());
     m_parameter.setVisible(ui->optVisible->checkState());
-    setPresetsFromText(ui->txtPresets->toPlainText());
 }
 
 void MainWindow::updatePresetList()
 {
     ui->cboPresets->clear();
-    auto list = m_parameter.presets().keys();
-    ui->cboPresets->addItems(list);
+    QStringList lines;
+    auto presets = m_parameter.presets();
+    for (auto it = presets.constBegin(); it != presets.constEnd(); ++it) {
+        lines << QString("%1 %2").arg(it.key(), it.value().toString());
+    }
+    ui->cboPresets->addItems(lines);
 }
 
-void MainWindow::on_cmdUpdate_clicked()
+void MainWindow::on_cmdEditPresets_clicked()
 {
-    updateFromGui();
-    updateStatusBar(__func__);
+    PresetsDialog dlg(this);
+
+    QStringList lines;
+    const auto presets = m_parameter.presets();
+    for (auto it = presets.constBegin(); it != presets.constEnd(); ++it) {
+        lines << QString("%1 %2").arg(it.key(), it.value().toString());
+    }
+    if(!presets.isEmpty()) {
+        dlg.setPresetsText(lines.join('\n'));
+    }
+    if (dlg.exec() == QDialog::Accepted) {
+        m_parameter.clearPresets();
+        setPresetsFromText(dlg.presetsText());
+    }
 }
 
 
@@ -165,7 +201,7 @@ void MainWindow::on_cmdToJson_clicked()
     QJsonDocument valueDoc(valueObj);
     QString valueString = valueDoc.toJson();  //
     ui->txtJsonValue->setPlainText(valueString);
-    updateStatusBar(__func__);
+    // updateStatusBar(__func__);
 }
 
 
@@ -190,7 +226,7 @@ void MainWindow::on_cmdFromJson_clicked()
     if(!res) {
         resMsg += " Error calling fromJson";
     }
-    updateStatusBar(resMsg);
+    // updateStatusBar(resMsg);
 }
 
 void MainWindow::setRangeFromText(const QString &val)
@@ -220,18 +256,6 @@ void MainWindow::updateStatusBar(const QString &msg)
 void MainWindow::on_cmdQDebug_clicked()
 {
     qDebug() << __func__ << m_parameter;
-}
-
-void MainWindow::on_cmdUpdatePreset_clicked()
-{
-    setPresetsFromText(ui->txtPresets->toPlainText());
-    updatePresetList();
-}
-
-
-void MainWindow::on_cboPresets_currentTextChanged(const QString &arg1)
-{
-    m_parameter.applyPreset(arg1);
 }
 
 

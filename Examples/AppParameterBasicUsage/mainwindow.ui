@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1071</width>
-    <height>609</height>
+    <width>1099</width>
+    <height>533</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,51 +24,8 @@
        <bool>false</bool>
       </property>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QFormLayout" name="formLayout_2">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label">
-          <property name="font">
-           <font>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Configure the Parameter</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="font">
-           <font>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Name</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="txtName">
-          <property name="text">
-           <string>Temperature</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="font">
-           <font>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Description</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="3" column="1" colspan="2">
          <widget class="QLineEdit" name="txtDescription">
           <property name="minimumSize">
            <size>
@@ -81,32 +38,10 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_11">
-          <property name="font">
-           <font>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Tooltip</string>
-          </property>
-         </widget>
+        <item row="9" column="1">
+         <widget class="QComboBox" name="cboPresets"/>
         </item>
-        <item row="3" column="1">
-         <widget class="QLineEdit" name="txtTooltip">
-          <property name="minimumSize">
-           <size>
-            <width>250</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>PT100 desired temperature tooltip</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
+        <item row="5" column="0">
          <widget class="QLabel" name="label_4">
           <property name="font">
            <font>
@@ -118,85 +53,13 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
-         <widget class="QLineEdit" name="txtRange">
-          <property name="text">
-           <string>0 - 100</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="font">
-           <font>
-            <bold>true</bold>
-           </font>
+        <item row="10" column="0" colspan="3">
+         <widget class="QPushButton" name="cmdQDebug">
+          <property name="styleSheet">
+           <string notr="true">color: blue;font-weight: bold;</string>
           </property>
           <property name="text">
-           <string>Unit</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1">
-         <widget class="QLineEdit" name="txtUnit">
-          <property name="text">
-           <string>°C</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="font">
-           <font>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Value</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="1">
-         <widget class="QDoubleSpinBox" name="txtValue"/>
-        </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="label_7">
-          <property name="font">
-           <font>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>ReadOnly</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="1">
-         <widget class="QCheckBox" name="optReadOnly">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="label_12">
-          <property name="font">
-           <font>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Visible</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="1">
-         <widget class="QCheckBox" name="optVisible">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
+           <string>Test QDebug using &lt;&lt; for Parameter</string>
           </property>
          </widget>
         </item>
@@ -212,53 +75,203 @@
           </property>
          </widget>
         </item>
-        <item row="9" column="1">
-         <widget class="QComboBox" name="cboPresets"/>
-        </item>
-        <item row="10" column="0">
-         <widget class="QLabel" name="label_13">
+        <item row="8" column="0">
+         <widget class="QCheckBox" name="optVisible">
           <property name="font">
            <font>
             <bold>true</bold>
            </font>
           </property>
           <property name="text">
-           <string>Presets</string>
+           <string>Visible</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="10" column="1">
-         <widget class="QPlainTextEdit" name="txtPresets">
-          <property name="plainText">
-           <string>Winter 10.5
-Summer 25.6</string>
+        <item row="6" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Unit</string>
           </property>
          </widget>
         </item>
-        <item row="11" column="0">
-         <widget class="QPushButton" name="cmdUpdatePreset">
+        <item row="0" column="0" colspan="3">
+         <widget class="QLabel" name="label">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Configure the Parameter</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_14">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Label</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Tooltip</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1" colspan="2">
+         <widget class="QLineEdit" name="txtUnit">
+          <property name="text">
+           <string>°C</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="1" colspan="2">
+         <widget class="QDoubleSpinBox" name="txtValue"/>
+        </item>
+        <item row="4" column="1" colspan="2">
+         <widget class="QLineEdit" name="txtTooltip">
+          <property name="minimumSize">
+           <size>
+            <width>250</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>PT100 desired temperature tooltip</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <widget class="QCheckBox" name="optReadOnly">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Read Only</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Name</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" colspan="2">
+         <widget class="QLineEdit" name="txtLabel">
+          <property name="text">
+           <string>TEMP</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Description</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="2">
+         <widget class="QCheckBox" name="optIsValueChanged">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>IsValueChanged</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1" colspan="2">
+         <widget class="QLineEdit" name="txtRange">
+          <property name="text">
+           <string>0 - 100</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="2">
+         <widget class="QPushButton" name="cmdEditPresets">
           <property name="styleSheet">
            <string notr="true">color: blue;font-weight: bold;</string>
           </property>
           <property name="text">
-           <string>Preset Update</string>
+           <string>Edit Presets</string>
           </property>
          </widget>
         </item>
-        <item row="11" column="1">
-         <widget class="QPushButton" name="cmdQDebug">
-          <property name="styleSheet">
-           <string notr="true">color: blue;font-weight: bold;</string>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
           </property>
           <property name="text">
-           <string>Test QDebug using &lt;&lt; for Parameter</string>
+           <string>Value</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="2">
+         <widget class="QLineEdit" name="txtName">
+          <property name="text">
+           <string>Temperature</string>
           </property>
          </widget>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
         <item>
          <widget class="QPushButton" name="cmdToJson">
           <property name="styleSheet">
@@ -280,18 +293,21 @@ Summer 25.6</string>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="cmdUpdate">
-          <property name="styleSheet">
-           <string notr="true">color: blue;font-weight: bold;</string>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
-          <property name="text">
-           <string>Update</string>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
           </property>
-         </widget>
+         </spacer>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QLabel" name="label_8">
@@ -310,7 +326,7 @@ Summer 25.6</string>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QLabel" name="label_9">
@@ -341,7 +357,7 @@ Summer 25.6</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1071</width>
+     <width>1099</width>
      <height>22</height>
     </rect>
    </property>

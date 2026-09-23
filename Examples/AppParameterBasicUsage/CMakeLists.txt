@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19)
 project(AppParameterBasicUsage LANGUAGES CXX)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Widgets)
@@ -18,6 +18,9 @@ qt_add_executable(${PROJECT_NAME}
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+    presetdialog.ui
+    presetsdialog.cpp
+    presetsdialog.h
 )
 
 target_link_libraries(${PROJECT_NAME}

@@ -31,7 +31,6 @@
 	- [ ] Aggiornare screenshot macOS
 - [ ] Creare esempio per QtNoid::Common::Text Basic Usage
 	- [ ] Aggiornare screenshot macOS
-
 - [ ] Aggiornare esempio QtNoid::App:Core Basic Usage
 	- [x] Aggiornare UI
 	- [x] Aggiornare Doc
@@ -51,7 +50,6 @@
 	- [x] Scrivere la documentazione
 	- [x] Screenshot Win11
 	- [ ] Screenshot masOs
-
 
 - [x] Revisione classe QtNoid::App::Config
 	- [ ] Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==

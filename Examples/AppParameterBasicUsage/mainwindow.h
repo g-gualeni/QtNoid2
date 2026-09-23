@@ -20,12 +20,10 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_cmdUpdate_clicked();
     void on_cmdToJson_clicked();
     void on_cmdFromJson_clicked();
     void on_cmdQDebug_clicked();
-    void on_cmdUpdatePreset_clicked();
-    void on_cboPresets_currentTextChanged(const QString &arg1);
+    void on_cmdEditPresets_clicked();
 
 private:
     void setRangeFromText(const QString& val);
