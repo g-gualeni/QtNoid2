@@ -124,6 +124,7 @@ public:
 
 signals:
     void valueChanged(const QVariant &newValue);
+    void changed();
     void minChanged(const QVariant &min);
     void maxChanged(const QVariant &max);
     void rangeChanged(const QVariant &min, const QVariant &max);
@@ -136,11 +137,10 @@ signals:
     void tooltipChanged(const QString &value);
     void readOnlyChanged(bool value);
     void visibleChanged(bool value);
-    void writeAttemptedWhileReadOnly(const QString &parameterName);
+    void writeAttemptedWhileReadOnly(const QString &parameterName, const QVariant& current);
     void isValidChanged(bool isValid);
     void isValueChangedChanged(bool changed);
     void aboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged);
-
 
 public slots:
     void setValue(const QVariant& val);
@@ -169,12 +169,16 @@ private:
     bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
     bool canModify() const; // Modification control
 
+private slots:
+    void onAnyPropertyChanged();   // collect all notify and schedule a single changed() signal
+
 private:
     static QMutex s_uniqueIdMutex;
     static int s_nextUniqueId;
     int m_uniqueId;
     int getNextUniqueId();
     QProperty<QVariant> m_initialValue;
+    int m_anyPropertyChangedPending = false;
 };
 
 } // namespace App

@@ -63,14 +63,19 @@ MainWindow::MainWindow(QWidget *parent)
                 m_parameter.setVisible(val);
                 updateStatusBar("ui->optVisible::clicked");
             });
-    connect(ui->cboPresets, &QComboBox::currentIndexChanged, this,
+    connect(ui->cboPresets, &QComboBox::activated, this,
              [&](){
                 auto presetName = ui->cboPresets->currentText().split(" ").first();
-                m_parameter.applyPreset(presetName);
-                updateStatusBar("ui->cboPresets::currentIndexChanged");
+                QVariant res = m_parameter.applyPreset(presetName);
+                updateStatusBar("ui->cboPresets::currentIndexChanged Res: " + res.toString());
             });
 
     // Listening to m_paramter modifications
+    connect(&m_parameter, &QtNoid::App::Parameter::changed, this,
+            [&]{
+                qDebug() << "Changed";
+            });
+
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
             [&](QString val){
                 ui->txtName->setText((val));
@@ -129,8 +134,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Listening to m_paramter errors
     connect(&m_parameter, &QtNoid::App::Parameter::writeAttemptedWhileReadOnly, this,
-            [&](const QString& val) {
-            updateStatusBar("QtNoid::App::Parameter::writeAttemptedWhileReadOnly");
+            [&](const QString& val, const QVariant& current) {
+            updateStatusBar("QtNoid::App::Parameter::writeAttemptedWhileReadOnly " + current.toString());
+            ui->txtValue->setValue(current.toFloat());
     });
 
     updateFromGui();
@@ -161,8 +167,9 @@ void MainWindow::updateFromGui()
 
 void MainWindow::updatePresetList()
 {
+    const QSignalBlocker blocker(ui->cboPresets);
     ui->cboPresets->clear();
-    QStringList lines;
+    QStringList lines{{"None"}};
     auto presets = m_parameter.presets();
     for (auto it = presets.constBegin(); it != presets.constEnd(); ++it) {
         lines << QString("%1 %2").arg(it.key(), it.value().toString());
@@ -201,13 +208,13 @@ void MainWindow::on_cmdToJson_clicked()
     QJsonDocument valueDoc(valueObj);
     QString valueString = valueDoc.toJson();  //
     ui->txtJsonValue->setPlainText(valueString);
-    // updateStatusBar(__func__);
+    updateStatusBar("-> toJsonValue() - toJsonSchema()");
 }
 
 
 void MainWindow::on_cmdFromJson_clicked()
 {
-    QString resMsg(__func__);
+    QString resMsg("-> fromJson(schema, value) ");
     QJsonParseError parseError;
     auto schemaString = ui->txtJsonSchema->toPlainText();
     QJsonDocument schemaDoc =  QJsonDocument::fromJson(schemaString.toUtf8(), &parseError);
@@ -226,7 +233,7 @@ void MainWindow::on_cmdFromJson_clicked()
     if(!res) {
         resMsg += " Error calling fromJson";
     }
-    // updateStatusBar(resMsg);
+    updateStatusBar(resMsg);
 }
 
 void MainWindow::setRangeFromText(const QString &val)
@@ -257,6 +264,3 @@ void MainWindow::on_cmdQDebug_clicked()
 {
     qDebug() << __func__ << m_parameter;
 }
-
-
-

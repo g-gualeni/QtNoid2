@@ -44,6 +44,11 @@ private slots:
     void testParameterTooltip();
     void testParameterReadOnly();
 
+    // Generic changed() aggregate signal tests
+    void testParameterChangedSignalEmittedOnValueChange();
+    void testParameterChangedSignalNotEmittedWhenValueUnchanged();
+    void testParameterChangedSignalEmittedForEachPropertyType();
+
     // Slot tests
     void testSetValueAsSlot();
     void testSetValueAsSlotUsingConnect();
@@ -774,6 +779,82 @@ void TestQtNoidAppParameter::testParameterReadOnly()
     QCOMPARE(writeAttemptSpy.count(), 0); // No additional signal
     QCOMPARE(valueChangeSpy.count(), 1);
     QCOMPARE(par.value(), 300.0);
+}
+
+void TestQtNoidAppParameter::testParameterChangedSignalEmittedOnValueChange()
+{
+    Parameter par(100, "ChangedSignalParam");
+    QSignalSpy spy(&par, &Parameter::changed);
+    QVERIFY(spy.isValid());
+
+    // Changing the value affects both "value" and "isValueChanged" properties,
+    // so changed() may fire more than once: just verify it fires at least once.
+    par.setValue(200);
+    QVERIFY(spy.count() >= 1);
+}
+
+void TestQtNoidAppParameter::testParameterChangedSignalNotEmittedWhenValueUnchanged()
+{
+    Parameter par(100, "ChangedSignalParam");
+    QSignalSpy spy(&par, &Parameter::changed);
+    QVERIFY(spy.isValid());
+
+    // Setting the same value should not trigger any property notify signal,
+    // so changed() must not be emitted either.
+    par.setValue(100);
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppParameter::testParameterChangedSignalEmittedForEachPropertyType()
+{
+    Parameter par(100, "ChangedSignalParam");
+    QSignalSpy spy(&par, &Parameter::changed);
+    QVERIFY(spy.isValid());
+
+    // Every property with a NOTIFY signal is wired to changed(). Verify that
+    // changing each kind of property increases the emission count, without
+    // pinning an exact number (some setters cascade into other properties,
+    // like isValueChanged or isValid, which legitimately emit changed() too).
+    int previousCount = spy.count();
+
+    par.setLabel("New label");
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setDescription("New description");
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setUnit("kg");
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setTooltip("New tooltip");
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setReadOnly(true);
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setVisible(false);
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setMin(0);
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setMax(1000);
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setPresets({{"Low", 10}, {"High", 900}});
+    QVERIFY(spy.count() > previousCount);
+    previousCount = spy.count();
+
+    par.setName("NewChangedSignalParamName");
+    QVERIFY(spy.count() > previousCount);
 }
 
 void TestQtNoidAppParameter::testSetValueAsSlot()

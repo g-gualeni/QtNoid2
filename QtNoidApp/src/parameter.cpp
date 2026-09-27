@@ -3,6 +3,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QMetaProperty>
 
 
 
@@ -61,7 +62,6 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
     } else if (!value.isEmpty()) {
         paramName = value.begin().key();
     }
-
     
     if (!paramName.isEmpty()) {
         m_name = paramName;
@@ -265,6 +265,17 @@ void Parameter::initInternalConnections()
     m_isValid.setBinding([this]{ return computeIsValid(); });
     m_isValueChanged.setBinding([this]{ return m_value.value() != m_initialValue.value(); });
 
+    // Fire the changed signal every time a property of parameter is changed
+    static const QMetaMethod onAnyPropertyChangedSlot =
+        Parameter::staticMetaObject.method(
+            Parameter::staticMetaObject.indexOfSlot("onAnyPropertyChanged()"));
+
+    for (int i = 0; i < Parameter::staticMetaObject.propertyCount(); ++i) {
+        QMetaProperty prop = Parameter::staticMetaObject.property(i);
+        if (prop.hasNotifySignal()) {
+            connect(this, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        }
+    }
 }
 
 QVariant Parameter::value() const
@@ -572,10 +583,24 @@ QBindable<bool> Parameter::bindableIsValueChanged()
 bool Parameter::canModify() const
 {
     if(m_readOnly.value()) {
-        emit const_cast<Parameter*>(this)->writeAttemptedWhileReadOnly(m_name.value());
+        emit const_cast<Parameter*>(this)->writeAttemptedWhileReadOnly(m_name.value(), m_value.value());
         return false;
     }
     return true;
+}
+
+void Parameter::onAnyPropertyChanged()
+{
+    if(m_anyPropertyChangedPending)
+        return;
+
+    m_anyPropertyChangedPending = true;
+
+    // Send the signal as soon as the application enters the event loop
+    QMetaObject::invokeMethod(this, [this]{
+        m_anyPropertyChangedPending = false;
+        emit changed();
+    }, Qt::QueuedConnection);
 }
 
 bool Parameter::computeIsValid() const
