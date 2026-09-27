@@ -38,11 +38,10 @@
 - [ ] Sistemare esempio QtNoid::App:Parameter Basic Usage
 	- [ ] ==WIP
 	- [ ] Creare il test per segnale changed()
-	- [ ] automatizzare toìJSON
-	- [ ] bloccare il segnale changed( ) in fromJSON
+	- [x] automatizzareJSON
 	- [ ] Documentare changed() e spiegare il consolidamento dei messaggi in uno solo
 	- [x] Aggiornare UI
-	- [ ] rendere automatica generazione del JSON usando un nuovo evento della classe Parameter che mi notifica quando qualcosa cambia.
+	- [x] rendere automatica generazione del JSON usando un nuovo evento della classe Parameter che mi notifica quando qualcosa cambia.
 	- [ ] Aggiornare Doc
 	- [ ] Aggiornare screenshot macOS
 - [ ] Sistemare esempio QtNoid::App:ParametersPage Basic Usage

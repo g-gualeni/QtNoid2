@@ -73,7 +73,8 @@ MainWindow::MainWindow(QWidget *parent)
     // Listening to m_paramter modifications
     connect(&m_parameter, &QtNoid::App::Parameter::changed, this,
             [&]{
-                qDebug() << "Changed";
+                convertToJson();
+                updateStatusBar("Changed signal fired");
             });
 
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
@@ -196,24 +197,28 @@ void MainWindow::on_cmdEditPresets_clicked()
 }
 
 
-void MainWindow::on_cmdToJson_clicked()
+void MainWindow::convertToJson()
 {
-    QJsonObject schemaObj = m_parameter.toJsonSchema();
-    QJsonObject valueObj = m_parameter.toJsonValue();
-
-    QJsonDocument schemaDoc(schemaObj);
+    QJsonDocument schemaDoc(m_parameter.toJsonSchema());
     QString schemaString = schemaDoc.toJson();  //
     ui->txtJsonSchema->setPlainText(schemaString);
 
-    QJsonDocument valueDoc(valueObj);
+    QJsonDocument valueDoc(m_parameter.toJsonValue());
     QString valueString = valueDoc.toJson();  //
     ui->txtJsonValue->setPlainText(valueString);
+}
+
+void MainWindow::on_cmdToJson_clicked()
+{
+    convertToJson();
     updateStatusBar("-> toJsonValue() - toJsonSchema()");
 }
 
 
 void MainWindow::on_cmdFromJson_clicked()
 {
+    // QSignalBlocker blocker(&m_parameter);
+
     QString resMsg("-> fromJson(schema, value) ");
     QJsonParseError parseError;
     auto schemaString = ui->txtJsonSchema->toPlainText();

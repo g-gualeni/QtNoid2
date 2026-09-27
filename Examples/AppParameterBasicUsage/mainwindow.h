@@ -37,5 +37,6 @@ private:
     QtNoid::App::Parameter m_parameter;
     void updateFromGui();
     void updatePresetList();
+    void convertToJson();
 };
 #endif // MAINWINDOW_H

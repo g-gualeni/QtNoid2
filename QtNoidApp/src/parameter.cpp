@@ -599,7 +599,8 @@ void Parameter::onAnyPropertyChanged()
     // Send the signal as soon as the application enters the event loop
     QMetaObject::invokeMethod(this, [this]{
         m_anyPropertyChangedPending = false;
-        emit changed();
+        if (!signalsBlocked())
+            emit changed();
     }, Qt::QueuedConnection);
 }
 
