@@ -178,7 +178,7 @@ private:
     int m_uniqueId;
     int getNextUniqueId();
     QProperty<QVariant> m_initialValue;
-    int m_anyPropertyChangedPending = false;
+    bool m_anyPropertyChangedPending = false;
 };
 
 } // namespace App

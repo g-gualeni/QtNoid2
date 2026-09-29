@@ -11,7 +11,7 @@ namespace QtNoid {
 namespace App {
 
 QMutex Parameter::s_uniqueIdMutex;
-int Parameter::s_nextUniqueId(1000);  // thread-safe
+int Parameter::s_nextUniqueId(2000);  // thread-safe
 
 int Parameter::getNextUniqueId()
 {

@@ -5,15 +5,15 @@ This module contains:
 
 - [**Parameter**](QtNoidAppParameter.md): Generic application parameter class with value storage, range validation, presets, description, tooltip and Qt property binding. This class can be used to manage a single parameter.
 
-- [**ParameterList**](QtNoidAppParametersPage.md): Container class for managing multiple Parameter instances with binding support and serialization. This class can be used to manage a page of parameters.
+- [**ParametersPage**](QtNoidAppParametersPage.md): Container class for managing multiple Parameter instances with binding support and serialization. This class can be used to manage a page of parameters.
 
-- [**Config**](QtNoidAppConfig.md): Container class for managing multiple ParameterList instances with binding support and serialization. This class can be used to manage a bunch of pages of parameters.
+- [**Config**](QtNoidAppConfig.md): Container class for managing multiple `ParametersPage` instances with binding support and serialization. This class can be used to manage a bunch of pages of parameters.
 
 - [**ConfigFile**](QtNoidAppConfigFile.md): Wrapper around Config with methods to support the automation of read and write of a configuration file.
 
 - [**ConfigGlobal**](QtNoidAppConfigGlobal.md): this is a singleton class that create a unique instance of ConfigFile, available as **appConfig** that can be used to save and restore application configuration.
 
-- [**Development**](QtNoidAppDevelopment.md): this is a collection of methods that help creating an application and are not intended to be customer facing. API like saveConfigToProject() that saves config file into the development project resources, or initFullDialogGrabShortcut() that create a shortcut to print the application screen and save it in the application or bundle folder.
+- [**Development**](QtNoidAppDevelopment.md): this is a collection of methods that help creating an application and are not intended to be customer facing. API like `saveConfigToProject()` that saves config file into the development project resources, or `initFullDialogGrabShortcut()` that creates a `QShortcut` (Ctrl+Shift+S) to save the application screen in the application or bundle folder.
 
 ## CMake
 ```
@@ -37,7 +37,7 @@ using namespace QtNoid::App;
 
 - [AppSettingsBasicUsage:](../../AppSettingsBasicUsage/doc/AppSettingsBasicUsage.md)
 
-- **[AppParameterBasicUsage:](doc/AppParameterBasicUsage.md)** use this example to visualize properties of the class [**Parameter**](QtNoidAppParameter.md) and to see how conversion to and from JSON works.
+- **[AppParameterBasicUsage:](../../Examples/AppParameterBasicUsage/doc/QtNoidAppParameterBasicUsage.md)** use this example to visualize properties of the class [**Parameter**](QtNoidAppParameter.md) and to see how conversion to and from JSON works.
 
 - **[AppParameterListBasicUsage:](doc/AppParameterListBasicUsage.md)**
 This example showcase how a [**ParameterList**](QtNoidAppParametersPage.md) class can be use to create an

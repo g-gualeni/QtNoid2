@@ -19,6 +19,8 @@ A ParametersPage has the following properties:
 - `ParametersPage(const QString& name, QObject *parent = nullptr)`: Creates a parameter list with a specified name.
 
 - `ParametersPage(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr)`: Creates a parameter list by loading configuration from JSON schema and JSON values objects.
+## Destructors
+- `~ParametersPage()`: Destroys the object, emitting `aboutToBeDestroyed()` first.
 
 ## Properties management methods
 - `name()`: Returns the name of the parameter list.
@@ -112,10 +114,12 @@ A ParametersPage has the following properties:
 - `operator<<(Parameter* param)`: Stream insertion operator for adding a Parameter pointer to the list.
 
 ## Signals
+* `changed()`: Emitted whenever any property of the ParametersPage or any of the properties of his parameters changes. It is a convenience aggregate signal so a consumer (for example a view that refreshes a JSON preview) can connect once instead of wiring every individual `xChanged` signal. Multiple properties changing within the same call — for example, changing multiple parameter's `value` coalesced into a single emission, delivered asynchronously via a queued connection once control returns to the event loop. It therefore never fires synchronously inside the call that triggered it. It respects `QObject::blockSignals()`: the blocked state is checked at the moment of the (deferred) emission, not when the change is scheduled.
+
 - `nameChanged(const QString& value)`: Emitted when the parameter list name is changed.
 - `nameEdited(const QString &oldName, const QString &newName)`: emitted when the parameter list name is edited, passing both the old and new name.
 
-- **labelChanged(const QString& value):** Emitted when the parameter list label is changed.
+- `labelChanged(const QString& value)`: Emitted when the parameter list label is changed.
 
 - `descriptionChanged(const QString& value)`: Emitted when the parameter list description is modified.
 
@@ -136,6 +140,9 @@ A ParametersPage has the following properties:
 - `parameterRenameError(const QString& oldName, const QString& newName)`: Emitted when a parameter rename operation fails due to name conflicts.
 
 - `writeAttemptedWhileReadOnly(const QString &parameterName)`: Emitted when setValue() is called while the list is read-only; carries the name of the parameter whose modification was blocked.
+
+- `aboutToBeDestroyed(QtNoid::App::ParametersPage *page, int uniqueId, bool wasChanged)`: Emitted from the destructor, before the object is torn down. Useful for an owner (for example a collection class) that needs to react before a ParametersPage is destroyed. The parameter `wasChanged` reports the last known state of `isValueChanged`.
+
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)
 [← Back to README](../../README.md)

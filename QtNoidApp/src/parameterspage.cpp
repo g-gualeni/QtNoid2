@@ -5,12 +5,13 @@
 #include <QDebug>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QMetaMethod>
 
 namespace QtNoid {
 namespace App {
 
 QMutex ParametersPage::s_uniqueIdMutex;
-int ParametersPage::s_nextUniqueId(10);  // thread-safe
+int ParametersPage::s_nextUniqueId(200);  // thread-safe
 
 
 int ParametersPage::getNextUniqueId()
@@ -26,16 +27,20 @@ int ParametersPage::getNextUniqueId()
 ParametersPage::ParametersPage(QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
+    initInternalConnections();
 }
 
 ParametersPage::ParametersPage(const QString &name, QObject *parent)
     : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
+    initInternalConnections();
 }
 
 ParametersPage::ParametersPage(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
+    initInternalConnections();
+
     // Scan schemaList and valueList to recreate the page
     // Get the name from schema or from value
     if (schemaList.count() == 1) {
@@ -47,6 +52,11 @@ ParametersPage::ParametersPage(const QJsonObject &schemaList, const QJsonObject 
     // Get Value first to avoid ReadOnly blocking the update
     valuesFromJson(valueList);
     schemaFromJson(schemaList);
+}
+
+ParametersPage::~ParametersPage()
+{
+    emit aboutToBeDestroyed(this, m_uniqueId, m_isValueChanged);
 }
 
 
@@ -388,6 +398,7 @@ void ParametersPage::removeParameterInternal(Parameter *parameter)
     disconnect(parameter, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
     disconnect(parameter, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
     disconnect(parameter, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
+    disconnectParameterChangedForwarding(parameter);
 
     emit parameterRemoved(parameter);
     m_count = m_parametersByIndex.count();
@@ -395,7 +406,6 @@ void ParametersPage::removeParameterInternal(Parameter *parameter)
     if (m_parametersByIndex.isEmpty()) {
         m_nextParameterIndex = 0;
     }
-
 }
 
 bool ParametersPage::canModify(const QString &parameterName) const
@@ -438,6 +448,7 @@ void ParametersPage::clear()
         disconnect(param, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
         disconnect(param, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
         disconnect(param, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
+        disconnectParameterChangedForwarding(param);
         emit parameterRemoved(param);
     }
 
@@ -531,6 +542,30 @@ void ParametersPage::applyPreset(const QString &presetName)
     }
 }
 
+void ParametersPage::initInternalConnections()
+{
+    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
+    for (int ii = 0; ii < ParametersPage::staticMetaObject.propertyCount(); ++ii) {
+        QMetaProperty prop = ParametersPage::staticMetaObject.property(ii);
+        if (prop.hasNotifySignal()) {
+            connect(this, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        }
+    }
+}
+
+void ParametersPage::onAnyPropertyChanged()
+{
+    if(m_anyPropertyChangedPending)
+        return;
+
+    m_anyPropertyChangedPending = true;
+    QMetaObject::invokeMethod(this, [this]{
+        m_anyPropertyChangedPending = false;
+        if(!signalsBlocked())
+            emit changed();
+    }, Qt::QueuedConnection);
+}
+
 
 void ParametersPage::onParameterAboutToBeDestroyed(Parameter *parameter, int uniqueId, bool wasChanged)
 {
@@ -597,12 +632,43 @@ void ParametersPage::appendParameterAndUpdateIndexs(Parameter *parameter)
     connect(parameter, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
     connect(parameter, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
     connect(parameter, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
+    connectParameterChangedForwarding(parameter);
+
     if(parameter->isValueChanged()) {
         onParameterIsValueChangedChanged(true);
     }
 
     emit parameterAdded(parameter);
     m_count = m_parametersByIndex.count();
+}
+
+void ParametersPage::connectParameterChangedForwarding(Parameter *parameter)
+{
+    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
+    for (int ii = 0; ii < Parameter::staticMetaObject.propertyCount(); ++ii) {
+        QMetaProperty prop = Parameter::staticMetaObject.property(ii);
+        if (prop.hasNotifySignal()) {
+            connect(parameter, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        }
+    }
+}
+
+void ParametersPage::disconnectParameterChangedForwarding(Parameter *parameter)
+{
+    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
+    for (int ii = 0; ii < Parameter::staticMetaObject.propertyCount(); ++ii) {
+        QMetaProperty prop = Parameter::staticMetaObject.property(ii);
+        if (prop.hasNotifySignal()) {
+            disconnect(parameter, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        }
+    }
+}
+
+QMetaMethod ParametersPage::onAnyPropertyChangedSlotMethod()
+{
+    static const QMetaMethod slot = ParametersPage::staticMetaObject.method(
+        ParametersPage::staticMetaObject.indexOfSlot("onAnyPropertyChanged()"));
+    return slot;
 }
 
 

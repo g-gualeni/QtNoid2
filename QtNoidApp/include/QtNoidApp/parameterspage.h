@@ -7,6 +7,9 @@
 #include <QObject>
 #include <QList>
 #include <QProperty>
+#include <QMetaMethod>
+
+class TestQtNoidAppParametersPage;
 
 namespace QtNoid {
 namespace App {
@@ -94,6 +97,7 @@ public:
     explicit ParametersPage(QObject *parent = nullptr);
     explicit ParametersPage(const QString& name, QObject *parent = nullptr);
     explicit ParametersPage(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr);
+     ~ParametersPage() override;
 
     int uniqueId() const { return m_uniqueId; }
 
@@ -102,7 +106,7 @@ public:
     QJsonObject toJsonSchema() const;
     bool valuesFromJson(const QJsonObject& json);
     bool schemaFromJson(const QJsonObject& json);
-    
+
     // Name
     QString name() const;
     void setName(const QString& newName);
@@ -128,7 +132,6 @@ public:
     void setReadOnly(bool value);
     QBindable<bool> bindableReadOnly();
 
-
     // Visible
     bool visible() const;
     void setVisible(bool value);
@@ -141,7 +144,6 @@ public:
     // List management
     int count() const;
     QBindable<int> bindableCount();
-
     bool append(Parameter *parameter);
     bool append(const QJsonObject& schema, const QJsonObject& value);
     Parameter* emplace(const QVariant& initialValue, const QString& name, const QString& description = {});
@@ -150,7 +152,7 @@ public:
     void removeParameter(const QString& name);
     void clear();
     bool isEmpty() const;
-    
+
     // Access methods
     Parameter* parameter(int index) const;
     Parameter* parameter(const QString& name) const;
@@ -158,10 +160,10 @@ public:
     int indexOf(const QString& name) const;
     bool contains(Parameter* parameter) const;
     bool contains(const QString& name) const;
-    
+
     // List access
     QList<Parameter*> parameters() const;
-    
+
     // Convenience methods
     QVariant value(const QString& name) const;
     bool setValue(const QString& name, const QVariant& value);
@@ -194,7 +196,9 @@ public:
 
 
 signals:
+    void aboutToBeDestroyed(QtNoid::App::ParametersPage *page, int uniqueId, bool wasChanged);
     void nameChanged(const QString& value);
+    void changed();                                    // <-- nuovo
     void nameEdited(const QString &oldName, const QString &newName);
     void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
@@ -209,12 +213,6 @@ signals:
     void writeAttemptedWhileReadOnly(const QString &parameterName);
 
 
-private slots:
-    void onParameterAboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged);
-    void onParameterNameEdited(const QString& oldName, const QString& newName);
-    void onParameterIsValueChangedChanged(bool changed);
-
-
 private:
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, QString, m_name, &ParametersPage::nameChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, QString, m_label, &ParametersPage::labelChanged)
@@ -225,14 +223,37 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_readOnly, &ParametersPage::readOnlyChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_isValueChanged, &ParametersPage::isValueChangedChanged)
 
+    friend class ::TestQtNoidAppParametersPage; // Only for White Box testing
+
+    void initInternalConnections();
+    bool canModify(const QString &parameterName) const; // Modification control
+    void removeParameterInternal(Parameter *parameter);
+    void appendParameterAndUpdateIndexs(Parameter *parameter);
+
+    // Forward a contained Parameter's own properties straight into this
+    // page's onAnyPropertyChanged() coalescing slot (bypassing the
+    // parameter's own changed() debounce), so a burst that touches both the
+    // page's own properties and a contained parameter's properties still
+    // collapses into a single changed() emission instead of two.
+    void connectParameterChangedForwarding(Parameter *parameter);
+    void disconnectParameterChangedForwarding(Parameter *parameter);
+    static QMetaMethod onAnyPropertyChangedSlotMethod();
+
+
+private slots:
+    void onAnyPropertyChanged();   // collect all notify and schedule a single changed() signal
+    void onParameterAboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged);
+    void onParameterNameEdited(const QString& oldName, const QString& newName);
+    void onParameterIsValueChangedChanged(bool changed);
+
+
+
+private:
     QHash<int, Parameter*> m_parametersByUniqueId;
     QMap<int, Parameter*> m_parametersByIndex;
     QHash<Parameter*, int> m_parameterToIndex; // Parameter -> sortIndex
     QHash<QString, Parameter*> m_parametersByName;
     int m_nextParameterIndex = 0;
-    void appendParameterAndUpdateIndexs(Parameter *parameter);
-    void removeParameterInternal(Parameter *parameter);
-    bool canModify(const QString &parameterName) const; // Modification control
 
     static QMutex s_uniqueIdMutex;
     static int s_nextUniqueId;
@@ -240,6 +261,7 @@ private:
     int getNextUniqueId();
 
     int m_valueChangedCounter = 0;
+    bool m_anyPropertyChangedPending = false;
 };
 
 } // namespace App

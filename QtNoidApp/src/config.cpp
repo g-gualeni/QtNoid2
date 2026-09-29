@@ -24,15 +24,18 @@ Config::Config(const QString &name, QObject *parent)
 Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, QObject *parent)
     : QObject(parent), m_count(0)
 {
-    // Scan schemaConfig and valueConfig to recreate the config
+    // Resolve the name once, preferring the schema's key and falling back to
+    // the value's key. schemaFromJson()/valuesFromJson() each resolve the
+    // name only from their own single argument, so this combined lookup has
+    // to stay here -- it's the only place that sees both JSON objects at
+    // once -- and must run before delegating to them, so they find m_name
+    // already set and just verify their own JSON contains it.
     QString name = m_name.value();
     if(name.isEmpty() && (schemaConfig.count() == 1)) {
-        // Get the unique JSON object in Schema and use it to set the name
         name = schemaConfig.constBegin().key();
         setName(name);
     }
     else if(name.isEmpty() && (valueConfig.count() == 1)) {
-        // Get the unique top JSON object in value and use it to set the name
         name = valueConfig.constBegin().key();
         setName(name);
     }
@@ -41,46 +44,8 @@ Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, 
         return;
     }
 
-    // Load properties that are only in schema
-    const QJsonObject schemaMain = schemaConfig[name].toObject();
-    if(schemaMain.contains("description")) {
-        setDescription(schemaMain["description"].toString());
-    }
-    if(schemaMain.contains("tooltip")) {
-        setTooltip(schemaMain["tooltip"].toString());
-    }
-
-    // Generate objects from schema
-    const QJsonArray schemaArray = schemaMain["pages"].toArray();
-    for (const QJsonValue& schema : schemaArray) {
-        if (schema.isObject()) {
-            const QJsonObject schemaObj = schema.toObject();
-            const QString& newPageName = schemaObj.constBegin().key();
-            auto newPage = new ParametersPage(schemaObj, {}, this);
-            bool res = append(newPage);
-            if(!res) delete newPage;
-        }
-    }
-
-    // Generate or update using objects from JSON Values
-    // qDebug() << __func__ << valueConfig[name];
-    const QJsonObject valueMain = valueConfig[name].toObject();
-    const QJsonArray valueArray = valueMain["pages"].toArray();
-    for (const QJsonValue& value : valueArray) {
-        if (!value.isObject()) {
-            continue;
-        }
-        const QJsonObject valueObj = value.toObject();
-        auto valueName = valueObj.begin().key();
-        if(contains(valueName)){
-            m_pagesByName[valueName]->valuesFromJson(valueObj);
-        }
-        else {
-            auto newPage = new ParametersPage({}, valueObj, this);
-            bool res = append(newPage);
-            if(!res) delete newPage;
-        }
-    }
+    schemaFromJson(schemaConfig);
+    valuesFromJson(valueConfig);
 }
 
 QJsonObject Config::toJsonValues() const
@@ -116,6 +81,7 @@ QJsonObject Config::toJsonSchema() const
     }
 
     QJsonObject schemaMain;
+    schemaMain["label"] = m_label.value();
     schemaMain["description"] = m_description.value();
     schemaMain["tooltip"] = m_tooltip.value();
     schemaMain["pages"] = listsArray;
@@ -181,6 +147,10 @@ bool Config::schemaFromJson(const QJsonObject &json)
 
     // Load description and tooltip from schema
     const QJsonObject schemaMain = json[name].toObject();
+
+    if(schemaMain.contains("label")) {
+        setLabel(schemaMain["label"].toString());
+    }
     if(schemaMain.contains("description")) {
         setDescription(schemaMain["description"].toString());
     }
@@ -223,6 +193,21 @@ void Config::setName(const QString &value)
 QBindable<QString> Config::bindableName()
 {
     return QBindable<QString>(&m_name);
+}
+
+QString Config::label() const
+{
+    return m_label.value();
+}
+
+void Config::setLabel(const QString &value)
+{
+    m_label = value;
+}
+
+QBindable<QString> Config::bindableLabel()
+{
+    return QBindable<QString>(&m_label);
 }
 
 
@@ -337,6 +322,11 @@ void Config::remove(ParametersPage *page)
         return;
     }
 
+    if (!m_pagesByUniqueId.contains(page->uniqueId())) {
+        // Not part of this Config
+        return;
+    }
+
     m_pagesByUniqueId.remove(page->uniqueId());
     m_pagesByName.remove(page->name());
 
@@ -344,8 +334,8 @@ void Config::remove(ParametersPage *page)
     m_pageToIndex.remove(page);
     m_pagesByIndex.remove(idx);
 
-    disconnect(page, &QObject::destroyed, this, &Config::onPageDestroyed);
-    disconnect(page, &ParametersPage::nameChanged, this, nullptr);
+    disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
+    disconnect(page, &ParametersPage::nameEdited, this, nullptr);
 
     emit pageRemoved(page);
     m_count = m_pagesByIndex.count();
@@ -373,8 +363,8 @@ void Config::clear()
         m_pagesByName.remove(page->name());
         m_pageToIndex.remove(page);
 
-        disconnect(page, &QObject::destroyed, this, &Config::onPageDestroyed);
-        disconnect(page, &ParametersPage::nameChanged, this, nullptr);
+        disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
+        disconnect(page, &ParametersPage::nameEdited, this, nullptr);
 
         emit pageRemoved(page);
     }
@@ -746,25 +736,32 @@ void Config::saveComboBoxTextItems(QComboBox *cbo, const QString &paramName, con
 }
 
 
-
-void Config::onPageDestroyed(QObject *obj)
+void Config::onPageAboutToBeDestroyed(ParametersPage *page, int uniqueId, bool wasChanged)
 {
-    ParametersPage *page = qobject_cast<ParametersPage*>(obj);
-
-    if(page == nullptr)
-        return;
-
     int idx = m_pageToIndex.value(page, -1);
     if(idx == -1) {
         return;
     }
     m_pageToIndex.remove(page);
     m_pagesByIndex.remove(idx);
-    m_pagesByUniqueId.remove(page->uniqueId());
-    m_pagesByName.remove(page->name());
+    m_pagesByUniqueId.remove(uniqueId);
+
+    // Remove from m_pagesByName using the pointer, not page->name(),
+    // because the name could have been edited after insertion.
+    QString key = m_pagesByName.key(page);
+    m_pagesByName.remove(key);
+
+    // wasChanged is not used yet: Config has no isValueChanged aggregation
+    // today (that's the separate gap we talked about). Kept here so the
+    // slot signature matches the signal and the value is available the day
+    // Config gets its own isValueChanged.
+    Q_UNUSED(wasChanged);
 
     emit pageRemoved(page);
     m_count = m_pagesByIndex.count();
+    if (isEmpty()) {
+        m_nextPageIndex = 0;
+    }
 }
 
 
@@ -796,7 +793,7 @@ void Config::appendPageAndUpdateIndexs(ParametersPage *page)
     m_pagesByName.insert(page->name(), page);
     m_pagesByUniqueId.insert(page->uniqueId(), page);
 
-    connect(page, &QObject::destroyed, this, &Config::onPageDestroyed);
+    connect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     connect(page, &ParametersPage::nameEdited, this, &Config::onPageNameEdited);
 
     emit pageAdded(page);

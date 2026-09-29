@@ -24,6 +24,7 @@ private slots:
 
     // Property tests
     void testNameProperty();
+    void testLabelProperty();
     void testDescriptionProperty();
     void testTooltipProperty();
     void testCountProperty();
@@ -42,6 +43,9 @@ private slots:
     void testEmplaceWithJson();
     void testRemovePage();
     void testRemoveNonExistentPage();
+    void testDeletingPageDirectlyUpdatesConfigBookkeeping();
+    void testRenamingRemovedPageDoesNotAffectConfig();
+    void testRenamingClearedPageDoesNotAffectConfig();
     void testClearPages();
     void testIsEmpty();
 
@@ -71,6 +75,7 @@ private slots:
 
     // Signal tests
     void testNameChangedSignal();
+    void testLabelChangedSignal();
     void testDescriptionChangedSignal();
     void testTooltipChangedSignal();
     void testCountChangedSignal();
@@ -448,6 +453,7 @@ void TestQtNoidAppConfig::testDefaultConstructor()
     Config config(this);
 
     QVERIFY(config.name().isEmpty());
+    QVERIFY(config.label().isEmpty());
     QVERIFY(config.description().isEmpty());
     QVERIFY(config.tooltip().isEmpty());
     QCOMPARE(config.count(), 0);
@@ -469,6 +475,7 @@ void TestQtNoidAppConfig::testConstructorWithJson()
     QJsonArray pagesArray({page1Schema});
 
     QJsonObject schemaMain({
+        {"label", "Test label"},
         {"description", "Test description"},
         {"tooltip", "Test tooltip"},
         {"pages", pagesArray}
@@ -491,6 +498,7 @@ void TestQtNoidAppConfig::testConstructorWithJson()
     // qDebug() << __func__ << config;
 
     QCOMPARE(config.name(), "TestConfig");
+    QCOMPARE(config.label(), "Test label");
     QCOMPARE(config.description(), "Test description");
     QCOMPARE(config.tooltip(), "Test tooltip");
 
@@ -521,6 +529,24 @@ void TestQtNoidAppConfig::testNameProperty()
     QBindable<QString> bindableName = config.bindableName();
     QVERIFY(bindableName.isValid());
     QCOMPARE(bindableName.value(), "NewName");
+}
+
+void TestQtNoidAppConfig::testLabelProperty()
+{
+    Config config(this);
+
+    QVERIFY(config.label().isEmpty());
+
+    config.setLabel("Test label");
+    QCOMPARE(config.label(), "Test label");
+
+    config.setLabel("New label");
+    QCOMPARE(config.label(), "New label");
+
+    // Test bindable
+    QBindable<QString> bindableLabel = config.bindableLabel();
+    QVERIFY(bindableLabel.isValid());
+    QCOMPARE(bindableLabel.value(), "New label");
 }
 
 void TestQtNoidAppConfig::testDescriptionProperty()
@@ -679,6 +705,7 @@ void TestQtNoidAppConfig::testToJsonValues()
 void TestQtNoidAppConfig::testToJsonSchema()
 {
     Config config("TestConfig", this);
+    config.setLabel("Test label");
     config.setDescription("Test description");
     config.setTooltip("Test tooltip");
     config.emplace("Page1", "Page 1 description");
@@ -687,6 +714,7 @@ void TestQtNoidAppConfig::testToJsonSchema()
 
     QVERIFY(json.contains("TestConfig"));
     QJsonObject schemaMain = json["TestConfig"].toObject();
+    QCOMPARE(schemaMain["label"].toString(), "Test label");
     QCOMPARE(schemaMain["description"].toString(), "Test description");
     QCOMPARE(schemaMain["tooltip"].toString(), "Test tooltip");
     QVERIFY(schemaMain.contains("pages"));
@@ -741,7 +769,8 @@ void TestQtNoidAppConfig::testConfigSchemaFromJson()
     QJsonObject pageDetails({{"description", "Settings page"}});
     QJsonObject pageSchema({{"Settings",pageDetails}});
     QJsonArray pagesArray({pageSchema});
-    QJsonObject schemaMain({{"description", "Loaded description"},
+    QJsonObject schemaMain({{"label", "Loaded label"},
+                            {"description", "Loaded description"},
                             {"tooltip", "Loaded tooltip"},
                             {"pages", pagesArray}});
     schema["LoadedConfig"] = schemaMain;
@@ -752,6 +781,7 @@ void TestQtNoidAppConfig::testConfigSchemaFromJson()
 
     QVERIFY(result);
     QCOMPARE(config.name(), "LoadedConfig");
+    QCOMPARE(config.label(), "Loaded label");
     QCOMPARE(config.description(), "Loaded description");
     QCOMPARE(config.tooltip(), "Loaded tooltip");
     QVERIFY(config.contains("Settings"));
@@ -907,17 +937,95 @@ void TestQtNoidAppConfig::testRemoveNonExistentPage()
     config.emplace("Page1");
     config.emplace("Page2");
 
+    QSignalSpy spy(&config, &Config::pageRemoved);
+    QVERIFY(spy.isValid());
+
     // Test removing nullptr
     config.remove(static_cast<ParametersPage*>(nullptr));
     QCOMPARE(config.count(), 2);
+    QCOMPARE(spy.count(), 0);
 
     config.remove("NonExistentPage");
     QCOMPARE(config.count(), 2);
+    QCOMPARE(spy.count(), 0);
 
-    // Test removing not related page
+    // Test removing not related page: this must not fire pageRemoved for a
+    // page that was never part of this Config.
     ParametersPage list(this);
     config.remove(&list);
     QCOMPARE(config.count(), 2);
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppConfig::testDeletingPageDirectlyUpdatesConfigBookkeeping()
+{
+    Config config(this);
+
+    ParametersPage* page = config.emplace("Page1");
+    QVERIFY(page != nullptr);
+    QCOMPARE(config.count(), 1);
+
+    page->setName("Page1Rename");
+    QVERIFY(config.contains("Page1Rename"));
+
+    QSignalSpy spy(&config, &Config::pageRemoved);
+    QVERIFY(spy.isValid());
+
+    // Delete the page directly, NOT through Config::remove(). This only
+    // updates Config's bookkeeping if it reacts to
+    // ParametersPage::aboutToBeDestroyed: the generic QObject::destroyed()
+    // fires from inside ~QObject(), after ~ParametersPage() has already run,
+    // so a qobject_cast<ParametersPage*> on that signal's sender is always
+    // nullptr and such a handler is dead code.
+    delete page;
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(config.count(), 0);
+    QVERIFY(config.isEmpty());
+    QVERIFY(!config.contains("Page1Rename"));
+}
+
+void TestQtNoidAppConfig::testRenamingRemovedPageDoesNotAffectConfig()
+{
+    Config config(this);
+
+    ParametersPage* page = config.emplace("Page1");
+    QVERIFY(page != nullptr);
+
+    config.remove(page);
+    QCOMPARE(config.count(), 0);
+
+    QSignalSpy spy(&config, &Config::pageRenameError);
+    QVERIFY(spy.isValid());
+
+    // The page is still alive (parented to config, not deleted) but no
+    // longer part of it so it should not trigger Config::onPageNameEdited()
+    // that happens when there is a rename of a non existing page
+    page->setName("Page1Renamed");
+
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(!config.contains("Page1"));
+    QVERIFY(!config.contains("Page1Renamed"));
+}
+
+void TestQtNoidAppConfig::testRenamingClearedPageDoesNotAffectConfig()
+{
+    Config config(this);
+
+    ParametersPage* page = config.emplace("Page1");
+    QVERIFY(page != nullptr);
+
+    config.clear();
+    QCOMPARE(config.count(), 0);
+
+    QSignalSpy spy(&config, &Config::pageRenameError);
+    QVERIFY(spy.isValid());
+
+    page->setName("Page1Renamed");
+
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(!config.contains("Page1"));
+    QVERIFY(!config.contains("Page1Renamed"));
 }
 
 void TestQtNoidAppConfig::testClearPages()
@@ -1356,6 +1464,17 @@ void TestQtNoidAppConfig::testNameChangedSignal()
     arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "NewName");
 
+}
+
+void TestQtNoidAppConfig::testLabelChangedSignal()
+{
+    Config config(this);
+    QSignalSpy spy(&config, &Config::labelChanged);
+
+    config.setLabel("Test label");
+    QCOMPARE(spy.count(), 1);
+    auto arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), "Test label");
 }
 
 void TestQtNoidAppConfig::testDescriptionChangedSignal()

@@ -1,3 +1,4 @@
+#include <QElapsedTimer>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QSignalSpy>
@@ -48,6 +49,12 @@ private slots:
     void testParameterChangedSignalEmittedOnValueChange();
     void testParameterChangedSignalNotEmittedWhenValueUnchanged();
     void testParameterChangedSignalEmittedForEachPropertyType();
+    void testParameterChangedSignalCoalescesMultiplePropertyChanges();
+    void testParameterChangedSignalNotEmittedWhenSignalsBlocked();
+
+    // aboutToBeDestroyed signal tests
+    void testAboutToBeDestroyedSignalWhenValueUnchanged();
+    void testAboutToBeDestroyedSignalWhenValueChanged();
 
     // Slot tests
     void testSetValueAsSlot();
@@ -787,10 +794,18 @@ void TestQtNoidAppParameter::testParameterChangedSignalEmittedOnValueChange()
     QSignalSpy spy(&par, &Parameter::changed);
     QVERIFY(spy.isValid());
 
-    // Changing the value affects both "value" and "isValueChanged" properties,
-    // so changed() may fire more than once: just verify it fires at least once.
+    // changed() is coalesced and posted via a queued connection, so it is not
+    // emitted synchronously: it only arrives once the event loop runs.
     par.setValue(200);
-    QVERIFY(spy.count() >= 1);
+    QCOMPARE(spy.count(), 0);
+
+    // QElapsedTimer ET;
+    // ET.start();
+
+    QVERIFY(spy.wait());
+    // qDebug() << ET.nsecsElapsed(); -> Just 50 micro seconds
+
+    QCOMPARE(spy.count(), 1);
 }
 
 void TestQtNoidAppParameter::testParameterChangedSignalNotEmittedWhenValueUnchanged()
@@ -799,9 +814,13 @@ void TestQtNoidAppParameter::testParameterChangedSignalNotEmittedWhenValueUnchan
     QSignalSpy spy(&par, &Parameter::changed);
     QVERIFY(spy.isValid());
 
-    // Setting the same value should not trigger any property notify signal,
-    // so changed() must not be emitted either.
+    // Setting the same value triggers no property notify signal at all, so
+    // nothing is ever scheduled: no changed() arrives even after waiting.
     par.setValue(100);
+
+    // QElapsedTimer ET; ET.start();
+    QVERIFY(!spy.wait(1));
+    // qDebug() << ET.nsecsElapsed();
     QCOMPARE(spy.count(), 0);
 }
 
@@ -811,50 +830,108 @@ void TestQtNoidAppParameter::testParameterChangedSignalEmittedForEachPropertyTyp
     QSignalSpy spy(&par, &Parameter::changed);
     QVERIFY(spy.isValid());
 
-    // Every property with a NOTIFY signal is wired to changed(). Verify that
-    // changing each kind of property increases the emission count, without
-    // pinning an exact number (some setters cascade into other properties,
-    // like isValueChanged or isValid, which legitimately emit changed() too).
-    int previousCount = spy.count();
+    // Every property with a NOTIFY signal is wired to changed(). Flushing the
+    // event loop after each individual change confirms each one is correctly
+    // wired, without coalescing masking a missing connection.
+    auto changeAndVerify = [&spy](auto&& change) {
+        change();
+        QVERIFY(spy.wait());
+        QCOMPARE(spy.count(), 1); // exactly one, not just "at least one"
+        spy.clear();
+    };
 
+    changeAndVerify([&]{ par.setLabel("New label"); });
+    changeAndVerify([&]{ par.setDescription("New description"); });
+    changeAndVerify([&]{ par.setUnit("kg"); });
+    changeAndVerify([&]{ par.setTooltip("New tooltip"); });
+    changeAndVerify([&]{ par.setReadOnly(true); });
+    changeAndVerify([&]{ par.setVisible(false); });
+    changeAndVerify([&]{ par.setMin(0); });
+    changeAndVerify([&]{ par.setMax(1000); });
+    changeAndVerify([&]{ par.setPresets({{"Low", 10}, {"High", 900}}); });
+    changeAndVerify([&]{ par.setName("NewChangedSignalParamName"); });
+}
+
+void TestQtNoidAppParameter::testParameterChangedSignalCoalescesMultiplePropertyChanges()
+{
+    Parameter par(100, "ChangedSignalParam");
+    QSignalSpy spy(&par, &Parameter::changed);
+    QVERIFY(spy.isValid());
+
+    // Several properties changed back-to-back, still inside the same call
+    // stack, must collapse into a single changed() emission instead of one
+    // per property: this is the whole point of the coalescing mechanism.
     par.setLabel("New label");
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
-
     par.setDescription("New description");
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
-
     par.setUnit("kg");
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
-
-    par.setTooltip("New tooltip");
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
-
     par.setReadOnly(true);
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
 
-    par.setVisible(false);
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
 
-    par.setMin(0);
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
+    // No further emission is left pending after the coalesced one arrives.
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 1);
+}
 
-    par.setMax(1000);
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
+void TestQtNoidAppParameter::testParameterChangedSignalNotEmittedWhenSignalsBlocked()
+{
+    Parameter par(100, "ChangedSignalParam");
+    QSignalSpy spy(&par, &Parameter::changed);
+    QVERIFY(spy.isValid());
 
-    par.setPresets({{"Low", 10}, {"High", 900}});
-    QVERIFY(spy.count() > previousCount);
-    previousCount = spy.count();
+    // The blocked state is checked when the deferred emission actually
+    // fires, not when it is scheduled, so blocking before the event loop
+    // runs is enough to suppress the coalesced changed().
+    par.blockSignals(true);
+    par.setValue(200);
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 0);
+    par.blockSignals(false);
+}
 
-    par.setName("NewChangedSignalParamName");
-    QVERIFY(spy.count() > previousCount);
+void TestQtNoidAppParameter::testAboutToBeDestroyedSignalWhenValueUnchanged()
+{
+    auto par = new Parameter(100, "TestParam");
+    // Capture the address as a plain integer *before* deleting: a void* (or
+    // Parameter*) alias of freed memory still trips
+    // clang-analyzer-cplusplus.NewDelete on any later read, even a
+    // non-dereferencing comparison. quintptr breaks that pointer-provenance
+    // tracking while still verifying the same identity.
+    const quintptr expectedAddress = reinterpret_cast<quintptr>(par);
+    const int expectedUniqueId = par->uniqueId();
+
+    QSignalSpy spy(par, &Parameter::aboutToBeDestroyed);
+    QVERIFY(spy.isValid());
+
+    delete par;
+
+    QCOMPARE(spy.count(), 1);
+    const QList<QVariant> args = spy.constFirst();
+    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<Parameter*>()), expectedAddress);
+    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
+    QCOMPARE(args.at(2).toBool(), false);
+}
+
+void TestQtNoidAppParameter::testAboutToBeDestroyedSignalWhenValueChanged()
+{
+    auto par = new Parameter(100, "TestParam");
+    par->setValue(200); // makes isValueChanged() true
+    // See testAboutToBeDestroyedSignalWhenValueUnchanged() for why this is a
+    // quintptr rather than a Parameter*/void*.
+    const quintptr expectedAddress = reinterpret_cast<quintptr>(par);
+    const int expectedUniqueId = par->uniqueId();
+
+    QSignalSpy spy(par, &Parameter::aboutToBeDestroyed);
+    QVERIFY(spy.isValid());
+
+    delete par;
+
+    QCOMPARE(spy.count(), 1);
+    const QList<QVariant> args = spy.constFirst();
+    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<Parameter*>()), expectedAddress);
+    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
+    QCOMPARE(args.at(2).toBool(), true);
 }
 
 void TestQtNoidAppParameter::testSetValueAsSlot()

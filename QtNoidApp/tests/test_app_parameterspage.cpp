@@ -108,6 +108,21 @@ private slots:
     void testQDebugOperator();
     void testParameterListWithQDebugOperatorWithPointer();
 
+
+    // Testing aboutToBeDestroyed
+    void testAboutToBeDestroyedSignalWhenValueUnchanged();
+    void testAboutToBeDestroyedSignalWhenValueChanged();
+
+    // Generic changed() aggregate signal tests (page's own properties only;
+    // forwarding from contained Parameter objects is covered separately)
+    void testParametersPageChangedSignalEmittedForEachOwnPropertyType();
+    void testParametersPageChangedSignalCoalescesMultiplePropertyChanges();
+    void testParametersPageChangedSignalNotEmittedWhenSignalsBlocked();
+
+    // changed() forwarding from a contained Parameter
+    void testParametersPageChangedSignalEmittedOnceWhenContainedParametersChanges();
+    void testParametersPageChangedSignalNotEmittedWhenContainedParameterValueUnchanged();
+    void testParametersPageChangedSignalNotEmittedAfterParameterRemoved();
 };
 
 
@@ -2555,6 +2570,183 @@ void TestQtNoidAppParametersPage::testParameterListWithQDebugOperatorWithPointer
 
 }
 
+void TestQtNoidAppParametersPage::testAboutToBeDestroyedSignalWhenValueUnchanged()
+{
+    auto page = new ParametersPage("TestPage");
+    int expectedUniqueId = page->uniqueId();
+    const quintptr expectedAddress = reinterpret_cast<quintptr>(page);
+
+    QSignalSpy spy(page, &ParametersPage::aboutToBeDestroyed);
+    QVERIFY(spy.isValid());
+
+    delete page;
+
+    QCOMPARE(spy.count(), 1);
+    const QList<QVariant> args = spy.constFirst();
+    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<ParametersPage*>()), expectedAddress);
+    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
+    QCOMPARE(args.at(2).toBool(), false);
+
+}
+
+void TestQtNoidAppParametersPage::testAboutToBeDestroyedSignalWhenValueChanged()
+{
+    auto page = new ParametersPage("TestPage");
+    page->emplace(100, "SomeParam")->setValue(10);
+    int expectedUniqueId = page->uniqueId();
+    const quintptr expectedAddress = reinterpret_cast<quintptr>(page);
+
+    QSignalSpy spy(page, &ParametersPage::aboutToBeDestroyed);
+    QVERIFY(spy.isValid());
+
+    delete page;
+
+    QCOMPARE(spy.count(), 1);
+    const QList<QVariant> args = spy.constFirst();
+    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<ParametersPage*>()), expectedAddress);
+    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
+    QCOMPARE(args.at(2).toBool(), true);
+
+}
+
+void TestQtNoidAppParametersPage::testParametersPageChangedSignalEmittedForEachOwnPropertyType()
+{
+    ParametersPage page("TestPage");
+    QSignalSpy spy(&page, &ParametersPage::changed);
+    QVERIFY(spy.isValid());
+
+    // Every one of the page's own properties with a NOTIFY signal is wired to
+    // changed(). Flushing the event loop after each individual change
+    // confirms each one is correctly wired, without coalescing masking a
+    // missing connection.
+    auto changeAndVerify = [&spy](auto&& change) {
+        change();
+        QVERIFY(spy.wait());
+        QCOMPARE(spy.count(), 1);
+        spy.clear();
+    };
+
+    changeAndVerify([&]{ page.setName("AnotherName"); });
+    changeAndVerify([&]{ page.setLabel("New label"); });
+    changeAndVerify([&]{ page.setDescription("New description"); });
+    changeAndVerify([&]{ page.setTooltip("New tooltip"); });
+    changeAndVerify([&]{ page.setVisible(false); });
+    changeAndVerify([&]{ page.setReadOnly(true); });
+}
+
+void TestQtNoidAppParametersPage::testParametersPageChangedSignalCoalescesMultiplePropertyChanges()
+{
+    ParametersPage page("TestPage");
+    QSignalSpy spy(&page, &ParametersPage::changed);
+    QVERIFY(spy.isValid());
+
+    // Several properties changed back-to-back, still inside the same call
+    // stack, must collapse into a single changed() emission instead of one
+    // per property.
+    page.setLabel("New label");
+    page.setDescription("New description");
+    page.setTooltip("New tooltip");
+    page.setReadOnly(true);
+
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+
+    // No further emission is left pending after the coalesced one arrives.
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 1);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageChangedSignalNotEmittedWhenSignalsBlocked()
+{
+    ParametersPage page("TestPage");
+    QSignalSpy spy(&page, &ParametersPage::changed);
+    QVERIFY(spy.isValid());
+
+    // The blocked state is checked when the deferred emission actually
+    // fires, not when it is scheduled, so blocking before the event loop
+    // runs is enough to suppress the coalesced changed().
+    page.blockSignals(true);
+    page.setLabel("New label");
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 0);
+
+    page.blockSignals(false);
+}
+
+
+void TestQtNoidAppParametersPage::testParametersPageChangedSignalEmittedOnceWhenContainedParametersChanges()
+{
+    ParametersPage page("TestPage");
+    Parameter* param1 = page.emplace(100, "Param1");
+    QVERIFY(param1 != nullptr);
+    Parameter* param2 = page.emplace(100, "Param2");
+    QVERIFY(param2 != nullptr);
+
+    QSignalSpy spy(&page, &ParametersPage::changed);
+    QVERIFY(spy.isValid());
+
+    // We apply 4 modification or probably 6 but we get just 1 notification
+    param1->setValue(200);
+    param1->setRange(10, 1000);
+    param2->setValue(200);
+    param2->setRange(10, 1000);
+
+    // The signal needs at least 1 loop
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageChangedSignalNotEmittedWhenContainedParameterValueUnchanged()
+{
+    ParametersPage page("TestPage");
+    QSignalSpy spy(&page, &ParametersPage::changed);
+    QVERIFY(spy.isValid());
+
+    // Create the object and clear the spy
+    Parameter* param = page.emplace(100, "SomeParam");
+    QVERIFY(param != nullptr);
+    spy.wait();
+    spy.clear();
+
+    param->setValue(100); // same value: no property notify at all
+
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageChangedSignalNotEmittedAfterParameterRemoved()
+{
+    ParametersPage page("TestPage");
+    QSignalSpy spy(&page, &ParametersPage::changed);
+    QVERIFY(spy.isValid());
+
+    Parameter* param = page.emplace(100, "SomeParam");
+    QVERIFY(param != nullptr);
+
+    // emplace() already changed the page's own count property (0 -> 1),
+    // which schedules its own changed(). Let it drain before measuring
+    // anything else, otherwise it gets mistaken for a signal caused by the
+    // parameter change further down.
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+
+    // removeParameter() disconnects the forwarding connections;
+    // and it changes count back to 0, so we expect a change for the page
+    page.removeParameter(param);
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    // Remove does not delete the parameter that is still alive and parented
+    // to the page.
+    // Changing it should not reach the page's changed() anymore.
+    param->setValue(200);
+
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 0);
+}
 
 
 QTEST_MAIN(TestQtNoidAppParametersPage)

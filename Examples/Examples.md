@@ -16,7 +16,7 @@ Each example is a standalone CMake project with its own documentation page, link
 
 * **[QtNoid::App::Core Basic Usage](AppCoreBasicUsage/doc/QtNoidAppCoreBasicUsage.md)**: Basic usage of the `Core` class to manage the application configuration file.
 
-* **[QtNoid::App::Parameter Basic Usage](AppParameterBasicUsage/doc/AppParameterBasicUsage.md)**: Basic usage of the `Parameter` class from QtNoidApp.
+* **[QtNoid::App::Parameter Basic Usage](AppParameterBasicUsage/doc/QtNoidAppParameterBasicUsage.md)**: usage of the `Parameter` class from QtNoidApp showcasing all the properties and signals.
 
 * **[QtNoid::App::ParametersPage Basic Usage](AppParametersPageBasicUsage/doc/QtNoidAppParametersPageBasicUsage.md)**: Basic usage of a list of `ParametersPage` objects.
 

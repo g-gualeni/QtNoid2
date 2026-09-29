@@ -30,6 +30,9 @@ A single Parameter has the following properties:
 
 - `Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr)`: Creates a parameter by loading configuration from the JSON schema and value from the JSON value object.
 
+## Destructors
+- `~Parameter()`: Destroys the parameter, emitting `aboutToBeDestroyed()` first.
+
 ## Support methods
 - `uniqueId()`: Returns an integer that represents the object unique ID of the object.
 
@@ -67,7 +70,9 @@ A single Parameter has the following properties:
 - `setPreset(const QString& name, const QVariant& value)`: Adds or updates a single preset.
 - `setPreset(const std::pair<QString, QVariant>& preset)`: Adds or updates a single preset.
 - `removePreset(const QString& name)`: Removes a specific preset by name.
-- `applyPreset(const QString& name)`: Sets the parameter value to the specified preset value, if the preset name exists.
+- `applyPreset(const QString& name)`: Sets the parameter value to the specified
+  preset value, if the preset name exists. Returns `true` if the preset was
+  found and applied, `false` otherwise.
 - `bindablePresets()`: Returns a bindable property for the presets map.
 
 - `name()`: Returns the parameter name as displayed in dialogs and used in JSON serialization.
@@ -113,6 +118,16 @@ A single Parameter has the following properties:
 
 ## Signals
 - `valueChanged(const QVariant &newValue)`: Emitted when the parameter value changes.
+* `changed()`: Emitted whenever any property of the Parameter changes. It is a
+  convenience aggregate signal so a consumer (for example a view that
+  refreshes a JSON preview) can connect once instead of wiring every
+  individual `xChanged` signal. Multiple properties changing within the same
+  call — for example, changing `value` also updates `isValueChanged` — are
+  coalesced into a single emission, delivered asynchronously via a queued
+  connection once control returns to the event loop. It therefore never
+  fires synchronously inside the call that triggered it. It respects
+  `QObject::blockSignals()`: the blocked state is checked at the moment of
+  the (deferred) emission, not when the change is scheduled.
 
 - `minChanged(const QVariant &min)`: Emitted when the minimum value constraint is modified.
 
@@ -138,16 +153,23 @@ A single Parameter has the following properties:
 
 - `visibleChanged(bool value)`: Emitted when the visibility state is changed.
 
-- `writeAttemptedWhileReadOnly(const QString &parameterName)`: Emitted when an attempt is made to modify a read-only parameter.
+- `writeAttemptedWhileReadOnly(const QString &parameterName, const QVariant &current)`: Emitted when an attempt is made to modify a read-only parameter. It returns the paramter's name and the paramter `current` value. This can be used to update a lineEdit with correct parameter value after a user's modification attempt.
 
 - `isValidChanged(bool value)`: Emitted when the isValid state is changed.
 
 - `isValueChangedChanged(bool value)`: Emitted when the value is changed hence the isValueChanged flag changes his status.
 
+- `aboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged)`:
+  Emitted from the destructor, before the object is torn down. Useful for an
+  owner (for example a collection class) that needs to react when a
+  Parameter is destroyed. The parameter `wasChanged` reports the last known state of
+  `isValueChanged`.
+
 ## Slots
 - `setValue(const QVariant& newValue)`: Slot that can be connected to external signals to update the parameter value.
 
-
+# See Also
+* [QtNoidAppParametersPageBenchmark](../../Examples/AppParametersPageBenchmark/doc/QtNoidAppParametersPageBenchmark.md): this is an example with a full fledged implementation of QtNoid::App::Parameter class.
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)
 [← Back to README](../../README.md)

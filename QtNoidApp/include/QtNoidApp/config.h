@@ -18,6 +18,7 @@ class QTNOIDAPP_EXPORT Config : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
+    Q_PROPERTY(QString label READ label WRITE setLabel BINDABLE bindableLabel NOTIFY labelChanged FINAL)
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
@@ -104,6 +105,11 @@ public:
     QString name() const;
     void setName(const QString& value);
     QBindable<QString> bindableName();
+
+    // Label
+    QString label() const;
+    void setLabel(const QString& value);
+    QBindable<QString> bindableLabel();
 
     // Description
     QString description() const;
@@ -200,6 +206,7 @@ public:
 
 signals:
     void nameChanged(const QString& value);
+    void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
     void countChanged(int count);
@@ -208,11 +215,12 @@ signals:
     void pageRenameError(const QString& oldName, const QString& newName);
 
 private slots:
-    void onPageDestroyed(QObject *obj);
+    void onPageAboutToBeDestroyed(QtNoid::App::ParametersPage *page, int uniqueId, bool wasChanged);
     void onPageNameEdited(const QString& oldName, const QString& newName);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_name, &Config::nameChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_label, &Config::labelChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_description, &Config::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_tooltip, &Config::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, int, m_count, &Config::countChanged)

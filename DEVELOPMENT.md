@@ -36,13 +36,12 @@
 	- [x] Aggiornare Doc
 	- [ ] Aggiornare screenshot macOS
 - [ ] Sistemare esempio QtNoid::App:Parameter Basic Usage
-	- [ ] ==WIP
-	- [ ] Creare il test per segnale changed()
+	- [x] Creare il test per segnale changed()
 	- [x] automatizzareJSON
-	- [ ] Documentare changed() e spiegare il consolidamento dei messaggi in uno solo
+	- [x] Documentare changed() e spiegare il consolidamento dei messaggi in uno solo
 	- [x] Aggiornare UI
 	- [x] rendere automatica generazione del JSON usando un nuovo evento della classe Parameter che mi notifica quando qualcosa cambia.
-	- [ ] Aggiornare Doc
+	- [x] Aggiornare Doc
 	- [ ] Aggiornare screenshot macOS
 - [ ] Sistemare esempio QtNoid::App:ParametersPage Basic Usage
 	- [x] Aggiornare UI
@@ -55,8 +54,16 @@
 	- [x] Screenshot Win11
 	- [ ] Screenshot masOs
 
-- [x] Revisione classe QtNoid::App::Config
+- [x] Sempre per ParamtersPage
+	- [x] Inserire segnale changed
+	- [x] Inserire sengale aboutToBeDestroyed
+- [ ] Revisione classe QtNoid::App::Config
 	- [ ] Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==
+	- [ ] Inserire Label
+	- [ ] Inserire changed()
+	- [ ] aboutToBeDestroyed()
+	- [ ] isValueChanged
+	- [ ] 
 
 
 
