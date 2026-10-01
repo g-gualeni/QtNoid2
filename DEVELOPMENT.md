@@ -9,7 +9,8 @@
 - Implementation of QtNoid::App::Config class from Parameters
 - Implementation of appConfig global instance 
 - Implementation of QtNoid::App::Development class to help the application    development
-- Review of Parameter / ParameterList after deriving Config / ConfigFile / ConfigGlobal
+- Review of Parameter / ParametersPage after deriving Config / ConfigFile / ConfigGlobal
+- 
 - Release of QtNoid2 version 2.2.0
 
 # Hierarchy
@@ -58,11 +59,13 @@
 	- [x] Inserire segnale changed
 	- [x] Inserire sengale aboutToBeDestroyed
 - [ ] Revisione classe QtNoid::App::Config
-	- [ ] Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==
-	- [ ] Inserire Label
+	- [x] Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==
+	- [x] Inserire Label
+	- [x] Inseire UniqueID
+	- [x] isValueChanged
 	- [ ] Inserire changed()
 	- [ ] aboutToBeDestroyed()
-	- [ ] isValueChanged
+	- [ ] Aggiornare la documentazione di Config
 	- [ ] 
 
 
@@ -451,6 +454,9 @@ key: [
      Histogram
      Image Component
      Histogram Stretching using CLAHE
+ **Keystone**: When a projector is tilted up, down, or sideways relative to the wall, the image stops being a perfect rectangle and becomes a **trapezoid** (narrower at one end, wider at the other). The term comes from its resemblance to the wedge-shaped keystone in stone arches.
+
+---
 
 ## New QtNoid::JsonUI library 
 - Yaml / JSON UI editor
@@ -458,9 +464,6 @@ key: [
 ## Upgrade QtNoid::Common::File
 - [ ] Massive File Copy / Rename / Move could became Copy Move Marshal 
 - [ ] Massive File Rename: replace token in huge file list in multiple folders
-
-## QtNoid::App::Core
-- [ ] Move fullDialogGrab from Core to Development
 
 # Known Issue
 * [ ] fullDialogGrab()  wrong display captured on macOs. It take a screenshot from the main display of the computer.

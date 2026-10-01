@@ -21,12 +21,15 @@ private slots:
     void testDefaultConstructor();
     void testConstructorWithName();
     void testConstructorWithJson();
+    void testConfigUniqueId();
 
     // Property tests
     void testNameProperty();
     void testLabelProperty();
     void testDescriptionProperty();
     void testTooltipProperty();
+    void testConfigIsValueChanged();
+    void testConfigBindableIsValueChangedProperty();
     void testCountProperty();
     void testConfigBindableCountProperty();
 
@@ -44,6 +47,7 @@ private slots:
     void testRemovePage();
     void testRemoveNonExistentPage();
     void testDeletingPageDirectlyUpdatesConfigBookkeeping();
+    void testDeletingChangedPageDirectlyUpdatesIsValueChanged();
     void testRenamingRemovedPageDoesNotAffectConfig();
     void testRenamingClearedPageDoesNotAffectConfig();
     void testClearPages();
@@ -82,6 +86,23 @@ private slots:
     void testPageAddedSignal();
     void testPageRemovedSignal();
     void testPageRenameErrorSignal();
+
+    // Testing aboutToBeDestroyed
+    void testAboutToBeDestroyedSignalWhenValueUnchanged();
+    void testAboutToBeDestroyedSignalWhenValueChanged();
+
+    // Generic changed() aggregate signal tests (Config's own properties
+    // only; forwarding from contained ParametersPage objects is covered
+    // separately)
+    void testConfigChangedSignalEmittedForEachOwnPropertyType();
+    void testConfigChangedSignalCoalescesMultiplePropertyChanges();
+    void testConfigChangedSignalNotEmittedWhenSignalsBlocked();
+
+    // changed() forwarding from a contained ParametersPage
+    void testConfigChangedSignalEmittedOnceWhenContainedPagesChanges();
+    void testConfigChangedSignalNotEmittedWhenContainedPagePropertyUnchanged();
+    void testConfigChangedSignalNotEmittedAfterPageRemoved();
+    void testConfigChangedSignalEmittedForDeeplyNestedParameterChange();
 
     // RecentFiles tests
     void testAddRecentFile();
@@ -512,6 +533,32 @@ void TestQtNoidAppConfig::testConstructorWithJson()
     QCOMPARE(config.parametersCount("Settings"), 2);
 }
 
+void TestQtNoidAppConfig::testConfigUniqueId()
+{
+    // Test that each Config instance gets a unique ID
+    Config config1(this);
+    Config config2(QJsonObject(), QJsonObject(), this);
+    Config config3("NamedConfig", this);
+
+    int id1 = config1.uniqueId();
+    int id2 = config2.uniqueId();
+    int id3 = config3.uniqueId();
+
+    // Verify that IDs are different
+    QVERIFY(id1 != id2);
+    QVERIFY(id2 != id3);
+    QVERIFY(id1 != id3);
+
+    // Verify that ID doesn't change for the same instance
+    QCOMPARE(config1.uniqueId(), id1);
+    QCOMPARE(config2.uniqueId(), id2);
+    QCOMPARE(config3.uniqueId(), id3);
+
+    // Test that IDs are sequential (based on the implementation)
+    QCOMPARE(id2, id1 + 1);
+    QCOMPARE(id3, id2 + 1);
+}
+
 // Property tests
 void TestQtNoidAppConfig::testNameProperty()
 {
@@ -583,6 +630,91 @@ void TestQtNoidAppConfig::testTooltipProperty()
     QBindable<QString> bindableTooltip = config.bindableTooltip();
     QVERIFY(bindableTooltip.isValid());
     QCOMPARE(bindableTooltip.value(), "New tooltip");
+}
+
+void TestQtNoidAppConfig::testConfigIsValueChanged()
+{
+    // We create a config object with 2 pages with 1 parameter for page
+    Config config(this);
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
+
+    Parameter* p1 = page1->emplace(10, "Param1");
+    Parameter* p2 = page2->emplace(5, "Param2");
+
+    // No parameter changed yet
+    QCOMPARE(config.isValueChanged(), false);
+
+    QSignalSpy spy(&config, &Config::isValueChangedChanged);
+
+    // Changing a parameter on page1 should flip the aggregate to true
+    p1->setValue(99);
+    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+
+    // A parameter changing on a second page too should not emit again (already true)
+    p2->setValue(50);
+    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(spy.count(), 0);
+
+    // Reverting the first page's parameter: the second page is still changed,
+    // so the aggregate stays true
+    p1->setValue(10);
+    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(spy.count(), 0);
+
+    // Reverting the last changed parameter: the aggregate must go back to false
+    p2->setValue(5);
+    QCOMPARE(config.isValueChanged(), false);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), false);
+
+    // Appending a page that is already "changed" should activate the flag immediately
+    ParametersPage* modifiedPage = new ParametersPage("ModifiedPage", this);
+    modifiedPage->emplace(0, "ModifiedParameter")->setValue(100);
+    QCOMPARE(modifiedPage->isValueChanged(), true);
+
+    bool res = config.append(modifiedPage);
+    QCOMPARE(res, true);
+    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+
+    // Removing that page (it stays alive, detached from Config) should
+    // bring the aggregate back to false
+    config.remove(modifiedPage);
+    QCOMPARE(config.isValueChanged(), false);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), false);
+
+    delete modifiedPage;
+}
+
+void TestQtNoidAppConfig::testConfigBindableIsValueChangedProperty()
+{
+    Config config(this);
+    ParametersPage* page = config.emplace("Page1");
+    Parameter* p1 = page->emplace(10, "Param1");
+
+    auto bindableIsValueChanged = config.bindableIsValueChanged();
+    QVERIFY(bindableIsValueChanged.isValid());
+    QCOMPARE(bindableIsValueChanged.value(), false);
+
+    // Test binding to another property
+    QProperty<bool> externalProperty;
+    externalProperty.setBinding([&]() { return bindableIsValueChanged.value(); });
+    QCOMPARE(externalProperty.value(), false);
+
+    // Changing the parameter on the contained page should propagate through the binding
+    p1->setValue(20);
+    QCOMPARE(bindableIsValueChanged.value(), true);
+    QCOMPARE(externalProperty.value(), true);
+
+    // Reverting the value should propagate back to false
+    p1->setValue(10);
+    QCOMPARE(bindableIsValueChanged.value(), false);
+    QCOMPARE(externalProperty.value(), false);
 }
 
 void TestQtNoidAppConfig::testCountProperty()
@@ -983,6 +1115,31 @@ void TestQtNoidAppConfig::testDeletingPageDirectlyUpdatesConfigBookkeeping()
     QCOMPARE(config.count(), 0);
     QVERIFY(config.isEmpty());
     QVERIFY(!config.contains("Page1Rename"));
+}
+
+void TestQtNoidAppConfig::testDeletingChangedPageDirectlyUpdatesIsValueChanged()
+{
+    Config config(this);
+
+    ParametersPage* page = new ParametersPage("Page1");
+    Parameter* p1 = page->emplace(10, "Param1");
+    config << page;
+
+    p1->setValue(99);
+    QCOMPARE(config.isValueChanged(), true);
+
+    QSignalSpy spy(&config, &Config::isValueChangedChanged);
+
+    // Delete the page directly (not through Config::remove()): this only
+    // decrements Config's counter correctly if onPageAboutToBeDestroyed()
+    // uses the wasChanged argument carried by ParametersPage::aboutToBeDestroyed,
+    // since by the time the generic QObject::destroyed() mechanics would run,
+    // page->isValueChanged() could no longer be queried safely.
+    delete page;
+
+    QCOMPARE(config.isValueChanged(), false);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 }
 
 void TestQtNoidAppConfig::testRenamingRemovedPageDoesNotAffectConfig()
@@ -1581,6 +1738,195 @@ void TestQtNoidAppConfig::testPageRenameErrorSignal()
     QCOMPARE(arguments.at(0).toString(), "Page1");
     QCOMPARE(arguments.at(1).toString(), "Page2");
 
+}
+
+void TestQtNoidAppConfig::testAboutToBeDestroyedSignalWhenValueUnchanged()
+{
+    auto config = new Config("TestConfig");
+    int expectedUniqueId = config->uniqueId();
+    const quintptr expectedAddress = reinterpret_cast<quintptr>(config);
+
+    QSignalSpy spy(config, &Config::aboutToBeDestroyed);
+    QVERIFY(spy.isValid());
+
+    delete config;
+
+    QCOMPARE(spy.count(), 1);
+    const QList<QVariant> args = spy.constFirst();
+    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<Config*>()), expectedAddress);
+    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
+    QCOMPARE(args.at(2).toBool(), false);
+}
+
+void TestQtNoidAppConfig::testAboutToBeDestroyedSignalWhenValueChanged()
+{
+    auto config = new Config("TestConfig");
+    ParametersPage* page = config->emplace("Page1");
+    page->emplace(100, "SomeParam")->setValue(10);
+    int expectedUniqueId = config->uniqueId();
+    const quintptr expectedAddress = reinterpret_cast<quintptr>(config);
+
+    QSignalSpy spy(config, &Config::aboutToBeDestroyed);
+    QVERIFY(spy.isValid());
+
+    delete config;
+
+    QCOMPARE(spy.count(), 1);
+    const QList<QVariant> args = spy.constFirst();
+    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<Config*>()), expectedAddress);
+    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
+    QCOMPARE(args.at(2).toBool(), true);
+}
+
+void TestQtNoidAppConfig::testConfigChangedSignalEmittedForEachOwnPropertyType()
+{
+    Config config("TestConfig", this);
+    QSignalSpy spy(&config, &Config::changed);
+    QVERIFY(spy.isValid());
+
+    // Every one of Config's own properties with a NOTIFY signal is wired to
+    // changed(). Flushing the event loop after each individual change
+    // confirms each one is correctly wired, without coalescing masking a
+    // missing connection.
+    auto changeAndVerify = [&spy](auto&& change) {
+        change();
+        QVERIFY(spy.wait());
+        QCOMPARE(spy.count(), 1);
+        spy.clear();
+    };
+
+    changeAndVerify([&]{ config.setName("AnotherName"); });
+    changeAndVerify([&]{ config.setLabel("New label"); });
+    changeAndVerify([&]{ config.setDescription("New description"); });
+    changeAndVerify([&]{ config.setTooltip("New tooltip"); });
+}
+
+void TestQtNoidAppConfig::testConfigChangedSignalCoalescesMultiplePropertyChanges()
+{
+    Config config("TestConfig", this);
+    QSignalSpy spy(&config, &Config::changed);
+    QVERIFY(spy.isValid());
+
+    // Several properties changed back-to-back, still inside the same call
+    // stack, must collapse into a single changed() emission instead of one
+    // per property.
+    config.setLabel("New label");
+    config.setDescription("New description");
+    config.setTooltip("New tooltip");
+
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+
+    // No further emission is left pending after the coalesced one arrives.
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 1);
+}
+
+void TestQtNoidAppConfig::testConfigChangedSignalNotEmittedWhenSignalsBlocked()
+{
+    Config config("TestConfig", this);
+    QSignalSpy spy(&config, &Config::changed);
+    QVERIFY(spy.isValid());
+
+    // The blocked state is checked when the deferred emission actually
+    // fires, not when it is scheduled, so blocking before the event loop
+    // runs is enough to suppress the coalesced changed().
+    config.blockSignals(true);
+    config.setLabel("New label");
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 0);
+
+    config.blockSignals(false);
+}
+
+void TestQtNoidAppConfig::testConfigChangedSignalEmittedOnceWhenContainedPagesChanges()
+{
+    Config config("TestConfig", this);
+    ParametersPage* page1 = config.emplace("Page1");
+    QVERIFY(page1 != nullptr);
+    ParametersPage* page2 = config.emplace("Page2");
+    QVERIFY(page2 != nullptr);
+
+    QSignalSpy spy(&config, &Config::changed);
+    QVERIFY(spy.isValid());
+
+    // Several page-level property changes, on two different pages, still
+    // inside the same call stack, must collapse into a single changed()
+    // emission -- the same single-hop coalescing Option 2 gives ParametersPage
+    // for its own contained Parameters, one level up.
+    page1->setLabel("New label");
+    page1->setDescription("New description");
+    page2->setTooltip("New tooltip");
+
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+}
+
+void TestQtNoidAppConfig::testConfigChangedSignalNotEmittedWhenContainedPagePropertyUnchanged()
+{
+    Config config("TestConfig", this);
+    ParametersPage* page = config.emplace("Page1");
+    page->setLabel("Label");
+    QVERIFY(page != nullptr);
+
+    QSignalSpy spy(&config, &Config::changed);
+    QVERIFY(spy.isValid());
+    QCOMPARE(spy.count(), 0);
+
+    page->setLabel("Label"); // same value: no property notify at all
+
+    QVERIFY(spy.wait(2));
+    QCOMPARE(spy.count(), 0);
+
+    QVERIFY(false);
+}
+
+void TestQtNoidAppConfig::testConfigChangedSignalNotEmittedAfterPageRemoved()
+{
+    Config config("TestConfig", this);
+    ParametersPage* page = config.emplace("Page1");
+    QVERIFY(page != nullptr);
+
+    QSignalSpy spy(&config, &Config::changed);
+    QVERIFY(spy.isValid());
+
+    // remove() disconnects the forwarding connections, and it changes
+    // Config's own count back to 0, so we still expect one changed() here.
+    config.remove(page);
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    // remove() does not delete the page: it stays alive, still parented to
+    // the Config. Changing it should not reach Config::changed() anymore.
+    page->setLabel("Should not be forwarded anymore");
+    QVERIFY(!spy.wait(1));
+    QCOMPARE(spy.count(), 0);
+}
+
+void TestQtNoidAppConfig::testConfigChangedSignalEmittedForDeeplyNestedParameterChange()
+{
+    Config config("TestConfig", this);
+    ParametersPage* page = config.emplace("Page1");
+    QVERIFY(page != nullptr);
+    Parameter* param = page->emplace(100, "SomeParam");
+    QVERIFY(param != nullptr);
+
+    QSignalSpy spy(&config, &Config::changed);
+    QVERIFY(spy.isValid());
+
+    // Parameter::value is not one of ParametersPage's own properties, so it
+    // never reaches Config through the page-property forwarding exercised
+    // above. It only arrives through the safety net connected to the page's
+    // own changed() -- itself already debounced by the page -- so this one
+    // costs an extra queued hop compared to the single-hop cases above.
+    // Nothing is lost, it just takes a little longer: a single spy.wait()
+    // still catches it, since Qt keeps pumping the event loop until the
+    // signal arrives or the timeout elapses.
+    param->setValue(200);
+
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
 }
 
 void TestQtNoidAppConfig::testSaveComboBoxTextItems()

@@ -10,20 +10,83 @@
 namespace QtNoid {
 namespace App {
 
+QMutex Config::s_uniqueIdMutex;
+int Config::s_nextUniqueId(20);  // thread-safe
+
+int Config::getNextUniqueId()
+{
+    QMutexLocker locker(&s_uniqueIdMutex);
+    if (s_nextUniqueId == INT_MAX) {
+        s_nextUniqueId = 0;  // Reset if overflow
+    }
+    return s_nextUniqueId++;
+}
+
+void Config::initInternalConnections()
+{
+    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
+    for (int ii = 0; ii < Config::staticMetaObject.propertyCount(); ++ii) {
+        QMetaProperty prop = Config::staticMetaObject.property(ii);
+        if (prop.hasNotifySignal()) {
+            connect(this, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        }
+    }
+}
+
+void Config::connectPageChangedForwarding(ParametersPage *page)
+{
+    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
+    for (int ii = 0; ii < ParametersPage::staticMetaObject.propertyCount(); ++ii) {
+        QMetaProperty prop = ParametersPage::staticMetaObject.property(ii);
+        if (prop.hasNotifySignal()) {
+            connect(page, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        }
+    }
+
+    // Safety net for anything deeper (see the comment in config.h)
+    connect(page, &ParametersPage::changed, this, &Config::onAnyPropertyChanged);
+
+}
+
+void Config::disconnectPageChangedForwarding(ParametersPage *page)
+{
+    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
+    for (int ii = 0; ii < ParametersPage::staticMetaObject.propertyCount(); ++ii) {
+        QMetaProperty prop = ParametersPage::staticMetaObject.property(ii);
+        if (prop.hasNotifySignal()) {
+            disconnect(page, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        }
+    }
+    disconnect(page, &ParametersPage::changed, this, &Config::onAnyPropertyChanged);
+}
+
+QMetaMethod Config::onAnyPropertyChangedSlotMethod()
+{
+    static const QMetaMethod slot = Config::staticMetaObject.method(
+        Config::staticMetaObject.indexOfSlot("onAnyPropertyChanged()"));
+    return slot;
+}
+
 
 Config::Config(QObject *parent)
-    : QObject(parent), m_count(0)
-{}
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0)
+{
+    initInternalConnections();
+}
 
 
 Config::Config(const QString &name, QObject *parent)
-    : QObject(parent), m_name(name), m_count(0)
-{}
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_count(0)
+{
+    initInternalConnections();
+}
 
 
 Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, QObject *parent)
-    : QObject(parent), m_count(0)
+    : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0)
 {
+    initInternalConnections();
+
     // Resolve the name once, preferring the schema's key and falling back to
     // the value's key. schemaFromJson()/valuesFromJson() each resolve the
     // name only from their own single argument, so this combined lookup has
@@ -46,6 +109,11 @@ Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, 
 
     schemaFromJson(schemaConfig);
     valuesFromJson(valueConfig);
+}
+
+Config::~Config()
+{
+    emit aboutToBeDestroyed(this, m_uniqueId, m_isValueChanged);
 }
 
 QJsonObject Config::toJsonValues() const
@@ -247,6 +315,16 @@ QBindable<QString> Config::bindableTooltip()
 }
 
 
+bool Config::isValueChanged() const
+{
+    return m_isValueChanged.value();
+}
+QBindable<bool> Config::bindableIsValueChanged()
+{
+    return QBindable<bool>(&m_isValueChanged);
+}
+
+
 int Config::count() const
 {
     return m_count.value();
@@ -334,8 +412,14 @@ void Config::remove(ParametersPage *page)
     m_pageToIndex.remove(page);
     m_pagesByIndex.remove(idx);
 
+    if (page->isValueChanged()) {
+        onPageIsValueChangedChanged(false);
+    }
+
     disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     disconnect(page, &ParametersPage::nameEdited, this, nullptr);
+    disconnect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
+    disconnectPageChangedForwarding(page);
 
     emit pageRemoved(page);
     m_count = m_pagesByIndex.count();
@@ -365,11 +449,16 @@ void Config::clear()
 
         disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
         disconnect(page, &ParametersPage::nameEdited, this, nullptr);
+        disconnect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
+        disconnectPageChangedForwarding(page);
 
         emit pageRemoved(page);
     }
     // After removing all - it's time to clear also last index
     m_pagesByIndex.clear();
+
+    m_valueChangedCounter = 0;
+    m_isValueChanged = false;
 
     m_count = 0;
 }
@@ -735,6 +824,20 @@ void Config::saveComboBoxTextItems(QComboBox *cbo, const QString &paramName, con
 
 }
 
+void Config::onAnyPropertyChanged()
+{
+    if(m_anyPropertyChangedPending)
+        return;
+
+    m_anyPropertyChangedPending = true;
+    QMetaObject::invokeMethod(this, [this]{
+        m_anyPropertyChangedPending = false;
+        if(!signalsBlocked())
+            emit changed();
+    }, Qt::QueuedConnection);
+
+}
+
 
 void Config::onPageAboutToBeDestroyed(ParametersPage *page, int uniqueId, bool wasChanged)
 {
@@ -751,11 +854,9 @@ void Config::onPageAboutToBeDestroyed(ParametersPage *page, int uniqueId, bool w
     QString key = m_pagesByName.key(page);
     m_pagesByName.remove(key);
 
-    // wasChanged is not used yet: Config has no isValueChanged aggregation
-    // today (that's the separate gap we talked about). Kept here so the
-    // slot signature matches the signal and the value is available the day
-    // Config gets its own isValueChanged.
-    Q_UNUSED(wasChanged);
+    if (wasChanged) {
+        onPageIsValueChangedChanged(false);
+    }
 
     emit pageRemoved(page);
     m_count = m_pagesByIndex.count();
@@ -783,6 +884,17 @@ void Config::onPageNameEdited(const QString &oldName, const QString &newName)
     return;
 }
 
+void Config::onPageIsValueChangedChanged(bool changed)
+{
+    if(changed) {
+        ++m_valueChangedCounter;
+    }
+    else {
+        --m_valueChangedCounter;
+    }
+    m_isValueChanged = (m_valueChangedCounter > 0);
+}
+
 void Config::appendPageAndUpdateIndexs(ParametersPage *page)
 {
     m_pageToIndex.insert(page, m_nextPageIndex);
@@ -795,6 +907,12 @@ void Config::appendPageAndUpdateIndexs(ParametersPage *page)
 
     connect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     connect(page, &ParametersPage::nameEdited, this, &Config::onPageNameEdited);
+    connect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
+    connectPageChangedForwarding(page);
+
+    if (page->isValueChanged()) {
+        onPageIsValueChangedChanged(true);
+    }
 
     emit pageAdded(page);
     m_count = m_pagesByIndex.count();

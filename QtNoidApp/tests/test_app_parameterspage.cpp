@@ -15,9 +15,9 @@ private slots:
     void cleanupTestCase();
     void init();
     void cleanup();
-    void testParamterListUniqueId();
-    void testCreatingParameterList();
-    void testParameterListName();
+    void testParamtersPageUniqueId();
+    void testCreatingParametersPage();
+    void testParametersPageName();
     void testAppendingParameters();
     void testAppendingDuplicatedParametersShouldFail();
     void testAppendingSameNameParametersShouldFail();
@@ -32,7 +32,7 @@ private slots:
 
     void testRemovingParameters();
     void testRemoveParameterByNameAtIndexZeroShouldUpdateCountAndIndex();
-    void testParameterListClear();
+    void testParametersPageClear();
     void testEmplaceAfterRemoveParameterShouldAddAtIndexZero();
     void testAppendAfterRemoveParameterShouldAddAtIndexZero();
 
@@ -40,30 +40,30 @@ private slots:
 
     void testParameterAccess();
 
-    void testParameterListSetValueConvenienceMethods();
-    void testParameterListSetValueWhileReadOnlyShouldFail();
+    void testParametersPageSetValueConvenienceMethods();
+    void testParametersPageSetValueWhileReadOnlyShouldFail();
 
     void testParameterDestruction();
 
     void testBindableNameProperty();
 
-    void testParameterListLabel();
+    void testParametersPageLabel();
     void testBindableLabelProperty();
 
-    void testParameterListDescription();
+    void testParametersPageDescription();
     void testBindableDescriptionProperty();
 
-    void testParameterListTooltip();
+    void testParametersPageTooltip();
     void testBindableTooltipProperty();
 
-    void testParameterListVisible();
-    void testBindableParameterListVisible();
-    void testParameterListBindableCountProperty();
+    void testParametersPageVisible();
+    void testBindableParametersPageVisible();
+    void testParametersPageBindableCountProperty();
 
-    void testParameterListReadOnly();
-    void testBindableParameterListReadOnly();
+    void testParametersPageReadOnly();
+    void testBindableParametersPageReadOnly();
 
-    void testParameterListIsValueChanged();
+    void testParametersPageIsValueChanged();
     void testBindableIsValueChangedProperty();
 
     void testToJsonValues();
@@ -82,11 +82,11 @@ private slots:
 
     void testConstructorWithSchemaAndValueJsonObjects();
 
-    void testParameterListLabelShouldSurviveJsonRoundTrip();
-    void testParameterListReadOnlyShouldSurviveJsonRoundTrip();
+    void testParametersPageLabelShouldSurviveJsonRoundTrip();
+    void testParametersPageReadOnlyShouldSurviveJsonRoundTrip();
 
 
-    void testChangingParamterNameShouldUpdateTheParameterList();
+    void testChangingParamterNameShouldUpdateTheParametersPage();
     void testParameterRenameError();
     void testIsEmpty();
     void testApplyPreset();
@@ -94,19 +94,19 @@ private slots:
 
     void testOperatorLeftShiftWithParameterReference();
 
-    void testApplyJsonValuesToExistingParameterListShouldUpdateValues();
-    void testApplyJsonSchemaToExistingParameterListShouldUpdateSchema();
-    void testListOwnershipDeleteListDestroyParameters();
+    void testApplyJsonValuesToExistingParametersPageShouldUpdateValues();
+    void testApplyJsonSchemaToExistingParametersPageShouldUpdateSchema();
+    void testDeletingParamtersPageDestroyOwnedParamters();
 
     // Iterator tests
-    void testParameterListBeginAndEndAndRangeLoop();
-    void testParameterListConstIteratorsAndConstRangeLoop();
-    void testParameterListReverseIteratorsAndRangeLoop();
-    void testParameterListConstReverseIterators();
+    void testParametersPageBeginAndEndAndRangeLoop();
+    void testParametersPageConstIteratorsAndConstRangeLoop();
+    void testParametersPageReverseIteratorsAndRangeLoop();
+    void testParametersPageConstReverseIterators();
 
     // QDebug operator<< tests
     void testQDebugOperator();
-    void testParameterListWithQDebugOperatorWithPointer();
+    void testParametersPageWithQDebugOperatorWithPointer();
 
 
     // Testing aboutToBeDestroyed
@@ -139,7 +139,7 @@ void TestQtNoidAppParametersPage::init()
 void TestQtNoidAppParametersPage::cleanup()
 {}
 
-void TestQtNoidAppParametersPage::testParamterListUniqueId()
+void TestQtNoidAppParametersPage::testParamtersPageUniqueId()
 {
     // Test that each ParametersPage instance gets a unique ID
     ParametersPage list1(this);
@@ -194,7 +194,7 @@ void TestQtNoidAppParametersPage::testParamterListUniqueId()
     QCOMPARE(id4, id3 + 1);
 }
 
-void TestQtNoidAppParametersPage::testCreatingParameterList()
+void TestQtNoidAppParametersPage::testCreatingParametersPage()
 {
     ParametersPage list(this);
     QCOMPARE(list.count(), 0);
@@ -209,7 +209,7 @@ void TestQtNoidAppParametersPage::testCreatingParameterList()
     QCOMPARE(namedList.tooltip(), QString());
 }
 
-void TestQtNoidAppParametersPage::testParameterListName()
+void TestQtNoidAppParametersPage::testParametersPageName()
 {
     ParametersPage list("MyList", this);
     QSignalSpy spyChanged(&list, &ParametersPage::nameChanged);
@@ -529,7 +529,7 @@ void TestQtNoidAppParametersPage::testRemoveParameterByNameAtIndexZeroShouldUpda
 
 }
 
-void TestQtNoidAppParametersPage::testParameterListClear()
+void TestQtNoidAppParametersPage::testParametersPageClear()
 {
     ParametersPage list(this);
 
@@ -673,7 +673,7 @@ void TestQtNoidAppParametersPage::testParameterAccess()
     QCOMPARE(params.contains(param3), true);
 }
 
-void TestQtNoidAppParametersPage::testParameterListSetValueConvenienceMethods()
+void TestQtNoidAppParametersPage::testParametersPageSetValueConvenienceMethods()
 {
     ParametersPage list(this);
     auto param1 = new Parameter(25.0, "Temperature", this);
@@ -693,7 +693,7 @@ void TestQtNoidAppParametersPage::testParameterListSetValueConvenienceMethods()
     QCOMPARE(list.setValue("NonExistent", 123), false);
 }
 
-void TestQtNoidAppParametersPage::testParameterListSetValueWhileReadOnlyShouldFail()
+void TestQtNoidAppParametersPage::testParametersPageSetValueWhileReadOnlyShouldFail()
 {
     ParametersPage list(this);
     Parameter param1(25.0, "Temperature", this);
@@ -774,7 +774,7 @@ void TestQtNoidAppParametersPage::testBindableNameProperty()
     QCOMPARE(spy.first().first().toString(), "Updated External Value");
 }
 
-void TestQtNoidAppParametersPage::testParameterListLabel()
+void TestQtNoidAppParametersPage::testParametersPageLabel()
 {
     ParametersPage list(this);
     QSignalSpy spy(&list, &ParametersPage::labelChanged);
@@ -1013,7 +1013,7 @@ void TestQtNoidAppParametersPage::testValuesFromJsonWithCorrectName()
 void TestQtNoidAppParametersPage::testSchemaFromJson()
 {
     // Create JSON schema with multiple parameters and use it
-    // to inizialize ParameterList list(this);
+    // to load into a ParametersPage via schemaFromJson()
 
     QJsonArray parametersArray;
 
@@ -1200,7 +1200,7 @@ void TestQtNoidAppParametersPage::testConstructorWithSchemaAndValueJsonObjects()
     QCOMPARE(list.toJsonValues(), value);
 }
 
-void TestQtNoidAppParametersPage::testParameterListLabelShouldSurviveJsonRoundTrip()
+void TestQtNoidAppParametersPage::testParametersPageLabelShouldSurviveJsonRoundTrip()
 {
     ParametersPage original("Configuration", this);
     original.setLabel("App Configuration");
@@ -1221,7 +1221,7 @@ void TestQtNoidAppParametersPage::testParameterListLabelShouldSurviveJsonRoundTr
 
 }
 
-void TestQtNoidAppParametersPage::testParameterListReadOnlyShouldSurviveJsonRoundTrip()
+void TestQtNoidAppParametersPage::testParametersPageReadOnlyShouldSurviveJsonRoundTrip()
 {
     ParametersPage original("Configuration", this);
     original.setReadOnly(true);
@@ -1241,7 +1241,7 @@ void TestQtNoidAppParametersPage::testParameterListReadOnlyShouldSurviveJsonRoun
     QCOMPARE(fromJson.readOnly(), true);
 }
 
-void TestQtNoidAppParametersPage::testChangingParamterNameShouldUpdateTheParameterList()
+void TestQtNoidAppParametersPage::testChangingParamterNameShouldUpdateTheParametersPage()
 {
     Parameter par(123, "OriginalName", this);
     QCOMPARE(par.name(), "OriginalName");
@@ -1253,7 +1253,7 @@ void TestQtNoidAppParametersPage::testChangingParamterNameShouldUpdateTheParamet
     QVERIFY(list.contains("NewName"));
 }
 
-void TestQtNoidAppParametersPage::testParameterListDescription()
+void TestQtNoidAppParametersPage::testParametersPageDescription()
 {
     ParametersPage list(this);
     QSignalSpy spy(&list, &ParametersPage::descriptionChanged);
@@ -1320,7 +1320,7 @@ void TestQtNoidAppParametersPage::testBindableDescriptionProperty()
     QCOMPARE(spy.first().first().toString(), "Externally set description");
 }
 
-void TestQtNoidAppParametersPage::testParameterListTooltip()
+void TestQtNoidAppParametersPage::testParametersPageTooltip()
 {
     ParametersPage list(this);
     QSignalSpy spy(&list, &ParametersPage::tooltipChanged);
@@ -1387,7 +1387,7 @@ void TestQtNoidAppParametersPage::testBindableTooltipProperty()
     QCOMPARE(spy.first().first().toString(), "Externally set tooltip");
 }
 
-void TestQtNoidAppParametersPage::testParameterListVisible()
+void TestQtNoidAppParametersPage::testParametersPageVisible()
 {
     ParametersPage list(this);
     QSignalSpy spy(&list, &ParametersPage::visibleChanged);
@@ -1400,7 +1400,7 @@ void TestQtNoidAppParametersPage::testParameterListVisible()
     QCOMPARE(spy.count(), 0);
 }
 
-void TestQtNoidAppParametersPage::testBindableParameterListVisible()
+void TestQtNoidAppParametersPage::testBindableParametersPageVisible()
 {
     ParametersPage list(this);
     auto bindableVisible = list.bindableVisible();
@@ -1431,7 +1431,7 @@ void TestQtNoidAppParametersPage::testBindableParameterListVisible()
     QCOMPARE(spy.first().first(), false);
 }
 
-void TestQtNoidAppParametersPage::testParameterListBindableCountProperty()
+void TestQtNoidAppParametersPage::testParametersPageBindableCountProperty()
 {
     ParametersPage list(this);
 
@@ -1508,7 +1508,7 @@ void TestQtNoidAppParametersPage::testParameterListBindableCountProperty()
     QCOMPARE(arguments.at(0).toInt(), 0);
 }
 
-void TestQtNoidAppParametersPage::testParameterListReadOnly()
+void TestQtNoidAppParametersPage::testParametersPageReadOnly()
 {
     ParametersPage list(this);
     QSignalSpy spy(&list, &ParametersPage::readOnlyChanged);
@@ -1535,7 +1535,7 @@ void TestQtNoidAppParametersPage::testParameterListReadOnly()
 
 }
 
-void TestQtNoidAppParametersPage::testBindableParameterListReadOnly()
+void TestQtNoidAppParametersPage::testBindableParametersPageReadOnly()
 {
     ParametersPage list(this);
     auto bindableReadOnly = list.bindableReadOnly();
@@ -1567,7 +1567,7 @@ void TestQtNoidAppParametersPage::testBindableParameterListReadOnly()
 
 }
 
-void TestQtNoidAppParametersPage::testParameterListIsValueChanged()
+void TestQtNoidAppParametersPage::testParametersPageIsValueChanged()
 {
     ParametersPage list(this);
     Parameter* p1 = list.emplace(10, "Param1");
@@ -1858,7 +1858,7 @@ void TestQtNoidAppParametersPage::testOperatorLeftShiftWithParameterReference()
     QCOMPARE(param2.value(), 1000);
 }
 
-void TestQtNoidAppParametersPage::testListOwnershipDeleteListDestroyParameters()
+void TestQtNoidAppParametersPage::testDeletingParamtersPageDestroyOwnedParamters()
 {
     // Create 2 objects and verify they are destroyed with the list
     ParametersPage *list = new ParametersPage("MyBeautifullList");
@@ -1875,7 +1875,7 @@ void TestQtNoidAppParametersPage::testListOwnershipDeleteListDestroyParameters()
     QCOMPARE(parameter2Spy.count(), 1);
 }
 
-void TestQtNoidAppParametersPage::testApplyJsonValuesToExistingParameterListShouldUpdateValues()
+void TestQtNoidAppParametersPage::testApplyJsonValuesToExistingParametersPageShouldUpdateValues()
 {
     // Create an existing ParametersPage with some parameters
     ParametersPage list("SensorConfig", this);
@@ -1919,7 +1919,7 @@ void TestQtNoidAppParametersPage::testApplyJsonValuesToExistingParameterListShou
     QCOMPARE(list.value("Humidity"), 60.0);
 }
 
-void TestQtNoidAppParametersPage::testApplyJsonSchemaToExistingParameterListShouldUpdateSchema()
+void TestQtNoidAppParametersPage::testApplyJsonSchemaToExistingParametersPageShouldUpdateSchema()
 {
     // Create an existing ParametersPage with some parameters
     ParametersPage list("DeviceConfig", this);
@@ -2000,7 +2000,7 @@ void TestQtNoidAppParametersPage::testApplyJsonSchemaToExistingParameterListShou
     QCOMPARE(pressParam->visible(), true);
 }
 
-void TestQtNoidAppParametersPage::testParameterListBeginAndEndAndRangeLoop()
+void TestQtNoidAppParametersPage::testParametersPageBeginAndEndAndRangeLoop()
 {
     ParametersPage list("TestList", this);
     // Test empty list
@@ -2071,7 +2071,7 @@ void TestQtNoidAppParametersPage::testParameterListBeginAndEndAndRangeLoop()
     QCOMPARE(nameList, expectedList);
 }
 
-void TestQtNoidAppParametersPage::testParameterListConstIteratorsAndConstRangeLoop()
+void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeLoop()
 {
     ParametersPage list("TestList", this);
 
@@ -2199,7 +2199,7 @@ void TestQtNoidAppParametersPage::testParameterListConstIteratorsAndConstRangeLo
     QCOMPARE(constCount, 0);
 }
 
-void TestQtNoidAppParametersPage::testParameterListReverseIteratorsAndRangeLoop()
+void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop()
 {
     ParametersPage list("TestList", this);
     // Add some parameters
@@ -2323,7 +2323,7 @@ void TestQtNoidAppParametersPage::testParameterListReverseIteratorsAndRangeLoop(
     QCOMPARE((*rLastIt)->name(), "Third");
 }
 
-void TestQtNoidAppParametersPage::testParameterListConstReverseIterators()
+void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 {
     ParametersPage list("TestList", this);
 
@@ -2547,7 +2547,7 @@ void TestQtNoidAppParametersPage::testQDebugOperator()
 
 }
 
-void TestQtNoidAppParametersPage::testParameterListWithQDebugOperatorWithPointer()
+void TestQtNoidAppParametersPage::testParametersPageWithQDebugOperatorWithPointer()
 {
     // Test with valid pointer
     ParametersPage* list1 = new ParametersPage("myApp Settings", this);

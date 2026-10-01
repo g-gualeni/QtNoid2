@@ -21,6 +21,7 @@ class QTNOIDAPP_EXPORT Config : public QObject
     Q_PROPERTY(QString label READ label WRITE setLabel BINDABLE bindableLabel NOTIFY labelChanged FINAL)
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
+    Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
     Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
 
 public:
@@ -94,6 +95,10 @@ public:
     explicit Config(QObject *parent = nullptr);
     explicit Config(const QString& name, QObject *parent = nullptr);
     explicit Config(const QJsonObject &schemaConfig, const QJsonObject& valueConfig, QObject *parent = nullptr);
+    ~Config() override;
+
+    int uniqueId() const { return m_uniqueId; }
+
 
     // JSON Serialization / Deserialization
     QJsonObject toJsonValues() const;
@@ -120,6 +125,10 @@ public:
     QString tooltip() const;
     void setTooltip(const QString& value);
     QBindable<QString> bindableTooltip();
+
+    // isValueChanged: aggregated from pages
+    bool isValueChanged() const;
+    QBindable<bool> bindableIsValueChanged();
 
     // Container management
     int count() const;
@@ -205,32 +214,59 @@ public:
     };
 
 signals:
+    void aboutToBeDestroyed(QtNoid::App::Config *config, int uniqueId, bool wasChanged);
     void nameChanged(const QString& value);
+    void changed();
     void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
+    void isValueChangedChanged(bool value);
     void countChanged(int count);
     void pageAdded(const QtNoid::App::ParametersPage* parameterList);
     void pageRemoved(QtNoid::App::ParametersPage* parameterList);
     void pageRenameError(const QString& oldName, const QString& newName);
 
 private slots:
+    void onAnyPropertyChanged();   // collect all notify and schedule a single changed() signal
     void onPageAboutToBeDestroyed(QtNoid::App::ParametersPage *page, int uniqueId, bool wasChanged);
     void onPageNameEdited(const QString& oldName, const QString& newName);
+    void onPageIsValueChangedChanged(bool changed);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_name, &Config::nameChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_label, &Config::labelChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_description, &Config::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_tooltip, &Config::tooltipChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isValueChanged, &Config::isValueChangedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, int, m_count, &Config::countChanged)
     QHash<int, ParametersPage*> m_pagesByUniqueId;
     QMap<int, ParametersPage*> m_pagesByIndex;
     QHash<ParametersPage*, int> m_pageToIndex; // ParametersPage -> sortIndex
     QHash<QString, ParametersPage*> m_pagesByName;
     int m_nextPageIndex = 0;
-    void appendPageAndUpdateIndexs(ParametersPage *page);
+    int m_valueChangedCounter = 0;
+    bool m_anyPropertyChangedPending = false;
 
+    static QMutex s_uniqueIdMutex;
+    static int s_nextUniqueId;
+    int m_uniqueId;
+    int getNextUniqueId();
+
+    void initInternalConnections();
+    // Forward a contained ParametersPage's own properties straight into
+    // Config's onAnyPropertyChanged() coalescing slot (Option 2, one level
+    // up) -- plus a safety net connected to the page's own changed(): that
+    // one is already debounced by the page itself, so it catches anything
+    // deeper (a contained Parameter's value, unit, min, max, range,
+    // presets...) that never touches one of the page's own properties.
+    // Only that deeper case costs one extra queued hop; the common case
+    // (a page's own name/label/description/tooltip/count/isValueChanged)
+    // stays single-hop.
+    void connectPageChangedForwarding(ParametersPage *page);
+    void disconnectPageChangedForwarding(ParametersPage *page);
+    static QMetaMethod onAnyPropertyChangedSlotMethod();
+
+    void appendPageAndUpdateIndexs(ParametersPage *page);
     bool saveValuePrivate(const QString &paramName, const QVariant &value, const QString &pageName);
 
 };
