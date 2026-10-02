@@ -222,8 +222,8 @@ signals:
     void tooltipChanged(const QString& value);
     void isValueChangedChanged(bool value);
     void countChanged(int count);
-    void pageAdded(const QtNoid::App::ParametersPage* parameterList);
-    void pageRemoved(QtNoid::App::ParametersPage* parameterList);
+    void pageAdded(const QtNoid::App::ParametersPage* parametersPage);
+    void pageRemoved(QtNoid::App::ParametersPage* parametersPage);
     void pageRenameError(const QString& oldName, const QString& newName);
 
 private slots:

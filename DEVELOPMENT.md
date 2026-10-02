@@ -63,10 +63,15 @@
 	- [x] Inserire Label
 	- [x] Inseire UniqueID
 	- [x] isValueChanged
-	- [ ] Inserire changed()
-	- [ ] aboutToBeDestroyed()
-	- [ ] Aggiornare la documentazione di Config
-	- [ ] 
+	- [x] Inserire changed()
+	- [x] aboutToBeDestroyed()
+	- [x] Aggiornare la documentazione di Config
+	- [ ] C'è un test che fallisce
+- [ ] Non mi piace changed(). Cambiare la gestione usando un contatore di modifiche
+	- [ ] Chi lo resetta questo contatore? Posso evitare di mantenere il valore di default? Oppure avrebbe senso dato che potrei gestire il comando Annulla e aggiungere un metodo tipo ResetToDefault?
+	- [ ] Paramter
+	- [ ] ParamtersPage
+	- [ ] Config
 
 
 
