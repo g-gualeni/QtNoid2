@@ -31,6 +31,7 @@ class QTNOIDAPP_EXPORT Parameter : public QObject
     Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(bool isValid READ isValid BINDABLE bindableIsValid NOTIFY isValidChanged FINAL)
     Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
+    Q_PROPERTY(bool isSchemaChanged READ isSchemaChanged BINDABLE bindableIsSchemaChanged NOTIFY isSchemaChangedChanged FINAL)
 
 public:
     explicit Parameter(QObject *parent = nullptr);
@@ -53,6 +54,7 @@ public:
     QVariant value() const;
     // void setValue(const QVariant& val);  // Available as a public SLOT
     QBindable<QVariant> bindableValue();
+    void resetValueChange();
 
     // Range management
     QVariant min() const;
@@ -122,9 +124,15 @@ public:
     bool isValueChanged() const;
     QBindable<bool> bindableIsValueChanged();
 
+    // isSchemaChanged: tracks modifications across ALL properties (value, name, unit,
+    // min, max, presets, label, description, tooltip, readOnly, visible),
+    // unlike isValueChanged which only tracks value.
+    bool isSchemaChanged() const;
+    QBindable<bool> bindableIsSchemaChanged();
+    void resetSchemaChange();
+
 signals:
     void valueChanged(const QVariant &newValue);
-    void changed();
     void minChanged(const QVariant &min);
     void maxChanged(const QVariant &max);
     void rangeChanged(const QVariant &min, const QVariant &max);
@@ -140,7 +148,8 @@ signals:
     void writeAttemptedWhileReadOnly(const QString &parameterName, const QVariant& current);
     void isValidChanged(bool isValid);
     void isValueChangedChanged(bool changed);
-    void aboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged);
+    void isSchemaChangedChanged(bool changed);
+    void aboutToBeDestroyed(QtNoid::App::Parameter *parameter);
 
 public slots:
     void setValue(const QVariant& val);
@@ -159,6 +168,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariantMap, m_presets, &Parameter::presetsChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isValid, &Parameter::isValidChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isValueChanged, &Parameter::isValueChangedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isSchemaChanged, &Parameter::isSchemaChangedChanged)
 
     friend class ::TestQtNoidAppParameter; // Only for White Box testing
 
@@ -169,16 +179,17 @@ private:
     bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
     bool canModify() const; // Modification control
 
-private slots:
-    void onAnyPropertyChanged();   // collect all notify and schedule a single changed() signal
-
 private:
     static QMutex s_uniqueIdMutex;
     static int s_nextUniqueId;
-    int m_uniqueId;
     int getNextUniqueId();
+    int m_uniqueId;
+
     QProperty<QVariant> m_initialValue;
-    bool m_anyPropertyChangedPending = false;
+
+    void captureBaseline();
+    QHash<QByteArray, QVariant> m_schemaBaseline;
+
 };
 
 } // namespace App

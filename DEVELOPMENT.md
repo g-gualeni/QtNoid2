@@ -72,6 +72,9 @@
 	- [ ] Paramter
 	- [ ] ParamtersPage
 	- [ ] Config
+	- [ ] Non vedo il meccanismo con il contatore delle modifiche
+
+SchemaChanged - questo il paramatro da implementare fino a config
 
 
 

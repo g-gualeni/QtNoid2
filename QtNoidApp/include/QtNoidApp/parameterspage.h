@@ -24,6 +24,7 @@ class QTNOIDAPP_EXPORT ParametersPage : public QObject
     Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
     Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
+    Q_PROPERTY(bool isSchemaChanged READ isSchemaChanged BINDABLE bindableIsSchemaChanged NOTIFY isSchemaChangedChanged FINAL)
     Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
 
 public:
@@ -140,6 +141,15 @@ public:
     // isValueChanged: track modifications
     bool isValueChanged() const;
     QBindable<bool> bindableIsValueChanged();
+    void resetAllValues();
+
+    // isSchemaChanged: tracks modifications to this page's own properties
+    // (name, label, description, tooltip, readOnly, visible) and to any
+    // contained Parameter's isSchemaChanged, unlike isValueChanged which only
+    // tracks value changes.
+    bool isSchemaChanged() const;
+    QBindable<bool> bindableIsSchemaChanged();
+    void resetSchemaChange();   // restores own properties AND cascades to every Parameter
 
     // List management
     int count() const;
@@ -196,9 +206,8 @@ public:
 
 
 signals:
-    void aboutToBeDestroyed(QtNoid::App::ParametersPage *page, int uniqueId, bool wasChanged);
+    void aboutToBeDestroyed(QtNoid::App::ParametersPage *page);
     void nameChanged(const QString& value);
-    void changed();                                    // <-- nuovo
     void nameEdited(const QString &oldName, const QString &newName);
     void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
@@ -210,6 +219,7 @@ signals:
     void visibleChanged(bool value);
     void readOnlyChanged(bool value);
     void isValueChangedChanged(bool value);
+    void isSchemaChangedChanged(bool changed);
     void writeAttemptedWhileReadOnly(const QString &parameterName);
 
 
@@ -222,6 +232,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_visible, &ParametersPage::visibleChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_readOnly, &ParametersPage::readOnlyChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_isValueChanged, &ParametersPage::isValueChangedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_isSchemaChanged, &ParametersPage::isSchemaChangedChanged)
 
     friend class ::TestQtNoidAppParametersPage; // Only for White Box testing
 
@@ -230,23 +241,12 @@ private:
     void removeParameterInternal(Parameter *parameter);
     void appendParameterAndUpdateIndexs(Parameter *parameter);
 
-    // Forward a contained Parameter's own properties straight into this
-    // page's onAnyPropertyChanged() coalescing slot (bypassing the
-    // parameter's own changed() debounce), so a burst that touches both the
-    // page's own properties and a contained parameter's properties still
-    // collapses into a single changed() emission instead of two.
-    void connectParameterChangedForwarding(Parameter *parameter);
-    void disconnectParameterChangedForwarding(Parameter *parameter);
-    static QMetaMethod onAnyPropertyChangedSlotMethod();
-
-
 private slots:
-    void onAnyPropertyChanged();   // collect all notify and schedule a single changed() signal
-    void onParameterAboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged);
+    void onOwnPropertyChanged();
+    void onParameterAboutToBeDestroyed(QtNoid::App::Parameter *parameter);
     void onParameterNameEdited(const QString& oldName, const QString& newName);
     void onParameterIsValueChangedChanged(bool changed);
-
-
+    void onParameterIsSchemaChangedChanged(bool changed);
 
 private:
     QHash<int, Parameter*> m_parametersByUniqueId;
@@ -261,7 +261,11 @@ private:
     int getNextUniqueId();
 
     int m_valueChangedCounter = 0;
-    bool m_anyPropertyChangedPending = false;
+
+    void captureBaseline();
+    void updateIsSchemaChanged();
+    QHash<QByteArray, QVariant> m_schemaBaseline;
+    int m_schemaChangedCounter = 0;
 };
 
 } // namespace App

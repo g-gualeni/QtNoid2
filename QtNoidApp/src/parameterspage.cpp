@@ -24,16 +24,56 @@ int ParametersPage::getNextUniqueId()
 }
 
 
+namespace {
+bool isTrackedForIsSchemaChanged(const QMetaProperty &prop)
+{
+    static const QSet<QByteArray> excluded = {
+        "objectName", "count", "isValueChanged", "isSchemaChanged"
+    };
+    return prop.isReadable() && !excluded.contains(prop.name());
+}
+}
+
+void ParametersPage::captureBaseline()
+{
+    m_schemaBaseline.clear();
+    const QMetaObject *mo = &ParametersPage::staticMetaObject;
+    for (int ii = 0; ii < mo->propertyCount(); ++ii) {
+        QMetaProperty prop = mo->property(ii);
+        if (isTrackedForIsSchemaChanged(prop)) {
+            m_schemaBaseline.insert(prop.name(), prop.read(this));
+        }
+    }
+}
+
+void ParametersPage::updateIsSchemaChanged()
+{
+    bool ownChanged = false;
+    const QMetaObject *mo = metaObject();
+    for (int ii = 0; ii < mo->propertyCount(); ++ii) {
+        QMetaProperty prop = mo->property(ii);
+        if (isTrackedForIsSchemaChanged(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
+            ownChanged = true;
+            break;
+        }
+    }
+    m_isSchemaChanged = ownChanged || (m_schemaChangedCounter > 0);
+
+}
+
+
 ParametersPage::ParametersPage(QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
     initInternalConnections();
+    captureBaseline();
 }
 
 ParametersPage::ParametersPage(const QString &name, QObject *parent)
     : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
     initInternalConnections();
+    captureBaseline();
 }
 
 ParametersPage::ParametersPage(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
@@ -52,11 +92,13 @@ ParametersPage::ParametersPage(const QJsonObject &schemaList, const QJsonObject 
     // Get Value first to avoid ReadOnly blocking the update
     valuesFromJson(valueList);
     schemaFromJson(schemaList);
+
+    captureBaseline();
 }
 
 ParametersPage::~ParametersPage()
 {
-    emit aboutToBeDestroyed(this, m_uniqueId, m_isValueChanged);
+    emit aboutToBeDestroyed(this);
 }
 
 
@@ -118,6 +160,7 @@ bool ParametersPage::valuesFromJson(const QJsonObject &json)
         // Get the unique JSON object and use it to set the name
         name = json.begin().key();
         setName(name);
+        captureBaseline();
     }
     else if(!json.contains(name)) {
         // This is not the correct JSON model
@@ -198,6 +241,9 @@ bool ParametersPage::schemaFromJson(const QJsonObject &json)
             }
         }
     }
+
+    captureBaseline();
+
     return true;
 }
 
@@ -310,6 +356,42 @@ QBindable<bool> ParametersPage::bindableIsValueChanged()
     return QBindable<bool>(&m_isValueChanged);
 }
 
+void ParametersPage::resetAllValues()
+{
+    for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
+        it.value()->resetValueChange();
+    }
+}
+
+bool ParametersPage::isSchemaChanged() const
+{
+    return m_isSchemaChanged.value();
+}
+
+QBindable<bool> ParametersPage::bindableIsSchemaChanged()
+{
+    return QBindable<bool>(&m_isSchemaChanged);
+}
+
+void ParametersPage::resetSchemaChange()
+{
+    const QMetaObject *mo = metaObject();
+    for (const QByteArray &propName : m_schemaBaseline.keys()) {
+        auto idx = mo->indexOfProperty(propName);
+        if (idx < 0) {
+            continue;
+        }
+        QMetaProperty prop = mo->property(idx);
+        if (prop.isWritable()) {
+            prop.write(this, m_schemaBaseline.value(propName));
+        }
+    }
+
+    for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
+        it.value()->resetSchemaChange();
+    }
+}
+
 int ParametersPage::count() const
 {
     return m_count.value();
@@ -394,11 +476,15 @@ void ParametersPage::removeParameterInternal(Parameter *parameter)
     if (parameter->isValueChanged()) {
         onParameterIsValueChangedChanged(false);
     }
+    if (parameter->isSchemaChanged()) {
+        onParameterIsSchemaChangedChanged(false);
+    }
 
     disconnect(parameter, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
     disconnect(parameter, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
     disconnect(parameter, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
-    disconnectParameterChangedForwarding(parameter);
+    disconnect(parameter, &Parameter::isSchemaChangedChanged, this, &ParametersPage::onParameterIsSchemaChangedChanged);
+
 
     emit parameterRemoved(parameter);
     m_count = m_parametersByIndex.count();
@@ -448,12 +534,14 @@ void ParametersPage::clear()
         disconnect(param, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
         disconnect(param, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
         disconnect(param, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
-        disconnectParameterChangedForwarding(param);
+        disconnect(param, &Parameter::isSchemaChangedChanged, this, &ParametersPage::onParameterIsSchemaChangedChanged);
         emit parameterRemoved(param);
     }
 
     m_valueChangedCounter = 0;
     m_isValueChanged = false;
+    m_schemaChangedCounter = 0;
+    updateIsSchemaChanged();
 
     m_parametersByUniqueId.clear();
     m_parametersByIndex.clear();
@@ -542,56 +630,20 @@ void ParametersPage::applyPreset(const QString &presetName)
     }
 }
 
+
 void ParametersPage::initInternalConnections()
 {
-    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
+    static const QMetaMethod onOwnPropertyChangedSlot = ParametersPage::staticMetaObject.method(
+        ParametersPage::staticMetaObject.indexOfSlot("onOwnPropertyChanged()"));
+
     for (int ii = 0; ii < ParametersPage::staticMetaObject.propertyCount(); ++ii) {
         QMetaProperty prop = ParametersPage::staticMetaObject.property(ii);
-        if (prop.hasNotifySignal()) {
-            connect(this, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        if (isTrackedForIsSchemaChanged(prop) && prop.hasNotifySignal()) {
+            connect(this, prop.notifySignal(), this, onOwnPropertyChangedSlot);
         }
     }
 }
 
-void ParametersPage::onAnyPropertyChanged()
-{
-    if(m_anyPropertyChangedPending)
-        return;
-
-    m_anyPropertyChangedPending = true;
-    QMetaObject::invokeMethod(this, [this]{
-        m_anyPropertyChangedPending = false;
-        if(!signalsBlocked())
-            emit changed();
-    }, Qt::QueuedConnection);
-}
-
-
-void ParametersPage::onParameterAboutToBeDestroyed(Parameter *parameter, int uniqueId, bool wasChanged)
-{
-    int idx = m_parameterToIndex.value(parameter, -1);
-    if(idx == -1) {
-        return;
-    }
-    m_parameterToIndex.remove(parameter);
-    m_parametersByUniqueId.remove(uniqueId);
-    m_parametersByIndex.remove(idx);
-
-    // Remove from m_parametersByName using param
-    // because param->name() could be modified
-    QString key = m_parametersByName.key(parameter);
-    m_parametersByName.remove(key);
-
-    if (wasChanged) {
-        onParameterIsValueChangedChanged(false);
-    }
-
-    emit parameterRemoved(parameter);
-    m_count = m_parametersByIndex.count();
-    if (isEmpty()) {
-        m_nextParameterIndex = 0;
-    }
-}
 
 void ParametersPage::onParameterNameEdited(const QString &oldName, const QString &newName)
 {
@@ -622,6 +674,17 @@ void ParametersPage::onParameterIsValueChangedChanged(bool changed)
     m_isValueChanged = (m_valueChangedCounter >0);
 }
 
+void ParametersPage::onParameterIsSchemaChangedChanged(bool changed)
+{
+    if(changed) {
+        ++m_schemaChangedCounter;
+    }
+    else {
+        --m_schemaChangedCounter;
+    }
+    updateIsSchemaChanged();
+}
+
 void ParametersPage::appendParameterAndUpdateIndexs(Parameter *parameter)
 {
     m_parametersByUniqueId.insert(parameter->uniqueId(), parameter);
@@ -632,43 +695,49 @@ void ParametersPage::appendParameterAndUpdateIndexs(Parameter *parameter)
     connect(parameter, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
     connect(parameter, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
     connect(parameter, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
-    connectParameterChangedForwarding(parameter);
+    connect(parameter, &Parameter::isSchemaChangedChanged, this, &ParametersPage::onParameterIsSchemaChangedChanged);
 
     if(parameter->isValueChanged()) {
         onParameterIsValueChangedChanged(true);
+    }
+    if(parameter->isSchemaChanged()) {
+        onParameterIsSchemaChangedChanged(true);
     }
 
     emit parameterAdded(parameter);
     m_count = m_parametersByIndex.count();
 }
 
-void ParametersPage::connectParameterChangedForwarding(Parameter *parameter)
+void ParametersPage::onOwnPropertyChanged()
 {
-    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
-    for (int ii = 0; ii < Parameter::staticMetaObject.propertyCount(); ++ii) {
-        QMetaProperty prop = Parameter::staticMetaObject.property(ii);
-        if (prop.hasNotifySignal()) {
-            connect(parameter, prop.notifySignal(), this, onAnyPropertyChangedSlot);
-        }
-    }
+    updateIsSchemaChanged();
 }
 
-void ParametersPage::disconnectParameterChangedForwarding(Parameter *parameter)
+void ParametersPage::onParameterAboutToBeDestroyed(Parameter *parameter)
 {
-    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
-    for (int ii = 0; ii < Parameter::staticMetaObject.propertyCount(); ++ii) {
-        QMetaProperty prop = Parameter::staticMetaObject.property(ii);
-        if (prop.hasNotifySignal()) {
-            disconnect(parameter, prop.notifySignal(), this, onAnyPropertyChangedSlot);
-        }
+    int idx = m_parameterToIndex.value(parameter, -1);
+    if(idx == -1) {
+        return;
     }
-}
+    m_parameterToIndex.remove(parameter);
+    m_parametersByUniqueId.remove(parameter->uniqueId());
+    m_parametersByIndex.remove(idx);
 
-QMetaMethod ParametersPage::onAnyPropertyChangedSlotMethod()
-{
-    static const QMetaMethod slot = ParametersPage::staticMetaObject.method(
-        ParametersPage::staticMetaObject.indexOfSlot("onAnyPropertyChanged()"));
-    return slot;
+    QString key = m_parametersByName.key(parameter);
+    m_parametersByName.remove(key);
+
+    if (parameter->isValueChanged()) {
+        onParameterIsValueChangedChanged(false);
+    }
+    if (parameter->isSchemaChanged()) {
+        onParameterIsSchemaChangedChanged(false);
+    }
+
+    emit parameterRemoved(parameter);
+    m_count = m_parametersByIndex.count();
+    if (isEmpty()) {
+        m_nextParameterIndex = 0;
+    }
 }
 
 

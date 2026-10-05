@@ -23,10 +23,34 @@ int Parameter::getNextUniqueId()
 }
 
 
+namespace {
+bool isTrackedForIsSchemaChanged(const QMetaProperty &prop)
+{
+    static const QSet<QByteArray> excluded = {
+        "objectName", "value", "range", "isValid", "isValueChanged", "isSchemaChanged"
+    };
+    return prop.isReadable() && !excluded.contains(prop.name());
+}
+}
+
+void Parameter::captureBaseline()
+{
+    m_schemaBaseline.clear();
+    const QMetaObject *mo = metaObject();
+    for (int ii = 0; ii < mo->propertyCount(); ++ii) {
+        QMetaProperty prop = mo->property(ii);
+        if (isTrackedForIsSchemaChanged(prop)) {
+            m_schemaBaseline.insert(prop.name(), prop.read(this));
+        }
+    }
+}
+
+
 Parameter::Parameter(QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
     initInternalConnections();
+    captureBaseline();
 }
 
 Parameter::Parameter(const QVariant &initialValue, QObject *parent)
@@ -34,6 +58,7 @@ Parameter::Parameter(const QVariant &initialValue, QObject *parent)
     m_value(initialValue), m_visible(true)
 {
     initInternalConnections();
+    captureBaseline();
 }
 
 Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject *parent)
@@ -41,6 +66,7 @@ Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject 
     m_name(name), m_value(initialValue), m_visible(true)
 {
     initInternalConnections();
+    captureBaseline();
 }
 
 Parameter::Parameter(const QVariant &initialValue, const QString &name, const QString &description, QObject *parent)
@@ -48,6 +74,7 @@ Parameter::Parameter(const QVariant &initialValue, const QString &name, const QS
     m_name(name), m_description(description), m_value(initialValue), m_visible(true)
 {
     initInternalConnections();
+    captureBaseline();
 }
 
 Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObject *parent)
@@ -68,12 +95,13 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
         valueFromJson(value);
         schemaFromJson(schema);
     }
+    captureBaseline();
 
 }
 
 Parameter::~Parameter()
 {
-    emit aboutToBeDestroyed(this, m_uniqueId, m_isValueChanged);
+    emit aboutToBeDestroyed(this);
 }
 
 QJsonObject Parameter::toJsonValue() const
@@ -155,7 +183,7 @@ bool Parameter::valueFromJson(const QJsonObject& json)
         QVariant value = json.value(name).toVariant();
         m_initialValue = value;
         m_value = value;
-        // m_isValueChanged = false; Binding automatically upadate it
+        captureBaseline();
         return true;
     }
 
@@ -163,7 +191,7 @@ bool Parameter::valueFromJson(const QJsonObject& json)
         QVariant value = json[name].toVariant();
         m_initialValue = value;
         m_value = value;
-        // m_isValueChanged = false;
+        captureBaseline();
         return true;
     }
     return false;
@@ -248,7 +276,7 @@ bool Parameter::schemaFromJson(const QJsonObject &json)
     else {
         setPresets({});
     }
-
+    captureBaseline();
     return true;
 }
 
@@ -265,17 +293,17 @@ void Parameter::initInternalConnections()
     m_isValid.setBinding([this]{ return computeIsValid(); });
     m_isValueChanged.setBinding([this]{ return m_value.value() != m_initialValue.value(); });
 
-    // Fire the changed signal every time a property of parameter is changed
-    static const QMetaMethod onAnyPropertyChangedSlot =
-        Parameter::staticMetaObject.method(
-            Parameter::staticMetaObject.indexOfSlot("onAnyPropertyChanged()"));
-
-    for (int i = 0; i < Parameter::staticMetaObject.propertyCount(); ++i) {
-        QMetaProperty prop = Parameter::staticMetaObject.property(i);
-        if (prop.hasNotifySignal()) {
-            connect(this, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+    // This automatically track any changes in properties used by m_isSchemaChanged()
+    m_isSchemaChanged.setBinding([this]{
+        const QMetaObject *mo = metaObject();
+        for (int i = 0; i < mo->propertyCount(); ++i) {
+            QMetaProperty prop = mo->property(i);
+            if (isTrackedForIsSchemaChanged(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
+                return true;
+            }
         }
-    }
+        return false;
+    });
 }
 
 QVariant Parameter::value() const
@@ -294,6 +322,11 @@ void Parameter::setValue(const QVariant &val)
 QBindable<QVariant> Parameter::bindableValue()
 {
     return QBindable<QVariant>(&m_value);
+}
+
+void Parameter::resetValueChange()
+{
+    m_value = m_initialValue;
 }
 
 QVariant Parameter::min() const
@@ -438,9 +471,7 @@ bool Parameter::applyPreset(const QString &name)
 
     auto val = m_presets.value()[name];
     auto newVal = clampValue(val);
-    m_initialValue = newVal;
     m_value = newVal;
-
     return true;
 }
 
@@ -580,6 +611,31 @@ QBindable<bool> Parameter::bindableIsValueChanged()
     return QBindable<bool>(&m_isValueChanged);
 }
 
+bool Parameter::isSchemaChanged() const
+{
+    return m_isSchemaChanged;
+}
+
+QBindable<bool> Parameter::bindableIsSchemaChanged()
+{
+    return QBindable<bool>(&m_isSchemaChanged);
+}
+
+void Parameter::resetSchemaChange()
+{
+    const QMetaObject *mo = metaObject();
+    for(const QByteArray &propName : m_schemaBaseline.keys()) {
+        auto idx = mo->indexOfProperty(propName);
+        if(idx<0) {
+            continue;
+        }
+        QMetaProperty prop = mo->property(idx);
+        if(prop.isWritable()) {
+            prop.write(this, m_schemaBaseline.value(propName));
+        }
+    }
+}
+
 bool Parameter::canModify() const
 {
     if(m_readOnly.value()) {
@@ -589,20 +645,6 @@ bool Parameter::canModify() const
     return true;
 }
 
-void Parameter::onAnyPropertyChanged()
-{
-    if(m_anyPropertyChangedPending)
-        return;
-
-    m_anyPropertyChangedPending = true;
-
-    // Send the signal as soon as the application enters the event loop
-    QMetaObject::invokeMethod(this, [this]{
-        m_anyPropertyChangedPending = false;
-        if (!signalsBlocked())
-            emit changed();
-    }, Qt::QueuedConnection);
-}
 
 bool Parameter::computeIsValid() const
 {

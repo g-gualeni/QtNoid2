@@ -22,56 +22,67 @@ int Config::getNextUniqueId()
     return s_nextUniqueId++;
 }
 
+
+namespace {
+bool isTrackedForIsSchemaChanged(const QMetaProperty &prop)
+{
+    static const QSet<QByteArray> excluded = {
+        "objectName", "count", "isValueChanged", "isSchemaChanged"
+    };
+    return prop.isReadable() && !excluded.contains(prop.name());
+}
+}
+
+
 void Config::initInternalConnections()
 {
-    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
+    static const QMetaMethod onOwnPropertyChangedSlot = Config::staticMetaObject.method(
+        Config::staticMetaObject.indexOfSlot("onOwnPropertyChanged()"));
+
     for (int ii = 0; ii < Config::staticMetaObject.propertyCount(); ++ii) {
         QMetaProperty prop = Config::staticMetaObject.property(ii);
-        if (prop.hasNotifySignal()) {
-            connect(this, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+        if (isTrackedForIsSchemaChanged(prop) && prop.hasNotifySignal()) {
+            connect(this, prop.notifySignal(), this, onOwnPropertyChangedSlot);
         }
     }
 }
 
-void Config::connectPageChangedForwarding(ParametersPage *page)
+
+void Config::captureBaseline()
 {
-    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
-    for (int ii = 0; ii < ParametersPage::staticMetaObject.propertyCount(); ++ii) {
-        QMetaProperty prop = ParametersPage::staticMetaObject.property(ii);
-        if (prop.hasNotifySignal()) {
-            connect(page, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+    m_schemaBaseline.clear();
+    const QMetaObject *mo = &Config::staticMetaObject;
+    for (int ii = 0; ii < mo->propertyCount(); ++ii) {
+        QMetaProperty prop = mo->property(ii);
+        if (isTrackedForIsSchemaChanged(prop)) {
+            m_schemaBaseline.insert(prop.name(), prop.read(this));
         }
     }
-
-    // Safety net for anything deeper (see the comment in config.h)
-    connect(page, &ParametersPage::changed, this, &Config::onAnyPropertyChanged);
-
 }
 
-void Config::disconnectPageChangedForwarding(ParametersPage *page)
+void Config::updateIsSchemaChanged()
 {
-    const QMetaMethod onAnyPropertyChangedSlot = onAnyPropertyChangedSlotMethod();
-    for (int ii = 0; ii < ParametersPage::staticMetaObject.propertyCount(); ++ii) {
-        QMetaProperty prop = ParametersPage::staticMetaObject.property(ii);
-        if (prop.hasNotifySignal()) {
-            disconnect(page, prop.notifySignal(), this, onAnyPropertyChangedSlot);
+    bool ownChanged = false;
+    const QMetaObject *mo = metaObject();
+    for (int ii = 0; ii < mo->propertyCount(); ++ii) {
+        QMetaProperty prop = mo->property(ii);
+        if (isTrackedForIsSchemaChanged(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
+            ownChanged = true;
+            break;
         }
     }
-    disconnect(page, &ParametersPage::changed, this, &Config::onAnyPropertyChanged);
+    m_isSchemaChanged = ownChanged || (m_schemaChangedCounter > 0);
 }
 
-QMetaMethod Config::onAnyPropertyChangedSlotMethod()
-{
-    static const QMetaMethod slot = Config::staticMetaObject.method(
-        Config::staticMetaObject.indexOfSlot("onAnyPropertyChanged()"));
-    return slot;
-}
+
 
 
 Config::Config(QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0)
 {
     initInternalConnections();
+    captureBaseline();
+
 }
 
 
@@ -79,6 +90,8 @@ Config::Config(const QString &name, QObject *parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_name(name), m_count(0)
 {
     initInternalConnections();
+    captureBaseline();
+
 }
 
 
@@ -104,16 +117,19 @@ Config::Config(const QJsonObject &schemaConfig, const QJsonObject &valueConfig, 
     }
     else {
         // There are no useful data in schema or value
+        captureBaseline();
         return;
     }
 
     schemaFromJson(schemaConfig);
     valuesFromJson(valueConfig);
+    captureBaseline();
+
 }
 
 Config::~Config()
 {
-    emit aboutToBeDestroyed(this, m_uniqueId, m_isValueChanged);
+    emit aboutToBeDestroyed(this);
 }
 
 QJsonObject Config::toJsonValues() const
@@ -171,6 +187,7 @@ bool Config::valuesFromJson(const QJsonObject &json)
         // Get the unique JSON object and use it to set the name
         name = json.begin().key();
         setName(name);
+        captureBaseline();
     }
     else if(!json.contains(name)) {
         // This is not the correct JSON model
@@ -207,6 +224,7 @@ bool Config::schemaFromJson(const QJsonObject &json)
         // Get the unique JSON object and use it to set the name
         name = json.begin().key();
         setName(name);
+        captureBaseline();
     }
     else if(!json.contains(name)) {
         // This is not the correct JSON model
@@ -239,7 +257,6 @@ bool Config::schemaFromJson(const QJsonObject &json)
                 if(!append(page)) {
                     delete page;
                     continue;
-
                 }
             }
             page->schemaFromJson(schemaObj);
@@ -322,6 +339,42 @@ bool Config::isValueChanged() const
 QBindable<bool> Config::bindableIsValueChanged()
 {
     return QBindable<bool>(&m_isValueChanged);
+}
+
+void Config::resetAllValues()
+{
+    for (auto it = m_pagesByIndex.constBegin(); it != m_pagesByIndex.constEnd(); ++it) {
+        it.value()->resetAllValues();
+    }
+}
+
+bool Config::isSchemaChanged() const
+{
+    return m_isSchemaChanged.value();
+}
+
+QBindable<bool> Config::bindableIsSchemaChanged()
+{
+    return QBindable<bool>(&m_isSchemaChanged);
+}
+
+void Config::resetSchemaChange()
+{
+    const QMetaObject *mo = metaObject();
+    for (const QByteArray &propName : m_schemaBaseline.keys()) {
+        auto idx = mo->indexOfProperty(propName);
+        if (idx < 0) {
+            continue;
+        }
+        QMetaProperty prop = mo->property(idx);
+        if (prop.isWritable()) {
+            prop.write(this, m_schemaBaseline.value(propName));
+        }
+    }
+
+    for (auto it = m_pagesByIndex.constBegin(); it != m_pagesByIndex.constEnd(); ++it) {
+        it.value()->resetSchemaChange();
+    }
 }
 
 
@@ -415,11 +468,14 @@ void Config::remove(ParametersPage *page)
     if (page->isValueChanged()) {
         onPageIsValueChangedChanged(false);
     }
+    if (page->isSchemaChanged()) {
+        onPageIsSchemaChangedChanged(false);
+    }
 
     disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     disconnect(page, &ParametersPage::nameEdited, this, nullptr);
     disconnect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
-    disconnectPageChangedForwarding(page);
+    disconnect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
 
     emit pageRemoved(page);
     m_count = m_pagesByIndex.count();
@@ -450,7 +506,7 @@ void Config::clear()
         disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
         disconnect(page, &ParametersPage::nameEdited, this, nullptr);
         disconnect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
-        disconnectPageChangedForwarding(page);
+        disconnect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
 
         emit pageRemoved(page);
     }
@@ -459,6 +515,8 @@ void Config::clear()
 
     m_valueChangedCounter = 0;
     m_isValueChanged = false;
+    m_schemaChangedCounter = 0;
+    updateIsSchemaChanged();
 
     m_count = 0;
 }
@@ -824,22 +882,13 @@ void Config::saveComboBoxTextItems(QComboBox *cbo, const QString &paramName, con
 
 }
 
-void Config::onAnyPropertyChanged()
+void Config::onOwnPropertyChanged()
 {
-    if(m_anyPropertyChangedPending)
-        return;
-
-    m_anyPropertyChangedPending = true;
-    QMetaObject::invokeMethod(this, [this]{
-        m_anyPropertyChangedPending = false;
-        if(!signalsBlocked())
-            emit changed();
-    }, Qt::QueuedConnection);
-
+    updateIsSchemaChanged();
 }
 
 
-void Config::onPageAboutToBeDestroyed(ParametersPage *page, int uniqueId, bool wasChanged)
+void Config::onPageAboutToBeDestroyed(ParametersPage *page)
 {
     int idx = m_pageToIndex.value(page, -1);
     if(idx == -1) {
@@ -847,15 +896,18 @@ void Config::onPageAboutToBeDestroyed(ParametersPage *page, int uniqueId, bool w
     }
     m_pageToIndex.remove(page);
     m_pagesByIndex.remove(idx);
-    m_pagesByUniqueId.remove(uniqueId);
+    m_pagesByUniqueId.remove(page->uniqueId());
 
     // Remove from m_pagesByName using the pointer, not page->name(),
     // because the name could have been edited after insertion.
     QString key = m_pagesByName.key(page);
     m_pagesByName.remove(key);
 
-    if (wasChanged) {
+    if (page->isValueChanged()) {
         onPageIsValueChangedChanged(false);
+    }
+    if (page->isSchemaChanged()) {
+        onPageIsSchemaChangedChanged(false);
     }
 
     emit pageRemoved(page);
@@ -895,6 +947,17 @@ void Config::onPageIsValueChangedChanged(bool changed)
     m_isValueChanged = (m_valueChangedCounter > 0);
 }
 
+void Config::onPageIsSchemaChangedChanged(bool changed)
+{
+    if(changed) {
+        ++m_schemaChangedCounter;
+    }
+    else {
+        --m_schemaChangedCounter;
+    }
+    updateIsSchemaChanged();
+}
+
 void Config::appendPageAndUpdateIndexs(ParametersPage *page)
 {
     m_pageToIndex.insert(page, m_nextPageIndex);
@@ -908,10 +971,14 @@ void Config::appendPageAndUpdateIndexs(ParametersPage *page)
     connect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     connect(page, &ParametersPage::nameEdited, this, &Config::onPageNameEdited);
     connect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
-    connectPageChangedForwarding(page);
+    connect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
+
 
     if (page->isValueChanged()) {
         onPageIsValueChangedChanged(true);
+    }
+    if (page->isSchemaChanged()) {
+        onPageIsSchemaChangedChanged(true);
     }
 
     emit pageAdded(page);

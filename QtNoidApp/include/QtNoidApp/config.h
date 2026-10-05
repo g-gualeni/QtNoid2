@@ -22,6 +22,7 @@ class QTNOIDAPP_EXPORT Config : public QObject
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
+    Q_PROPERTY(bool isSchemaChanged READ isSchemaChanged BINDABLE bindableIsSchemaChanged NOTIFY isSchemaChangedChanged FINAL)
     Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
 
 public:
@@ -129,6 +130,16 @@ public:
     // isValueChanged: aggregated from pages
     bool isValueChanged() const;
     QBindable<bool> bindableIsValueChanged();
+    void resetAllValues();   // cascades resetAllValues() to every page
+
+
+    // isSchemaChanged: tracks modifications to this config's own properties
+    // (name, label, description, tooltip) and to any contained ParametersPage's
+    // isSchemaChanged, unlike isValueChanged which only tracks value changes.
+    bool isSchemaChanged() const;
+    QBindable<bool> bindableIsSchemaChanged();
+    void resetSchemaChange();   // restores own properties AND cascades to every page
+
 
     // Container management
     int count() const;
@@ -214,23 +225,24 @@ public:
     };
 
 signals:
-    void aboutToBeDestroyed(QtNoid::App::Config *config, int uniqueId, bool wasChanged);
+    void aboutToBeDestroyed(QtNoid::App::Config *config);
     void nameChanged(const QString& value);
-    void changed();
     void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
     void isValueChangedChanged(bool value);
+    void isSchemaChangedChanged(bool changed);
     void countChanged(int count);
     void pageAdded(const QtNoid::App::ParametersPage* parametersPage);
     void pageRemoved(QtNoid::App::ParametersPage* parametersPage);
     void pageRenameError(const QString& oldName, const QString& newName);
 
 private slots:
-    void onAnyPropertyChanged();   // collect all notify and schedule a single changed() signal
-    void onPageAboutToBeDestroyed(QtNoid::App::ParametersPage *page, int uniqueId, bool wasChanged);
+    void onOwnPropertyChanged();
+    void onPageAboutToBeDestroyed(QtNoid::App::ParametersPage *page);
     void onPageNameEdited(const QString& oldName, const QString& newName);
     void onPageIsValueChangedChanged(bool changed);
+    void onPageIsSchemaChangedChanged(bool changed);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_name, &Config::nameChanged)
@@ -238,14 +250,17 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_description, &Config::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_tooltip, &Config::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isValueChanged, &Config::isValueChangedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isSchemaChanged, &Config::isSchemaChangedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, int, m_count, &Config::countChanged)
+
     QHash<int, ParametersPage*> m_pagesByUniqueId;
     QMap<int, ParametersPage*> m_pagesByIndex;
     QHash<ParametersPage*, int> m_pageToIndex; // ParametersPage -> sortIndex
     QHash<QString, ParametersPage*> m_pagesByName;
     int m_nextPageIndex = 0;
     int m_valueChangedCounter = 0;
-    bool m_anyPropertyChangedPending = false;
+    int m_schemaChangedCounter = 0;
+
 
     static QMutex s_uniqueIdMutex;
     static int s_nextUniqueId;
@@ -253,22 +268,12 @@ private:
     int getNextUniqueId();
 
     void initInternalConnections();
-    // Forward a contained ParametersPage's own properties straight into
-    // Config's onAnyPropertyChanged() coalescing slot (Option 2, one level
-    // up) -- plus a safety net connected to the page's own changed(): that
-    // one is already debounced by the page itself, so it catches anything
-    // deeper (a contained Parameter's value, unit, min, max, range,
-    // presets...) that never touches one of the page's own properties.
-    // Only that deeper case costs one extra queued hop; the common case
-    // (a page's own name/label/description/tooltip/count/isValueChanged)
-    // stays single-hop.
-    void connectPageChangedForwarding(ParametersPage *page);
-    void disconnectPageChangedForwarding(ParametersPage *page);
-    static QMetaMethod onAnyPropertyChangedSlotMethod();
+    void captureBaseline();
+    void updateIsSchemaChanged();
+    QHash<QByteArray, QVariant> m_schemaBaseline;
 
     void appendPageAndUpdateIndexs(ParametersPage *page);
     bool saveValuePrivate(const QString &paramName, const QVariant &value, const QString &pageName);
-
 };
 
 } // namespace App

@@ -65,6 +65,13 @@ private slots:
 
     void testParametersPageIsValueChanged();
     void testBindableIsValueChangedProperty();
+    void testParametersPageResetAllValues();
+    void testParametersPageResetAllValuesDoesNotAffectSchema();
+
+    void testParametersPageIsSchemaChanged();
+    void testBindableIsSchemaChangedProperty();
+    void testParametersPageResetSchemaChange();
+    void testParametersPageResetSchemaChangeDoesNotAffectValues();
 
     void testToJsonValues();
     void testToJsonValuesNoName();
@@ -110,19 +117,7 @@ private slots:
 
 
     // Testing aboutToBeDestroyed
-    void testAboutToBeDestroyedSignalWhenValueUnchanged();
-    void testAboutToBeDestroyedSignalWhenValueChanged();
-
-    // Generic changed() aggregate signal tests (page's own properties only;
-    // forwarding from contained Parameter objects is covered separately)
-    void testParametersPageChangedSignalEmittedForEachOwnPropertyType();
-    void testParametersPageChangedSignalCoalescesMultiplePropertyChanges();
-    void testParametersPageChangedSignalNotEmittedWhenSignalsBlocked();
-
-    // changed() forwarding from a contained Parameter
-    void testParametersPageChangedSignalEmittedOnceWhenContainedParametersChanges();
-    void testParametersPageChangedSignalNotEmittedWhenContainedParameterValueUnchanged();
-    void testParametersPageChangedSignalNotEmittedAfterParameterRemoved();
+    void testAboutToBeDestroyedSignal();
 };
 
 
@@ -1641,6 +1636,183 @@ void TestQtNoidAppParametersPage::testBindableIsValueChangedProperty()
     QCOMPARE(externalProperty.value(), false);
 }
 
+void TestQtNoidAppParametersPage::testParametersPageResetAllValues()
+{
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    Parameter* p2 = page.emplace(5, "Param2");
+
+    p1->setValue(99);
+    p2->setValue(50);
+    QCOMPARE(page.isValueChanged(), true);
+
+    page.resetAllValues();
+
+    QCOMPARE(p1->value(), 10);
+    QCOMPARE(p2->value(), 5);
+    QCOMPARE(p1->isValueChanged(), false);
+    QCOMPARE(p2->isValueChanged(), false);
+    QCOMPARE(page.isValueChanged(), false);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageResetAllValuesDoesNotAffectSchema()
+{
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    p1->setValue(99);
+    p1->setLabel("New label");
+    page.setDescription("Page description");
+
+    QCOMPARE(page.isValueChanged(), true);
+    QCOMPARE(page.isSchemaChanged(), true);
+
+    page.resetAllValues();
+
+    QCOMPARE(p1->value(), 10);
+    QCOMPARE(page.isValueChanged(), false);
+    // resetAllValues() only touches values: schema changes on both the page
+    // and the contained parameter must survive.
+    QCOMPARE(p1->label(), QString("New label"));
+    QCOMPARE(page.description(), QString("Page description"));
+    QCOMPARE(page.isSchemaChanged(), true);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageIsSchemaChanged()
+{
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    Parameter* p2 = page.emplace(5, "Param2");
+
+    // Nothing changed yet
+    QCOMPARE(page.isSchemaChanged(), false);
+
+    QSignalSpy spy(&page, &ParametersPage::isSchemaChangedChanged);
+
+    // Changing the page's own schema property flips the aggregate to true
+    page.setLabel("New label");
+    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+
+    // Restoring that own property back to the baseline value (without going
+    // through resetSchemaChange()) must recompute the flag back to false:
+    // isSchemaChanged compares against the baseline, it is not a sticky flag.
+    page.setLabel(QString());
+    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), false);
+
+    // A contained Parameter's schema change should aggregate too
+    p1->setLabel("Param label");
+    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+
+    // A second parameter changing too should not emit again (already true)
+    p2->setLabel("Param2 label");
+    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(spy.count(), 0);
+
+    // Reverting the first parameter: the second is still changed, aggregate stays true
+    p1->resetSchemaChange();
+    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(spy.count(), 0);
+
+    // Reverting the last changed parameter: aggregate must go back to false
+    p2->resetSchemaChange();
+    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), false);
+
+    // Adding a parameter whose schema is already changed activates the flag
+    Parameter modPar_p3(0, "ModifiedParameter", this);
+    modPar_p3.setLabel("already changed");
+    auto res = page.append(&modPar_p3);
+    QCOMPARE(res, true);
+    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+
+    page.removeParameter(&modPar_p3);
+    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), false);
+}
+
+void TestQtNoidAppParametersPage::testBindableIsSchemaChangedProperty()
+{
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+
+    auto bindableIsSchemaChanged = page.bindableIsSchemaChanged();
+    QVERIFY(bindableIsSchemaChanged.isValid());
+    QCOMPARE(bindableIsSchemaChanged.value(), false);
+
+    // Test binding to another property
+    QProperty<bool> externalProperty;
+    externalProperty.setBinding([&]() { return bindableIsSchemaChanged.value(); });
+    QCOMPARE(externalProperty.value(), false);
+
+    // Changing the child parameter's schema should propagate through the binding
+    p1->setLabel("New label");
+    QCOMPARE(bindableIsSchemaChanged.value(), true);
+    QCOMPARE(externalProperty.value(), true);
+
+    // Reverting the parameter's schema should propagate back to false
+    p1->resetSchemaChange();
+    QCOMPARE(bindableIsSchemaChanged.value(), false);
+    QCOMPARE(externalProperty.value(), false);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageResetSchemaChange()
+{
+    ParametersPage page("TestPage", this);
+    Parameter* p1 = page.emplace(10, "Param1", "Original description");
+    p1->setLabel("Param label");
+    page.setLabel("Page label");
+    page.setDescription("Page description");
+    page.setTooltip("Page tooltip");
+    page.setReadOnly(true);
+    page.setVisible(false);
+
+    QCOMPARE(page.isSchemaChanged(), true);
+
+    page.resetSchemaChange();
+
+    QCOMPARE(page.label(), QString());
+    QCOMPARE(page.description(), QString());
+    QCOMPARE(page.tooltip(), QString());
+    QCOMPARE(page.readOnly(), false);
+    QCOMPARE(page.visible(), true);
+    QCOMPARE(page.isSchemaChanged(), false);
+
+    // Cascades down to every contained Parameter too.
+    QCOMPARE(p1->label(), QString());
+    QCOMPARE(p1->description(), QString("Original description"));
+    QCOMPARE(p1->isSchemaChanged(), false);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageResetSchemaChangeDoesNotAffectValues()
+{
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    p1->setValue(99);
+    p1->setLabel("New label");
+    page.setDescription("Page description");
+
+    QCOMPARE(page.isValueChanged(), true);
+    QCOMPARE(page.isSchemaChanged(), true);
+
+    page.resetSchemaChange();
+
+    // resetSchemaChange() only touches schema properties: values stay as set.
+    QCOMPARE(p1->value(), 99);
+    QCOMPARE(page.isValueChanged(), true);
+    QCOMPARE(page.description(), QString());
+    QCOMPARE(p1->label(), QString());
+    QCOMPARE(page.isSchemaChanged(), false);
+}
+
 
 void TestQtNoidAppParametersPage::testParameterRenameError()
 {
@@ -2570,10 +2742,9 @@ void TestQtNoidAppParametersPage::testParametersPageWithQDebugOperatorWithPointe
 
 }
 
-void TestQtNoidAppParametersPage::testAboutToBeDestroyedSignalWhenValueUnchanged()
+void TestQtNoidAppParametersPage::testAboutToBeDestroyedSignal()
 {
     auto page = new ParametersPage("TestPage");
-    int expectedUniqueId = page->uniqueId();
     const quintptr expectedAddress = reinterpret_cast<quintptr>(page);
 
     QSignalSpy spy(page, &ParametersPage::aboutToBeDestroyed);
@@ -2582,171 +2753,11 @@ void TestQtNoidAppParametersPage::testAboutToBeDestroyedSignalWhenValueUnchanged
     delete page;
 
     QCOMPARE(spy.count(), 1);
-    const QList<QVariant> args = spy.constFirst();
-    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<ParametersPage*>()), expectedAddress);
-    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
-    QCOMPARE(args.at(2).toBool(), false);
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(reinterpret_cast<quintptr>(arguments.at(0).value<ParametersPage*>()), expectedAddress);
 
 }
 
-void TestQtNoidAppParametersPage::testAboutToBeDestroyedSignalWhenValueChanged()
-{
-    auto page = new ParametersPage("TestPage");
-    page->emplace(100, "SomeParam")->setValue(10);
-    int expectedUniqueId = page->uniqueId();
-    const quintptr expectedAddress = reinterpret_cast<quintptr>(page);
-
-    QSignalSpy spy(page, &ParametersPage::aboutToBeDestroyed);
-    QVERIFY(spy.isValid());
-
-    delete page;
-
-    QCOMPARE(spy.count(), 1);
-    const QList<QVariant> args = spy.constFirst();
-    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<ParametersPage*>()), expectedAddress);
-    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
-    QCOMPARE(args.at(2).toBool(), true);
-
-}
-
-void TestQtNoidAppParametersPage::testParametersPageChangedSignalEmittedForEachOwnPropertyType()
-{
-    ParametersPage page("TestPage");
-    QSignalSpy spy(&page, &ParametersPage::changed);
-    QVERIFY(spy.isValid());
-
-    // Every one of the page's own properties with a NOTIFY signal is wired to
-    // changed(). Flushing the event loop after each individual change
-    // confirms each one is correctly wired, without coalescing masking a
-    // missing connection.
-    auto changeAndVerify = [&spy](auto&& change) {
-        change();
-        QVERIFY(spy.wait());
-        QCOMPARE(spy.count(), 1);
-        spy.clear();
-    };
-
-    changeAndVerify([&]{ page.setName("AnotherName"); });
-    changeAndVerify([&]{ page.setLabel("New label"); });
-    changeAndVerify([&]{ page.setDescription("New description"); });
-    changeAndVerify([&]{ page.setTooltip("New tooltip"); });
-    changeAndVerify([&]{ page.setVisible(false); });
-    changeAndVerify([&]{ page.setReadOnly(true); });
-}
-
-void TestQtNoidAppParametersPage::testParametersPageChangedSignalCoalescesMultiplePropertyChanges()
-{
-    ParametersPage page("TestPage");
-    QSignalSpy spy(&page, &ParametersPage::changed);
-    QVERIFY(spy.isValid());
-
-    // Several properties changed back-to-back, still inside the same call
-    // stack, must collapse into a single changed() emission instead of one
-    // per property.
-    page.setLabel("New label");
-    page.setDescription("New description");
-    page.setTooltip("New tooltip");
-    page.setReadOnly(true);
-
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 1);
-
-    // No further emission is left pending after the coalesced one arrives.
-    QVERIFY(!spy.wait(1));
-    QCOMPARE(spy.count(), 1);
-}
-
-void TestQtNoidAppParametersPage::testParametersPageChangedSignalNotEmittedWhenSignalsBlocked()
-{
-    ParametersPage page("TestPage");
-    QSignalSpy spy(&page, &ParametersPage::changed);
-    QVERIFY(spy.isValid());
-
-    // The blocked state is checked when the deferred emission actually
-    // fires, not when it is scheduled, so blocking before the event loop
-    // runs is enough to suppress the coalesced changed().
-    page.blockSignals(true);
-    page.setLabel("New label");
-    QVERIFY(!spy.wait(1));
-    QCOMPARE(spy.count(), 0);
-
-    page.blockSignals(false);
-}
-
-
-void TestQtNoidAppParametersPage::testParametersPageChangedSignalEmittedOnceWhenContainedParametersChanges()
-{
-    ParametersPage page("TestPage");
-    Parameter* param1 = page.emplace(100, "Param1");
-    QVERIFY(param1 != nullptr);
-    Parameter* param2 = page.emplace(100, "Param2");
-    QVERIFY(param2 != nullptr);
-
-    QSignalSpy spy(&page, &ParametersPage::changed);
-    QVERIFY(spy.isValid());
-
-    // We apply 4 modification or probably 6 but we get just 1 notification
-    param1->setValue(200);
-    param1->setRange(10, 1000);
-    param2->setValue(200);
-    param2->setRange(10, 1000);
-
-    // The signal needs at least 1 loop
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 1);
-}
-
-void TestQtNoidAppParametersPage::testParametersPageChangedSignalNotEmittedWhenContainedParameterValueUnchanged()
-{
-    ParametersPage page("TestPage");
-    QSignalSpy spy(&page, &ParametersPage::changed);
-    QVERIFY(spy.isValid());
-
-    // Create the object and clear the spy
-    Parameter* param = page.emplace(100, "SomeParam");
-    QVERIFY(param != nullptr);
-    spy.wait();
-    spy.clear();
-
-    param->setValue(100); // same value: no property notify at all
-
-    QVERIFY(!spy.wait(1));
-    QCOMPARE(spy.count(), 0);
-}
-
-void TestQtNoidAppParametersPage::testParametersPageChangedSignalNotEmittedAfterParameterRemoved()
-{
-    ParametersPage page("TestPage");
-    QSignalSpy spy(&page, &ParametersPage::changed);
-    QVERIFY(spy.isValid());
-
-    Parameter* param = page.emplace(100, "SomeParam");
-    QVERIFY(param != nullptr);
-
-    // emplace() already changed the page's own count property (0 -> 1),
-    // which schedules its own changed(). Let it drain before measuring
-    // anything else, otherwise it gets mistaken for a signal caused by the
-    // parameter change further down.
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 1);
-    spy.clear();
-
-
-    // removeParameter() disconnects the forwarding connections;
-    // and it changes count back to 0, so we expect a change for the page
-    page.removeParameter(param);
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 1);
-    spy.clear();
-
-    // Remove does not delete the parameter that is still alive and parented
-    // to the page.
-    // Changing it should not reach the page's changed() anymore.
-    param->setValue(200);
-
-    QVERIFY(!spy.wait(1));
-    QCOMPARE(spy.count(), 0);
-}
 
 
 QTEST_MAIN(TestQtNoidAppParametersPage)

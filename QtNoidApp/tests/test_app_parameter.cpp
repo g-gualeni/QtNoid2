@@ -45,16 +45,8 @@ private slots:
     void testParameterTooltip();
     void testParameterReadOnly();
 
-    // Generic changed() aggregate signal tests
-    void testParameterChangedSignalEmittedOnValueChange();
-    void testParameterChangedSignalNotEmittedWhenValueUnchanged();
-    void testParameterChangedSignalEmittedForEachPropertyType();
-    void testParameterChangedSignalCoalescesMultiplePropertyChanges();
-    void testParameterChangedSignalNotEmittedWhenSignalsBlocked();
-
     // aboutToBeDestroyed signal tests
-    void testAboutToBeDestroyedSignalWhenValueUnchanged();
-    void testAboutToBeDestroyedSignalWhenValueChanged();
+    void testAboutToBeDestroyedSignal();
 
     // Slot tests
     void testSetValueAsSlot();
@@ -73,6 +65,7 @@ private slots:
     void testBindableTooltip();
     void testBindableVisible();
     void testBindableReadOnly();
+    void testBindableIsSchemaChanged();
 
     // ToJSON Schema tests
     void testParameterToJsonSchema();
@@ -115,11 +108,24 @@ private slots:
     void testParameterFromJsonWithInvalidValueShouldLeaveValueUnchanged();
     void testParameterFromJsonWithIncompleteSchemaShouldOverrideExisitingSchema();
 
-    // isChanged flag tests
+    // isValueChanged flag tests
     void testParameterIsValueChangedShouldBeFalseAfterConstructor();
     void testParameterIsValueChangedOnlyAfterValueChanged();
     void testParameterIsValueChangedShouldBeTrueAfterLoadingADifferentJsonValues();
     void testParameterIsValueChangedSholdBeFalseAfterSettingTheSameValue();
+
+    // isSchemaChanged flag tests
+    void testParameterIsSchemaChangedShouldBeFalseAfterConstructor();
+    void testParameterIsSchemaChangedOnlyAfterSchemaPropertyChanged();
+    void testParameterIsSchemaChangedNotAffectedByValueChange();
+    void testParameterIsSchemaChangedShouldBeFalseAfterLoadingFromJson();
+
+    // resetValueChange() / resetSchemaChange() tests
+    void testParameterResetValueChange();
+    void testParameterResetValueChangeDoesNotAffectSchema();
+    void testParameterResetSchemaChange();
+    void testParameterResetSchemaChangeDoesNotAffectValue();
+    void testParameterResetSchemaChangeMinMaxCanClampCurrentValueAsSideEffect();
 
     // QDebug operator<< tests
     void testParameterWithQDebugOperator();
@@ -788,118 +794,16 @@ void TestQtNoidAppParameter::testParameterReadOnly()
     QCOMPARE(par.value(), 300.0);
 }
 
-void TestQtNoidAppParameter::testParameterChangedSignalEmittedOnValueChange()
-{
-    Parameter par(100, "ChangedSignalParam");
-    QSignalSpy spy(&par, &Parameter::changed);
-    QVERIFY(spy.isValid());
-
-    // changed() is coalesced and posted via a queued connection, so it is not
-    // emitted synchronously: it only arrives once the event loop runs.
-    par.setValue(200);
-    QCOMPARE(spy.count(), 0);
-
-    // QElapsedTimer ET;
-    // ET.start();
-
-    QVERIFY(spy.wait());
-    // qDebug() << ET.nsecsElapsed(); -> Just 50 micro seconds
-
-    QCOMPARE(spy.count(), 1);
-}
-
-void TestQtNoidAppParameter::testParameterChangedSignalNotEmittedWhenValueUnchanged()
-{
-    Parameter par(100, "ChangedSignalParam");
-    QSignalSpy spy(&par, &Parameter::changed);
-    QVERIFY(spy.isValid());
-
-    // Setting the same value triggers no property notify signal at all, so
-    // nothing is ever scheduled: no changed() arrives even after waiting.
-    par.setValue(100);
-
-    // QElapsedTimer ET; ET.start();
-    QVERIFY(!spy.wait(1));
-    // qDebug() << ET.nsecsElapsed();
-    QCOMPARE(spy.count(), 0);
-}
-
-void TestQtNoidAppParameter::testParameterChangedSignalEmittedForEachPropertyType()
-{
-    Parameter par(100, "ChangedSignalParam");
-    QSignalSpy spy(&par, &Parameter::changed);
-    QVERIFY(spy.isValid());
-
-    // Every property with a NOTIFY signal is wired to changed(). Flushing the
-    // event loop after each individual change confirms each one is correctly
-    // wired, without coalescing masking a missing connection.
-    auto changeAndVerify = [&spy](auto&& change) {
-        change();
-        QVERIFY(spy.wait());
-        QCOMPARE(spy.count(), 1); // exactly one, not just "at least one"
-        spy.clear();
-    };
-
-    changeAndVerify([&]{ par.setLabel("New label"); });
-    changeAndVerify([&]{ par.setDescription("New description"); });
-    changeAndVerify([&]{ par.setUnit("kg"); });
-    changeAndVerify([&]{ par.setTooltip("New tooltip"); });
-    changeAndVerify([&]{ par.setReadOnly(true); });
-    changeAndVerify([&]{ par.setVisible(false); });
-    changeAndVerify([&]{ par.setMin(0); });
-    changeAndVerify([&]{ par.setMax(1000); });
-    changeAndVerify([&]{ par.setPresets({{"Low", 10}, {"High", 900}}); });
-    changeAndVerify([&]{ par.setName("NewChangedSignalParamName"); });
-}
-
-void TestQtNoidAppParameter::testParameterChangedSignalCoalescesMultiplePropertyChanges()
-{
-    Parameter par(100, "ChangedSignalParam");
-    QSignalSpy spy(&par, &Parameter::changed);
-    QVERIFY(spy.isValid());
-
-    // Several properties changed back-to-back, still inside the same call
-    // stack, must collapse into a single changed() emission instead of one
-    // per property: this is the whole point of the coalescing mechanism.
-    par.setLabel("New label");
-    par.setDescription("New description");
-    par.setUnit("kg");
-    par.setReadOnly(true);
-
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 1);
-
-    // No further emission is left pending after the coalesced one arrives.
-    QVERIFY(!spy.wait(1));
-    QCOMPARE(spy.count(), 1);
-}
-
-void TestQtNoidAppParameter::testParameterChangedSignalNotEmittedWhenSignalsBlocked()
-{
-    Parameter par(100, "ChangedSignalParam");
-    QSignalSpy spy(&par, &Parameter::changed);
-    QVERIFY(spy.isValid());
-
-    // The blocked state is checked when the deferred emission actually
-    // fires, not when it is scheduled, so blocking before the event loop
-    // runs is enough to suppress the coalesced changed().
-    par.blockSignals(true);
-    par.setValue(200);
-    QVERIFY(!spy.wait(1));
-    QCOMPARE(spy.count(), 0);
-    par.blockSignals(false);
-}
-
-void TestQtNoidAppParameter::testAboutToBeDestroyedSignalWhenValueUnchanged()
+void TestQtNoidAppParameter::testAboutToBeDestroyedSignal()
 {
     auto par = new Parameter(100, "TestParam");
+
     // Capture the address as a plain integer *before* deleting: a void* (or
     // Parameter*) alias of freed memory still trips
     // clang-analyzer-cplusplus.NewDelete on any later read, even a
     // non-dereferencing comparison. quintptr breaks that pointer-provenance
     // tracking while still verifying the same identity.
     const quintptr expectedAddress = reinterpret_cast<quintptr>(par);
-    const int expectedUniqueId = par->uniqueId();
 
     QSignalSpy spy(par, &Parameter::aboutToBeDestroyed);
     QVERIFY(spy.isValid());
@@ -907,32 +811,10 @@ void TestQtNoidAppParameter::testAboutToBeDestroyedSignalWhenValueUnchanged()
     delete par;
 
     QCOMPARE(spy.count(), 1);
-    const QList<QVariant> args = spy.constFirst();
-    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<Parameter*>()), expectedAddress);
-    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
-    QCOMPARE(args.at(2).toBool(), false);
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(reinterpret_cast<quintptr>(arguments.at(0).value<Parameter*>()), expectedAddress);
 }
 
-void TestQtNoidAppParameter::testAboutToBeDestroyedSignalWhenValueChanged()
-{
-    auto par = new Parameter(100, "TestParam");
-    par->setValue(200); // makes isValueChanged() true
-    // See testAboutToBeDestroyedSignalWhenValueUnchanged() for why this is a
-    // quintptr rather than a Parameter*/void*.
-    const quintptr expectedAddress = reinterpret_cast<quintptr>(par);
-    const int expectedUniqueId = par->uniqueId();
-
-    QSignalSpy spy(par, &Parameter::aboutToBeDestroyed);
-    QVERIFY(spy.isValid());
-
-    delete par;
-
-    QCOMPARE(spy.count(), 1);
-    const QList<QVariant> args = spy.constFirst();
-    QCOMPARE(reinterpret_cast<quintptr>(args.at(0).value<Parameter*>()), expectedAddress);
-    QCOMPARE(args.at(1).toInt(), expectedUniqueId);
-    QCOMPARE(args.at(2).toBool(), true);
-}
 
 void TestQtNoidAppParameter::testSetValueAsSlot()
 {
@@ -1297,6 +1179,32 @@ void TestQtNoidAppParameter::testBindableReadOnly()
     // Test setting readOnly through bindable
     bindableReadOnly.setValue(false);
     QCOMPARE(par.readOnly(), false);
+    QCOMPARE(externalProperty.value(), false);
+}
+
+void TestQtNoidAppParameter::testBindableIsSchemaChanged()
+{
+    Parameter par(50.0, "TestParam", this);
+
+    // Get bindable isSchemaChanged
+    auto bindableIsSchemaChanged = par.bindableIsSchemaChanged();
+    QVERIFY(bindableIsSchemaChanged.isValid());
+    QCOMPARE(bindableIsSchemaChanged.value(), false);
+
+    // Test binding to another QProperty
+    QProperty<bool> externalProperty;
+    externalProperty.setBinding([&]() { return par.bindableIsSchemaChanged().value(); });
+    QCOMPARE(externalProperty.value(), false);
+
+    // Change a schema property and verify binding updates
+    par.setLabel("New label");
+    QCOMPARE(externalProperty.value(), true);
+
+    // A value change must not affect isSchemaChanged's bindable
+    par.setValue(99.0);
+    QCOMPARE(externalProperty.value(), true); // still true, from the label change above
+
+    par.resetSchemaChange();
     QCOMPARE(externalProperty.value(), false);
 }
 
@@ -2259,6 +2167,192 @@ void TestQtNoidAppParameter::testParameterIsValueChangedSholdBeFalseAfterSetting
     param.setValue(val);
     QCOMPARE(param.value(), 25.5);
     QCOMPARE(param.isValueChanged(), false);
+}
+
+void TestQtNoidAppParameter::testParameterIsSchemaChangedShouldBeFalseAfterConstructor()
+{
+    // Test that a newly created parameter has isSchemaChanged() = false
+    Parameter param1(this);
+    QCOMPARE(param1.isSchemaChanged(), false);
+
+    Parameter param2(42.0, this);
+    QCOMPARE(param2.isSchemaChanged(), false);
+
+    Parameter param3(100.0, "TestParam", this);
+    QCOMPARE(param3.isSchemaChanged(), false);
+
+    Parameter param4(25.5, "Temperature", "Temperature sensor", this);
+    QCOMPARE(param4.isSchemaChanged(), false);
+
+    // Test with JSON constructor
+    QJsonObject temperatureSchema;
+    QJsonObject temperatureObject;
+    temperatureObject["description"] = "Temperature";
+    temperatureObject["unit"] = "°C";
+    temperatureSchema["Temperature"] = temperatureObject;
+
+    QJsonObject valueJson;
+    valueJson["Temperature"] = 20.0;
+
+    Parameter param5(temperatureSchema, valueJson, this);
+    QCOMPARE(param5.isSchemaChanged(), false);
+}
+
+void TestQtNoidAppParameter::testParameterIsSchemaChangedOnlyAfterSchemaPropertyChanged()
+{
+    // Every schema-like property change must flip isSchemaChanged() to true.
+    auto checkFlipsSchemaChanged = [this](auto&& change) {
+        Parameter par(25.0, "TestParam", this);
+        QCOMPARE(par.isSchemaChanged(), false);
+        change(par);
+        QCOMPARE(par.isSchemaChanged(), true);
+    };
+
+    checkFlipsSchemaChanged([](Parameter &par){ par.setName("NewName"); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setLabel("New label"); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setDescription("New description"); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setUnit("kg"); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setTooltip("New tooltip"); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setReadOnly(true); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setVisible(false); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setMin(0); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setMax(1000); });
+    checkFlipsSchemaChanged([](Parameter &par){ par.setPresets({{"Low", 10}, {"High", 900}}); });
+}
+
+void TestQtNoidAppParameter::testParameterIsSchemaChangedNotAffectedByValueChange()
+{
+    Parameter par(25.0, "TestParam", this);
+    QCOMPARE(par.isSchemaChanged(), false);
+
+    par.setValue(30.0);
+    QCOMPARE(par.isValueChanged(), true);
+    QCOMPARE(par.isSchemaChanged(), false);
+
+    // Even when a min change clamps the current value as a side effect,
+    // isSchemaChanged() turns true because min changed, not because of the
+    // value clamp: value is never part of the schema tracking.
+    Parameter paramMin(25.0, this);
+    paramMin.setMin(26);
+    QCOMPARE(paramMin.value(), 26);
+    QCOMPARE(paramMin.isValueChanged(), true);
+    QCOMPARE(paramMin.isSchemaChanged(), true);
+}
+
+void TestQtNoidAppParameter::testParameterIsSchemaChangedShouldBeFalseAfterLoadingFromJson()
+{
+    Parameter param(25.5, "Parameter", "this is a parameter");
+    param.setUnit("kg");
+    QCOMPARE(param.isSchemaChanged(), true);
+
+    QJsonObject jsonSchema = param.toJsonSchema();
+    param.setTooltip("Changed again");
+    QCOMPARE(param.isSchemaChanged(), true);
+
+    // schemaFromJson() re-captures the baseline, so the flag goes back to false.
+    param.schemaFromJson(jsonSchema);
+    QCOMPARE(param.unit(), QString("kg"));
+    QCOMPARE(param.isSchemaChanged(), false);
+}
+
+void TestQtNoidAppParameter::testParameterResetValueChange()
+{
+    Parameter param(25.0, "TestParam", this);
+    param.setValue(99.0);
+    QCOMPARE(param.isValueChanged(), true);
+
+    param.resetValueChange();
+    QCOMPARE(param.value(), 25.0);
+    QCOMPARE(param.isValueChanged(), false);
+}
+
+void TestQtNoidAppParameter::testParameterResetValueChangeDoesNotAffectSchema()
+{
+    Parameter param(25.0, "TestParam", this);
+    param.setValue(99.0);
+    param.setLabel("New label");
+    QCOMPARE(param.isValueChanged(), true);
+    QCOMPARE(param.isSchemaChanged(), true);
+
+    param.resetValueChange();
+    QCOMPARE(param.value(), 25.0);
+    QCOMPARE(param.isValueChanged(), false);
+    // resetValueChange() only touches value: label stays as set, and the
+    // schema is still reported as changed.
+    QCOMPARE(param.label(), QString("New label"));
+    QCOMPARE(param.isSchemaChanged(), true);
+}
+
+void TestQtNoidAppParameter::testParameterResetSchemaChange()
+{
+    Parameter param(25.0, "TestParam", "Original description", this);
+    param.setLabel("New label");
+    param.setDescription("New description");
+    param.setUnit("kg");
+    param.setTooltip("New tooltip");
+    param.setReadOnly(true);
+    param.setVisible(false);
+    param.setMin(0);
+    param.setMax(100);
+    param.setPresets({{"Low", 10}});
+    param.setName("NewName");
+    QCOMPARE(param.isSchemaChanged(), true);
+
+    param.resetSchemaChange();
+
+    QCOMPARE(param.name(), QString("TestParam"));
+    QCOMPARE(param.label(), QString());
+    QCOMPARE(param.description(), QString("Original description"));
+    QCOMPARE(param.unit(), QString());
+    QCOMPARE(param.tooltip(), QString());
+    QCOMPARE(param.readOnly(), false);
+    QCOMPARE(param.visible(), true);
+    QCOMPARE(param.min(), QVariant());
+    QCOMPARE(param.max(), QVariant());
+    QCOMPARE(param.presets(), QVariantMap());
+    QCOMPARE(param.isSchemaChanged(), false);
+}
+
+void TestQtNoidAppParameter::testParameterResetSchemaChangeDoesNotAffectValue()
+{
+    Parameter param(25.0, "TestParam", this);
+    param.setValue(99.0);
+    param.setLabel("New label");
+    QCOMPARE(param.isValueChanged(), true);
+    QCOMPARE(param.isSchemaChanged(), true);
+
+    param.resetSchemaChange();
+
+    // resetSchemaChange() only touches schema properties: value stays as set,
+    // and isValueChanged() is still true.
+    QCOMPARE(param.value(), 99.0);
+    QCOMPARE(param.isValueChanged(), true);
+    QCOMPARE(param.label(), QString());
+    QCOMPARE(param.isSchemaChanged(), false);
+}
+
+void TestQtNoidAppParameter::testParameterResetSchemaChangeMinMaxCanClampCurrentValueAsSideEffect()
+{
+    // Known, accepted side effect: restoring min/max via resetSchemaChange()
+    // still runs through the normal setMin()/setMax() setters, which trigger
+    // enforceRange() and may clamp the *current* value against the restored
+    // range, even though value itself is excluded from the schema baseline.
+    Parameter param(75.0, "TestParam", this);
+    param.setRange(50, 100);
+    param.captureBaseline(); // friend access: re-baseline with this range as "original"
+    QCOMPARE(param.isSchemaChanged(), false);
+
+    param.setMin(0); // schema change: widen the range downward
+    param.setValue(10); // now allowed since min is 0
+    QCOMPARE(param.value(), 10.0);
+    QCOMPARE(param.isSchemaChanged(), true);
+
+    param.resetSchemaChange(); // restores min back to 50...
+
+    QCOMPARE(param.min(), QVariant(50));
+    // ...which re-clamps the still-unreset current value as a side effect.
+    QCOMPARE(param.value(), 50.0);
+    QCOMPARE(param.isSchemaChanged(), false);
 }
 
 void TestQtNoidAppParameter::testParameterWithQDebugOperator()

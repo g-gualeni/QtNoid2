@@ -17,7 +17,7 @@ option(BUILD_JSON "Build QtNoidJson library" ON)
 
 option(BUILD_TESTS "Build tests" ON)
 
-option(BUILD_EXAMPLES "Build examples" ON)
+option(BUILD_EXAMPLES "Build examples" OFF)
 
 
 # =============================================================================
