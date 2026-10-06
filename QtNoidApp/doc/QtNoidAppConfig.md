@@ -6,6 +6,7 @@ A Config has the following properties:
 - **description**: Descriptive text explaining the purpose of the configuration.
 - **tooltip**: Tooltip text for UI elements.
 - **isValueChanged**: Read-only property, true when at least one of the contained pages currently differs from its reference value.
+- **isSchemaChanged**: Read-only property, true when either this configuration's own properties (name, label, description, tooltip) differ from their reference schema, or at least one contained ParametersPage reports its own `isSchemaChanged()` as true. Unlike `isValueChanged`, this never reacts to a value-only change.
 - **count**: Read-only property indicating the number of pages in the configuration.
 
 ## Static Methods
@@ -19,7 +20,7 @@ A Config has the following properties:
 - `Config(const QJsonObject &schemaConfig, const QJsonObject& valueConfig, QObject *parent = nullptr)`: Creates a configuration by loading from JSON schema and JSON values objects. The name is resolved once, preferring the schema's unique top-level key and falling back to the value's, then delegates to `schemaFromJson()` and `valuesFromJson()`.
 
 ## Destructors
-- `~Config()`: Destroys the object, emitting `aboutToBeDestroyed()` first.
+- `~Config()`: Destroys the object, emitting `aboutToBeDestroyed(this)` first, while the object is still fully intact.
 
 ## Support methods
 - `uniqueId()`: Returns an integer that represents the object unique ID of the object.
@@ -43,6 +44,11 @@ A Config has the following properties:
 
 - `isValueChanged()`: Returns true if at least one of the contained pages has at least one parameter that currently differs from its reference value.
 - `bindableIsValueChanged()`: Returns a bindable property for isValueChanged.
+- `resetAllValues()`: Cascades `resetAllValues()` to every contained page (which in turn resets every one of its Parameters), making `isValueChanged()` become `false` again. Does not affect any page's or parameter's schema.
+
+- `isSchemaChanged()`: Returns true if this configuration's own properties (name, label, description, tooltip) differ from their reference schema, or if at least one contained ParametersPage's `isSchemaChanged()` is true.
+- `bindableIsSchemaChanged()`: Returns a bindable property for isSchemaChanged.
+- `resetSchemaChange()`: Restores this configuration's own properties to their reference schema, AND cascades `resetSchemaChange()` to every contained page (which in turn cascades to every one of its Parameters), making `isSchemaChanged()` become `false` again. Does not affect any page's or parameter's `value()`/`isValueChanged()`.
 
 - `count()`: Returns the number of ParametersPage objects in the configuration.
 - `bindableCount()`: Returns a bindable property for count.
@@ -130,7 +136,7 @@ A small helper layer to save and restore the text items (and the selected one) o
 
 - `valuesFromJson(const QJsonObject& json)`: Loads values into existing pages (or creates new ones) from a JSON object, returns true on success.
 
-- `schemaFromJson(const QJsonObject& json)`: Updates the configuration's own properties and the pages' schema definitions from a JSON schema object, returns true on success.
+- `schemaFromJson(const QJsonObject& json)`: Updates the configuration's own properties and the pages' schema definitions from a JSON schema object, returns true on success. This also re-captures the reference schema, so `isSchemaChanged()` becomes `false` as a result.
 
 ## Operators
 - `operator<<(ParametersPage& page)`: Stream insertion operator for adding a ParametersPage reference to the configuration.
@@ -138,8 +144,6 @@ A small helper layer to save and restore the text items (and the selected one) o
 - `operator<<(ParametersPage* page)`: Stream insertion operator for adding a ParametersPage pointer to the configuration.
 
 ## Signals
-* `changed()`: Emitted whenever any property of the Config, or any property of one of its contained ParametersPage objects, changes. It is a convenience aggregate signal so a consumer (for example a view that refreshes a JSON preview) can connect once instead of wiring every individual `xChanged` signal, at every level of the hierarchy. A burst of changes to Config's own properties and/or a contained page's own properties, within the same call, is coalesced into a single emission, delivered asynchronously via a queued connection once control returns to the event loop — the same single-hop coalescing `ParametersPage::changed()` already provides for its own contained Parameters, one level up. A change that only surfaces through a page's own `changed()` aggregate (for example a Parameter's `value`, `unit`, `min`, `max`, `range` or `presets`, nested two levels down) is still caught, but through that page's own `changed()` signal rather than through direct property forwarding, so it costs one additional queued hop; nothing is silently lost, it just arrives slightly later. It respects `QObject::blockSignals()`: the blocked state is checked at the moment of the (deferred) emission, not when the change is scheduled.
-
 - `nameChanged(const QString& value)`: Emitted when the configuration name is changed.
 
 - `labelChanged(const QString& value)`: Emitted when the configuration label is changed.
@@ -150,6 +154,8 @@ A small helper layer to save and restore the text items (and the selected one) o
 
 * `isValueChangedChanged(bool value)`: Emitted when the aggregate isValueChanged state changes, i.e. when the configuration goes from "no page changed" to "at least one page changed", or back.
 
+* `isSchemaChangedChanged(bool value)`: Emitted when the aggregate isSchemaChanged state changes, i.e. when the configuration's own schema or any contained page's schema goes from "no schema changed" to "at least one schema changed", or back.
+
 - `countChanged(int count)`: Emitted when the number of pages in the configuration changes.
 
 - `pageAdded(const QtNoid::App::ParametersPage* parametersPage)`: Emitted when a page is added to the configuration.
@@ -158,7 +164,7 @@ A small helper layer to save and restore the text items (and the selected one) o
 
 - `pageRenameError(const QString& oldName, const QString& newName)`: Emitted when a page rename operation fails due to name conflicts.
 
-- `aboutToBeDestroyed(QtNoid::App::Config *config, int uniqueId, bool wasChanged)`: Emitted from the destructor, before the object is torn down. Useful for an owner that needs to react before a Config is destroyed. The parameter `wasChanged` reports the last known state of `isValueChanged`.
+- `aboutToBeDestroyed(QtNoid::App::Config *config)`: Emitted from the destructor, before the object is torn down, with the object still fully intact. Useful for an owner that needs to react when a Config is destroyed: a slot connected to this signal can still safely call `config->isValueChanged()`, `config->isSchemaChanged()`, `config->uniqueId()`, etc. on the live pointer.
 
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)

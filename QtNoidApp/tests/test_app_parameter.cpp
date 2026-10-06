@@ -111,7 +111,7 @@ private slots:
     // isValueChanged flag tests
     void testParameterIsValueChangedShouldBeFalseAfterConstructor();
     void testParameterIsValueChangedOnlyAfterValueChanged();
-    void testParameterIsValueChangedShouldBeTrueAfterLoadingADifferentJsonValues();
+    void testParameterIsValueChangedShouldBeFalseAfterLoadingADifferentJsonValues();
     void testParameterIsValueChangedSholdBeFalseAfterSettingTheSameValue();
 
     // isSchemaChanged flag tests
@@ -156,6 +156,10 @@ void TestQtNoidAppParameter::cleanup()
 void TestQtNoidAppParameter::testCreatingParameter()
 {
     auto par = Parameter(this);
+    QCOMPARE(par.isValueChanged(), false);
+    QCOMPARE(par.isSchemaChanged(), false);
+
+
     par.setValue(123.456);
     par.setMin(-1000);
     par.setMax(1000);
@@ -176,7 +180,7 @@ void TestQtNoidAppParameter::testCreatingParameter()
 void TestQtNoidAppParameter::testConstructorWithNameAndInitialValue()
 {
     auto par = Parameter(456.789, "Param", this);
-    
+
     QCOMPARE(par.name(), "Param");
     QCOMPARE(par.value(), 456.789);
     QCOMPARE(par.description(), QString());
@@ -190,7 +194,7 @@ void TestQtNoidAppParameter::testConstructorWithNameDescriptionAndInitialValue()
 {
     // I use __func__ as a description
     auto par = Parameter(789.123, "Param", __func__, this);
-    
+
     QCOMPARE(par.name(), "Param");
     QCOMPARE(par.description(), __func__);
     QCOMPARE(par.value(), 789.123);
@@ -228,6 +232,9 @@ void TestQtNoidAppParameter::testParameterValueChanged()
     // check the value is the correct one
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toDouble(), expected);
+
+    // Check that the value modification doesn't touch isSchemaChanged
+    QCOMPARE(par.isSchemaChanged(), false);
 }
 
 void TestQtNoidAppParameter::testParameterValueChangedNoEmitForSameValue()
@@ -364,6 +371,7 @@ void TestQtNoidAppParameter::testParameterSetPresets()
     // Same presets, no signal should be emitted
     par.setPresets(expected);
     QCOMPARE(spy.count(), 0);
+
 }
 
 void TestQtNoidAppParameter::testParameterSetPreset()
@@ -382,6 +390,7 @@ void TestQtNoidAppParameter::testParameterSetPreset()
     // Testing void setPreset(const std::pair<QString, QVariant> &preset)
     par.setPreset({"High", 1000.0});
     QCOMPARE(par.preset("High"), 1000.0);
+
 }
 
 
@@ -400,6 +409,9 @@ void TestQtNoidAppParameter::testParameterApplyPresetByName()
     // Applying the same preset, there should be no changes
     par.applyPreset("Low");
     QCOMPARE(spyValue.count(), 0);
+
+    // Preset signal isValueChanged
+    QCOMPARE(par.isValueChanged(), true);
 }
 
 void TestQtNoidAppParameter::testParameterRemovePreset()
@@ -1186,6 +1198,8 @@ void TestQtNoidAppParameter::testBindableIsSchemaChanged()
 {
     Parameter par(50.0, "TestParam", this);
 
+    // qDebug() << par.isSchemaChanged();
+
     // Get bindable isSchemaChanged
     auto bindableIsSchemaChanged = par.bindableIsSchemaChanged();
     QVERIFY(bindableIsSchemaChanged.isValid());
@@ -1196,13 +1210,13 @@ void TestQtNoidAppParameter::testBindableIsSchemaChanged()
     externalProperty.setBinding([&]() { return par.bindableIsSchemaChanged().value(); });
     QCOMPARE(externalProperty.value(), false);
 
+    // A value change must not affect isSchemaChanged's bindable
+    par.setValue(99.0);
+    QCOMPARE(externalProperty.value(), false);
+
     // Change a schema property and verify binding updates
     par.setLabel("New label");
     QCOMPARE(externalProperty.value(), true);
-
-    // A value change must not affect isSchemaChanged's bindable
-    par.setValue(99.0);
-    QCOMPARE(externalProperty.value(), true); // still true, from the label change above
 
     par.resetSchemaChange();
     QCOMPARE(externalProperty.value(), false);
@@ -1210,19 +1224,6 @@ void TestQtNoidAppParameter::testBindableIsSchemaChanged()
 
 void TestQtNoidAppParameter::testParameterToJsonSchema()
 {
-    // Q_PROPERTY(QVariant value READ value WRITE setValue BINDABLE bindableValue NOTIFY valueChanged FINAL)
-    // Q_PROPERTY(QString unit READ unit WRITE setUnit BINDABLE bindableUnit NOTIFY unitChanged FINAL)
-    // Q_PROPERTY(QVariant min READ min WRITE setMin BINDABLE bindableMin NOTIFY minChanged FINAL)
-    // Q_PROPERTY(QVariant max READ max WRITE setMax BINDABLE bindableMax NOTIFY maxChanged FINAL)
-    // no need to be tested Q_PROPERTY(std::pair<QVariant, QVariant> range READ range WRITE setRange NOTIFY rangeChanged FINAL)
-    // Q_PROPERTY(QVariantMap presets READ presets WRITE setPresets BINDABLE bindablePresets NOTIFY presetsChanged FINAL)
-    // Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
-    // Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
-    // Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
-    // Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
-    // Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
-
-
     Parameter par(50.0, "Log File Size", "Parameter description", this);
 
     par.setUnit("kB");
@@ -1238,7 +1239,6 @@ void TestQtNoidAppParameter::testParameterToJsonSchema()
     
     QVERIFY(schema.contains("Log File Size"));
     QJsonObject paramSchema = schema["Log File Size"].toObject();
-    // QCOMPARE(paramSchema["value"], 50.0); -> Value is not part of schema
 
     QCOMPARE(paramSchema["min"].toVariant(), QVariant(0.0));
     QCOMPARE(paramSchema["max"].toVariant(), QVariant(100.0));
@@ -1470,7 +1470,7 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValue()
     
     // Create parameter from JSON
     Parameter par(schema, value, this);
-    
+
     // Verify all properties were set correctly
     QCOMPARE(par.name(), "Temperature");
     QCOMPARE(par.description(), "Current temperature");
@@ -1481,8 +1481,8 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValue()
     QCOMPARE(par.max().toDouble(), 1000.0);
     QCOMPARE(par.value().toDouble(), 25.5);
     QCOMPARE(par.isValueChanged(), false);
-    // QCOMPARE(par.presets(), presetArray);
-    // QCOMPARE(par.presets(), QVariantMap({{preset1.toVariantMap()},{preset2.toVariantMap()}}));
+    QCOMPARE(par.isSchemaChanged(), false);
+
     QVariantMap expected({preset1.toVariantMap()});
     expected.insert(preset2.toVariantMap());
     QCOMPARE(par.presets(), expected);
@@ -1504,7 +1504,7 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaAndValueWithR
     QCOMPARE(par.value(), 0);
     QCOMPARE(par.isValid(), true);
     QCOMPARE(par.isValueChanged(), true);
-
+    QCOMPARE(par.isSchemaChanged(), false);
 
 }
 
@@ -1533,6 +1533,8 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonSchemaOnly()
     
     // Value should be invalid/empty since no value was provided
     QVERIFY(!par.value().isValid());
+
+    QCOMPARE(par.isSchemaChanged(), false);
 }
 
 void TestQtNoidAppParameter::testParameterConstructorFromJsonValueOnly()
@@ -1556,6 +1558,9 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonValueOnly()
     QCOMPARE(par.readOnly(), false);
     QVERIFY(!par.min().isValid());
     QVERIFY(!par.max().isValid());
+
+    QCOMPARE(par.isValueChanged(), false);
+    QCOMPARE(par.isSchemaChanged(), false);
 }
 
 void TestQtNoidAppParameter::testParameterConstructorFromJsonEmptyObjects()
@@ -1572,6 +1577,8 @@ void TestQtNoidAppParameter::testParameterConstructorFromJsonEmptyObjects()
     QVERIFY(!par.min().isValid());
     QVERIFY(!par.max().isValid());
     QVERIFY(!par.value().isValid());
+    QCOMPARE(par.isValueChanged(), false);
+    QCOMPARE(par.isSchemaChanged(), false);
 }
 
 void TestQtNoidAppParameter::testParameterSchemaFromJson()
@@ -1616,7 +1623,11 @@ void TestQtNoidAppParameter::testParameterSchemaFromJson()
     QCOMPARE(par.label(), "T°C");
 
     // Value should remain unchanged
-    QCOMPARE(par.value().toDouble(), 20.0);    
+    QCOMPARE(par.value().toDouble(), 20.0);
+
+    QCOMPARE(par.isValueChanged(), false);
+    QCOMPARE(par.isSchemaChanged(), false);
+
 }
 
 void TestQtNoidAppParameter::testParameterSchemaFromJsonWithEmptyName()
@@ -2075,17 +2086,16 @@ void TestQtNoidAppParameter::testParameterIsValueChangedOnlyAfterValueChanged()
     paramPreset.setPreset("Hot", 50);
     QCOMPARE(paramPreset.isValueChanged(), false);
 
-    // ApplyPreset should reset the flag
+    // ApplyPreset trigger the isValueChanged flag
     paramPreset.setValue(26);
     QCOMPARE(paramPreset.isValueChanged(), true);
     paramPreset.applyPreset("Hot");
-    QCOMPARE(paramPreset.isValueChanged(), false);
+    QCOMPARE(paramPreset.isValueChanged(), true);
 
     // Check that the value is changed flag is updated
     // also the second time
+    paramPreset.resetValueChange();
     paramPreset.applyPreset("Hot");
-    QCOMPARE(paramPreset.isValueChanged(), false);
-    paramPreset.setValue(999);
     QCOMPARE(paramPreset.isValueChanged(), true);
 
     // Name change should not change
@@ -2121,7 +2131,7 @@ void TestQtNoidAppParameter::testParameterIsValueChangedOnlyAfterValueChanged()
     QCOMPARE(paramVisible.isValueChanged(), false);
 }
 
-void TestQtNoidAppParameter::testParameterIsValueChangedShouldBeTrueAfterLoadingADifferentJsonValues()
+void TestQtNoidAppParameter::testParameterIsValueChangedShouldBeFalseAfterLoadingADifferentJsonValues()
 {
     // 1 - Create the parameter, store in a JsonValue,
     //     change, restore from Json
@@ -2343,9 +2353,11 @@ void TestQtNoidAppParameter::testParameterResetSchemaChangeMinMaxCanClampCurrent
     QCOMPARE(param.isSchemaChanged(), false);
 
     param.setMin(0); // schema change: widen the range downward
-    param.setValue(10); // now allowed since min is 0
-    QCOMPARE(param.value(), 10.0);
     QCOMPARE(param.isSchemaChanged(), true);
+
+
+    param.setValue(10); // now it is allowed since min is 0
+    QCOMPARE(param.value(), 10.0);
 
     param.resetSchemaChange(); // restores min back to 50...
 

@@ -25,6 +25,9 @@ private slots:
     void on_cmdQDebug_clicked();
     void on_cmdEditPresets_clicked();
 
+    void on_cmdResetValue_clicked();
+    void on_cmdResetSchema_clicked();
+
 private:
     void setRangeFromText(const QString& val);
     void setPresetsFromText(const QString& val);

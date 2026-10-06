@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
     ui->optIsValueChanged->setEnabled(false);
+    ui->optSchemaChanged->setEnabled(false);
 
     // Listening to UI modifications
     connect(ui->txtName, &QLineEdit::textChanged, this,
@@ -71,10 +72,12 @@ MainWindow::MainWindow(QWidget *parent)
             });
 
     // Listening to m_paramter modifications
-    connect(&m_parameter, &QtNoid::App::Parameter::changed, this,
-            [&]{
+    connect(&m_parameter, &QtNoid::App::Parameter::isSchemaChangedChanged, this,
+            [&](bool val){
+                ui->optSchemaChanged->setEnabled(val);
+                qDebug() << "isSchemaChangedChanged";
                 convertToJson();
-                updateStatusBar("Changed signal fired");
+                updateStatusBar("isSchemaChangedChanged signal fired");
             });
 
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
@@ -164,6 +167,7 @@ void MainWindow::updateFromGui()
     m_parameter.setValue(ui->txtValue->value());
     m_parameter.setReadOnly(ui->optReadOnly->checkState());
     m_parameter.setVisible(ui->optVisible->checkState());
+    // m_parameter.
 }
 
 void MainWindow::updatePresetList()
@@ -267,5 +271,17 @@ void MainWindow::updateStatusBar(const QString &msg)
 
 void MainWindow::on_cmdQDebug_clicked()
 {
+    qDebug() << __func__ << m_parameter.isSchemaChanged();
     qDebug() << __func__ << m_parameter;
 }
+
+void MainWindow::on_cmdResetValue_clicked()
+{
+    m_parameter.resetValueChange();
+}
+
+void MainWindow::on_cmdResetSchema_clicked()
+{
+    m_parameter.resetSchemaChange();
+}
+

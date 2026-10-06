@@ -124,9 +124,7 @@ public:
     bool isValueChanged() const;
     QBindable<bool> bindableIsValueChanged();
 
-    // isSchemaChanged: tracks modifications across ALL properties (value, name, unit,
-    // min, max, presets, label, description, tooltip, readOnly, visible),
-    // unlike isValueChanged which only tracks value.
+    // isSchemaChanged
     bool isSchemaChanged() const;
     QBindable<bool> bindableIsSchemaChanged();
     void resetSchemaChange();
@@ -173,6 +171,7 @@ private:
     friend class ::TestQtNoidAppParameter; // Only for White Box testing
 
     void initInternalConnections();
+    void initIsSchemaChangedConnections();
     bool computeIsValid() const;
     void enforceRange();
     QVariant clampValue(const QVariant &value) const;

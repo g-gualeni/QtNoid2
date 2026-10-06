@@ -806,8 +806,7 @@ void TestQtNoidAppConfig::testConfigIsSchemaChanged()
     modifiedPage->setLabel("already changed");
     QCOMPARE(modifiedPage->isSchemaChanged(), true);
 
-    bool res = config.append(modifiedPage);
-    QCOMPARE(res, true);
+    config << modifiedPage;
     QCOMPARE(config.isSchemaChanged(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);

@@ -7,7 +7,8 @@ A ParametersPage has the following properties:
 - **tooltip**: Tooltip text for UI elements.
 - **readOnly**: When true, values in this parameter list cannot be modified through setValue(). Trying to change a value while readOnly is true, fires writeAttemptedWhileReadOnly(). All other methods are not considering this flag.
 - **visible:** use this flag to show or hide the parametersPage in a dialog.
-- **isValueChanged**: Read-only property, true when at leas one the internal parameters differs from the reference value. The reference value can be: the initial value, last applied preset, or last value loaded from JSON.
+- **isValueChanged**: Read-only property, true when at least one of the internal parameters differs from its reference value. The reference value can be: the initial value, last applied preset, or last value loaded from JSON.
+- **isSchemaChanged**: Read-only property, true when either this page's own schema properties (name, label, description, tooltip, readOnly, visible) differ from their reference schema, or at least one contained Parameter reports its own `isSchemaChanged()` as true. Unlike `isValueChanged`, this never reacts to a value-only change.
 - **count**: Read-only property indicating the number of parameters in the list.
 
 ## Static Methods
@@ -20,7 +21,7 @@ A ParametersPage has the following properties:
 
 - `ParametersPage(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr)`: Creates a parameter list by loading configuration from JSON schema and JSON values objects.
 ## Destructors
-- `~ParametersPage()`: Destroys the object, emitting `aboutToBeDestroyed()` first.
+- `~ParametersPage()`: Destroys the object, emitting `aboutToBeDestroyed(this)` first, while the object is still fully intact.
 
 ## Properties management methods
 - `name()`: Returns the name of the parameter list.
@@ -49,7 +50,12 @@ A ParametersPage has the following properties:
 
 - `isValueChanged()`: Returns true if at least one parameter in the list currently differs from its reference value.
 - `bindableIsValueChanged()`: Returns a bindable property for isValueChanged.
-    
+- `resetAllValues()`: Resets every contained Parameter's value back to its reference value (as `Parameter::resetValueChange()` does for each of them), making `isValueChanged()` become `false` again. Does not affect any parameter's schema.
+
+- `isSchemaChanged()`: Returns true if this page's own schema properties (name, label, description, tooltip, readOnly, visible) differ from their reference schema, or if at least one contained Parameter's `isSchemaChanged()` is true.
+- `bindableIsSchemaChanged()`: Returns a bindable property for isSchemaChanged.
+- `resetSchemaChange()`: Restores this page's own schema properties to their reference schema, AND calls `resetSchemaChange()` on every contained Parameter, making `isSchemaChanged()` become `false` again. Does not affect any parameter's `value()`/`isValueChanged()`.
+
 - `count()`: Returns the number of parameters in the list.
 -  `bindableCount():` Returns a bindable property for count.
 
@@ -114,8 +120,6 @@ A ParametersPage has the following properties:
 - `operator<<(Parameter* param)`: Stream insertion operator for adding a Parameter pointer to the list.
 
 ## Signals
-* `changed()`: Emitted whenever any property of the ParametersPage or any of the properties of his parameters changes. It is a convenience aggregate signal so a consumer (for example a view that refreshes a JSON preview) can connect once instead of wiring every individual `xChanged` signal. Multiple properties changing within the same call — for example, changing multiple parameter's `value` coalesced into a single emission, delivered asynchronously via a queued connection once control returns to the event loop. It therefore never fires synchronously inside the call that triggered it. It respects `QObject::blockSignals()`: the blocked state is checked at the moment of the (deferred) emission, not when the change is scheduled.
-
 - `nameChanged(const QString& value)`: Emitted when the parameter list name is changed.
 - `nameEdited(const QString &oldName, const QString &newName)`: emitted when the parameter list name is edited, passing both the old and new name.
 
@@ -131,6 +135,8 @@ A ParametersPage has the following properties:
 
 * `isValueChangedChanged(bool value)`: Emitted when the aggregate isValueChanged state changes, i.e. when the list goes from "no parameter changed" to "at least one parameter changed", or back.
 
+* `isSchemaChangedChanged(bool value)`: Emitted when the aggregate isSchemaChanged state changes, i.e. when the page's own schema or any contained parameter's schema goes from "no schema changed" to "at least one schema changed", or back.
+
 - `countChanged(int count)`: Emitted when the number of parameters in the list changes.
 
 - `parameterAdded(const QtNoid::App::Parameter* parameter)`: Emitted when a parameter is added to the list.
@@ -141,7 +147,7 @@ A ParametersPage has the following properties:
 
 - `writeAttemptedWhileReadOnly(const QString &parameterName)`: Emitted when setValue() is called while the list is read-only; carries the name of the parameter whose modification was blocked.
 
-- `aboutToBeDestroyed(QtNoid::App::ParametersPage *page, int uniqueId, bool wasChanged)`: Emitted from the destructor, before the object is torn down. Useful for an owner (for example a collection class) that needs to react before a ParametersPage is destroyed. The parameter `wasChanged` reports the last known state of `isValueChanged`.
+- `aboutToBeDestroyed(QtNoid::App::ParametersPage *page)`: Emitted from the destructor, before the object is torn down, with the object still fully intact. Useful for an owner (for example a collection class) that needs to react when a ParametersPage is destroyed: a slot connected to this signal can still safely call `page->isValueChanged()`, `page->isSchemaChanged()`, `page->uniqueId()`, etc. on the live pointer.
 
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)

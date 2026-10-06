@@ -7,6 +7,7 @@ A single Parameter has the following properties:
 - **value**: This is a QVariant object that represents the parameter value.
 - **isValid**: Read only property true when the parameter has a name, a valid value, and (if a range is configured) the value falls within range.
 - **isValueChanged**: Read-only property, true when the current value differs from the reference value (initial value, last applied preset, or last value loaded from JSON).
+- **isSchemaChanged**: Read-only property, true when any property other than `value` differs from the reference schema (name, label, description, unit, tooltip, readOnly, visible, min, max, or presets, as captured at construction or at the last `schemaFromJson()`/`fromJson()` call). Unlike `isValueChanged`, this never reacts to a value-only change.
 - **unit**: This is a QString that represents the unit of measure.
 - **min**, **max**, **range**: These properties can be used to enforce limitations to the range of the value. Any time a bigger or smaller value is set it is automatically clipped to the max or to the min.
 - **presets**: The parameter can have a list of default values, which are stored in a QVariantMap with preset name and preset value. This can be used for quick configuration change such as for light or dark theme.
@@ -31,7 +32,7 @@ A single Parameter has the following properties:
 - `Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr)`: Creates a parameter by loading configuration from the JSON schema and value from the JSON value object.
 
 ## Destructors
-- `~Parameter()`: Destroys the parameter, emitting `aboutToBeDestroyed()` first.
+- `~Parameter()`: Destroys the parameter, emitting `aboutToBeDestroyed(this)` first, while the object is still fully intact.
 
 ## Support methods
 - `uniqueId()`: Returns an integer that represents the object unique ID of the object.
@@ -40,6 +41,7 @@ A single Parameter has the following properties:
 * `value()`: Returns the current value of the parameter as a QVariant
 - `setValue(const QVariant& val)`: Sets the parameter value, with range validation if configured.
 - `bindableValue()`: Returns a bindable property for the value, enabling Qt's property binding system.
+- `resetValueChange()`: Restores `value()` to the current reference value, and makes `isValueChanged()` become `false` again.
 
 * `isValid()`: Read only property that returns true if the object meets all of the following conditions: 
 	- it has a name, 
@@ -49,6 +51,10 @@ A single Parameter has the following properties:
 
 * `isValueChanged()`: Returns true if the object's current value is different from the internal reference value. The internal reference value is either: the initial value of the object or the value of last preset applied or from the latest JSON object loaded.
 * `bindableIsValueChanged()`: Returns a bindable property for the read only property.
+
+* `isSchemaChanged()`: Returns true if any property other than `value` (name, label, description, unit, tooltip, readOnly, visible, min, max, presets) differs from the reference schema captured at construction or at the last `schemaFromJson()`/`fromJson()` call. A value-only change never affects this property.
+* `bindableIsSchemaChanged()`: Returns a bindable property for the read only property.
+* `resetSchemaChange()`: Restores every schema property to the reference schema, and makes `isSchemaChanged()` become `false` again. Does not affect `value()` or `isValueChanged()`. Note: since min/max are restored through the normal setters, this can clip the current `value()` as a side effect if it falls outside the restored range.
 
 - `min()`: Returns the minimum allowed value for the parameter
 - `setMin(const QVariant& val)`: Sets the minimum allowed value for range validation
@@ -72,7 +78,8 @@ A single Parameter has the following properties:
 - `removePreset(const QString& name)`: Removes a specific preset by name.
 - `applyPreset(const QString& name)`: Sets the parameter value to the specified
   preset value, if the preset name exists. Returns `true` if the preset was
-  found and applied, `false` otherwise.
+  found and applied, `false` otherwise. Unlike `setValue()`, this ignores
+  `readOnly` but still respects the configured range.
 - `bindablePresets()`: Returns a bindable property for the presets map.
 
 - `name()`: Returns the parameter name as displayed in dialogs and used in JSON serialization.
@@ -111,23 +118,13 @@ A single Parameter has the following properties:
 
 - `fromJson(const QJsonObject& schema, const QJsonObject& value)`: Restores the parameter from both schema and value JSON objects, reconstructing the complete parameter state.
 
-- `valueFromJson(const QJsonObject& json)`: Loads only the parameter value from a JSON object, leaving other properties unchanged. This alse update the m_initialValue property so the isValueChanged becomes false as a result.
+- `valueFromJson(const QJsonObject& json)`: Loads only the parameter value from a JSON object, leaving other properties unchanged. This also updates the reference value, so `isValueChanged()` becomes `false` as a result.
 
-- `schemaFromJson(const QJsonObject& json)`: Update the configuration of current Parameter object (min, max, presets, description and so on), from the JSON schema object.
+- `schemaFromJson(const QJsonObject& json)`: Update the configuration of current Parameter object (min, max, presets, description and so on), from the JSON schema object. This also re-captures the reference schema, so `isSchemaChanged()` becomes `false` as a result.
 
 
 ## Signals
 - `valueChanged(const QVariant &newValue)`: Emitted when the parameter value changes.
-* `changed()`: Emitted whenever any property of the Parameter changes. It is a
-  convenience aggregate signal so a consumer (for example a view that
-  refreshes a JSON preview) can connect once instead of wiring every
-  individual `xChanged` signal. Multiple properties changing within the same
-  call — for example, changing `value` also updates `isValueChanged` — are
-  coalesced into a single emission, delivered asynchronously via a queued
-  connection once control returns to the event loop. It therefore never
-  fires synchronously inside the call that triggered it. It respects
-  `QObject::blockSignals()`: the blocked state is checked at the moment of
-  the (deferred) emission, not when the change is scheduled.
 
 - `minChanged(const QVariant &min)`: Emitted when the minimum value constraint is modified.
 
@@ -159,11 +156,15 @@ A single Parameter has the following properties:
 
 - `isValueChangedChanged(bool value)`: Emitted when the value is changed hence the isValueChanged flag changes his status.
 
-- `aboutToBeDestroyed(QtNoid::App::Parameter *parameter, int uniqueId, bool wasChanged)`:
-  Emitted from the destructor, before the object is torn down. Useful for an
-  owner (for example a collection class) that needs to react when a
-  Parameter is destroyed. The parameter `wasChanged` reports the last known state of
-  `isValueChanged`.
+- `isSchemaChangedChanged(bool value)`: Emitted when any schema property is changed hence the isSchemaChanged flag changes his status.
+
+- `aboutToBeDestroyed(QtNoid::App::Parameter *parameter)`:
+  Emitted from the destructor, before the object is torn down, with the
+  object still fully intact. Useful for an owner (for example a collection
+  class) that needs to react when a Parameter is destroyed: a slot connected
+  to this signal can still safely call `parameter->isValueChanged()`,
+  `parameter->isSchemaChanged()`, `parameter->uniqueId()`, etc. on the live
+  pointer.
 
 ## Slots
 - `setValue(const QVariant& newValue)`: Slot that can be connected to external signals to update the parameter value.

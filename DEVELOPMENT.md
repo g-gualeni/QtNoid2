@@ -59,23 +59,23 @@
 	- [x] Inserire segnale changed
 	- [x] Inserire sengale aboutToBeDestroyed
 - [ ] Revisione classe QtNoid::App::Config
-	- [x] Studiare la classe Config  ==([cosa dice il sommo](sommo.md))==
+	- [x] Studiare la classe Config
 	- [x] Inserire Label
 	- [x] Inseire UniqueID
 	- [x] isValueChanged
 	- [x] Inserire changed()
 	- [x] aboutToBeDestroyed()
 	- [x] Aggiornare la documentazione di Config
-	- [ ] C'è un test che fallisce
-- [ ] Non mi piace changed(). Cambiare la gestione usando un contatore di modifiche
-	- [ ] Chi lo resetta questo contatore? Posso evitare di mantenere il valore di default? Oppure avrebbe senso dato che potrei gestire il comando Annulla e aggiungere un metodo tipo ResetToDefault?
-	- [ ] Paramter
-	- [ ] ParamtersPage
-	- [ ] Config
-	- [ ] Non vedo il meccanismo con il contatore delle modifiche
+	- [x] C'è un test che fallisce
+- [x] Non mi piace changed(). Cambiare la gestione usando un contatore di modifiche
+	- [x] Chi lo resetta questo contatore? Posso evitare di mantenere il valore di default? Oppure avrebbe senso dato che potrei gestire il comando Annulla e aggiungere un metodo tipo ResetToDefault?
+	- [x] Paramter
+	- [x] ParamtersPage
+	- [x] Config
+	- [x] Non vedo il meccanismo con il contatore delle modifiche
 
-SchemaChanged - questo il paramatro da implementare fino a config
-
+Non funziona l'esempio
+C:\GitHub\g-gualeni-public-QtNoid2\Examples\AppParameterBasicUsage
 
 
 Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale
