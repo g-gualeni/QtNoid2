@@ -6,7 +6,7 @@ A Config has the following properties:
 - **description**: Descriptive text explaining the purpose of the configuration.
 - **tooltip**: Tooltip text for UI elements.
 - **isValueChanged**: Read-only property, true when at least one of the contained pages currently differs from its reference value.
-- **isSchemaChanged**: Read-only property, true when either this configuration's own properties (name, label, description, tooltip) differ from their reference schema, or at least one contained ParametersPage reports its own `isSchemaChanged()` as true. Unlike `isValueChanged`, this never reacts to a value-only change.
+- **isSchemaModified**: Read-only property, true when either this configuration's own properties (name, label, description, tooltip) differ from their reference schema, or at least one contained ParametersPage reports its own `isSchemaChanged()` as true, or the flag was manually forced via `setSchemaModified(true)`. Unlike `isValueChanged`, this never reacts to a value-only change.
 - **count**: Read-only property indicating the number of pages in the configuration.
 
 ## Static Methods
@@ -46,9 +46,10 @@ A Config has the following properties:
 - `bindableIsValueChanged()`: Returns a bindable property for isValueChanged.
 - `resetAllValues()`: Cascades `resetAllValues()` to every contained page (which in turn resets every one of its Parameters), making `isValueChanged()` become `false` again. Does not affect any page's or parameter's schema.
 
-- `isSchemaChanged()`: Returns true if this configuration's own properties (name, label, description, tooltip) differ from their reference schema, or if at least one contained ParametersPage's `isSchemaChanged()` is true.
-- `bindableIsSchemaChanged()`: Returns a bindable property for isSchemaChanged.
-- `resetSchemaChange()`: Restores this configuration's own properties to their reference schema, AND cascades `resetSchemaChange()` to every contained page (which in turn cascades to every one of its Parameters), making `isSchemaChanged()` become `false` again. Does not affect any page's or parameter's `value()`/`isValueChanged()`.
+- `isSchemaModified()`: Returns true if this configuration's own properties (name, label, description, tooltip) differ from their reference schema, if at least one contained ParametersPage's `isSchemaChanged()` is true, or if the flag was manually forced via `setSchemaModified(true)`.
+- `bindableIsSchemaModified()`: Returns a bindable property for isSchemaModified.
+- `setSchemaModified(bool modified)`: With `true`, manually forces `isSchemaModified()` to report `true` regardless of whether any tracked property actually differs from its baseline — for a change that falls outside the tracked properties but should still count as "modified" (mirrors `QTextDocument::setModified(true)`). With `false`, clears that manual override and accepts the configuration's *own* current properties as the new reference schema (same effect internally as the baseline capture done at construction/load time) — mirrors calling `QTextDocument::setModified(false)` right after a save. Note: `setSchemaModified(false)` only clears Config's own override and re-baselines Config's own properties; it does not force the aggregate to `false` if a contained page is independently reporting `isSchemaChanged()`.
+- `resetSchemaModifications()`: Restores this configuration's own properties to their reference schema, cascades `resetSchemaChange()` to every contained page (which in turn cascades to every one of its Parameters), and clears any manual override set via `setSchemaModified(true)` — so `isSchemaModified()` becomes `false` again. Does not affect any page's or parameter's `value()`/`isValueChanged()`.
 
 - `count()`: Returns the number of ParametersPage objects in the configuration.
 - `bindableCount()`: Returns a bindable property for count.
@@ -136,7 +137,7 @@ A small helper layer to save and restore the text items (and the selected one) o
 
 - `valuesFromJson(const QJsonObject& json)`: Loads values into existing pages (or creates new ones) from a JSON object, returns true on success.
 
-- `schemaFromJson(const QJsonObject& json)`: Updates the configuration's own properties and the pages' schema definitions from a JSON schema object, returns true on success. This also re-captures the reference schema, so `isSchemaChanged()` becomes `false` as a result.
+- `schemaFromJson(const QJsonObject& json)`: Updates the configuration's own properties and the pages' schema definitions from a JSON schema object, returns true on success. Note: the reference schema is only re-captured when the configuration's name was previously unset (i.e. on a first load) — calling this again on an already-named Config does **not** re-baseline, so `isSchemaModified()` keeps comparing against the original baseline. This differs from `Parameter::schemaFromJson()`/`ParametersPage::schemaFromJson()`, which always re-baseline unconditionally; it's a known inconsistency, not a documented guarantee.
 
 ## Operators
 - `operator<<(ParametersPage& page)`: Stream insertion operator for adding a ParametersPage reference to the configuration.
@@ -154,7 +155,7 @@ A small helper layer to save and restore the text items (and the selected one) o
 
 * `isValueChangedChanged(bool value)`: Emitted when the aggregate isValueChanged state changes, i.e. when the configuration goes from "no page changed" to "at least one page changed", or back.
 
-* `isSchemaChangedChanged(bool value)`: Emitted when the aggregate isSchemaChanged state changes, i.e. when the configuration's own schema or any contained page's schema goes from "no schema changed" to "at least one schema changed", or back.
+* `isSchemaModifiedChanged(bool value)`: Emitted when the aggregate isSchemaModified state changes, i.e. when the configuration's own schema, any contained page's schema, or the manual override set via `setSchemaModified()`, goes from "nothing modified" to "something modified", or back.
 
 - `countChanged(int count)`: Emitted when the number of pages in the configuration changes.
 
@@ -164,7 +165,7 @@ A small helper layer to save and restore the text items (and the selected one) o
 
 - `pageRenameError(const QString& oldName, const QString& newName)`: Emitted when a page rename operation fails due to name conflicts.
 
-- `aboutToBeDestroyed(QtNoid::App::Config *config)`: Emitted from the destructor, before the object is torn down, with the object still fully intact. Useful for an owner that needs to react when a Config is destroyed: a slot connected to this signal can still safely call `config->isValueChanged()`, `config->isSchemaChanged()`, `config->uniqueId()`, etc. on the live pointer.
+- `aboutToBeDestroyed(QtNoid::App::Config *config)`: Emitted from the destructor, before the object is torn down, with the object still fully intact. Useful for an owner that needs to react when a Config is destroyed: a slot connected to this signal can still safely call `config->isValueChanged()`, `config->isSchemaModified()`, `config->uniqueId()`, etc. on the live pointer.
 
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)

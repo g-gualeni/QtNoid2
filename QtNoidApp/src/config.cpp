@@ -24,10 +24,10 @@ int Config::getNextUniqueId()
 
 
 namespace {
-bool isTrackedForIsSchemaChanged(const QMetaProperty &prop)
+bool isTrackedForIsSchemaModified(const QMetaProperty &prop)
 {
     static const QSet<QByteArray> excluded = {
-        "objectName", "count", "isValueChanged", "isSchemaChanged"
+        "objectName", "count", "isValueChanged", "isSchemaModified"
     };
     return prop.isReadable() && !excluded.contains(prop.name());
 }
@@ -41,7 +41,7 @@ void Config::initInternalConnections()
 
     for (int ii = 0; ii < Config::staticMetaObject.propertyCount(); ++ii) {
         QMetaProperty prop = Config::staticMetaObject.property(ii);
-        if (isTrackedForIsSchemaChanged(prop) && prop.hasNotifySignal()) {
+        if (isTrackedForIsSchemaModified(prop) && prop.hasNotifySignal()) {
             connect(this, prop.notifySignal(), this, onOwnPropertyChangedSlot);
         }
     }
@@ -54,24 +54,24 @@ void Config::captureBaseline()
     const QMetaObject *mo = &Config::staticMetaObject;
     for (int ii = 0; ii < mo->propertyCount(); ++ii) {
         QMetaProperty prop = mo->property(ii);
-        if (isTrackedForIsSchemaChanged(prop)) {
+        if (isTrackedForIsSchemaModified(prop)) {
             m_schemaBaseline.insert(prop.name(), prop.read(this));
         }
     }
 }
 
-void Config::updateIsSchemaChanged()
+void Config::updateIsSchemaModified()
 {
     bool ownChanged = false;
     const QMetaObject *mo = metaObject();
     for (int ii = 0; ii < mo->propertyCount(); ++ii) {
         QMetaProperty prop = mo->property(ii);
-        if (isTrackedForIsSchemaChanged(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
+        if (isTrackedForIsSchemaModified(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
             ownChanged = true;
             break;
         }
     }
-    m_isSchemaChanged = ownChanged || (m_schemaChangedCounter > 0);
+    m_isSchemaModified = m_forceSchemaModified || ownChanged || (m_schemaModifiedCounter > 0);
 }
 
 
@@ -348,17 +348,30 @@ void Config::resetAllValues()
     }
 }
 
-bool Config::isSchemaChanged() const
+bool Config::isSchemaModified() const
 {
-    return m_isSchemaChanged.value();
+    return m_isSchemaModified.value();
 }
 
-QBindable<bool> Config::bindableIsSchemaChanged()
+QBindable<bool> Config::bindableIsSchemaModified()
 {
-    return QBindable<bool>(&m_isSchemaChanged);
+    return QBindable<bool>(&m_isSchemaModified);
 }
 
-void Config::resetSchemaChange()
+void Config::setSchemaModified(bool modified)
+{
+    m_forceSchemaModified = modified;
+    if (!modified) {
+        captureBaseline();   // own current state becomes the new reference
+    }
+    // Explicit recompute: if nothing above actually changed a tracked property's
+    // value (e.g. captureBaseline() re-captures identical values), nothing would
+    // otherwise trigger onOwnPropertyChanged(), leaving m_isSchemaModified stale.
+    // Same staleness risk we already fixed in Parameter::captureBaseline().
+    updateIsSchemaModified();
+}
+
+void Config::resetSchemaModifications()
 {
     const QMetaObject *mo = metaObject();
     for (const QByteArray &propName : m_schemaBaseline.keys()) {
@@ -375,6 +388,9 @@ void Config::resetSchemaChange()
     for (auto it = m_pagesByIndex.constBegin(); it != m_pagesByIndex.constEnd(); ++it) {
         it.value()->resetSchemaChange();
     }
+
+    m_forceSchemaModified = false;
+    updateIsSchemaModified();   // same staleness guard as above
 }
 
 
@@ -515,8 +531,8 @@ void Config::clear()
 
     m_valueChangedCounter = 0;
     m_isValueChanged = false;
-    m_schemaChangedCounter = 0;
-    updateIsSchemaChanged();
+    m_schemaModifiedCounter = 0;
+    updateIsSchemaModified();
 
     m_count = 0;
 }
@@ -884,7 +900,7 @@ void Config::saveComboBoxTextItems(QComboBox *cbo, const QString &paramName, con
 
 void Config::onOwnPropertyChanged()
 {
-    updateIsSchemaChanged();
+    updateIsSchemaModified();
 }
 
 
@@ -950,12 +966,12 @@ void Config::onPageIsValueChangedChanged(bool changed)
 void Config::onPageIsSchemaChangedChanged(bool changed)
 {
     if(changed) {
-        ++m_schemaChangedCounter;
+        ++m_schemaModifiedCounter;
     }
     else {
-        --m_schemaChangedCounter;
+        --m_schemaModifiedCounter;
     }
-    updateIsSchemaChanged();
+    updateIsSchemaModified();
 }
 
 void Config::appendPageAndUpdateIndexs(ParametersPage *page)

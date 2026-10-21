@@ -74,13 +74,25 @@
 	- [x] Config
 	- [x] Non vedo il meccanismo con il contatore delle modifiche
 
+
+Sto convertendo da Changed a Modified
 Non funziona l'esempio
 C:\GitHub\g-gualeni-public-QtNoid2\Examples\AppParameterBasicUsage
 
+serve un metodo setModified(false) in modo da gestire manualmente il flag
+- e gestire la baseline manualmente
+- rinominare tutti i metodi come:
+- isSchemaModified
+- isSchemaModifiedChanged
+- setSchemaModified()
+- resetSchemaModifications
 
-Non sono convinto che questi metodi siamo corretti dentro alla classe config. Forse ha senso perché questo è il punto di ingresso principale
-    - void restoreComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings") const;
-    - void saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings");
+
+### togliere questi metodi dalla classe config. 
+- [ ] void restoreComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings") const;
+- [ ] void saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings");
+==🟡-> Vanno messi nella futura classe QtNoid::AppUI==
+
 
 Fare il test di:
    - [x] mainWindowFromWidget(): reference instead of pointer version

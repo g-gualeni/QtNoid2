@@ -22,7 +22,7 @@ class QTNOIDAPP_EXPORT Config : public QObject
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
     Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
-    Q_PROPERTY(bool isSchemaChanged READ isSchemaChanged BINDABLE bindableIsSchemaChanged NOTIFY isSchemaChangedChanged FINAL)
+    Q_PROPERTY(bool isSchemaModified READ isSchemaModified BINDABLE bindableIsSchemaModified NOTIFY isSchemaModifiedChanged FINAL)
     Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
 
 public:
@@ -133,12 +133,13 @@ public:
     void resetAllValues();   // cascades resetAllValues() to every page
 
 
-    // isSchemaChanged: tracks modifications to this config's own properties
+    // isSchemaModified: tracks modifications to this config's own properties
     // (name, label, description, tooltip) and to any contained ParametersPage's
-    // isSchemaChanged, unlike isValueChanged which only tracks value changes.
-    bool isSchemaChanged() const;
-    QBindable<bool> bindableIsSchemaChanged();
-    void resetSchemaChange();   // restores own properties AND cascades to every page
+    // isSchemaModified, unlike isValueChanged which only tracks value changes.
+    bool isSchemaModified() const;
+    QBindable<bool> bindableIsSchemaModified();
+    void setSchemaModified(bool modified);       // forces true, or accepts current state as the new baseline (false)
+    void resetSchemaModifications();   // restores own properties AND cascades to every page
 
 
     // Container management
@@ -231,7 +232,7 @@ signals:
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
     void isValueChangedChanged(bool value);
-    void isSchemaChangedChanged(bool changed);
+    void isSchemaModifiedChanged(bool value);
     void countChanged(int count);
     void pageAdded(const QtNoid::App::ParametersPage* parametersPage);
     void pageRemoved(QtNoid::App::ParametersPage* parametersPage);
@@ -250,7 +251,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_description, &Config::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_tooltip, &Config::tooltipChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isValueChanged, &Config::isValueChangedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isSchemaChanged, &Config::isSchemaChangedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isSchemaModified, &Config::isSchemaModifiedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, int, m_count, &Config::countChanged)
 
     QHash<int, ParametersPage*> m_pagesByUniqueId;
@@ -259,8 +260,8 @@ private:
     QHash<QString, ParametersPage*> m_pagesByName;
     int m_nextPageIndex = 0;
     int m_valueChangedCounter = 0;
-    int m_schemaChangedCounter = 0;
-
+    int m_schemaModifiedCounter = 0;
+    bool m_forceSchemaModified = false;   // manual override set by setSchemaModified(true)
 
     static QMutex s_uniqueIdMutex;
     static int s_nextUniqueId;
@@ -269,7 +270,8 @@ private:
 
     void initInternalConnections();
     void captureBaseline();
-    void updateIsSchemaChanged();
+    void updateIsSchemaModified();
+
     QHash<QByteArray, QVariant> m_schemaBaseline;
 
     void appendPageAndUpdateIndexs(ParametersPage *page);

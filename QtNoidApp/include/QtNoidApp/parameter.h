@@ -202,7 +202,8 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter &param)
                     << "id: " << param.uniqueId()
                     << ", name: " << param.name()
                     << ", value: " << param.value()
-                    << ", isChanged: " << param.isValueChanged()
+                    << ", isValueChanged: " << param.isValueChanged()
+                    << ", isSchemaChanged: " << param.isSchemaChanged()
                     << ", readOnly: " << param.readOnly()
                     << ", visible: " << param.visible();
 

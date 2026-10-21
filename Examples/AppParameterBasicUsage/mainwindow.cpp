@@ -74,10 +74,9 @@ MainWindow::MainWindow(QWidget *parent)
     // Listening to m_paramter modifications
     connect(&m_parameter, &QtNoid::App::Parameter::isSchemaChangedChanged, this,
             [&](bool val){
-                ui->optSchemaChanged->setEnabled(val);
-                qDebug() << "isSchemaChangedChanged";
+                ui->optSchemaChanged->setChecked(val);
                 convertToJson();
-                updateStatusBar("isSchemaChangedChanged signal fired");
+                updateStatusBar("isSchemaChangedChanged signal fired " + QString(val ? "true" : "false"));
             });
 
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
@@ -114,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&m_parameter, &QtNoid::App::Parameter::valueChanged, this,
             [&](QVariant val){
                 ui->txtValue->setValue(val.toDouble());
-                updateStatusBar("QtNoid::App::Parameter::valueChanged");
+                updateStatusBar("QtNoid::App::Parameter::valueChanged " + val.toString());
             });
     connect(&m_parameter, &QtNoid::App::Parameter::readOnlyChanged, this,
             [&](bool val){
@@ -129,7 +128,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&m_parameter, &QtNoid::App::Parameter::isValueChangedChanged, this,
             [&](bool val){
                 ui->optIsValueChanged->setChecked(val);
-                updateStatusBar("QtNoid::App::Parameter::optIsValueChanged");
+                updateStatusBar("QtNoid::App::Parameter::optIsValueChanged " + QString(val? "true" : "false"));
             });
     connect(&m_parameter, &QtNoid::App::Parameter::presetsChanged, this,
             [&](const QVariantMap&){
@@ -271,17 +270,18 @@ void MainWindow::updateStatusBar(const QString &msg)
 
 void MainWindow::on_cmdQDebug_clicked()
 {
-    qDebug() << __func__ << m_parameter.isSchemaChanged();
-    qDebug() << __func__ << m_parameter;
+    qDebug() << Q_FUNC_INFO << m_parameter;
 }
 
 void MainWindow::on_cmdResetValue_clicked()
 {
+    updateStatusBar("resetValueChange triggered");
     m_parameter.resetValueChange();
 }
 
 void MainWindow::on_cmdResetSchema_clicked()
 {
+    updateStatusBar("resetSchemaChange triggered");
     m_parameter.resetSchemaChange();
 }
 

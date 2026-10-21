@@ -741,7 +741,7 @@ void TestQtNoidAppConfig::testConfigResetAllValuesDoesNotAffectSchema()
     config.setDescription("Config description");
 
     QCOMPARE(config.isValueChanged(), true);
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
 
     config.resetAllValues();
 
@@ -751,7 +751,7 @@ void TestQtNoidAppConfig::testConfigResetAllValuesDoesNotAffectSchema()
     // (Config, page, parameter) must survive.
     QCOMPARE(page->label(), QString("Page label"));
     QCOMPARE(config.description(), QString("Config description"));
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
 }
 
 void TestQtNoidAppConfig::testConfigIsSchemaChanged()
@@ -761,13 +761,13 @@ void TestQtNoidAppConfig::testConfigIsSchemaChanged()
     ParametersPage* page2 = config.emplace("Page2");
 
     // Nothing changed yet
-    QCOMPARE(config.isSchemaChanged(), false);
+    QCOMPARE(config.isSchemaModified(), false);
 
-    QSignalSpy spy(&config, &Config::isSchemaChangedChanged);
+    QSignalSpy spy(&config, &Config::isSchemaModifiedChanged);
 
     // Changing Config's own schema property flips the aggregate to true
     config.setLabel("New label");
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
@@ -775,29 +775,29 @@ void TestQtNoidAppConfig::testConfigIsSchemaChanged()
     // through resetSchemaChange()) must recompute the flag back to false:
     // isSchemaChanged compares against the baseline, it is not a sticky flag.
     config.setLabel(QString());
-    QCOMPARE(config.isSchemaChanged(), false);
+    QCOMPARE(config.isSchemaModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
     // A contained ParametersPage's schema change should aggregate too
     page1->setLabel("Page1 label");
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     // A second page's schema changing too should not emit again (already true)
     page2->setLabel("Page2 label");
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the first page: the second is still changed, aggregate stays true
     page1->resetSchemaChange();
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the last changed page: aggregate must go back to false
     page2->resetSchemaChange();
-    QCOMPARE(config.isSchemaChanged(), false);
+    QCOMPARE(config.isSchemaModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
@@ -807,14 +807,14 @@ void TestQtNoidAppConfig::testConfigIsSchemaChanged()
     QCOMPARE(modifiedPage->isSchemaChanged(), true);
 
     config << modifiedPage;
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     // Removing that page (it stays alive, detached from Config) should
     // bring the aggregate back to false
     config.remove(modifiedPage);
-    QCOMPARE(config.isSchemaChanged(), false);
+    QCOMPARE(config.isSchemaModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
@@ -826,7 +826,7 @@ void TestQtNoidAppConfig::testConfigBindableIsSchemaChangedProperty()
     Config config(this);
     ParametersPage* page = config.emplace("Page1");
 
-    auto bindableIsSchemaChanged = config.bindableIsSchemaChanged();
+    auto bindableIsSchemaChanged = config.bindableIsSchemaModified();
     QVERIFY(bindableIsSchemaChanged.isValid());
     QCOMPARE(bindableIsSchemaChanged.value(), false);
 
@@ -854,14 +854,14 @@ void TestQtNoidAppConfig::testConfigResetSchemaChange()
     config.setDescription("Config description");
     config.setTooltip("Config tooltip");
 
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
 
-    config.resetSchemaChange();
+    config.resetSchemaModifications();
 
     QCOMPARE(config.label(), QString());
     QCOMPARE(config.description(), QString());
     QCOMPARE(config.tooltip(), QString());
-    QCOMPARE(config.isSchemaChanged(), false);
+    QCOMPARE(config.isSchemaModified(), false);
 
     // Cascades down to every contained ParametersPage too.
     QCOMPARE(page->label(), QString());
@@ -878,16 +878,16 @@ void TestQtNoidAppConfig::testConfigResetSchemaChangeDoesNotAffectValues()
     config.setDescription("Config description");
 
     QCOMPARE(config.isValueChanged(), true);
-    QCOMPARE(config.isSchemaChanged(), true);
+    QCOMPARE(config.isSchemaModified(), true);
 
-    config.resetSchemaChange();
+    config.resetSchemaModifications();
 
     // resetSchemaChange() only touches schema properties: values stay as set.
     QCOMPARE(p1->value(), 99);
     QCOMPARE(config.isValueChanged(), true);
     QCOMPARE(config.description(), QString());
     QCOMPARE(page->label(), QString());
-    QCOMPARE(config.isSchemaChanged(), false);
+    QCOMPARE(config.isSchemaModified(), false);
 }
 
 void TestQtNoidAppConfig::testCountProperty()
