@@ -363,6 +363,7 @@ void Config::setSchemaModified(bool modified)
     m_forceSchemaModified = modified;
     if (!modified) {
         captureBaseline();   // own current state becomes the new reference
+        // REMEMBER ALSO pages
     }
     // Explicit recompute: if nothing above actually changed a tracked property's
     // value (e.g. captureBaseline() re-captures identical values), nothing would
@@ -481,7 +482,7 @@ void Config::remove(ParametersPage *page)
     m_pageToIndex.remove(page);
     m_pagesByIndex.remove(idx);
 
-    if (page->isValueChanged()) {
+    if (page->isValueModified()) {
         onPageIsValueChangedChanged(false);
     }
     if (page->isSchemaChanged()) {
@@ -490,7 +491,7 @@ void Config::remove(ParametersPage *page)
 
     disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     disconnect(page, &ParametersPage::nameEdited, this, nullptr);
-    disconnect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
+    disconnect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueChangedChanged);
     disconnect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
 
     emit pageRemoved(page);
@@ -521,7 +522,7 @@ void Config::clear()
 
         disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
         disconnect(page, &ParametersPage::nameEdited, this, nullptr);
-        disconnect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
+        disconnect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueChangedChanged);
         disconnect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
 
         emit pageRemoved(page);
@@ -919,7 +920,7 @@ void Config::onPageAboutToBeDestroyed(ParametersPage *page)
     QString key = m_pagesByName.key(page);
     m_pagesByName.remove(key);
 
-    if (page->isValueChanged()) {
+    if (page->isValueModified()) {
         onPageIsValueChangedChanged(false);
     }
     if (page->isSchemaChanged()) {
@@ -986,11 +987,11 @@ void Config::appendPageAndUpdateIndexs(ParametersPage *page)
 
     connect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     connect(page, &ParametersPage::nameEdited, this, &Config::onPageNameEdited);
-    connect(page, &ParametersPage::isValueChangedChanged, this, &Config::onPageIsValueChangedChanged);
+    connect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueChangedChanged);
     connect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
 
 
-    if (page->isValueChanged()) {
+    if (page->isValueModified()) {
         onPageIsValueChangedChanged(true);
     }
     if (page->isSchemaChanged()) {

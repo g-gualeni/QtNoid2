@@ -36,7 +36,7 @@
 	- [x] Aggiornare UI
 	- [x] Aggiornare Doc
 	- [ ] Aggiornare screenshot macOS
-- [ ] Sistemare esempio QtNoid::App:Parameter Basic Usage
+- [ ] Sistemare esempio QtNoid::App:Parameter Basic Usage - controllare non va bene
 	- [x] Creare il test per segnale changed()
 	- [x] automatizzareJSON
 	- [x] Documentare changed() e spiegare il consolidamento dei messaggi in uno solo
@@ -75,7 +75,14 @@
 	- [x] Non vedo il meccanismo con il contatore delle modifiche
 
 
-Sto convertendo da Changed a Modified
+--> Sto convertendo da Changed a Modified
+poi devo verificare tutto!
+-> Il prossimo è setValueModified per paramtersPage
+poi isSchemaModified() sempre per paramtersPage
+
+
+
+
 Non funziona l'esempio
 C:\GitHub\g-gualeni-public-QtNoid2\Examples\AppParameterBasicUsage
 

@@ -24,10 +24,10 @@ int Parameter::getNextUniqueId()
 
 
 namespace {
-bool isTrackedForIsSchemaChanged(const QMetaProperty &prop)
+bool isTrackedForIsSchemaModified(const QMetaProperty &prop)
 {
     static const QSet<QByteArray> excluded = {
-        "objectName", "value", "range", "isValid", "isValueChanged", "isSchemaChanged"
+        "objectName", "value", "range", "isValid", "isValueModified", "isSchemaModified"
     };
     return prop.isReadable() && !excluded.contains(prop.name());
 }
@@ -35,14 +35,18 @@ bool isTrackedForIsSchemaChanged(const QMetaProperty &prop)
 
 void Parameter::captureBaseline()
 {
-    m_isSchemaChanged.setValueBypassingBindings(false);
+    const bool wasSchemaModified = m_isSchemaModified.value();
+    m_isSchemaModified.setValueBypassingBindings(m_forceSchemaModified.value());
     m_schemaBaseline.clear();
     const QMetaObject mo = Parameter::staticMetaObject;
     for (int ii = 0; ii < mo.propertyCount(); ++ii) {
         QMetaProperty prop = mo.property(ii);
-        if (isTrackedForIsSchemaChanged(prop)) {
+        if (isTrackedForIsSchemaModified(prop)) {
             m_schemaBaseline.insert(prop.name(), prop.read(this));
         }
+    }
+    if (m_isSchemaModified.value() != wasSchemaModified) {
+        m_isSchemaModified.notify();
     }
 }
 
@@ -52,7 +56,7 @@ Parameter::Parameter(QObject *parent)
 {
     initInternalConnections();
     captureBaseline();
-    initIsSchemaChangedConnections();
+    initIsSchemaModifiedConnections();
 }
 
 Parameter::Parameter(const QVariant &initialValue, QObject *parent)
@@ -61,7 +65,7 @@ Parameter::Parameter(const QVariant &initialValue, QObject *parent)
 {
     initInternalConnections();
     captureBaseline();
-    initIsSchemaChangedConnections();
+    initIsSchemaModifiedConnections();
 }
 
 Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject *parent)
@@ -70,7 +74,7 @@ Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject 
 {
     initInternalConnections();
     captureBaseline();
-    initIsSchemaChangedConnections();
+    initIsSchemaModifiedConnections();
 }
 
 Parameter::Parameter(const QVariant &initialValue, const QString &name, const QString &description, QObject *parent)
@@ -79,7 +83,7 @@ Parameter::Parameter(const QVariant &initialValue, const QString &name, const QS
 {
     initInternalConnections();
     captureBaseline();
-    initIsSchemaChangedConnections();
+    initIsSchemaModifiedConnections();
 }
 
 Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObject *parent)
@@ -100,7 +104,7 @@ Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObjec
         schemaFromJson(schema);
     }
     captureBaseline();
-    initIsSchemaChangedConnections();
+    initIsSchemaModifiedConnections();
 }
 
 Parameter::~Parameter()
@@ -296,18 +300,26 @@ void Parameter::initInternalConnections()
 
     // This automatically track any changes in parameters used by computeIsValid()
     m_isValid.setBinding([this]{ return computeIsValid(); });
-    m_isValueChanged.setBinding([this]{ return m_value.value() != m_initialValue.value(); });
+    m_isValueModified.setBinding([this]{
+        if (m_forceValueModified.value()) {
+            return true;
+        }
+        return m_value.value() != m_initialValue.value();
+    });
 
 }
 
-void Parameter::initIsSchemaChangedConnections()
+void Parameter::initIsSchemaModifiedConnections()
 {
     // This automatically track any changes in properties used by m_isSchemaChanged()
-    m_isSchemaChanged.setBinding([this]{
+    m_isSchemaModified.setBinding([this]{
+        if (m_forceSchemaModified.value()) {
+            return true;
+        }
         const QMetaObject mo = Parameter::staticMetaObject;
-        for (int i = 0; i < mo.propertyCount(); ++i) {
-            QMetaProperty prop = mo.property(i);
-            if (isTrackedForIsSchemaChanged(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
+        for (int ii = 0; ii < mo.propertyCount(); ++ii) {
+            QMetaProperty prop = mo.property(ii);
+            if (isTrackedForIsSchemaModified(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
                 return true;
             }
         }
@@ -333,10 +345,6 @@ QBindable<QVariant> Parameter::bindableValue()
     return QBindable<QVariant>(&m_value);
 }
 
-void Parameter::resetValueChange()
-{
-    m_value = m_initialValue;
-}
 
 QVariant Parameter::min() const
 {
@@ -610,27 +618,54 @@ QBindable<bool> Parameter::bindableIsValid()
     return QBindable<bool>(&m_isValid);
 }
 
-bool Parameter::isValueChanged() const
+bool Parameter::isValueModified() const
 {
-    return m_isValueChanged;
+    return m_isValueModified;
 }
 
-QBindable<bool> Parameter::bindableIsValueChanged()
+QBindable<bool> Parameter::bindableIsValueModified()
 {
-    return QBindable<bool>(&m_isValueChanged);
+    return QBindable<bool>(&m_isValueModified);
 }
 
-bool Parameter::isSchemaChanged() const
+void Parameter::setValueModified(bool modified)
 {
-    return m_isSchemaChanged;
+    if (modified) {
+        m_forceValueModified = true;
+    } else {
+        m_forceValueModified = false;
+        m_initialValue = m_value.value();   // accept the current value as the new reference
+    }
 }
 
-QBindable<bool> Parameter::bindableIsSchemaChanged()
+void Parameter::resetValueModifications()
 {
-    return QBindable<bool>(&m_isSchemaChanged);
+    m_value = m_initialValue;
+    m_forceValueModified = false;
 }
 
-void Parameter::resetSchemaChange()
+
+bool Parameter::isSchemaModified() const
+{
+    return m_isSchemaModified;
+}
+
+QBindable<bool> Parameter::bindableIsSchemaModified()
+{
+    return QBindable<bool>(&m_isSchemaModified);
+}
+
+void Parameter::setSchemaModified(bool modified)
+{
+    if (modified) {
+        m_forceSchemaModified = true;
+    } else {
+        m_forceSchemaModified = false;
+        captureBaseline();
+    }
+}
+
+void Parameter::resetSchemaModifications()
 {
     const QMetaObject mo = Parameter::staticMetaObject;
     for(const QByteArray &propName : m_schemaBaseline.keys()) {
@@ -639,10 +674,12 @@ void Parameter::resetSchemaChange()
             continue;
         }
         QMetaProperty prop = mo.property(idx);
-        if(prop.isWritable()) {
-            prop.write(this, m_schemaBaseline.value(propName));
+        if(!prop.isWritable()) {
+            continue;
         }
+        prop.write(this, m_schemaBaseline.value(propName));
     }
+    m_forceSchemaModified = false;
 }
 
 bool Parameter::canModify() const

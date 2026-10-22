@@ -30,8 +30,8 @@ class QTNOIDAPP_EXPORT Parameter : public QObject
     Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
     Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(bool isValid READ isValid BINDABLE bindableIsValid NOTIFY isValidChanged FINAL)
-    Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
-    Q_PROPERTY(bool isSchemaChanged READ isSchemaChanged BINDABLE bindableIsSchemaChanged NOTIFY isSchemaChangedChanged FINAL)
+    Q_PROPERTY(bool isValueModified READ isValueModified BINDABLE bindableIsValueModified NOTIFY isValueModifiedChanged FINAL)
+    Q_PROPERTY(bool isSchemaModified READ isSchemaModified BINDABLE bindableIsSchemaModified NOTIFY isSchemaModifiedChanged FINAL)
 
 public:
     explicit Parameter(QObject *parent = nullptr);
@@ -54,7 +54,6 @@ public:
     QVariant value() const;
     // void setValue(const QVariant& val);  // Available as a public SLOT
     QBindable<QVariant> bindableValue();
-    void resetValueChange();
 
     // Range management
     QVariant min() const;
@@ -120,14 +119,18 @@ public:
     bool isValid() const;
     QBindable<bool> bindableIsValid();
 
-    // isValueChanged
-    bool isValueChanged() const;
-    QBindable<bool> bindableIsValueChanged();
+    // isValueModified
+    bool isValueModified() const;
+    QBindable<bool> bindableIsValueModified();
+    void setValueModified(bool modified);
+    void resetValueModifications();
 
-    // isSchemaChanged
-    bool isSchemaChanged() const;
-    QBindable<bool> bindableIsSchemaChanged();
-    void resetSchemaChange();
+
+    // isSchemaModified
+    bool isSchemaModified() const;
+    QBindable<bool> bindableIsSchemaModified();
+    void setSchemaModified(bool modified);
+    void resetSchemaModifications();
 
 signals:
     void valueChanged(const QVariant &newValue);
@@ -145,8 +148,8 @@ signals:
     void visibleChanged(bool value);
     void writeAttemptedWhileReadOnly(const QString &parameterName, const QVariant& current);
     void isValidChanged(bool isValid);
-    void isValueChangedChanged(bool changed);
-    void isSchemaChangedChanged(bool changed);
+    void isValueModifiedChanged(bool value);
+    void isSchemaModifiedChanged(bool value);
     void aboutToBeDestroyed(QtNoid::App::Parameter *parameter);
 
 public slots:
@@ -165,13 +168,15 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_visible, &Parameter::visibleChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, QVariantMap, m_presets, &Parameter::presetsChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isValid, &Parameter::isValidChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isValueChanged, &Parameter::isValueChangedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isSchemaChanged, &Parameter::isSchemaChangedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isValueModified, &Parameter::isValueModifiedChanged)
+    QProperty<bool> m_forceValueModified;   // read inside the binding lambda so writes correctly invalidate it
+    Q_OBJECT_BINDABLE_PROPERTY(Parameter, bool, m_isSchemaModified, &Parameter::isSchemaModifiedChanged)
+    QProperty<bool> m_forceSchemaModified; // read inside the binding lambda so writes correctly invalidate it
 
     friend class ::TestQtNoidAppParameter; // Only for White Box testing
 
     void initInternalConnections();
-    void initIsSchemaChangedConnections();
+    void initIsSchemaModifiedConnections();
     bool computeIsValid() const;
     void enforceRange();
     QVariant clampValue(const QVariant &value) const;
@@ -202,8 +207,8 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter &param)
                     << "id: " << param.uniqueId()
                     << ", name: " << param.name()
                     << ", value: " << param.value()
-                    << ", isValueChanged: " << param.isValueChanged()
-                    << ", isSchemaChanged: " << param.isSchemaChanged()
+                    << ", isValueModified: " << param.isValueModified()
+                    << ", isSchemaModified: " << param.isSchemaModified()
                     << ", readOnly: " << param.readOnly()
                     << ", visible: " << param.visible();
 

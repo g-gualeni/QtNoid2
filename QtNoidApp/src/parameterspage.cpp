@@ -28,7 +28,7 @@ namespace {
 bool isTrackedForIsSchemaChanged(const QMetaProperty &prop)
 {
     static const QSet<QByteArray> excluded = {
-        "objectName", "count", "isValueChanged", "isSchemaChanged"
+        "objectName", "count", "isValueModified", "isSchemaChanged"
     };
     return prop.isReadable() && !excluded.contains(prop.name());
 }
@@ -46,7 +46,7 @@ void ParametersPage::captureBaseline()
     }
 }
 
-void ParametersPage::updateIsSchemaChanged()
+void ParametersPage::updateIsSchemaModified()
 {
     bool ownChanged = false;
     const QMetaObject *mo = metaObject();
@@ -57,7 +57,7 @@ void ParametersPage::updateIsSchemaChanged()
             break;
         }
     }
-    m_isSchemaChanged = ownChanged || (m_schemaChangedCounter > 0);
+    m_isSchemaChanged = ownChanged || (m_parameterSchemaModifiedCounter > 0);
 
 }
 
@@ -345,21 +345,20 @@ QBindable<bool> ParametersPage::bindableVisible()
     return QBindable<bool>(&m_visible);
 }
 
-bool ParametersPage::isValueChanged() const
+bool ParametersPage::isValueModified() const
 {
-    // qDebug() << Q_FUNC_INFO  << "m_valueChangedCounter"  << m_valueChangedCounter;
-    return m_isValueChanged.value();
+    return m_isValueModified.value();
 }
 
-QBindable<bool> ParametersPage::bindableIsValueChanged()
+QBindable<bool> ParametersPage::bindableIsValueModified()
 {
-    return QBindable<bool>(&m_isValueChanged);
+    return QBindable<bool>(&m_isValueModified);
 }
 
 void ParametersPage::resetAllValues()
 {
     for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
-        it.value()->resetValueChange();
+        it.value()->resetValueModifications();
     }
 }
 
@@ -388,7 +387,7 @@ void ParametersPage::resetSchemaChange()
     }
 
     for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
-        it.value()->resetSchemaChange();
+        it.value()->resetSchemaModifications();
     }
 }
 
@@ -473,17 +472,17 @@ void ParametersPage::removeParameterInternal(Parameter *parameter)
         m_parametersByIndex.remove(idx);
     }
 
-    if (parameter->isValueChanged()) {
-        onParameterIsValueChangedChanged(false);
+    if (parameter->isValueModified()) {
+        onParameterIsValueModifiedChanged(false);
     }
-    if (parameter->isSchemaChanged()) {
-        onParameterIsSchemaChangedChanged(false);
+    if (parameter->isSchemaModified()) {
+        onParameterIsSchemaModifiedChanged(false);
     }
 
     disconnect(parameter, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
     disconnect(parameter, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
-    disconnect(parameter, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
-    disconnect(parameter, &Parameter::isSchemaChangedChanged, this, &ParametersPage::onParameterIsSchemaChangedChanged);
+    disconnect(parameter, &Parameter::isValueModifiedChanged, this, &ParametersPage::onParameterIsValueModifiedChanged);
+    disconnect(parameter, &Parameter::isSchemaModifiedChanged, this, &ParametersPage::onParameterIsSchemaModifiedChanged);
 
 
     emit parameterRemoved(parameter);
@@ -533,15 +532,15 @@ void ParametersPage::clear()
         Parameter* param = it.value();
         disconnect(param, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
         disconnect(param, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
-        disconnect(param, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
-        disconnect(param, &Parameter::isSchemaChangedChanged, this, &ParametersPage::onParameterIsSchemaChangedChanged);
+        disconnect(param, &Parameter::isValueModifiedChanged, this, &ParametersPage::onParameterIsValueModifiedChanged);
+        disconnect(param, &Parameter::isSchemaModifiedChanged, this, &ParametersPage::onParameterIsSchemaModifiedChanged);
         emit parameterRemoved(param);
     }
 
-    m_valueChangedCounter = 0;
-    m_isValueChanged = false;
-    m_schemaChangedCounter = 0;
-    updateIsSchemaChanged();
+    m_valueModifiedCounter = 0;
+    m_isValueModified = false;
+    m_parameterSchemaModifiedCounter = 0;
+    updateIsSchemaModified();
 
     m_parametersByUniqueId.clear();
     m_parametersByIndex.clear();
@@ -663,26 +662,26 @@ void ParametersPage::onParameterNameEdited(const QString &oldName, const QString
     return;
 }
 
-void ParametersPage::onParameterIsValueChangedChanged(bool changed)
+void ParametersPage::onParameterIsValueModifiedChanged(bool changed)
 {
     if(changed) {
-        ++m_valueChangedCounter;
+        ++m_valueModifiedCounter;
     }
     else {
-        --m_valueChangedCounter;
+        --m_valueModifiedCounter;
     }
-    m_isValueChanged = (m_valueChangedCounter >0);
+    m_isValueModified = (m_valueModifiedCounter >0);
 }
 
-void ParametersPage::onParameterIsSchemaChangedChanged(bool changed)
+void ParametersPage::onParameterIsSchemaModifiedChanged(bool changed)
 {
     if(changed) {
-        ++m_schemaChangedCounter;
+        ++m_parameterSchemaModifiedCounter;
     }
     else {
-        --m_schemaChangedCounter;
+        --m_parameterSchemaModifiedCounter;
     }
-    updateIsSchemaChanged();
+    updateIsSchemaModified();
 }
 
 void ParametersPage::appendParameterAndUpdateIndexs(Parameter *parameter)
@@ -694,14 +693,14 @@ void ParametersPage::appendParameterAndUpdateIndexs(Parameter *parameter)
     m_parametersByName.insert(parameter->name(), parameter);
     connect(parameter, &Parameter::aboutToBeDestroyed, this, &ParametersPage::onParameterAboutToBeDestroyed);
     connect(parameter, &Parameter::nameEdited, this, &ParametersPage::onParameterNameEdited);
-    connect(parameter, &Parameter::isValueChangedChanged, this, &ParametersPage::onParameterIsValueChangedChanged);
-    connect(parameter, &Parameter::isSchemaChangedChanged, this, &ParametersPage::onParameterIsSchemaChangedChanged);
+    connect(parameter, &Parameter::isValueModifiedChanged, this, &ParametersPage::onParameterIsValueModifiedChanged);
+    connect(parameter, &Parameter::isSchemaModifiedChanged, this, &ParametersPage::onParameterIsSchemaModifiedChanged);
 
-    if(parameter->isValueChanged()) {
-        onParameterIsValueChangedChanged(true);
+    if(parameter->isValueModified()) {
+        onParameterIsValueModifiedChanged(true);
     }
-    if(parameter->isSchemaChanged()) {
-        onParameterIsSchemaChangedChanged(true);
+    if(parameter->isSchemaModified()) {
+        onParameterIsSchemaModifiedChanged(true);
     }
 
     emit parameterAdded(parameter);
@@ -710,7 +709,7 @@ void ParametersPage::appendParameterAndUpdateIndexs(Parameter *parameter)
 
 void ParametersPage::onOwnPropertyChanged()
 {
-    updateIsSchemaChanged();
+    updateIsSchemaModified();
 }
 
 void ParametersPage::onParameterAboutToBeDestroyed(Parameter *parameter)
@@ -726,11 +725,11 @@ void ParametersPage::onParameterAboutToBeDestroyed(Parameter *parameter)
     QString key = m_parametersByName.key(parameter);
     m_parametersByName.remove(key);
 
-    if (parameter->isValueChanged()) {
-        onParameterIsValueChangedChanged(false);
+    if (parameter->isValueModified()) {
+        onParameterIsValueModifiedChanged(false);
     }
-    if (parameter->isSchemaChanged()) {
-        onParameterIsSchemaChangedChanged(false);
+    if (parameter->isSchemaModified()) {
+        onParameterIsSchemaModifiedChanged(false);
     }
 
     emit parameterRemoved(parameter);

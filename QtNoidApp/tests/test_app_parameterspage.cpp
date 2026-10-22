@@ -612,7 +612,7 @@ void TestQtNoidAppParametersPage::testUsingDeleteDirectlyOnTheParameterPointer()
 
     list.append(par);
     par->setValue(100);
-    QCOMPARE(list.isValueChanged(), true);
+    QCOMPARE(list.isValueModified(), true);
 
     QSignalSpy removedSpy(&list, &ParametersPage::parameterRemoved);
     QSignalSpy countSpy(&list, &ParametersPage::countChanged);
@@ -624,7 +624,7 @@ void TestQtNoidAppParametersPage::testUsingDeleteDirectlyOnTheParameterPointer()
     QCOMPARE(removedSpy.count(), 1);
 
     // Check the isValueChanged of the list is false
-    QCOMPARE(list.isValueChanged(), false);
+    QCOMPARE(list.isValueModified(), false);
 
     // Check the the first parameter of an empty list is 0
     Parameter* emPlace = list.emplace(123, "Emplace");
@@ -1569,29 +1569,29 @@ void TestQtNoidAppParametersPage::testParametersPageIsValueChanged()
     Parameter* p2 = list.emplace(5, "Param2");
 
     // No parameter changed yet
-    QCOMPARE(list.isValueChanged(), false);
+    QCOMPARE(list.isValueModified(), false);
 
-    QSignalSpy spy(&list, &ParametersPage::isValueChangedChanged);
+    QSignalSpy spy(&list, &ParametersPage::isValueModifiedChanged);
 
     // Changing one parameter should flip the aggregate to true
     p1->setValue(99);
-    QCOMPARE(list.isValueChanged(), true);
+    QCOMPARE(list.isValueModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     // A second parameter changing too should not emit again (already true)
     p2->setValue(50);
-    QCOMPARE(list.isValueChanged(), true);
+    QCOMPARE(list.isValueModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the first parameter: the second is still changed, aggregate stays true
     p1->setValue(10);
-    QCOMPARE(list.isValueChanged(), true);
+    QCOMPARE(list.isValueModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the last changed parameter: aggregate must go back to false
     p2->setValue(5);
-    QCOMPARE(list.isValueChanged(), false);
+    QCOMPARE(list.isValueModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
@@ -1601,12 +1601,12 @@ void TestQtNoidAppParametersPage::testParametersPageIsValueChanged()
     modPar_p3.setValue(100);
     auto res = list.append(&modPar_p3);
     QCOMPARE(res, true);
-    QCOMPARE(list.isValueChanged(), true);
+    QCOMPARE(list.isValueModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     list.removeParameter(&modPar_p3);
-    QCOMPARE(list.isValueChanged(), false);
+    QCOMPARE(list.isValueModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 }
@@ -1616,7 +1616,7 @@ void TestQtNoidAppParametersPage::testBindableIsValueChangedProperty()
     ParametersPage list(this);
     Parameter* p1 = list.emplace(10, "Param1");
 
-    auto bindableIsValueChanged = list.bindableIsValueChanged();
+    auto bindableIsValueChanged = list.bindableIsValueModified();
     QVERIFY(bindableIsValueChanged.isValid());
     QCOMPARE(bindableIsValueChanged.value(), false);
 
@@ -1644,15 +1644,15 @@ void TestQtNoidAppParametersPage::testParametersPageResetAllValues()
 
     p1->setValue(99);
     p2->setValue(50);
-    QCOMPARE(page.isValueChanged(), true);
+    QCOMPARE(page.isValueModified(), true);
 
     page.resetAllValues();
 
     QCOMPARE(p1->value(), 10);
     QCOMPARE(p2->value(), 5);
-    QCOMPARE(p1->isValueChanged(), false);
-    QCOMPARE(p2->isValueChanged(), false);
-    QCOMPARE(page.isValueChanged(), false);
+    QCOMPARE(p1->isValueModified(), false);
+    QCOMPARE(p2->isValueModified(), false);
+    QCOMPARE(page.isValueModified(), false);
 }
 
 void TestQtNoidAppParametersPage::testParametersPageResetAllValuesDoesNotAffectSchema()
@@ -1663,13 +1663,13 @@ void TestQtNoidAppParametersPage::testParametersPageResetAllValuesDoesNotAffectS
     p1->setLabel("New label");
     page.setDescription("Page description");
 
-    QCOMPARE(page.isValueChanged(), true);
+    QCOMPARE(page.isValueModified(), true);
     QCOMPARE(page.isSchemaChanged(), true);
 
     page.resetAllValues();
 
     QCOMPARE(p1->value(), 10);
-    QCOMPARE(page.isValueChanged(), false);
+    QCOMPARE(page.isValueModified(), false);
     // resetAllValues() only touches values: schema changes on both the page
     // and the contained parameter must survive.
     QCOMPARE(p1->label(), QString("New label"));
@@ -1714,12 +1714,12 @@ void TestQtNoidAppParametersPage::testParametersPageIsSchemaChanged()
     QCOMPARE(spy.count(), 0);
 
     // Reverting the first parameter: the second is still changed, aggregate stays true
-    p1->resetSchemaChange();
+    p1->resetSchemaModifications();
     QCOMPARE(page.isSchemaChanged(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the last changed parameter: aggregate must go back to false
-    p2->resetSchemaChange();
+    p2->resetSchemaModifications();
     QCOMPARE(page.isSchemaChanged(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
@@ -1759,7 +1759,7 @@ void TestQtNoidAppParametersPage::testBindableIsSchemaChangedProperty()
     QCOMPARE(externalProperty.value(), true);
 
     // Reverting the parameter's schema should propagate back to false
-    p1->resetSchemaChange();
+    p1->resetSchemaModifications();
     QCOMPARE(bindableIsSchemaChanged.value(), false);
     QCOMPARE(externalProperty.value(), false);
 }
@@ -1789,7 +1789,7 @@ void TestQtNoidAppParametersPage::testParametersPageResetSchemaChange()
     // Cascades down to every contained Parameter too.
     QCOMPARE(p1->label(), QString());
     QCOMPARE(p1->description(), QString("Original description"));
-    QCOMPARE(p1->isSchemaChanged(), false);
+    QCOMPARE(p1->isSchemaModified(), false);
 }
 
 void TestQtNoidAppParametersPage::testParametersPageResetSchemaChangeDoesNotAffectValues()
@@ -1800,14 +1800,14 @@ void TestQtNoidAppParametersPage::testParametersPageResetSchemaChangeDoesNotAffe
     p1->setLabel("New label");
     page.setDescription("Page description");
 
-    QCOMPARE(page.isValueChanged(), true);
+    QCOMPARE(page.isValueModified(), true);
     QCOMPARE(page.isSchemaChanged(), true);
 
     page.resetSchemaChange();
 
     // resetSchemaChange() only touches schema properties: values stay as set.
     QCOMPARE(p1->value(), 99);
-    QCOMPARE(page.isValueChanged(), true);
+    QCOMPARE(page.isValueModified(), true);
     QCOMPARE(page.description(), QString());
     QCOMPARE(p1->label(), QString());
     QCOMPARE(page.isSchemaChanged(), false);
@@ -2715,7 +2715,7 @@ void TestQtNoidAppParametersPage::testQDebugOperator()
     QVERIFY(output.contains("Temp"));
     QVERIFY(output.contains("Press"));
     QVERIFY(output.contains("Humidity"));
-    QVERIFY(output.contains("changed"));
+    QVERIFY(output.contains("modified"));
 
 }
 
@@ -2755,7 +2755,6 @@ void TestQtNoidAppParametersPage::testAboutToBeDestroyedSignal()
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(reinterpret_cast<quintptr>(arguments.at(0).value<ParametersPage*>()), expectedAddress);
-
 }
 
 

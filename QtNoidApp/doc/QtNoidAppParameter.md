@@ -1,21 +1,21 @@
 # Class: Parameter
 This class is a generic application parameter class with value storage, range validation, presets, and Qt property binding. Every property is bindable and fires a signal when changed. The class content can be exported in 2 types of JSON objects:
- * **Value** that contains just the name and the value
+ * **Value** that contains just the name and the value.
  * **Schema** that contains all the other properties that define the object, but not the value.
 
 A single Parameter has the following properties:
 - **value**: This is a QVariant object that represents the parameter value.
 - **isValid**: Read only property true when the parameter has a name, a valid value, and (if a range is configured) the value falls within range.
-- **isValueChanged**: Read-only property, true when the current value differs from the reference value (initial value, last applied preset, or last value loaded from JSON).
-- **isSchemaChanged**: Read-only property, true when any property other than `value` differs from the reference schema (name, label, description, unit, tooltip, readOnly, visible, min, max, or presets, as captured at construction or at the last `schemaFromJson()`/`fromJson()` call). Unlike `isValueChanged`, this never reacts to a value-only change.
+- **isValueModified**: Read-only property, true when the current value differs from the reference value (initial value, last applied preset, or last value loaded from JSON), or when manually forced with `setValueModified(true)`.
+- **isSchemaModified**: Read-only property, true when any property other than `value` differs from the reference schema (name, label, description, unit, tooltip, readOnly, visible, min, max, or presets, as captured at construction or at the last `schemaFromJson()`/`fromJson()` call), or when manually forced with `setSchemaModified(true)`. Unlike `isValueModified`, this never reacts to a value-only change.
 - **unit**: This is a QString that represents the unit of measure.
 - **min**, **max**, **range**: These properties can be used to enforce limitations to the range of the value. Any time a bigger or smaller value is set it is automatically clipped to the max or to the min.
 - **presets**: The parameter can have a list of default values, which are stored in a QVariantMap with preset name and preset value. This can be used for quick configuration change such as for light or dark theme.
 - **name**: This is a string that represents the parameter name as it is saved in a JSON object.
 - **label:** this can be an alias for the name or its translation in local language. Since it is not tied to the parameter name, it is the preferred one for the user interface. 
-- **description**: This is the parameter description
-- **tooltip**: This is the parameter tooltip
-- **readOnly**: When true, the parameter value (only the value) cannot be modified. Trying to change it fires the signal writeAttemptedWhileReadOnly().
+- **description**: This is the parameter description.
+- **tooltip**: This is the parameter tooltip.
+- **readOnly**: When true, the parameter value (only the value) cannot be modified. Trying to change it fires the signal `writeAttemptedWhileReadOnly()`.
 - **visible**: use this flag to show or hide the parameter in a dialog.
 
 ## Static Methods
@@ -38,10 +38,9 @@ A single Parameter has the following properties:
 - `uniqueId()`: Returns an integer that represents the object unique ID of the object.
 
 ## Properties management methods
-* `value()`: Returns the current value of the parameter as a QVariant
+* `value()`: Returns the current value of the parameter as a QVariant.
 - `setValue(const QVariant& val)`: Sets the parameter value, with range validation if configured.
 - `bindableValue()`: Returns a bindable property for the value, enabling Qt's property binding system.
-- `resetValueChange()`: Restores `value()` to the current reference value, and makes `isValueChanged()` become `false` again.
 
 * `isValid()`: Read only property that returns true if the object meets all of the following conditions: 
 	- it has a name, 
@@ -49,20 +48,23 @@ A single Parameter has the following properties:
 	- if a range is configured, the value falls within that range.
 * `bindableIsValid()`: Returns a bindable property for the read only property.
 
-* `isValueChanged()`: Returns true if the object's current value is different from the internal reference value. The internal reference value is either: the initial value of the object or the value of last preset applied or from the latest JSON object loaded.
-* `bindableIsValueChanged()`: Returns a bindable property for the read only property.
+* `isValueModified()`: Returns true if the object's current value is different from the internal reference value, or if a manual override is active (see `setValueModified()`). The internal reference value is either: the initial value of the object, the value of the last preset applied, or the value from the latest JSON object loaded.
+* `bindableIsValueModified()`: Returns a bindable property for the read only property.
+* `setValueModified(bool modified)`: Mirrors `QTextDocument::setModified()`. With `true`, manually forces `isValueModified()` to report `true` regardless of whether the value actually differs from its reference — useful when a change outside the tracked value should still count as "modified". With `false`, clears that manual override and accepts the parameter's current value as the new reference value (equivalent to calling `setModified(false)` right after a save): `isValueModified()` goes back to `false`, and a later `resetValueModifications()` restores to this new reference value, not to the one captured before.
+* `resetValueModifications()`: Restores `value()` to the reference value, clears any manual override set by `setValueModified(true)`, and makes `isValueModified()` become `false` again.
 
-* `isSchemaChanged()`: Returns true if any property other than `value` (name, label, description, unit, tooltip, readOnly, visible, min, max, presets) differs from the reference schema captured at construction or at the last `schemaFromJson()`/`fromJson()` call. A value-only change never affects this property.
-* `bindableIsSchemaChanged()`: Returns a bindable property for the read only property.
-* `resetSchemaChange()`: Restores every schema property to the reference schema, and makes `isSchemaChanged()` become `false` again. Does not affect `value()` or `isValueChanged()`. Note: since min/max are restored through the normal setters, this can clip the current `value()` as a side effect if it falls outside the restored range.
+* `isSchemaModified()`: Returns true if any property other than `value` (name, label, description, unit, tooltip, readOnly, visible, min, max, presets) differs from the reference schema captured at construction or at the last `schemaFromJson()`/`fromJson()` call, or if a manual override is active (see `setSchemaModified()`). A value-only change never affects this property.
+* `bindableIsSchemaModified()`: Returns a bindable property for the read only property.
+* `setSchemaModified(bool modified)`: Mirrors `QTextDocument::setModified()`. With `true`, manually forces `isSchemaModified()` to report `true` regardless of whether any tracked property actually differs from its baseline — useful when a change outside the tracked properties should still count as "modified". With `false`, clears that manual override and accepts the parameter's *own* current properties as the new reference schema (equivalent to calling `setModified(false)` right after a save): `isSchemaModified()` goes back to `false`, and a later `resetSchemaModifications()` restores to this new baseline, not to the one captured before.
+* `resetSchemaModifications()`: Restores every schema property to the reference schema, clears any manual override set by `setSchemaModified(true)`, and makes `isSchemaModified()` become `false` again. Does not affect `value()` or `isValueModified()`. Note: since min/max are restored through the normal setters, this can clip the current `value()` as a side effect if it falls outside the restored range.
 
-- `min()`: Returns the minimum allowed value for the parameter
-- `setMin(const QVariant& val)`: Sets the minimum allowed value for range validation
-- `bindableMin()`: Returns a bindable property for the minimum value
+- `min()`: Returns the minimum allowed value for the parameter.
+- `setMin(const QVariant& val)`: Sets the minimum allowed value for range validation.
+- `bindableMin()`: Returns a bindable property for the minimum value.
 
-- `max()`: Returns the maximum allowed value for the parameter
-- `setMax(const QVariant& val)`: Sets the maximum allowed value for range validation
-- `bindableMax()`: Returns a bindable property for the maximum value
+- `max()`: Returns the maximum allowed value for the parameter.
+- `setMax(const QVariant& val)`: Sets the maximum allowed value for range validation.
+- `bindableMax()`: Returns a bindable property for the maximum value.
 
 - `range()`: Returns a pair containing the current min and max values.
 - `setRange(const QVariant& min, const QVariant& max)`: Sets both minimum and maximum values for range validation.
@@ -118,9 +120,9 @@ A single Parameter has the following properties:
 
 - `fromJson(const QJsonObject& schema, const QJsonObject& value)`: Restores the parameter from both schema and value JSON objects, reconstructing the complete parameter state.
 
-- `valueFromJson(const QJsonObject& json)`: Loads only the parameter value from a JSON object, leaving other properties unchanged. This also updates the reference value, so `isValueChanged()` becomes `false` as a result.
+- `valueFromJson(const QJsonObject& json)`: Loads only the parameter value from a JSON object, leaving other properties unchanged. This also updates the reference value, so `isValueModified()` becomes `false` as a result (any manual override from `setValueModified(true)` is not cleared by this call — only `setValueModified(false)` or `resetValueModifications()` clear it).
 
-- `schemaFromJson(const QJsonObject& json)`: Update the configuration of current Parameter object (min, max, presets, description and so on), from the JSON schema object. This also re-captures the reference schema, so `isSchemaChanged()` becomes `false` as a result.
+- `schemaFromJson(const QJsonObject& json)`: Update the configuration of current Parameter object (min, max, presets, description and so on), from the JSON schema object. This also re-captures the reference schema, so `isSchemaModified()` becomes `false` as a result (any manual override from `setSchemaModified(true)` is not cleared by this call — only `setSchemaModified(false)` or `resetSchemaModifications()` clear it).
 
 
 ## Signals
@@ -154,16 +156,16 @@ A single Parameter has the following properties:
 
 - `isValidChanged(bool value)`: Emitted when the isValid state is changed.
 
-- `isValueChangedChanged(bool value)`: Emitted when the value is changed hence the isValueChanged flag changes his status.
+- `isValueModifiedChanged(bool value)`: Emitted when the isValueModified flag changes its status, either because the value changed, or because of `setValueModified()`.
 
-- `isSchemaChangedChanged(bool value)`: Emitted when any schema property is changed hence the isSchemaChanged flag changes his status.
+- `isSchemaModifiedChanged(bool changed)`: Emitted when the isSchemaModified flag changes its status, either because a schema property changed, or because of `setSchemaModified()`.
 
 - `aboutToBeDestroyed(QtNoid::App::Parameter *parameter)`:
   Emitted from the destructor, before the object is torn down, with the
   object still fully intact. Useful for an owner (for example a collection
   class) that needs to react when a Parameter is destroyed: a slot connected
-  to this signal can still safely call `parameter->isValueChanged()`,
-  `parameter->isSchemaChanged()`, `parameter->uniqueId()`, etc. on the live
+  to this signal can still safely call `parameter->isValueModified()`,
+  `parameter->isSchemaModified()`, `parameter->uniqueId()`, etc. on the live
   pointer.
 
 ## Slots

@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
             });
 
     // Listening to m_paramter modifications
-    connect(&m_parameter, &QtNoid::App::Parameter::isSchemaChangedChanged, this,
+    connect(&m_parameter, &QtNoid::App::Parameter::isSchemaModifiedChanged, this,
             [&](bool val){
                 ui->optSchemaChanged->setChecked(val);
                 convertToJson();
@@ -125,7 +125,7 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->optVisible->setChecked(val);
                 updateStatusBar("QtNoid::App::Parameter::visibleChanged");
             });
-    connect(&m_parameter, &QtNoid::App::Parameter::isValueChangedChanged, this,
+    connect(&m_parameter, &QtNoid::App::Parameter::isValueModifiedChanged, this,
             [&](bool val){
                 ui->optIsValueChanged->setChecked(val);
                 updateStatusBar("QtNoid::App::Parameter::optIsValueChanged " + QString(val? "true" : "false"));
@@ -276,12 +276,12 @@ void MainWindow::on_cmdQDebug_clicked()
 void MainWindow::on_cmdResetValue_clicked()
 {
     updateStatusBar("resetValueChange triggered");
-    m_parameter.resetValueChange();
+    m_parameter.resetValueModifications();
 }
 
 void MainWindow::on_cmdResetSchema_clicked()
 {
     updateStatusBar("resetSchemaChange triggered");
-    m_parameter.resetSchemaChange();
+    m_parameter.resetSchemaModifications();
 }
 

@@ -55,6 +55,6 @@ install(SCRIPT ${deploy_script})
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    doc/AppParameterBasicUsage.md
+    doc/QtNoidAppParameterBasicUsage.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

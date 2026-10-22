@@ -666,7 +666,7 @@ void TestQtNoidAppConfig::testConfigIsValueChanged()
     // Appending a page that is already "changed" should activate the flag immediately
     ParametersPage* modifiedPage = new ParametersPage("ModifiedPage", this);
     modifiedPage->emplace(0, "ModifiedParameter")->setValue(100);
-    QCOMPARE(modifiedPage->isValueChanged(), true);
+    QCOMPARE(modifiedPage->isValueModified(), true);
 
     bool res = config.append(modifiedPage);
     QCOMPARE(res, true);
@@ -726,8 +726,8 @@ void TestQtNoidAppConfig::testConfigResetAllValues()
 
     QCOMPARE(p1->value(), 10);
     QCOMPARE(p2->value(), 5);
-    QCOMPARE(p1->isValueChanged(), false);
-    QCOMPARE(p2->isValueChanged(), false);
+    QCOMPARE(p1->isValueModified(), false);
+    QCOMPARE(p2->isValueModified(), false);
     QCOMPARE(config.isValueChanged(), false);
 }
 

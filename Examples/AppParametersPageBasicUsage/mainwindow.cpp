@@ -183,7 +183,7 @@ QWidget *MainWindow::createUiDescriptionFromParameter(QtNoid::App::Parameter *pa
 
 void MainWindow::updateStyleSheet(QWidget *spinInt, QtNoid::App::Parameter *par)
 {
-    QString styleSheet = par->isValueChanged()? "font-weight: bold;" : "font-weight: normal;";
+    QString styleSheet = par->isValueModified()? "font-weight: bold;" : "font-weight: normal;";
     if(spinInt->styleSheet() != styleSheet){
         spinInt->setStyleSheet(styleSheet);
     }
