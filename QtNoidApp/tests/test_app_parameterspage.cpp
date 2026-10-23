@@ -63,15 +63,28 @@ private slots:
     void testParametersPageReadOnly();
     void testBindableParametersPageReadOnly();
 
-    void testParametersPageIsValueChanged();
-    void testBindableIsValueChangedProperty();
-    void testParametersPageResetAllValues();
-    void testParametersPageResetAllValuesDoesNotAffectSchema();
+    void testParametersPageIsValueModifiedChanged();
+    void testBindableIsValueModifiedProperty();
+    void testParametersPageResetValueModifications();
+    void testParametersPageResetValueModificationsDoesNotAffectSchema();
 
-    void testParametersPageIsSchemaChanged();
-    void testBindableIsSchemaChangedProperty();
-    void testParametersPageResetSchemaChange();
-    void testParametersPageResetSchemaChangeDoesNotAffectValues();
+    // setValueModified() tests
+    void testParametersPageSetValueModifiedCascadesTrueToAllParameters();
+    void testParametersPageSetValueModifiedFalseCapturesCurrentStateAsNewBaselineForAllParameters();
+    void testParametersPageSetValueModifiedOverrideClearedByResetValueModifications();
+    void testParametersPageSetValueModifiedWithMixedParameterStates();
+
+    void testParametersPageIsSchemaModified();
+    void testBindableIsSchemaModifiedProperty();
+    void testParametersPageResetSchemaModifications();
+    void testParametersPageResetSchemaModificationsDoesNotAffectValues();
+
+    // setSchemaModified() tests
+    void testParametersPageSetSchemaModifiedForcesTrueRegardlessOfActualChanges();
+    void testParametersPageSetSchemaModifiedFalseCapturesCurrentStateAsNewBaseline();
+    void testParametersPageSetSchemaModifiedOverrideClearedByResetSchemaModifications();
+    void testParametersPageSetSchemaModifiedInteractionWithActualSchemaChanges();
+    void testParametersPageSetSchemaModifiedDoesNotCascadeToParameters();
 
     void testToJsonValues();
     void testToJsonValuesNoName();
@@ -137,13 +150,13 @@ void TestQtNoidAppParametersPage::cleanup()
 void TestQtNoidAppParametersPage::testParamtersPageUniqueId()
 {
     // Test that each ParametersPage instance gets a unique ID
-    ParametersPage list1(this);
-    ParametersPage list2(QJsonObject(), QJsonObject(), this);
-    ParametersPage list3("NamedList", this);
+    ParametersPage page1(this);
+    ParametersPage page2(QJsonObject(), QJsonObject(), this);
+    ParametersPage page3("NamedList", this);
 
-    int id1 = list1.uniqueId();
-    int id2 = list2.uniqueId();
-    int id3 = list3.uniqueId();
+    int id1 = page1.uniqueId();
+    int id2 = page2.uniqueId();
+    int id3 = page3.uniqueId();
 
     // Verify that IDs are different
     QVERIFY(id1 != id2);
@@ -151,9 +164,9 @@ void TestQtNoidAppParametersPage::testParamtersPageUniqueId()
     QVERIFY(id1 != id3);
 
     // Verify that ID doesn't change for the same instance
-    QCOMPARE(list1.uniqueId(), id1);
-    QCOMPARE(list2.uniqueId(), id2);
-    QCOMPARE(list3.uniqueId(), id3);
+    QCOMPARE(page1.uniqueId(), id1);
+    QCOMPARE(page2.uniqueId(), id2);
+    QCOMPARE(page3.uniqueId(), id3);
 
     // Test that IDs are sequential (based on the implementation)
     QCOMPARE(id2, id1 + 1);
@@ -179,8 +192,8 @@ void TestQtNoidAppParametersPage::testParamtersPageUniqueId()
     QJsonObject valueList;
     valueList["TestConfig"] = valuesArray;
 
-    ParametersPage list4(schemaList, valueList, this);
-    int id4 = list4.uniqueId();
+    ParametersPage page4(schemaList, valueList, this);
+    int id4 = page4.uniqueId();
 
     // Verify that this constructor also assigns a unique ID
     QVERIFY(id4 != id1);
@@ -191,130 +204,130 @@ void TestQtNoidAppParametersPage::testParamtersPageUniqueId()
 
 void TestQtNoidAppParametersPage::testCreatingParametersPage()
 {
-    ParametersPage list(this);
-    QCOMPARE(list.count(), 0);
-    QCOMPARE(list.name(), QString());
-    QCOMPARE(list.description(), QString());
-    QCOMPARE(list.tooltip(), QString());
+    ParametersPage page(this);
+    QCOMPARE(page.count(), 0);
+    QCOMPARE(page.name(), QString());
+    QCOMPARE(page.description(), QString());
+    QCOMPARE(page.tooltip(), QString());
 
-    ParametersPage namedList("Application Configuration", this);
-    QCOMPARE(namedList.count(), 0);
-    QCOMPARE(namedList.name(), "Application Configuration");
-    QCOMPARE(namedList.description(), QString());
-    QCOMPARE(namedList.tooltip(), QString());
+    ParametersPage namedPage("Application Configuration", this);
+    QCOMPARE(namedPage.count(), 0);
+    QCOMPARE(namedPage.name(), "Application Configuration");
+    QCOMPARE(namedPage.description(), QString());
+    QCOMPARE(namedPage.tooltip(), QString());
 }
 
 void TestQtNoidAppParametersPage::testParametersPageName()
 {
-    ParametersPage list("MyList", this);
-    QSignalSpy spyChanged(&list, &ParametersPage::nameChanged);
-    QSignalSpy spyEdited(&list, &ParametersPage::nameEdited);
+    ParametersPage page("MyPage", this);
+    QSignalSpy spyChanged(&page, &ParametersPage::nameChanged);
+    QSignalSpy spyEdited(&page, &ParametersPage::nameEdited);
     
-    list.setName("Application Configuration");
+    page.setName("Application Configuration");
     QCOMPARE(spyChanged.count(), 1);
     QCOMPARE(spyEdited.count(), 1);
-    QCOMPARE(list.name(), "Application Configuration");
+    QCOMPARE(page.name(), "Application Configuration");
     
     // Check signal argument
     auto arguments = spyChanged.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "Application Configuration");
     arguments = spyEdited.takeFirst();
-    QCOMPARE(arguments.at(0).toString(), "MyList");
+    QCOMPARE(arguments.at(0).toString(), "MyPage");
     QCOMPARE(arguments.at(1).toString(), "Application Configuration");
 
     // Same value, no signal
-    list.setName("Application Configuration");
+    page.setName("Application Configuration");
     QCOMPARE(spyChanged.count(), 0);
     QCOMPARE(spyEdited.count(), 0);
 }
 
 void TestQtNoidAppParametersPage::testAppendingParameters()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
     
     auto param1 = new Parameter(100.0, "Param1", this);
-    list << param1;
-    QCOMPARE(list.count(), 1);
+    page << param1;
+    QCOMPARE(page.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 
-    QCOMPARE(list.contains(param1), true);
-    QCOMPARE(list.contains("Param1"), true);
+    QCOMPARE(page.contains(param1), true);
+    QCOMPARE(page.contains("Param1"), true);
     
     auto param2 = new Parameter(200.0, "Param2", this);
-    list << param2;
-    QCOMPARE(list.count(), 2);
+    page << param2;
+    QCOMPARE(page.count(), 2);
     QCOMPARE(countSpy.count(), 2);
     QCOMPARE(addedSpy.count(), 2);
     
     // Adding same parameter again should not change anything
-    list << param1;
-    QCOMPARE(list.count(), 2);
+    page << param1;
+    QCOMPARE(page.count(), 2);
     QCOMPARE(countSpy.count(), 2);
     QCOMPARE(addedSpy.count(), 2);
     
     // Adding nullptr should not change anything
-    list.append(nullptr);
-    QCOMPARE(list.count(), 2);
+    page.append(nullptr);
+    QCOMPARE(page.count(), 2);
 }
 
 void TestQtNoidAppParametersPage::testAppendingDuplicatedParametersShouldFail()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
     auto param1 = new Parameter(100.0, "Param1", this);
-    list.append(param1);
+    page.append(param1);
 
-    bool res = list.append(param1);
+    bool res = page.append(param1);
     QCOMPARE(res, false);
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 }
 
 void TestQtNoidAppParametersPage::testAppendingSameNameParametersShouldFail()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
     auto param1 = new Parameter(100.0, "Param1", this);
-    list.append(param1);
+    page.append(param1);
 
     auto sameNameParam1= new Parameter(123, "Param1", this);
-    bool res = list.append(sameNameParam1);
+    bool res = page.append(sameNameParam1);
 
     // qDebug() << list.toJsonValues() << list.toJsonSchema();
 
     QCOMPARE(res, false);
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 
     // Try changing paramter1 name should fail anyway
     param1->setName("Param1-Rename");
-    res = list.append(param1);
+    res = page.append(param1);
     QCOMPARE(res, false);
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
 }
 
 void TestQtNoidAppParametersPage::testAppendingNoNameParametersShouldFail()
 {
     auto param = new Parameter(this);
-    ParametersPage list(this);
-    bool res = list.append(param);
+    ParametersPage page(this);
+    bool res = page.append(param);
     QCOMPARE(res, false);
 }
 
 void TestQtNoidAppParametersPage::testAppendingParameterFromJsonObjects()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
     // Test successful addition with valid schema and value
     QJsonObject schema;
@@ -332,43 +345,43 @@ void TestQtNoidAppParametersPage::testAppendingParameterFromJsonObjects()
     QJsonObject value;
     value["Temperature"] = 25.5;
 
-    bool result = list.append(schema, value);
+    bool result = page.append(schema, value);
     QCOMPARE(result, true);
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 
-    QCOMPARE(list.parameter(0)->toJsonSchema(), schema);
-    QCOMPARE(list.parameter(0)->toJsonValue(), value);
+    QCOMPARE(page.parameter(0)->toJsonSchema(), schema);
+    QCOMPARE(page.parameter(0)->toJsonValue(), value);
 }
 
 void TestQtNoidAppParametersPage::testAppendingParameterFromBadJsonObjectsShouldFail()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
     QJsonObject schema;
     QJsonObject value;
-    bool result = list.append(schema, value);
+    bool result = page.append(schema, value);
     QCOMPARE(result, false);
 }
 
 void TestQtNoidAppParametersPage::testAppendingParameterFirstElementInTheListShouldBeNumber0()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
     auto param0 = new Parameter(100.0, "Param0", this);
-    list.append(param0);
-    QCOMPARE(list.parameter(0), param0);
+    page.append(param0);
+    QCOMPARE(page.parameter(0), param0);
 }
 
 void TestQtNoidAppParametersPage::testEmplaceWithNameDescriptionValue()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
-    Parameter* param = list.emplace(25.5, "Temperature", "Ambient temperature");
+    Parameter* param = page.emplace(25.5, "Temperature", "Ambient temperature");
 
     QVERIFY(param != nullptr);
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 
@@ -376,51 +389,51 @@ void TestQtNoidAppParametersPage::testEmplaceWithNameDescriptionValue()
     QCOMPARE(param->description(), "Ambient temperature");
     QCOMPARE(param->value().toDouble(), 25.5);
 
-    QCOMPARE(list.contains("Temperature"), true);
-    QCOMPARE(list.parameter("Temperature"), param);
+    QCOMPARE(page.contains("Temperature"), true);
+    QCOMPARE(page.parameter("Temperature"), param);
 
-    Parameter* duplicate = list.emplace(30.0, "Temperature", "Another temperature");
+    Parameter* duplicate = page.emplace(30.0, "Temperature", "Another temperature");
     QCOMPARE(duplicate, nullptr);
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
 }
 
 void TestQtNoidAppParametersPage::testEmplaceWithDefaultParameters()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
-    Parameter* param0 = list.emplace(0.0, {}, {});
+    Parameter* param0 = page.emplace(0.0, {}, {});
     QVERIFY(param0 == nullptr);
 
-    Parameter* param1 = list.emplace({}, "Param1");
+    Parameter* param1 = page.emplace({}, "Param1");
     QVERIFY(param1 != nullptr);
     QCOMPARE(param1->name(), "Param1");
     QCOMPARE(param1->description(), QString());
     QCOMPARE(param1->value(), QVariant());
 
-    Parameter* param2 = list.emplace({}, "Param2", "A description");
+    Parameter* param2 = page.emplace({}, "Param2", "A description");
     QVERIFY(param2 != nullptr);
     QCOMPARE(param2->name(), "Param2");
     QCOMPARE(param2->description(), "A description");
     QCOMPARE(param2->value(), QVariant());
 
-    Parameter* param3 = list.emplace( 42, "Param3", QString());
+    Parameter* param3 = page.emplace( 42, "Param3", QString());
     QVERIFY(param3 != nullptr);
     QCOMPARE(param3->name(), "Param3");
     QCOMPARE(param3->description(), QString());
     QCOMPARE(param3->value().toInt(), 42);
 
-    QCOMPARE(list.count(), 3);
+    QCOMPARE(page.count(), 3);
     QCOMPARE(countSpy.count(), 3);
     QCOMPARE(addedSpy.count(), 3);
 }
 
 void TestQtNoidAppParametersPage::testEmplaceWithJsonObjects()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
     QJsonObject schema;
     QJsonObject schemaObject;
@@ -438,10 +451,10 @@ void TestQtNoidAppParametersPage::testEmplaceWithJsonObjects()
     QJsonObject value;
     value["Temperature"] = 25.5;
 
-    Parameter* param = list.emplace(schema, value);
+    Parameter* param = page.emplace(schema, value);
 
     QVERIFY(param != nullptr);
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 
@@ -453,71 +466,71 @@ void TestQtNoidAppParametersPage::testEmplaceWithJsonObjects()
     QCOMPARE(param->max().toDouble(), 100.0);
     QCOMPARE(param->readOnly(), true);
 
-    QCOMPARE(list.contains("Temperature"), true);
-    QCOMPARE(list.parameter("Temperature"), param);
+    QCOMPARE(page.contains("Temperature"), true);
+    QCOMPARE(page.parameter("Temperature"), param);
 
     QCOMPARE(param->toJsonSchema(), schema);
     QCOMPARE(param->toJsonValue(), value);
 
     QJsonObject badSchema;
     QJsonObject badValue;
-    Parameter* failedParam = list.emplace(badSchema, badValue);
+    Parameter* failedParam = page.emplace(badSchema, badValue);
     QCOMPARE(failedParam, nullptr);
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
 }
 
 void TestQtNoidAppParametersPage::testRemovingParameters()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
     
     auto param1 = new Parameter(100.0, "Param1", this);
     auto param2 = new Parameter(200.0, "Param2", this);
     
-    list.append(param1);
-    list.append(param2);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy removedSpy(&list, &ParametersPage::parameterRemoved);
+    page.append(param1);
+    page.append(param2);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy removedSpy(&page, &ParametersPage::parameterRemoved);
     
-    list.removeParameter(param1);
-    QCOMPARE(list.count(), 1);
+    page.removeParameter(param1);
+    QCOMPARE(page.count(), 1);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(removedSpy.count(), 1);
-    QCOMPARE(list.contains(param1), false);
-    QCOMPARE(list.contains("Param1"), false);
+    QCOMPARE(page.contains(param1), false);
+    QCOMPARE(page.contains("Param1"), false);
     
     // Remove by name
-    list.removeParameter("Param2");
-    QCOMPARE(list.count(), 0);
+    page.removeParameter("Param2");
+    QCOMPARE(page.count(), 0);
     QCOMPARE(countSpy.count(), 2);
     QCOMPARE(removedSpy.count(), 2);
 }
 
 void TestQtNoidAppParametersPage::testRemoveParameterByNameAtIndexZeroShouldUpdateCountAndIndex()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
 
     auto paramAt0 = new Parameter(100.0, "paramAt0", this);
     auto paramAt1 = new Parameter(200.0, "paramAt1", this);
 
-    list.append(paramAt0);
-    list.append(paramAt1);
+    page.append(paramAt0);
+    page.append(paramAt1);
 
-    list.removeParameter("paramAt0");
+    page.removeParameter("paramAt0");
 
-    qDebug() << list;
+    qDebug() << page;
 
-    QCOMPARE(list.isEmpty(), false);
+    QCOMPARE(page.isEmpty(), false);
 
-    QCOMPARE(list.contains(paramAt0), false);
-    QCOMPARE(list.contains("paramAt0"), false);
-    QCOMPARE(list.indexOf(paramAt0), -1);
-    QCOMPARE(list.parameter(0), nullptr);
+    QCOMPARE(page.contains(paramAt0), false);
+    QCOMPARE(page.contains("paramAt0"), false);
+    QCOMPARE(page.indexOf(paramAt0), -1);
+    QCOMPARE(page.parameter(0), nullptr);
 
-    QCOMPARE(list.count(), 1);
+    QCOMPARE(page.count(), 1);
 
     // The list should contain just paramAt1
-    QCOMPARE(list.parameter("paramAt1"), paramAt1);
-    QList<Parameter*> remaining = list.parameters();
+    QCOMPARE(page.parameter("paramAt1"), paramAt1);
+    QList<Parameter*> remaining = page.parameters();
     QCOMPARE(remaining.count(), 1);
     QCOMPARE(remaining.first(), paramAt1);
 
@@ -526,23 +539,23 @@ void TestQtNoidAppParametersPage::testRemoveParameterByNameAtIndexZeroShouldUpda
 
 void TestQtNoidAppParametersPage::testParametersPageClear()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
 
     auto param1 = new Parameter(100.0, "Param1", this);
     auto param2 = new Parameter(200.0, "Param2", this);
     auto param3 = new Parameter(300.0, "Param3", this);
 
-    list.append(param1);
-    list.append(param2);
-    list.append(param3);
-    QCOMPARE(list.count(), 3);
+    page.append(param1);
+    page.append(param2);
+    page.append(param3);
+    QCOMPARE(page.count(), 3);
 
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy removedSpy(&list, &ParametersPage::parameterRemoved);
-    list.clear();
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy removedSpy(&page, &ParametersPage::parameterRemoved);
+    page.clear();
 
     // Verify list is empty
-    QCOMPARE(list.count(), 0);
+    QCOMPARE(page.count(), 0);
 
     // Verify signals were emitted for each parameter removal
     QCOMPARE(removedSpy.count(), 3);
@@ -555,113 +568,113 @@ void TestQtNoidAppParametersPage::testParametersPageClear()
     // Test clearing empty list (should not emit signals)
     countSpy.clear();
     removedSpy.clear();
-    list.clear();
+    page.clear();
     QCOMPARE(countSpy.count(), 0);
     QCOMPARE(removedSpy.count(), 0);
 }
 
 void TestQtNoidAppParametersPage::testEmplaceAfterRemoveParameterShouldAddAtIndexZero()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
 
-    Parameter* first = list.emplace(10, "Param1");
-    QCOMPARE(list.indexOf(first), 0);
+    Parameter* first = page.emplace(10, "Param1");
+    QCOMPARE(page.indexOf(first), 0);
 
-    list.removeParameter(first);
-    QCOMPARE(list.count(), 0);
+    page.removeParameter(first);
+    QCOMPARE(page.count(), 0);
 
-    Parameter* second = list.emplace(20, "Param2");
-    QCOMPARE(list.indexOf(second), 0);
-    QCOMPARE(list.parameter(0), second);
+    Parameter* second = page.emplace(20, "Param2");
+    QCOMPARE(page.indexOf(second), 0);
+    QCOMPARE(page.parameter(0), second);
 
-    list.clear();
-    Parameter* third = list.emplace(30, "Param3");
-    QCOMPARE(list.indexOf(third), 0);
-    QCOMPARE(list.parameter(0), third);
+    page.clear();
+    Parameter* third = page.emplace(30, "Param3");
+    QCOMPARE(page.indexOf(third), 0);
+    QCOMPARE(page.parameter(0), third);
 }
 
 void TestQtNoidAppParametersPage::testAppendAfterRemoveParameterShouldAddAtIndexZero()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
 
     Parameter* first = new Parameter(10, "Param1", this);
-    QVERIFY(list.append(first));
-    QCOMPARE(list.indexOf(first), 0);
-    QCOMPARE(list.count(), 1);
+    QVERIFY(page.append(first));
+    QCOMPARE(page.indexOf(first), 0);
+    QCOMPARE(page.count(), 1);
 
-    list.removeParameter(first);
-    QCOMPARE(list.count(), 0);
+    page.removeParameter(first);
+    QCOMPARE(page.count(), 0);
 
     Parameter* second = new Parameter(20, "Param2", this);
-    QVERIFY(list.append(second));
-    QCOMPARE(list.count(), 1);
-    QCOMPARE(list.indexOf(second), 0);
-    QCOMPARE(list.parameter(0), second);
+    QVERIFY(page.append(second));
+    QCOMPARE(page.count(), 1);
+    QCOMPARE(page.indexOf(second), 0);
+    QCOMPARE(page.parameter(0), second);
 
-    list.clear();
+    page.clear();
     Parameter* third = new Parameter(30, "Param3", this);
-    QVERIFY(list.append(third));
-    QCOMPARE(list.indexOf(third), 0);
-    QCOMPARE(list.parameter(0), third);
+    QVERIFY(page.append(third));
+    QCOMPARE(page.indexOf(third), 0);
+    QCOMPARE(page.parameter(0), third);
 }
 
 void TestQtNoidAppParametersPage::testUsingDeleteDirectlyOnTheParameterPointer()
 {
     Parameter* par = new Parameter(10, "par", this);
-    ParametersPage list("myList", this);
+    ParametersPage page("myPage", this);
 
-    list.append(par);
+    page.append(par);
     par->setValue(100);
-    QCOMPARE(list.isValueModified(), true);
+    QCOMPARE(page.isValueModified(), true);
 
-    QSignalSpy removedSpy(&list, &ParametersPage::parameterRemoved);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
+    QSignalSpy removedSpy(&page, &ParametersPage::parameterRemoved);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
 
     delete par;
 
-    QCOMPARE(list.count(), 0);
+    QCOMPARE(page.count(), 0);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(removedSpy.count(), 1);
 
     // Check the isValueChanged of the list is false
-    QCOMPARE(list.isValueModified(), false);
+    QCOMPARE(page.isValueModified(), false);
 
     // Check the the first parameter of an empty list is 0
-    Parameter* emPlace = list.emplace(123, "Emplace");
-    QCOMPARE(list.indexOf(emPlace), 0);
+    Parameter* emPlace = page.emplace(123, "Emplace");
+    QCOMPARE(page.indexOf(emPlace), 0);
 }
 
 void TestQtNoidAppParametersPage::testParameterAccess()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
     auto param1 = new Parameter(25.0, "Temperature", this);
     auto param2 = new Parameter(1013.25, "Pressure", this);
     auto param3 = new Parameter( 60.0, "Humidity",this);
     
-    list << param1 << param2 << param3;
+    page << param1 << param2 << param3;
     
     // Test access by index
-    QCOMPARE(list.parameter(0), param1);
-    QCOMPARE(list.parameter(1), param2);
-    QCOMPARE(list.parameter(2), param3);
-    QCOMPARE(list.parameter(-1), nullptr);
-    QCOMPARE(list.parameter(3), nullptr);
+    QCOMPARE(page.parameter(0), param1);
+    QCOMPARE(page.parameter(1), param2);
+    QCOMPARE(page.parameter(2), param3);
+    QCOMPARE(page.parameter(-1), nullptr);
+    QCOMPARE(page.parameter(3), nullptr);
     
     // Test access by name
-    QCOMPARE(list.parameter("Temperature"), param1);
-    QCOMPARE(list.parameter("Pressure"), param2);
-    QCOMPARE(list.parameter("Humidity"), param3);
-    QCOMPARE(list.parameter("NonExistent"), nullptr);
+    QCOMPARE(page.parameter("Temperature"), param1);
+    QCOMPARE(page.parameter("Pressure"), param2);
+    QCOMPARE(page.parameter("Humidity"), param3);
+    QCOMPARE(page.parameter("NonExistent"), nullptr);
     
     // Test indexOf
-    QCOMPARE(list.indexOf(param1), 0);
-    QCOMPARE(list.indexOf(param2), 1);
-    QCOMPARE(list.indexOf("Temperature"), 0);
-    QCOMPARE(list.indexOf("Pressure"), 1);
-    QCOMPARE(list.indexOf("NonExistent"), -1);
+    QCOMPARE(page.indexOf(param1), 0);
+    QCOMPARE(page.indexOf(param2), 1);
+    QCOMPARE(page.indexOf("Temperature"), 0);
+    QCOMPARE(page.indexOf("Pressure"), 1);
+    QCOMPARE(page.indexOf("NonExistent"), -1);
     
     // Test parameters() method
-    QList<Parameter*> params = list.parameters();
+    QList<Parameter*> params = page.parameters();
     QCOMPARE(params.count(), 3);
     QCOMPARE(params.contains(param1), true);
     QCOMPARE(params.contains(param2), true);
@@ -670,35 +683,35 @@ void TestQtNoidAppParametersPage::testParameterAccess()
 
 void TestQtNoidAppParametersPage::testParametersPageSetValueConvenienceMethods()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
     auto param1 = new Parameter(25.0, "Temperature", this);
     auto param2 = new Parameter(1013.25, "Pressure", this);
     
-    list.append(param1);
-    list.append(param2);
+    page.append(param1);
+    page.append(param2);
     
     // Test value() method
-    QCOMPARE(list.value("Temperature"), 25.0);
-    QCOMPARE(list.value("Pressure"), 1013.25);
-    QCOMPARE(list.value("NonExistent"), QVariant());
+    QCOMPARE(page.value("Temperature"), 25.0);
+    QCOMPARE(page.value("Pressure"), 1013.25);
+    QCOMPARE(page.value("NonExistent"), QVariant());
     
     // Test setValue() method
-    QCOMPARE(list.setValue("Temperature", 30.0), true);
+    QCOMPARE(page.setValue("Temperature", 30.0), true);
     QCOMPARE(param1->value(), 30.0);
-    QCOMPARE(list.setValue("NonExistent", 123), false);
+    QCOMPARE(page.setValue("NonExistent", 123), false);
 }
 
 void TestQtNoidAppParametersPage::testParametersPageSetValueWhileReadOnlyShouldFail()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
     Parameter param1(25.0, "Temperature", this);
-    list << param1;
+    page << param1;
 
     // setValue should fail and not modify the parameter
-    list.setReadOnly(true);
-    QSignalSpy writeAttemptSpy(&list, &ParametersPage::writeAttemptedWhileReadOnly);
-    QCOMPARE(list.setValue("Temperature", 99.0), false);
-    QCOMPARE(list.value("Temperature"), 25.0);
+    page.setReadOnly(true);
+    QSignalSpy writeAttemptSpy(&page, &ParametersPage::writeAttemptedWhileReadOnly);
+    QCOMPARE(page.setValue("Temperature", 99.0), false);
+    QCOMPARE(page.value("Temperature"), 25.0);
     QCOMPARE(writeAttemptSpy.count(), 1);
 
     // Signal must carry the name of the parameter whose modification was blocked
@@ -706,13 +719,13 @@ void TestQtNoidAppParametersPage::testParametersPageSetValueWhileReadOnlyShouldF
     QCOMPARE(arguments.at(0).toString(), "Temperature");
 
     // A non-existent parameter should just fail silently: no write-attempt signal
-    QCOMPARE(list.setValue("NonExistent", 1), false);
+    QCOMPARE(page.setValue("NonExistent", 1), false);
     QCOMPARE(writeAttemptSpy.count(), 0);
 
     // Turning readOnly off should let setValue succeed again
-    list.setReadOnly(false);
-    QCOMPARE(list.setValue("Temperature", 99.0), true);
-    QCOMPARE(list.value("Temperature"), 99.0);
+    page.setReadOnly(false);
+    QCOMPARE(page.setValue("Temperature", 99.0), true);
+    QCOMPARE(page.value("Temperature"), 99.0);
     QCOMPARE(writeAttemptSpy.count(), 0);
 
 
@@ -720,19 +733,19 @@ void TestQtNoidAppParametersPage::testParametersPageSetValueWhileReadOnlyShouldF
 
 void TestQtNoidAppParametersPage::testParameterDestruction()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy removedSpy(&list, &ParametersPage::parameterRemoved);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy removedSpy(&page, &ParametersPage::parameterRemoved);
     
     auto param1 = new Parameter(100.0, "Param1", this);
-    list.append(param1);
+    page.append(param1);
     countSpy.clear();
     removedSpy.clear();
     
     // Delete parameter - should be automatically removed from list
     delete param1;
     
-    QCOMPARE(list.count(), 0);
+    QCOMPARE(page.count(), 0);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(removedSpy.count(), 1);
 }
@@ -740,8 +753,8 @@ void TestQtNoidAppParametersPage::testParameterDestruction()
 void TestQtNoidAppParametersPage::testBindableNameProperty()
 {
     // Get the bindable property
-    ParametersPage list("File Settings", this);
-    auto bindableName = list.bindableName();
+    ParametersPage page("File Settings", this);
+    auto bindableName = page.bindableName();
     QVERIFY(bindableName.isValid());
     QCOMPARE(bindableName.value(), "File Settings");
 
@@ -751,17 +764,17 @@ void TestQtNoidAppParametersPage::testBindableNameProperty()
     QCOMPARE(externalProperty.value(), "File Settings");
 
     // Change parameter name and verify binding updates
-    list.setName("NewName");
+    page.setName("NewName");
     QCOMPARE(externalProperty.value(), "NewName");
 
     // Test setting name through bindable
     bindableName.setValue("FinalName");
-    QCOMPARE(list.name(), "FinalName");
+    QCOMPARE(page.name(), "FinalName");
     QCOMPARE(externalProperty.value(), "FinalName");
 
-    // Create a reverse binding from externalProperty to list
+    // Create a reverse binding from externalProperty to page
     // Change external property and verify binding works
-    QSignalSpy spy(&list, &ParametersPage::nameChanged);
+    QSignalSpy spy(&page, &ParametersPage::nameChanged);
     bindableName.setBinding([&]() { return externalProperty.value(); });
     externalProperty.setValue("Updated External Value");
     QCOMPARE(bindableName.value(), "Updated External Value");
@@ -771,40 +784,40 @@ void TestQtNoidAppParametersPage::testBindableNameProperty()
 
 void TestQtNoidAppParametersPage::testParametersPageLabel()
 {
-    ParametersPage list(this);
-    QSignalSpy spy(&list, &ParametersPage::labelChanged);
+    ParametersPage page(this);
+    QSignalSpy spy(&page, &ParametersPage::labelChanged);
 
     // Initial label should be empty
-    QCOMPARE(list.label(), QString());
+    QCOMPARE(page.label(), QString());
 
     // Set label and verify signal emission
-    list.setLabel("Configuration");
+    page.setLabel("Configuration");
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.label(), "Configuration");
+    QCOMPARE(page.label(), "Configuration");
 
     // Check signal argument
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "Configuration");
 
     // Same value, no signal should be emitted
-    list.setLabel("Configuration");
+    page.setLabel("Configuration");
     QCOMPARE(spy.count(), 0);
 
     // Change to different value
-    list.setLabel("Updated label");
+    page.setLabel("Updated label");
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.label(), "Updated label");
+    QCOMPARE(page.label(), "Updated label");
 
 }
 
 void TestQtNoidAppParametersPage::testBindableLabelProperty()
 {
-    // Create parameter list with initial label
-    ParametersPage list(this);
-    list.setLabel("Initial label");
+    // Create parameter page with initial label
+    ParametersPage page(this);
+    page.setLabel("Initial label");
 
     // Get the bindable property
-    auto bindableLabel = list.bindableLabel();
+    auto bindableLabel = page.bindableLabel();
     QVERIFY(bindableLabel.isValid());
     QCOMPARE(bindableLabel.value(), "Initial label");
 
@@ -814,20 +827,20 @@ void TestQtNoidAppParametersPage::testBindableLabelProperty()
     QCOMPARE(externalProperty.value(), "Initial label");
 
     // Change parameter label and verify binding updates
-    list.setLabel("Updated label");
+    page.setLabel("Updated label");
     QCOMPARE(externalProperty.value(), "Updated label");
 
     // Test setting label through bindable
     bindableLabel.setValue("Final label");
-    QCOMPARE(list.label(), "Final label");
+    QCOMPARE(page.label(), "Final label");
     QCOMPARE(externalProperty.value(), "Final label");
 
-    // Create a reverse binding from externalProperty to list
-    QSignalSpy spy(&list, &ParametersPage::labelChanged);
+    // Create a reverse binding from externalProperty to page
+    QSignalSpy spy(&page, &ParametersPage::labelChanged);
     bindableLabel.setBinding([&]() { return externalProperty.value(); });
     externalProperty.setValue("Externally set label");
     QCOMPARE(bindableLabel.value(), "Externally set label");
-    QCOMPARE(list.label(), "Externally set label");
+    QCOMPARE(page.label(), "Externally set label");
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first().toString(), "Externally set label");
 }
@@ -967,20 +980,20 @@ void TestQtNoidAppParametersPage::testValuesFromJsonWithEmptyNameShouldTakeTheJs
     QJsonObject json({{"MyTestPage", jsonMain}});
     // qDebug() << __func__ << json;
 
-    ParametersPage list(this);
-    auto res = list.valuesFromJson(json);
+    ParametersPage page(this);
+    auto res = page.valuesFromJson(json);
     QVERIFY(res);
     // qDebug() << __func__ << list;
 
 
     // Verify list properties
-    QCOMPARE(list.name(), "MyTestPage");
-    QCOMPARE(list.count(), 2);
+    QCOMPARE(page.name(), "MyTestPage");
+    QCOMPARE(page.count(), 2);
 
-    auto actual = list.parameter("Pressure")->toJsonValue();
+    auto actual = page.parameter("Pressure")->toJsonValue();
     QCOMPARE(actual, pressureJson);
 
-    actual = list.parameter("Temperature")->toJsonValue();
+    actual = page.parameter("Temperature")->toJsonValue();
     QCOMPARE(actual, temperatureJson);
 
 }
@@ -990,8 +1003,8 @@ void TestQtNoidAppParametersPage::testValuesFromJsonWithWrongNameShouldFail()
     QJsonObject json;
     json["MyTestPage"] = QJsonArray();
 
-    ParametersPage list("NotMyTestPage", this);
-    QCOMPARE(list.valuesFromJson(json), false);
+    ParametersPage page("NotMyTestPage", this);
+    QCOMPARE(page.valuesFromJson(json), false);
 }
 
 void TestQtNoidAppParametersPage::testValuesFromJsonWithCorrectName()
@@ -1047,20 +1060,20 @@ void TestQtNoidAppParametersPage::testSchemaFromJson()
     QJsonObject json;
     json["TestConfiguration"] = schemaMain;
 
-    // Test with empty-named parameter list (should take JSON name)
-    ParametersPage list(this);
-    QVERIFY(list.schemaFromJson(json));
+    // Test with empty-named parameter page (should take JSON name)
+    ParametersPage page(this);
+    QVERIFY(page.schemaFromJson(json));
 
     // Verify list properties
-    QCOMPARE(list.name(), "TestConfiguration");
-    QCOMPARE(list.count(), 2);
+    QCOMPARE(page.name(), "TestConfiguration");
+    QCOMPARE(page.count(), 2);
 
-    // Verify Temperature in list
-    QJsonObject actualTemp = list.parameter("Temperature")->toJsonSchema();
+    // Verify Temperature in page
+    QJsonObject actualTemp = page.parameter("Temperature")->toJsonSchema();
     QCOMPARE(actualTemp, expectedTemp);
 
-    // Verify Pressure in list
-    QJsonObject actualPress = list.parameter("Pressure")->toJsonSchema();
+    // Verify Pressure in page
+    QJsonObject actualPress = page.parameter("Pressure")->toJsonSchema();
     QCOMPARE(actualPress, expectedPress);
 }
 
@@ -1071,13 +1084,13 @@ void TestQtNoidAppParametersPage::testSchemaFromJsonWithWrongNameShouldFail()
     // qDebug() << __func__ << json;
 
     // If there is no name if is ok
-    ParametersPage list2(this);
-    QVERIFY(list2.schemaFromJson(json));
-    QCOMPARE(list2.name(), "WrongName");
+    ParametersPage page2(this);
+    QVERIFY(page2.schemaFromJson(json));
+    QCOMPARE(page2.name(), "WrongName");
 
     // IF there is a name schemaFromJson() fails
-    ParametersPage list("MyPage", this);
-    QCOMPARE(list.schemaFromJson(json), false);
+    ParametersPage page("MyPage", this);
+    QCOMPARE(page.schemaFromJson(json), false);
 }
 
 void TestQtNoidAppParametersPage::testSchemaFromJsonWithCorrectName()
@@ -1086,8 +1099,8 @@ void TestQtNoidAppParametersPage::testSchemaFromJsonWithCorrectName()
     json["CorrectName"] = QJsonArray();
     // qDebug() << __func__ << json;
 
-    ParametersPage list("CorrectName", this);
-    QVERIFY(list.schemaFromJson(json));
+    ParametersPage page("CorrectName", this);
+    QVERIFY(page.schemaFromJson(json));
 }
 
 void TestQtNoidAppParametersPage::testSchemaFromDuplicatedJsonOverwriteAndNotFail()
@@ -1153,21 +1166,21 @@ void TestQtNoidAppParametersPage::testConstructorWithSchemaAndValueJsonObjects()
     // qDebug() << __func__ << "JSON-Value:" << value;
 
     // Test constructor
-    ParametersPage list(schema, value, this);
+    ParametersPage page(schema, value, this);
     // qDebug() << __func__ << list;
     // qDebug() << __func__ << "Temperature:" << list.value("Temperature");
     // qDebug() << __func__ << "Pressure:" << list.value("Pressure");
 
     // Verify the list was created correctly
-    QCOMPARE(list.name(), "SensorConfiguration");
-    QCOMPARE(list.count(), 2);
+    QCOMPARE(page.name(), "SensorConfiguration");
+    QCOMPARE(page.count(), 2);
 
-    QCOMPARE(list.description(), "Desc");
-    QCOMPARE(list.tooltip(), "toollllllttiiiipp");
-    QCOMPARE(list.visible(), false);
+    QCOMPARE(page.description(), "Desc");
+    QCOMPARE(page.tooltip(), "toollllllttiiiipp");
+    QCOMPARE(page.visible(), false);
 
     // Verify Temperature parameter
-    Parameter* temperature = list.parameter("Temperature");
+    Parameter* temperature = page.parameter("Temperature");
     // qDebug() << __func__ << temperature;
 
     QVERIFY(temperature != nullptr);
@@ -1181,7 +1194,7 @@ void TestQtNoidAppParametersPage::testConstructorWithSchemaAndValueJsonObjects()
     QCOMPARE(temperature->value().toDouble(), 25.5);
 
     // Verify Pressure parameter
-    Parameter* pressParam = list.parameter("Pressure");
+    Parameter* pressParam = page.parameter("Pressure");
     QVERIFY(pressParam != nullptr);
     QCOMPARE(pressParam->value().toDouble(), 1013.25);
     QCOMPARE(pressParam->description(), "Atmospheric pressure");
@@ -1191,8 +1204,8 @@ void TestQtNoidAppParametersPage::testConstructorWithSchemaAndValueJsonObjects()
     QCOMPARE(pressParam->max().toDouble(), 1100.0);
 
     // Verify JSON serialization matches input
-    QCOMPARE(list.toJsonSchema(), schema);
-    QCOMPARE(list.toJsonValues(), value);
+    QCOMPARE(page.toJsonSchema(), schema);
+    QCOMPARE(page.toJsonValues(), value);
 }
 
 void TestQtNoidAppParametersPage::testParametersPageLabelShouldSurviveJsonRoundTrip()
@@ -1240,54 +1253,54 @@ void TestQtNoidAppParametersPage::testChangingParamterNameShouldUpdateTheParamet
 {
     Parameter par(123, "OriginalName", this);
     QCOMPARE(par.name(), "OriginalName");
-    ParametersPage list;
-    list.append(&par);
-    QVERIFY(list.contains("OriginalName"));
+    ParametersPage page;
+    page.append(&par);
+    QVERIFY(page.contains("OriginalName"));
 
     par.setName("NewName");
-    QVERIFY(list.contains("NewName"));
+    QVERIFY(page.contains("NewName"));
 }
 
 void TestQtNoidAppParametersPage::testParametersPageDescription()
 {
-    ParametersPage list(this);
-    QSignalSpy spy(&list, &ParametersPage::descriptionChanged);
+    ParametersPage page(this);
+    QSignalSpy spy(&page, &ParametersPage::descriptionChanged);
 
     // Initial description should be empty
-    QCOMPARE(list.description(), QString());
+    QCOMPARE(page.description(), QString());
 
     // Set description and verify signal emission
-    list.setDescription("Configuration parameters for the application");
+    page.setDescription("Configuration parameters for the application");
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.description(), "Configuration parameters for the application");
+    QCOMPARE(page.description(), "Configuration parameters for the application");
 
     // Check signal argument
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "Configuration parameters for the application");
 
     // Same value, no signal should be emitted
-    list.setDescription("Configuration parameters for the application");
+    page.setDescription("Configuration parameters for the application");
     QCOMPARE(spy.count(), 0);
 
     // Change to different value
-    list.setDescription("Updated description");
+    page.setDescription("Updated description");
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.description(), "Updated description");
+    QCOMPARE(page.description(), "Updated description");
 
     // Clear description
-    list.setDescription("");
+    page.setDescription("");
     QCOMPARE(spy.count(), 2);
-    QCOMPARE(list.description(), QString());
+    QCOMPARE(page.description(), QString());
 }
 
 void TestQtNoidAppParametersPage::testBindableDescriptionProperty()
 {
-    // Create parameter list with initial description
-    ParametersPage list(this);
-    list.setDescription("Initial description");
+    // Create parameter page with initial description
+    ParametersPage page(this);
+    page.setDescription("Initial description");
 
     // Get the bindable property
-    auto bindableDescription = list.bindableDescription();
+    auto bindableDescription = page.bindableDescription();
     QVERIFY(bindableDescription.isValid());
     QCOMPARE(bindableDescription.value(), "Initial description");
 
@@ -1297,64 +1310,64 @@ void TestQtNoidAppParametersPage::testBindableDescriptionProperty()
     QCOMPARE(externalProperty.value(), "Initial description");
 
     // Change parameter description and verify binding updates
-    list.setDescription("Updated description");
+    page.setDescription("Updated description");
     QCOMPARE(externalProperty.value(), "Updated description");
 
     // Test setting description through bindable
     bindableDescription.setValue("Final description");
-    QCOMPARE(list.description(), "Final description");
+    QCOMPARE(page.description(), "Final description");
     QCOMPARE(externalProperty.value(), "Final description");
 
-    // Create a reverse binding from externalProperty to list
-    QSignalSpy spy(&list, &ParametersPage::descriptionChanged);
+    // Create a reverse binding from externalProperty to page
+    QSignalSpy spy(&page, &ParametersPage::descriptionChanged);
     bindableDescription.setBinding([&]() { return externalProperty.value(); });
     externalProperty.setValue("Externally set description");
     QCOMPARE(bindableDescription.value(), "Externally set description");
-    QCOMPARE(list.description(), "Externally set description");
+    QCOMPARE(page.description(), "Externally set description");
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first().toString(), "Externally set description");
 }
 
 void TestQtNoidAppParametersPage::testParametersPageTooltip()
 {
-    ParametersPage list(this);
-    QSignalSpy spy(&list, &ParametersPage::tooltipChanged);
+    ParametersPage page(this);
+    QSignalSpy spy(&page, &ParametersPage::tooltipChanged);
 
     // Initial tooltip should be empty
-    QCOMPARE(list.tooltip(), QString());
+    QCOMPARE(page.tooltip(), QString());
 
     // Set tooltip and verify signal emission
-    list.setTooltip("This is a helpful tooltip for the parameter list");
+    page.setTooltip("This is a helpful tooltip for the parameter list");
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.tooltip(), "This is a helpful tooltip for the parameter list");
+    QCOMPARE(page.tooltip(), "This is a helpful tooltip for the parameter list");
 
     // Check signal argument
     auto arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), "This is a helpful tooltip for the parameter list");
 
     // Same value, no signal should be emitted
-    list.setTooltip("This is a helpful tooltip for the parameter list");
+    page.setTooltip("This is a helpful tooltip for the parameter list");
     QCOMPARE(spy.count(), 0);
 
     // Change to different value
-    list.setTooltip("Updated tooltip text");
+    page.setTooltip("Updated tooltip text");
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.tooltip(), "Updated tooltip text");
+    QCOMPARE(page.tooltip(), "Updated tooltip text");
 
     // Clear tooltip
-    list.setTooltip("");
+    page.setTooltip("");
     QCOMPARE(spy.count(), 2);
-    QCOMPARE(list.tooltip(), QString());
+    QCOMPARE(page.tooltip(), QString());
 }
 
 void TestQtNoidAppParametersPage::testBindableTooltipProperty()
 {
-    // Create parameter list with initial tooltip
-    ParametersPage list(this);
-    list.setTooltip("Initial tooltip");
+    // Create parameter page with initial tooltip
+    ParametersPage page(this);
+    page.setTooltip("Initial tooltip");
 
     // Get the bindable property
-    auto bindableTooltip = list.bindableTooltip();
+    auto bindableTooltip = page.bindableTooltip();
     QVERIFY(bindableTooltip.isValid());
     QCOMPARE(bindableTooltip.value(), "Initial tooltip");
 
@@ -1364,41 +1377,41 @@ void TestQtNoidAppParametersPage::testBindableTooltipProperty()
     QCOMPARE(externalProperty.value(), "Initial tooltip");
 
     // Change parameter tooltip and verify binding updates
-    list.setTooltip("Updated tooltip");
+    page.setTooltip("Updated tooltip");
     QCOMPARE(externalProperty.value(), "Updated tooltip");
 
     // Test setting tooltip through bindable
     bindableTooltip.setValue("Final tooltip");
-    QCOMPARE(list.tooltip(), "Final tooltip");
+    QCOMPARE(page.tooltip(), "Final tooltip");
     QCOMPARE(externalProperty.value(), "Final tooltip");
 
-    // Create a reverse binding from externalProperty to list
-    QSignalSpy spy(&list, &ParametersPage::tooltipChanged);
+    // Create a reverse binding from externalProperty to page
+    QSignalSpy spy(&page, &ParametersPage::tooltipChanged);
     bindableTooltip.setBinding([&]() { return externalProperty.value(); });
     externalProperty.setValue("Externally set tooltip");
     QCOMPARE(bindableTooltip.value(), "Externally set tooltip");
-    QCOMPARE(list.tooltip(), "Externally set tooltip");
+    QCOMPARE(page.tooltip(), "Externally set tooltip");
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first().toString(), "Externally set tooltip");
 }
 
 void TestQtNoidAppParametersPage::testParametersPageVisible()
 {
-    ParametersPage list(this);
-    QSignalSpy spy(&list, &ParametersPage::visibleChanged);
-    list.setVisible(false);
+    ParametersPage page(this);
+    QSignalSpy spy(&page, &ParametersPage::visibleChanged);
+    page.setVisible(false);
     QCOMPARE(spy.count(), 1);
     auto arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toBool(), false);
 
-    list.setVisible(false);
+    page.setVisible(false);
     QCOMPARE(spy.count(), 0);
 }
 
 void TestQtNoidAppParametersPage::testBindableParametersPageVisible()
 {
-    ParametersPage list(this);
-    auto bindableVisible = list.bindableVisible();
+    ParametersPage page(this);
+    auto bindableVisible = page.bindableVisible();
     QVERIFY(bindableVisible.isValid());
     QCOMPARE(bindableVisible.value(), true);
 
@@ -1408,30 +1421,30 @@ void TestQtNoidAppParametersPage::testBindableParametersPageVisible()
     QCOMPARE(externalProperty.value(), true);
 
     // Change parameter visible and verify binding updates
-    list.setVisible(false);
+    page.setVisible(false);
     QCOMPARE(externalProperty.value(), false);
 
     // Test setting visible through bindable
     bindableVisible.setValue(true);
-    QCOMPARE(list.visible(), true);
+    QCOMPARE(page.visible(), true);
     QCOMPARE(externalProperty.value(), true);
 
-    // Create a reverse binding from externalProperty to list
-    QSignalSpy spy(&list, &ParametersPage::visibleChanged);
+    // Create a reverse binding from externalProperty to page
+    QSignalSpy spy(&page, &ParametersPage::visibleChanged);
     bindableVisible.setBinding([&]() { return externalProperty.value(); });
     externalProperty.setValue(false);
     QCOMPARE(bindableVisible.value(), false);
-    QCOMPARE(list.visible(), false);
+    QCOMPARE(page.visible(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first(), false);
 }
 
 void TestQtNoidAppParametersPage::testParametersPageBindableCountProperty()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
 
     // Get the bindable property
-    auto bindableCount = list.bindableCount();
+    auto bindableCount = page.bindableCount();
     QVERIFY(bindableCount.isValid());
     QCOMPARE(bindableCount.value(), 0);
 
@@ -1441,49 +1454,49 @@ void TestQtNoidAppParametersPage::testParametersPageBindableCountProperty()
     QCOMPARE(externalProperty.value(), 0);
 
     // Add parameters and verify binding updates
-    QSignalSpy countChangedSpy(&list, &ParametersPage::countChanged);
+    QSignalSpy countChangedSpy(&page, &ParametersPage::countChanged);
 
     // Add a parameter using emplace
-    list.emplace(100, "Param1");
-    QCOMPARE(list.count(), 1);
+    page.emplace(100, "Param1");
+    QCOMPARE(page.count(), 1);
     QCOMPARE(bindableCount.value(), 1);
     QCOMPARE(externalProperty.value(), 1);
     QCOMPARE(countChangedSpy.count(), 1);
 
     // Add a parameter using append
     Parameter* param2 = new Parameter(200.0, "Param2", this);
-    list.append(param2);
-    QCOMPARE(list.count(), 2);
+    page.append(param2);
+    QCOMPARE(page.count(), 2);
     QCOMPARE(bindableCount.value(), 2);
     QCOMPARE(externalProperty.value(), 2);
     QCOMPARE(countChangedSpy.count(), 2);
 
     // Add a parameter using emplace from JSON
     QJsonObject param3{{"Param3", 300.0}};
-    list.emplace({}, param3);
-    QCOMPARE(list.value("Param3"), 300.0);
-    QCOMPARE(list.count(), 3);
+    page.emplace({}, param3);
+    QCOMPARE(page.value("Param3"), 300.0);
+    QCOMPARE(page.count(), 3);
     QCOMPARE(bindableCount.value(), 3);
     QCOMPARE(externalProperty.value(), 3);
     QCOMPARE(countChangedSpy.count(), 3);
 
     // Remove a parameter by reference
-    list.removeParameter(param2);
-    QCOMPARE(list.count(), 2);
+    page.removeParameter(param2);
+    QCOMPARE(page.count(), 2);
     QCOMPARE(bindableCount.value(), 2);
     QCOMPARE(externalProperty.value(), 2);
     QCOMPARE(countChangedSpy.count(), 4);
 
     // Remove a parameter by name
-    list.removeParameter("Param3");
-    QCOMPARE(list.count(), 1);
+    page.removeParameter("Param3");
+    QCOMPARE(page.count(), 1);
     QCOMPARE(bindableCount.value(), 1);
     QCOMPARE(externalProperty.value(), 1);
     QCOMPARE(countChangedSpy.count(), 5);
 
     // Clear list and verify binding updates
-    list.clear();
-    QCOMPARE(list.count(), 0);
+    page.clear();
+    QCOMPARE(page.count(), 0);
     QCOMPARE(bindableCount.value(), 0);
     QCOMPARE(externalProperty.value(), 0);
     QCOMPARE(countChangedSpy.count(), 6);
@@ -1505,35 +1518,35 @@ void TestQtNoidAppParametersPage::testParametersPageBindableCountProperty()
 
 void TestQtNoidAppParametersPage::testParametersPageReadOnly()
 {
-    ParametersPage list(this);
-    QSignalSpy spy(&list, &ParametersPage::readOnlyChanged);
+    ParametersPage page(this);
+    QSignalSpy spy(&page, &ParametersPage::readOnlyChanged);
 
     // Default should be false
-    QCOMPARE(list.readOnly(), false);
+    QCOMPARE(page.readOnly(), false);
 
-    list.setReadOnly(true);
+    page.setReadOnly(true);
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.readOnly(), true);
+    QCOMPARE(page.readOnly(), true);
 
     // Check signal argument
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toBool(), true);
 
     // Same value, no signal should be emitted
-    list.setReadOnly(true);
+    page.setReadOnly(true);
     QCOMPARE(spy.count(), 0);
 
     // Change back to false
-    list.setReadOnly(false);
+    page.setReadOnly(false);
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(list.readOnly(), false);
+    QCOMPARE(page.readOnly(), false);
 
 }
 
 void TestQtNoidAppParametersPage::testBindableParametersPageReadOnly()
 {
-    ParametersPage list(this);
-    auto bindableReadOnly = list.bindableReadOnly();
+    ParametersPage page(this);
+    auto bindableReadOnly = page.bindableReadOnly();
     QVERIFY(bindableReadOnly.isValid());
     QCOMPARE(bindableReadOnly.value(), false);
 
@@ -1543,55 +1556,55 @@ void TestQtNoidAppParametersPage::testBindableParametersPageReadOnly()
     QCOMPARE(externalProperty.value(), false);
 
     // Change parameter readOnly and verify binding updates
-    list.setReadOnly(true);
+    page.setReadOnly(true);
     QCOMPARE(externalProperty.value(), true);
 
     // Test setting readOnly through bindable
     bindableReadOnly.setValue(false);
-    QCOMPARE(list.readOnly(), false);
+    QCOMPARE(page.readOnly(), false);
     QCOMPARE(externalProperty.value(), false);
 
-    // Create a reverse binding from externalProperty to list
-    QSignalSpy spy(&list, &ParametersPage::readOnlyChanged);
+    // Create a reverse binding from externalProperty to page
+    QSignalSpy spy(&page, &ParametersPage::readOnlyChanged);
     bindableReadOnly.setBinding([&]() { return externalProperty.value(); });
     externalProperty.setValue(true);
     QCOMPARE(bindableReadOnly.value(), true);
-    QCOMPARE(list.readOnly(), true);
+    QCOMPARE(page.readOnly(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first(), true);
 
 }
 
-void TestQtNoidAppParametersPage::testParametersPageIsValueChanged()
+void TestQtNoidAppParametersPage::testParametersPageIsValueModifiedChanged()
 {
-    ParametersPage list(this);
-    Parameter* p1 = list.emplace(10, "Param1");
-    Parameter* p2 = list.emplace(5, "Param2");
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    Parameter* p2 = page.emplace(5, "Param2");
 
     // No parameter changed yet
-    QCOMPARE(list.isValueModified(), false);
+    QCOMPARE(page.isValueModified(), false);
 
-    QSignalSpy spy(&list, &ParametersPage::isValueModifiedChanged);
+    QSignalSpy spy(&page, &ParametersPage::isValueModifiedChanged);
 
     // Changing one parameter should flip the aggregate to true
     p1->setValue(99);
-    QCOMPARE(list.isValueModified(), true);
+    QCOMPARE(page.isValueModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     // A second parameter changing too should not emit again (already true)
     p2->setValue(50);
-    QCOMPARE(list.isValueModified(), true);
+    QCOMPARE(page.isValueModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the first parameter: the second is still changed, aggregate stays true
     p1->setValue(10);
-    QCOMPARE(list.isValueModified(), true);
+    QCOMPARE(page.isValueModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the last changed parameter: aggregate must go back to false
     p2->setValue(5);
-    QCOMPARE(list.isValueModified(), false);
+    QCOMPARE(page.isValueModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
@@ -1599,24 +1612,24 @@ void TestQtNoidAppParametersPage::testParametersPageIsValueChanged()
     // Adding a modified paramter should activate the isValueChanged flag
     Parameter modPar_p3(0, "ModifiedParameter", this);
     modPar_p3.setValue(100);
-    auto res = list.append(&modPar_p3);
+    auto res = page.append(&modPar_p3);
     QCOMPARE(res, true);
-    QCOMPARE(list.isValueModified(), true);
+    QCOMPARE(page.isValueModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
-    list.removeParameter(&modPar_p3);
-    QCOMPARE(list.isValueModified(), false);
+    page.removeParameter(&modPar_p3);
+    QCOMPARE(page.isValueModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 }
 
-void TestQtNoidAppParametersPage::testBindableIsValueChangedProperty()
+void TestQtNoidAppParametersPage::testBindableIsValueModifiedProperty()
 {
-    ParametersPage list(this);
-    Parameter* p1 = list.emplace(10, "Param1");
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
 
-    auto bindableIsValueChanged = list.bindableIsValueModified();
+    auto bindableIsValueChanged = page.bindableIsValueModified();
     QVERIFY(bindableIsValueChanged.isValid());
     QCOMPARE(bindableIsValueChanged.value(), false);
 
@@ -1636,7 +1649,7 @@ void TestQtNoidAppParametersPage::testBindableIsValueChangedProperty()
     QCOMPARE(externalProperty.value(), false);
 }
 
-void TestQtNoidAppParametersPage::testParametersPageResetAllValues()
+void TestQtNoidAppParametersPage::testParametersPageResetValueModifications()
 {
     ParametersPage page(this);
     Parameter* p1 = page.emplace(10, "Param1");
@@ -1646,7 +1659,7 @@ void TestQtNoidAppParametersPage::testParametersPageResetAllValues()
     p2->setValue(50);
     QCOMPARE(page.isValueModified(), true);
 
-    page.resetAllValues();
+    page.resetValueModifications();
 
     QCOMPARE(p1->value(), 10);
     QCOMPARE(p2->value(), 5);
@@ -1655,7 +1668,7 @@ void TestQtNoidAppParametersPage::testParametersPageResetAllValues()
     QCOMPARE(page.isValueModified(), false);
 }
 
-void TestQtNoidAppParametersPage::testParametersPageResetAllValuesDoesNotAffectSchema()
+void TestQtNoidAppParametersPage::testParametersPageResetValueModificationsDoesNotAffectSchema()
 {
     ParametersPage page(this);
     Parameter* p1 = page.emplace(10, "Param1");
@@ -1664,9 +1677,9 @@ void TestQtNoidAppParametersPage::testParametersPageResetAllValuesDoesNotAffectS
     page.setDescription("Page description");
 
     QCOMPARE(page.isValueModified(), true);
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
 
-    page.resetAllValues();
+    page.resetValueModifications();
 
     QCOMPARE(p1->value(), 10);
     QCOMPARE(page.isValueModified(), false);
@@ -1674,53 +1687,144 @@ void TestQtNoidAppParametersPage::testParametersPageResetAllValuesDoesNotAffectS
     // and the contained parameter must survive.
     QCOMPARE(p1->label(), QString("New label"));
     QCOMPARE(page.description(), QString("Page description"));
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
 }
 
-void TestQtNoidAppParametersPage::testParametersPageIsSchemaChanged()
+void TestQtNoidAppParametersPage::testParametersPageSetValueModifiedCascadesTrueToAllParameters()
+{
+    // ParametersPage::setValueModified() has no override flag of its own: it
+    // cascades to every contained Parameter, and the page's own aggregate
+    // flag follows automatically through the counter already wired up.
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    Parameter* p2 = page.emplace(5, "Param2");
+    QCOMPARE(page.isValueModified(), false);
+
+    QSignalSpy spy(&page, &ParametersPage::isValueModifiedChanged);
+
+    page.setValueModified(true);
+    QCOMPARE(p1->isValueModified(), true);
+    QCOMPARE(p2->isValueModified(), true);
+    QCOMPARE(page.isValueModified(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageSetValueModifiedFalseCapturesCurrentStateAsNewBaselineForAllParameters()
+{
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    Parameter* p2 = page.emplace(5, "Param2");
+
+    p1->setValue(99);
+    QCOMPARE(page.isValueModified(), true);
+
+    page.setValueModified(false);
+    QCOMPARE(p1->isValueModified(), false);
+    QCOMPARE(p2->isValueModified(), false);
+    QCOMPARE(page.isValueModified(), false);
+
+    // Each parameter's new baseline is its own current value (99 for p1, 5
+    // for p2), not whatever it started with: resetValueModifications() must
+    // restore to it, not revert it.
+    p2->setValue(6);
+    page.resetValueModifications();
+    QCOMPARE(p1->value(), 99);
+    QCOMPARE(p2->value(), 5);
+    QCOMPARE(page.isValueModified(), false);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageSetValueModifiedOverrideClearedByResetValueModifications()
+{
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    Parameter* p2 = page.emplace(5, "Param2");
+
+    page.setValueModified(true);
+    QCOMPARE(page.isValueModified(), true);
+
+    // Neither parameter actually changed, so cascading
+    // resetValueModifications() alone must bring everything back to false.
+    page.resetValueModifications();
+    QCOMPARE(p1->isValueModified(), false);
+    QCOMPARE(p2->isValueModified(), false);
+    QCOMPARE(page.isValueModified(), false);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageSetValueModifiedWithMixedParameterStates()
+{
+    ParametersPage page(this);
+    Parameter* p1 = page.emplace(10, "Param1");
+    Parameter* p2 = page.emplace(5, "Param2");
+
+    // p1 is genuinely modified, p2 is not.
+    p1->setValue(99);
+    QCOMPARE(p1->isValueModified(), true);
+    QCOMPARE(p2->isValueModified(), false);
+    QCOMPARE(page.isValueModified(), true);
+
+    // Forcing true cascades to every parameter, including the one already modified.
+    page.setValueModified(true);
+    QCOMPARE(p1->isValueModified(), true);
+    QCOMPARE(p2->isValueModified(), true);
+    QCOMPARE(page.isValueModified(), true);
+
+    // Clearing cascades too: each parameter's current value becomes its own
+    // new baseline, regardless of whether it had a real change beforehand.
+    page.setValueModified(false);
+    QCOMPARE(p1->isValueModified(), false);
+    QCOMPARE(p2->isValueModified(), false);
+    QCOMPARE(page.isValueModified(), false);
+
+    // p1's new baseline is 99, not the original 10.
+    p1->resetValueModifications();
+    QCOMPARE(p1->value(), 99);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageIsSchemaModified()
 {
     ParametersPage page(this);
     Parameter* p1 = page.emplace(10, "Param1");
     Parameter* p2 = page.emplace(5, "Param2");
 
     // Nothing changed yet
-    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(page.isSchemaModified(), false);
 
-    QSignalSpy spy(&page, &ParametersPage::isSchemaChangedChanged);
+    QSignalSpy spy(&page, &ParametersPage::isSchemaModifiedChanged);
 
     // Changing the page's own schema property flips the aggregate to true
     page.setLabel("New label");
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     // Restoring that own property back to the baseline value (without going
-    // through resetSchemaChange()) must recompute the flag back to false:
-    // isSchemaChanged compares against the baseline, it is not a sticky flag.
+    // through resetSchemaModifications()) must recompute the flag back to false:
+    // isSchemaModified compares against the baseline, it is not a sticky flag.
     page.setLabel(QString());
-    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(page.isSchemaModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
     // A contained Parameter's schema change should aggregate too
     p1->setLabel("Param label");
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     // A second parameter changing too should not emit again (already true)
     p2->setLabel("Param2 label");
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the first parameter: the second is still changed, aggregate stays true
     p1->resetSchemaModifications();
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the last changed parameter: aggregate must go back to false
     p2->resetSchemaModifications();
-    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(page.isSchemaModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
@@ -1729,42 +1833,42 @@ void TestQtNoidAppParametersPage::testParametersPageIsSchemaChanged()
     modPar_p3.setLabel("already changed");
     auto res = page.append(&modPar_p3);
     QCOMPARE(res, true);
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     page.removeParameter(&modPar_p3);
-    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(page.isSchemaModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 }
 
-void TestQtNoidAppParametersPage::testBindableIsSchemaChangedProperty()
+void TestQtNoidAppParametersPage::testBindableIsSchemaModifiedProperty()
 {
     ParametersPage page(this);
     Parameter* p1 = page.emplace(10, "Param1");
 
-    auto bindableIsSchemaChanged = page.bindableIsSchemaChanged();
-    QVERIFY(bindableIsSchemaChanged.isValid());
-    QCOMPARE(bindableIsSchemaChanged.value(), false);
+    auto bindableIsSchemaModified = page.bindableIsSchemaModified();
+    QVERIFY(bindableIsSchemaModified.isValid());
+    QCOMPARE(bindableIsSchemaModified.value(), false);
 
     // Test binding to another property
     QProperty<bool> externalProperty;
-    externalProperty.setBinding([&]() { return bindableIsSchemaChanged.value(); });
+    externalProperty.setBinding([&]() { return bindableIsSchemaModified.value(); });
     QCOMPARE(externalProperty.value(), false);
 
     // Changing the child parameter's schema should propagate through the binding
     p1->setLabel("New label");
-    QCOMPARE(bindableIsSchemaChanged.value(), true);
+    QCOMPARE(bindableIsSchemaModified.value(), true);
     QCOMPARE(externalProperty.value(), true);
 
     // Reverting the parameter's schema should propagate back to false
     p1->resetSchemaModifications();
-    QCOMPARE(bindableIsSchemaChanged.value(), false);
+    QCOMPARE(bindableIsSchemaModified.value(), false);
     QCOMPARE(externalProperty.value(), false);
 }
 
-void TestQtNoidAppParametersPage::testParametersPageResetSchemaChange()
+void TestQtNoidAppParametersPage::testParametersPageResetSchemaModifications()
 {
     ParametersPage page("TestPage", this);
     Parameter* p1 = page.emplace(10, "Param1", "Original description");
@@ -1775,16 +1879,16 @@ void TestQtNoidAppParametersPage::testParametersPageResetSchemaChange()
     page.setReadOnly(true);
     page.setVisible(false);
 
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
 
-    page.resetSchemaChange();
+    page.resetSchemaModifications();
 
     QCOMPARE(page.label(), QString());
     QCOMPARE(page.description(), QString());
     QCOMPARE(page.tooltip(), QString());
     QCOMPARE(page.readOnly(), false);
     QCOMPARE(page.visible(), true);
-    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(page.isSchemaModified(), false);
 
     // Cascades down to every contained Parameter too.
     QCOMPARE(p1->label(), QString());
@@ -1792,7 +1896,7 @@ void TestQtNoidAppParametersPage::testParametersPageResetSchemaChange()
     QCOMPARE(p1->isSchemaModified(), false);
 }
 
-void TestQtNoidAppParametersPage::testParametersPageResetSchemaChangeDoesNotAffectValues()
+void TestQtNoidAppParametersPage::testParametersPageResetSchemaModificationsDoesNotAffectValues()
 {
     ParametersPage page(this);
     Parameter* p1 = page.emplace(10, "Param1");
@@ -1801,30 +1905,130 @@ void TestQtNoidAppParametersPage::testParametersPageResetSchemaChangeDoesNotAffe
     page.setDescription("Page description");
 
     QCOMPARE(page.isValueModified(), true);
-    QCOMPARE(page.isSchemaChanged(), true);
+    QCOMPARE(page.isSchemaModified(), true);
 
-    page.resetSchemaChange();
+    page.resetSchemaModifications();
 
-    // resetSchemaChange() only touches schema properties: values stay as set.
+    // resetSchemaModifications() only touches schema properties: values stay as set.
     QCOMPARE(p1->value(), 99);
     QCOMPARE(page.isValueModified(), true);
     QCOMPARE(page.description(), QString());
     QCOMPARE(p1->label(), QString());
-    QCOMPARE(page.isSchemaChanged(), false);
+    QCOMPARE(page.isSchemaModified(), false);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageSetSchemaModifiedForcesTrueRegardlessOfActualChanges()
+{
+    // Mirrors QTextDocument::setModified(true): force isSchemaModified() to
+    // report true even though nothing tracked actually differs from baseline.
+    ParametersPage page("TestPage", this);
+    QCOMPARE(page.isSchemaModified(), false);
+
+    QSignalSpy spy(&page, &ParametersPage::isSchemaModifiedChanged);
+
+    page.setSchemaModified(true);
+    QCOMPARE(page.isSchemaModified(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+
+    // No tracked property changed: the override alone is forcing the flag.
+    QCOMPARE(page.name(), QString("TestPage"));
+    QCOMPARE(page.label(), QString());
+}
+
+void TestQtNoidAppParametersPage::testParametersPageSetSchemaModifiedFalseCapturesCurrentStateAsNewBaseline()
+{
+    // Mirrors QTextDocument::setModified(false): accept the page's own
+    // current properties as the new reference schema.
+    ParametersPage page("TestPage", this);
+    page.setLabel("Changed label");
+    QCOMPARE(page.isSchemaModified(), true);
+
+    QSignalSpy spy(&page, &ParametersPage::isSchemaModifiedChanged);
+    page.setSchemaModified(false);
+    QCOMPARE(page.isSchemaModified(), false);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), false);
+
+    // The new baseline is "label: Changed label", not the original empty
+    // label: resetSchemaModifications() must restore to it, not revert it.
+    page.resetSchemaModifications();
+    QCOMPARE(page.label(), QString("Changed label"));
+    QCOMPARE(page.isSchemaModified(), false);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageSetSchemaModifiedOverrideClearedByResetSchemaModifications()
+{
+    ParametersPage page("TestPage", this);
+    QSignalSpy spy(&page, &ParametersPage::isSchemaModifiedChanged);
+
+    page.setSchemaModified(true);
+    QCOMPARE(page.isSchemaModified(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+
+    // Nothing is actually tracked as changed, so clearing the override alone
+    // must bring isSchemaModified() back to false.
+    page.resetSchemaModifications();
+    QCOMPARE(page.isSchemaModified(), false);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageSetSchemaModifiedInteractionWithActualSchemaChanges()
+{
+    ParametersPage page("TestPage", this);
+
+    // Override true + a real schema change: still reported as modified.
+    page.setSchemaModified(true);
+    page.setLabel("X");
+    QCOMPARE(page.isSchemaModified(), true);
+
+    // Clearing the override re-baselines using the current state (label "X"),
+    // so isSchemaModified() goes back to false even though label was edited.
+    page.setSchemaModified(false);
+    QCOMPARE(page.isSchemaModified(), false);
+    QCOMPARE(page.label(), QString("X"));
+
+    // A further real schema change is still detected normally afterwards.
+    page.setLabel("Y");
+    QCOMPARE(page.isSchemaModified(), true);
+}
+
+void TestQtNoidAppParametersPage::testParametersPageSetSchemaModifiedDoesNotCascadeToParameters()
+{
+    // Unlike setValueModified(), setSchemaModified() mirrors Parameter's own
+    // behavior directly: it only forces the page's own flag and only
+    // re-baselines the page's own properties. It never touches contained
+    // Parameters, which keep their own, independent override.
+    ParametersPage page("TestPage", this);
+    Parameter* p1 = page.emplace(10, "Param1");
+
+    page.setSchemaModified(true);
+    QCOMPARE(page.isSchemaModified(), true);
+    QCOMPARE(p1->isSchemaModified(), false);
+
+    page.setSchemaModified(false);
+    QCOMPARE(page.isSchemaModified(), false);
+    QCOMPARE(p1->isSchemaModified(), false);
+
+    // A real schema change on the child still aggregates up normally,
+    // independently of the page's own override mechanism.
+    p1->setLabel("Param label");
+    QCOMPARE(p1->isSchemaModified(), true);
+    QCOMPARE(page.isSchemaModified(), true);
 }
 
 
 void TestQtNoidAppParametersPage::testParameterRenameError()
 {
-    ParametersPage *list = new ParametersPage("MyList", this);
-    QSignalSpy renameErrorSpy(list, &ParametersPage::parameterRenameError);
+    ParametersPage *page = new ParametersPage("MyList", this);
+    QSignalSpy renameErrorSpy(page, &ParametersPage::parameterRenameError);
 
     // Create two parameters with different names
     Parameter *param1 = new Parameter(100.0, "Param1", this);
     Parameter *param2 = new Parameter(200.0, "Param2", this);
 
-    list->append(param1);
-    list->append(param2);
+    page->append(param1);
+    page->append(param2);
 
     // Test case 1: Try to rename to an existing name (should emit error)
     param1->setName("Param2");
@@ -1835,14 +2039,14 @@ void TestQtNoidAppParametersPage::testParameterRenameError()
     QCOMPARE(arguments.at(1).toString(), "Param2");  // newName
 
     // Verify the parameter name wasn't actually changed in the list
-    QVERIFY(list->contains("Param1"));
-    QVERIFY(list->contains("Param2"));
-    QCOMPARE(list->parameter("Param2"), param2);
+    QVERIFY(page->contains("Param1"));
+    QVERIFY(page->contains("Param2"));
+    QCOMPARE(page->parameter("Param2"), param2);
 
     // Test case 2: Create a scenario where oldName is not in the list
     // (This is harder to trigger naturally, but we can simulate it)
     // by removing a parameter from the list but keeping the object alive
-    list->removeParameter(param1);
+    page->removeParameter(param1);
 
     // Now if param1 tries to rename itself, it should not trigger an error
     // because "Param1" is no longer in the list
@@ -1851,46 +2055,46 @@ void TestQtNoidAppParametersPage::testParameterRenameError()
 
     delete param1;
     delete param2;
-    delete list;
+    delete page;
 }
 
 void TestQtNoidAppParametersPage::testIsEmpty()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
 
     // Test empty list
-    QVERIFY(list.isEmpty());
-    QCOMPARE(list.count(), 0);
+    QVERIFY(page.isEmpty());
+    QCOMPARE(page.count(), 0);
 
     // Add a parameter
     Parameter* param1 = new Parameter(100.0, "Param1", this);
-    list.append(param1);
+    page.append(param1);
 
     // Test non-empty list
-    QVERIFY(!list.isEmpty());
-    QCOMPARE(list.count(), 1);
+    QVERIFY(!page.isEmpty());
+    QCOMPARE(page.count(), 1);
 
     // Remove one parameter
-    list.removeParameter(param1);
-    QVERIFY(list.isEmpty());
+    page.removeParameter(param1);
+    QVERIFY(page.isEmpty());
 
     // Test clear() method
     Parameter* param3 = new Parameter(300.0, "Param3", this);
     Parameter* param4 = new Parameter(400.0, "Param4", this);
-    list.append(param3);
-    list.append(param4);
+    page.append(param3);
+    page.append(param4);
 
-    QVERIFY(!list.isEmpty());
-    QCOMPARE(list.count(), 2);
+    QVERIFY(!page.isEmpty());
+    QCOMPARE(page.count(), 2);
 
-    list.clear();
-    QVERIFY(list.isEmpty());
-    QCOMPARE(list.count(), 0);
+    page.clear();
+    QVERIFY(page.isEmpty());
+    QCOMPARE(page.count(), 0);
 }
 
 void TestQtNoidAppParametersPage::testApplyPreset()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
 
     // Create parameters with presets
     Parameter param1(50.0, "Temperature", this);
@@ -1905,16 +2109,16 @@ void TestQtNoidAppParametersPage::testApplyPreset()
     param3.setPreset("Low", 20.0);
     param3.setPreset("High", 90.0);
 
-    list.append(&param1);
-    list.append(&param2);
-    list.append(&param3);
+    page.append(&param1);
+    page.append(&param2);
+    page.append(&param3);
 
     // Test applying "Low" preset - all parameter should change
     QSignalSpy spy1(&param1, &Parameter::valueChanged);
     QSignalSpy spy2(&param2, &Parameter::valueChanged);
     QSignalSpy spy3(&param3, &Parameter::valueChanged);
 
-    list.applyPreset("Low");
+    page.applyPreset("Low");
 
     QCOMPARE(spy1.count(), 1);
     QCOMPARE(spy2.count(), 1);
@@ -1937,7 +2141,7 @@ void TestQtNoidAppParametersPage::testApplyPreset()
     QCOMPARE(current, 20);
 
     // Test applying "High" preset
-    list.applyPreset("High");
+    page.applyPreset("High");
     QCOMPARE(spy1.count(), 1);
     QCOMPARE(spy2.count(), 1);
     QCOMPARE(spy3.count(), 1);
@@ -1946,7 +2150,7 @@ void TestQtNoidAppParametersPage::testApplyPreset()
     spy1.clear();
     spy2.clear();
     spy3.clear();
-    list.applyPreset("NonExistent");
+    page.applyPreset("NonExistent");
     QCOMPARE(spy1.count(), 0);
     QCOMPARE(spy2.count(), 0);
     QCOMPARE(spy3.count(), 0);
@@ -1956,36 +2160,36 @@ void TestQtNoidAppParametersPage::testApplyPreset()
     QCOMPARE(param3.value().toDouble(), 90.0);
 
     // Test empty list
-    ParametersPage emptyList(this);
-    emptyList.applyPreset("AnyPreset"); // Should not crash
+    ParametersPage emptyPage(this);
+    emptyPage.applyPreset("AnyPreset"); // Should not crash
 }
 
 void TestQtNoidAppParametersPage::testApplyPresetShouldBypassReadOnly()
 {
-    ParametersPage list(this);
+    ParametersPage page(this);
 
     Parameter param1(50.0, "Temperature", this);
     param1.setPreset("Low", 10.0);
 
-    list << param1;
-    list.setReadOnly(true);
+    page << param1;
+    page.setReadOnly(true);
 
     QSignalSpy valueChangedSpy(&param1, &Parameter::valueChanged);
-    QSignalSpy writeAttemptSpy(&list, &ParametersPage::writeAttemptedWhileReadOnly);
+    QSignalSpy writeAttemptSpy(&page, &ParametersPage::writeAttemptedWhileReadOnly);
 
     // applyPreset must still work even if the list is readOnly
-    list.applyPreset("Low");
+    page.applyPreset("Low");
 
-    QCOMPARE(list.value("Temperature"), 10.0);
+    QCOMPARE(page.value("Temperature"), 10.0);
     QCOMPARE(valueChangedSpy.count(), 1);
     QCOMPARE(writeAttemptSpy.count(), 0);
 }
 
 void TestQtNoidAppParametersPage::testOperatorLeftShiftWithParameterReference()
 {
-    ParametersPage list(this);
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    ParametersPage page(this);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
     // Create parameters to add
     Parameter param1(100.0, "Temperature", this);
@@ -1993,56 +2197,56 @@ void TestQtNoidAppParametersPage::testOperatorLeftShiftWithParameterReference()
     Parameter param3(60.0, "Humidity", this);
 
     // Test chaining operator<< with parameter references
-    list << param1 << param2 << param3;
+    page << param1 << param2 << param3;
 
     // Verify all parameters were added
-    QCOMPARE(list.count(), 3);
+    QCOMPARE(page.count(), 3);
     QCOMPARE(countSpy.count(), 3);
     QCOMPARE(addedSpy.count(), 3);
 
     // Verify parameters are accessible
-    QCOMPARE(list.contains("Temperature"), true);
-    QCOMPARE(list.contains("Pressure"), true);
-    QCOMPARE(list.contains("Humidity"), true);
-    QCOMPARE(list.parameter("Temperature"), &param1);
-    QCOMPARE(list.parameter("Pressure"), &param2);
-    QCOMPARE(list.parameter("Humidity"), &param3);
+    QCOMPARE(page.contains("Temperature"), true);
+    QCOMPARE(page.contains("Pressure"), true);
+    QCOMPARE(page.contains("Humidity"), true);
+    QCOMPARE(page.parameter("Temperature"), &param1);
+    QCOMPARE(page.parameter("Pressure"), &param2);
+    QCOMPARE(page.parameter("Humidity"), &param3);
 
     // Verify parameter values
-    QCOMPARE(list.value("Temperature").toDouble(), 100.0);
-    QCOMPARE(list.value("Pressure").toDouble(), 1013.25);
-    QCOMPARE(list.value("Humidity").toDouble(), 60.0);
+    QCOMPARE(page.value("Temperature").toDouble(), 100.0);
+    QCOMPARE(page.value("Pressure").toDouble(), 1013.25);
+    QCOMPARE(page.value("Humidity").toDouble(), 60.0);
 
     // Test adding duplicate parameter with operator<< (should not add)
-    int originalCount = list.count();
-    list << param1;
-    QCOMPARE(list.count(), originalCount);
+    int originalCount = page.count();
+    page << param1;
+    QCOMPARE(page.count(), originalCount);
     QCOMPARE(countSpy.count(), 3); // No new count change signal
 
     // Test return value allows chaining
-    ParametersPage& result = (list << param1);
-    QCOMPARE(&result, &list);
+    ParametersPage& result = (page << param1);
+    QCOMPARE(&result, &page);
 
     // Verify I can change paramter and see the changed value
     param1.setValue(99);
-    QCOMPARE(list.value("Temperature"), 99);
-    list.setValue("Pressure", 1000);
+    QCOMPARE(page.value("Temperature"), 99);
+    page.setValue("Pressure", 1000);
     QCOMPARE(param2.value(), 1000);
 }
 
 void TestQtNoidAppParametersPage::testDeletingParamtersPageDestroyOwnedParamters()
 {
     // Create 2 objects and verify they are destroyed with the list
-    ParametersPage *list = new ParametersPage("MyBeautifullList");
+    ParametersPage *page = new ParametersPage("MyBeautifullList");
 
-    Parameter *parameter1 = new Parameter(1, "Paramter1", list);
+    Parameter *parameter1 = new Parameter(1, "Paramter1", page);
     QSignalSpy parameter1Spy(parameter1, &QObject::destroyed);
 
-    Parameter *parameter2 = new Parameter(2, "Paramter2", list);
+    Parameter *parameter2 = new Parameter(2, "Paramter2", page);
     QSignalSpy parameter2Spy(parameter2, &QObject::destroyed);
-    *list << parameter1 << parameter2;
+    *page << parameter1 << parameter2;
 
-    delete list;
+    delete page;
     QCOMPARE(parameter1Spy.count(), 1);
     QCOMPARE(parameter2Spy.count(), 1);
 }
@@ -2050,13 +2254,13 @@ void TestQtNoidAppParametersPage::testDeletingParamtersPageDestroyOwnedParamters
 void TestQtNoidAppParametersPage::testApplyJsonValuesToExistingParametersPageShouldUpdateValues()
 {
     // Create an existing ParametersPage with some parameters
-    ParametersPage list("SensorConfig", this);
-    list.emplace(20.0, "Temperature");
-    list.emplace(1000.0, "Pressure");
+    ParametersPage page("SensorConfig", this);
+    page.emplace(20.0, "Temperature");
+    page.emplace(1000.0, "Pressure");
 
-    QCOMPARE(list.count(), 2);
-    QCOMPARE(list.value("Temperature").toDouble(), 20.0);
-    QCOMPARE(list.value("Pressure").toDouble(), 1000.0);
+    QCOMPARE(page.count(), 2);
+    QCOMPARE(page.value("Temperature").toDouble(), 20.0);
+    QCOMPARE(page.value("Pressure").toDouble(), 1000.0);
 
     // Create JSON values to update existing paramters
     QJsonObject temperatureValue{{"Temperature", 25.5}};
@@ -2069,34 +2273,34 @@ void TestQtNoidAppParametersPage::testApplyJsonValuesToExistingParametersPageSho
     QJsonObject jsonMain{{"parameters", valuesArray}};
     QJsonObject jsonValues{{"SensorConfig", jsonMain}};
 
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
-    // Apply JSON values to existing list
-    bool result = list.valuesFromJson(jsonValues);
+    // Apply JSON values to existing page
+    bool result = page.valuesFromJson(jsonValues);
     // qDebug() << __func__<< list;
 
     // Verify the operation succeeded
     QVERIFY(result);
 
     // Verify existing parameters were updated
-    QCOMPARE(list.value("Temperature"), 25.5);
-    QCOMPARE(list.value("Pressure"), 1013.25);
+    QCOMPARE(page.value("Temperature"), 25.5);
+    QCOMPARE(page.value("Pressure"), 1013.25);
 
     // Verify new parameter was added
-    QCOMPARE(list.count(), 3);
+    QCOMPARE(page.count(), 3);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
     // qDebug() << __func__ << list.value("Humidiy");
-    QCOMPARE(list.value("Humidity"), 60.0);
+    QCOMPARE(page.value("Humidity"), 60.0);
 }
 
 void TestQtNoidAppParametersPage::testApplyJsonSchemaToExistingParametersPageShouldUpdateSchema()
 {
     // Create an existing ParametersPage with some parameters
-    ParametersPage list("DeviceConfig", this);
-    list.emplace(50.0, "Temperature", "Description");
-    QCOMPARE(list.count(), 1);
+    ParametersPage page("DeviceConfig", this);
+    page.emplace(50.0, "Temperature", "Description");
+    QCOMPARE(page.count(), 1);
 
     // Create JSON schema to apply to the existing list
     QJsonArray schemaArray;
@@ -2132,11 +2336,11 @@ void TestQtNoidAppParametersPage::testApplyJsonSchemaToExistingParametersPageSho
     QJsonObject jsonSchema;
     jsonSchema["DeviceConfig"] = QJsonObject({{"parameters", schemaArray}});
 
-    QSignalSpy countSpy(&list, &ParametersPage::countChanged);
-    QSignalSpy addedSpy(&list, &ParametersPage::parameterAdded);
+    QSignalSpy countSpy(&page, &ParametersPage::countChanged);
+    QSignalSpy addedSpy(&page, &ParametersPage::parameterAdded);
 
-    // Apply JSON schema to existing list
-    bool result = list.schemaFromJson(jsonSchema);
+    // Apply JSON schema to existing page
+    bool result = page.schemaFromJson(jsonSchema);
 
     // Verify the operation succeeded
     QVERIFY(result);
@@ -2145,12 +2349,12 @@ void TestQtNoidAppParametersPage::testApplyJsonSchemaToExistingParametersPageSho
     // qDebug() << jsonSchema;
 
     // Verify new parameters were added from schema
-    QCOMPARE(list.count(), 2);
+    QCOMPARE(page.count(), 2);
     QCOMPARE(countSpy.count(), 1);
     QCOMPARE(addedSpy.count(), 1);
 
     // Verify Temperature parameter was updated from schema
-    Parameter* tempParam = list.parameter("Temperature");
+    Parameter* tempParam = page.parameter("Temperature");
     QVERIFY(tempParam != nullptr);
     QCOMPARE(tempParam->description(), "Temperature sensor reading");
     QCOMPARE(tempParam->tooltip(), "Current ambient temperature");
@@ -2161,7 +2365,7 @@ void TestQtNoidAppParametersPage::testApplyJsonSchemaToExistingParametersPageSho
     QCOMPARE(tempParam->visible(), true);
 
     // Verify Pressure parameter was created correctly from schema
-    Parameter* pressParam = list.parameter("Pressure");
+    Parameter* pressParam = page.parameter("Pressure");
     QVERIFY(pressParam != nullptr);
     QCOMPARE(pressParam->description(), "Atmospheric pressure");
     QCOMPARE(pressParam->tooltip(), "Current atmospheric pressure reading");
@@ -2174,21 +2378,21 @@ void TestQtNoidAppParametersPage::testApplyJsonSchemaToExistingParametersPageSho
 
 void TestQtNoidAppParametersPage::testParametersPageBeginAndEndAndRangeLoop()
 {
-    ParametersPage list("TestList", this);
+    ParametersPage page("Test Page", this);
     // Test empty list
-    QVERIFY(list.begin() == list.end());
+    QVERIFY(page.begin() == page.end());
 
     // Add some parameters
-    list.emplace(10.0, "First", "First parameter");
-    list.emplace(20.0, "Second", "Second parameter");
-    list.emplace(30.0, "Third", "Third parameter");
+    page.emplace(10.0, "First", "First parameter");
+    page.emplace(20.0, "Second", "Second parameter");
+    page.emplace(30.0, "Third", "Third parameter");
 
     // Test that begin() != end() for non-empty list
-    QVERIFY(list.begin() != list.end());
+    QVERIFY(page.begin() != page.end());
 
     // Test iterator dereferencing
-    ParametersPage::iterator it = list.begin();
-    QVERIFY(it != list.end());
+    ParametersPage::iterator it = page.begin();
+    QVERIFY(it != page.end());
 
     Parameter* firstParam = *it;
     QVERIFY(firstParam != nullptr);
@@ -2197,7 +2401,7 @@ void TestQtNoidAppParametersPage::testParametersPageBeginAndEndAndRangeLoop()
 
     // Test iterator increment
     ++it;
-    QVERIFY(it != list.end());
+    QVERIFY(it != page.end());
     Parameter* secondParam = *it;
     QVERIFY(secondParam != nullptr);
     QCOMPARE(secondParam->name(), "Second");
@@ -2205,7 +2409,7 @@ void TestQtNoidAppParametersPage::testParametersPageBeginAndEndAndRangeLoop()
 
     // Test post-increment
     auto prevIt = it++;
-    QVERIFY(it != list.end());
+    QVERIFY(it != page.end());
     QVERIFY(prevIt != it);
     Parameter* thirdParam = *it;
     QVERIFY(thirdParam != nullptr);
@@ -2213,13 +2417,13 @@ void TestQtNoidAppParametersPage::testParametersPageBeginAndEndAndRangeLoop()
     QCOMPARE(thirdParam->value().toDouble(), 30.0);
 
     // Test iterator index() method
-    QCOMPARE(list.begin().index(), 0);
-    auto secondIt = list.begin();
+    QCOMPARE(page.begin().index(), 0);
+    auto secondIt = page.begin();
     ++secondIt;
     QCOMPARE(secondIt.index(), 1);
 
     // Test bidirectional iterator (decrement)
-    auto lastIt = list.end();
+    auto lastIt = page.end();
     --lastIt;
     Parameter* lastParam = *lastIt;
     QVERIFY(lastParam != nullptr);
@@ -2237,7 +2441,7 @@ void TestQtNoidAppParametersPage::testParametersPageBeginAndEndAndRangeLoop()
     // Test range-based for loop
     QStringList expectedList = {"First", "Second", "Third"};
     QStringList nameList;
-    for(auto par : list){
+    for(auto par : page){
         nameList << par->name();
     }
     QCOMPARE(nameList, expectedList);
@@ -2245,22 +2449,22 @@ void TestQtNoidAppParametersPage::testParametersPageBeginAndEndAndRangeLoop()
 
 void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeLoop()
 {
-    ParametersPage list("TestList", this);
+    ParametersPage page("Test Page", this);
 
     // Add some parameters
-    list.emplace(100.0, "Alpha", "Alpha parameter");
-    list.emplace(200.0, "Beta", "Beta parameter");
-    list.emplace(300.0, "Gamma", "Gamma parameter");
+    page.emplace(100.0, "Alpha", "Alpha parameter");
+    page.emplace(200.0, "Beta", "Beta parameter");
+    page.emplace(300.0, "Gamma", "Gamma parameter");
 
-    // Create a const reference to the list
-    const ParametersPage& constList = list;
+    // Create a const reference to the page
+    const ParametersPage& constPage = page;
 
     // ===== Test begin() const and end() const =====
     // Test empty vs non-empty
-    QVERIFY(constList.begin() != constList.end());
+    QVERIFY(constPage.begin() != constPage.end());
 
     // Test const iterator dereferencing
-    ParametersPage::const_iterator cit = constList.begin();
+    ParametersPage::const_iterator cit = constPage.begin();
     const Parameter* firstParam = *cit;
     QVERIFY(firstParam != nullptr);
     QCOMPARE(firstParam->name(), "Alpha");
@@ -2268,7 +2472,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeL
 
     // Test const iterator increment
     ++cit;
-    QVERIFY(cit != constList.end());
+    QVERIFY(cit != constPage.end());
     const Parameter* secondParam = *cit;
     QVERIFY(secondParam != nullptr);
     QCOMPARE(secondParam->name(), "Beta");
@@ -2284,31 +2488,31 @@ void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeL
 
     // Test reaching end
     ++cit;
-    QVERIFY(cit == constList.end());
+    QVERIFY(cit == constPage.end());
 
 
 
     // ===== Test cbegin() and cend() =====
     // Test that cbegin() != cend() for non-empty list
-    QVERIFY(constList.cbegin() != constList.cend());
+    QVERIFY(constPage.cbegin() != constPage.cend());
 
     // Test cbegin() dereferencing
-    auto cbegIt = constList.cbegin();
+    auto cbegIt = constPage.cbegin();
     const Parameter* cbegParam = *cbegIt;
     QVERIFY(cbegParam != nullptr);
     QCOMPARE(cbegParam->name(), "Alpha");
     QCOMPARE(cbegParam->value().toDouble(), 100.0);
 
     // Test cbegin() index method
-    QCOMPARE(constList.cbegin().index(), 0);
-    auto secondCbegIt = constList.cbegin();
+    QCOMPARE(constPage.cbegin().index(), 0);
+    auto secondCbegIt = constPage.cbegin();
     ++secondCbegIt;
     QCOMPARE(secondCbegIt.index(), 1);
 
 
     // ===== Test bidirectional const iterator operations =====
     // Test decrement from end
-    auto lastCit = constList.cend();
+    auto lastCit = constPage.cend();
     --lastCit;
     const Parameter* lastParam = *lastCit;
     QVERIFY(lastParam != nullptr);
@@ -2323,7 +2527,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeL
     // ===== Test iterator conversion from mutable to const =====
 
     // Test that mutable iterator can be converted to const iterator
-    ParametersPage::iterator mutIt = list.begin();
+    ParametersPage::iterator mutIt = page.begin();
     ParametersPage::const_iterator constFromMut = mutIt;
 
     QCOMPARE((*constFromMut)->name(), "Alpha");
@@ -2337,7 +2541,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeL
     QList<double> constValues;
 
     // Test const range-based for loop
-    for (const Parameter* param : constList) {
+    for (const Parameter* param : constPage) {
         QVERIFY(param != nullptr);
         constNames << param->name();
         constValues << param->value().toDouble();
@@ -2349,7 +2553,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeL
 
     // ===== Test that const iterators prevent modification =====
     // This should compile (reading)
-    auto constIt = constList.cbegin();
+    auto constIt = constPage.cbegin();
     QString paramName = (*constIt)->name();
     QCOMPARE(paramName, "Alpha");
 
@@ -2357,15 +2561,15 @@ void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeL
     // (*constIt)->setValue(999.0);  // Compilation error - good!
 
     // ===== Test empty const list =====
-    ParametersPage emptyList("EmptyTest", this);
-    const ParametersPage& constEmptyList = emptyList;
+    ParametersPage emptyPage("EmptyTest", this);
+    const ParametersPage& constEmptyPage = emptyPage;
 
-    QVERIFY(constEmptyList.begin() == constEmptyList.end());
-    QVERIFY(constEmptyList.cbegin() == constEmptyList.cend());
+    QVERIFY(constEmptyPage.begin() == constEmptyPage.end());
+    QVERIFY(constEmptyPage.cbegin() == constEmptyPage.cend());
 
     // Test const range-based for loop with empty list
     int constCount = 0;
-    for ([[maybe_unused]] const Parameter* param : constEmptyList) {
+    for ([[maybe_unused]] const Parameter* param : constEmptyPage) {
         constCount++;
     }
     QCOMPARE(constCount, 0);
@@ -2373,18 +2577,18 @@ void TestQtNoidAppParametersPage::testParametersPageConstIteratorsAndConstRangeL
 
 void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop()
 {
-    ParametersPage list("TestList", this);
+    ParametersPage page("TestList", this);
     // Add some parameters
-    list.emplace(100.0, "First", "First parameter");
-    list.emplace(200.0, "Second", "Second parameter");
-    list.emplace(300.0, "Third", "Third parameter");
-    list.emplace(400.0, "Fourth", "Fourth parameter");
+    page.emplace(100.0, "First", "First parameter");
+    page.emplace(200.0, "Second", "Second parameter");
+    page.emplace(300.0, "Third", "Third parameter");
+    page.emplace(400.0, "Fourth", "Fourth parameter");
 
     // ===== Test rbegin() and rend() basic functionality =====
-    QVERIFY(list.rbegin() != list.rend());
+    QVERIFY(page.rbegin() != page.rend());
 
     // Test reverse iterator dereferencing - should start from last element
-    ParametersPage::reverse_iterator rit = list.rbegin();
+    ParametersPage::reverse_iterator rit = page.rbegin();
     Parameter* lastParam = *rit;
     QVERIFY(lastParam != nullptr);
     QCOMPARE(lastParam->name(), "Fourth");  // Should be the last element
@@ -2392,7 +2596,7 @@ void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop
 
     // ===== Test reverse iterator increment (moves backward through list) =====
     ++rit;
-    QVERIFY(rit != list.rend());
+    QVERIFY(rit != page.rend());
     Parameter* thirdParam = *rit;
     QVERIFY(thirdParam != nullptr);
     QCOMPARE(thirdParam->name(), "Third");
@@ -2400,7 +2604,7 @@ void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop
 
     // Test post-increment
     auto prevRit = rit++;
-    QVERIFY(rit != list.rend());
+    QVERIFY(rit != page.rend());
     QVERIFY(prevRit != rit);
     Parameter* secondParam = *rit;
     QVERIFY(secondParam != nullptr);
@@ -2409,7 +2613,7 @@ void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop
 
     // Continue to first element
     ++rit;
-    QVERIFY(rit != list.rend());
+    QVERIFY(rit != page.rend());
     Parameter* firstParam = *rit;
     QVERIFY(firstParam != nullptr);
     QCOMPARE(firstParam->name(), "First");
@@ -2417,14 +2621,14 @@ void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop
 
     // Test reaching rend()
     ++rit;
-    QVERIFY(rit == list.rend());
+    QVERIFY(rit == page.rend());
 
     // ===== Test reverse iterator range-based for loop simulation =====
 
     QStringList reverseNames;
     QList<double> reverseValues;
     // Manually iterate through reverse iterators
-    for (auto revIt = list.rbegin(); revIt != list.rend(); ++revIt) {
+    for (auto revIt = page.rbegin(); revIt != page.rend(); ++revIt) {
         Parameter* param = *revIt;
         QVERIFY(param != nullptr);
         reverseNames << param->name();
@@ -2438,24 +2642,24 @@ void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop
 
 
     // ===== Test reverse iterator arrow operator =====
-    auto rbeginIt = list.rbegin();
+    auto rbeginIt = page.rbegin();
     QCOMPARE((*rbeginIt)->name(), "Fourth");
     QCOMPARE((*rbeginIt)->value().toDouble(), 400.0);
 
     // ===== Test relationship between normal and reverse iterators =====
     // rbegin() should correspond to the element before end()
-    auto normalEnd = list.end();
+    auto normalEnd = page.end();
     --normalEnd;
-    auto reverseBegin = list.rbegin();
+    auto reverseBegin = page.rbegin();
     QCOMPARE((*normalEnd)->name(), (*reverseBegin)->name());
     QCOMPARE((*normalEnd)->value(), (*reverseBegin)->value());
 
     // ===== Test empty list reverse iterators =====
-    ParametersPage emptyList("EmptyTest", this);
-    QVERIFY(emptyList.rbegin() == emptyList.rend());
+    ParametersPage emptyPage("EmptyTest", this);
+    QVERIFY(emptyPage.rbegin() == emptyPage.rend());
     // Test reverse iteration over empty list
     int reverseCount = 0;
-    for (auto revIt = emptyList.rbegin(); revIt != emptyList.rend(); ++revIt) {
+    for (auto revIt = emptyPage.rbegin(); revIt != emptyPage.rend(); ++revIt) {
         reverseCount++;
     }
     QCOMPARE(reverseCount, 0);
@@ -2465,12 +2669,12 @@ void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop
     QStringList normalOrder;
     QStringList reversedOrder;
     // Normal order
-    for (auto it = list.begin(); it != list.end(); ++it) {
+    for (auto it = page.begin(); it != page.end(); ++it) {
         normalOrder << (*it)->name();
     }
 
     // Reversed order using reverse iterators
-    for (auto rit = list.rbegin(); rit != list.rend(); ++rit) {
+    for (auto rit = page.rbegin(); rit != page.rend(); ++rit) {
         reversedOrder << (*rit)->name();
     }
 
@@ -2481,7 +2685,7 @@ void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop
     // ===== Test reverse iterator decrement (moves forward through list) =====
 
     // Start from rbegin() and use decrement to move "forward" in reverse direction
-    auto rLastIt = list.rbegin();
+    auto rLastIt = page.rbegin();
     ++rLastIt; ++rLastIt; ++rLastIt; // Move to "First"
     QCOMPARE((*rLastIt)->name(), "First");
 
@@ -2497,25 +2701,25 @@ void TestQtNoidAppParametersPage::testParametersPageReverseIteratorsAndRangeLoop
 
 void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 {
-    ParametersPage list("TestList", this);
+    ParametersPage page("TestList", this);
 
     // Add some parameters
-    list.emplace(100.0, "First", "First parameter");
-    list.emplace(200.0, "Second", "Second parameter");
-    list.emplace(300.0, "Third", "Third parameter");
-    list.emplace(400.0, "Fourth", "Fourth parameter");
+    page.emplace(100.0, "First", "First parameter");
+    page.emplace(200.0, "Second", "Second parameter");
+    page.emplace(300.0, "Third", "Third parameter");
+    page.emplace(400.0, "Fourth", "Fourth parameter");
 
-    // Create a const reference to the list
-    const ParametersPage& constList = list;
+    // Create a const reference to the page
+    const ParametersPage& constPage = page;
 
     // ===== Test rbegin() const and rend() const =====
 
     // Test that const rbegin() != rend() for non-empty list
-    QVERIFY(constList.rbegin() != constList.rend());
+    QVERIFY(constPage.rbegin() != constPage.rend());
 
     // Test const reverse iterator dereferencing - should start from last element
-    ParametersPage::const_reverse_iterator crit = constList.rbegin();
-    QVERIFY(crit != constList.rend());
+    ParametersPage::const_reverse_iterator crit = constPage.rbegin();
+    QVERIFY(crit != constPage.rend());
 
     const Parameter* lastParam = *crit;
     QVERIFY(lastParam != nullptr);
@@ -2526,7 +2730,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 
     // Test pre-increment (moves to previous element in normal order)
     ++crit;
-    QVERIFY(crit != constList.rend());
+    QVERIFY(crit != constPage.rend());
     const Parameter* thirdParam = *crit;
     QVERIFY(thirdParam != nullptr);
     QCOMPARE(thirdParam->name(), "Third");
@@ -2534,7 +2738,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 
     // Test post-increment
     auto prevCrit = crit++;
-    QVERIFY(crit != constList.rend());
+    QVERIFY(crit != constPage.rend());
     QVERIFY(prevCrit != crit);
     const Parameter* secondParam = *crit;
     QVERIFY(secondParam != nullptr);
@@ -2543,7 +2747,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 
     // Continue to first element
     ++crit;
-    QVERIFY(crit != constList.rend());
+    QVERIFY(crit != constPage.rend());
     const Parameter* firstParam = *crit;
     QVERIFY(firstParam != nullptr);
     QCOMPARE(firstParam->name(), "First");
@@ -2551,16 +2755,16 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 
     // Test reaching rend()
     ++crit;
-    QVERIFY(crit == constList.rend());
+    QVERIFY(crit == constPage.rend());
 
     // ===== Test crbegin() and crend() =====
 
     // Test that crbegin() != crend() for non-empty list
-    QVERIFY(constList.crbegin() != constList.crend());
+    QVERIFY(constPage.crbegin() != constPage.crend());
 
     // Test crbegin() dereferencing - should start from last element
-    ParametersPage::const_reverse_iterator crbit = constList.crbegin();
-    QVERIFY(crbit != constList.crend());
+    ParametersPage::const_reverse_iterator crbit = constPage.crbegin();
+    QVERIFY(crbit != constPage.crend());
 
     const Parameter* crbParam = *crbit;
     QVERIFY(crbParam != nullptr);
@@ -2569,7 +2773,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 
     // Test crbegin() increment
     ++crbit;
-    QVERIFY(crbit != constList.crend());
+    QVERIFY(crbit != constPage.crend());
     const Parameter* crbSecondParam = *crbit;
     QVERIFY(crbSecondParam != nullptr);
     QCOMPARE(crbSecondParam->name(), "Third");
@@ -2581,7 +2785,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
     QList<double> constReverseValues;
 
     // Manually iterate through const reverse iterators using rbegin() const
-    for (auto constRevIt = constList.rbegin(); constRevIt != constList.rend(); ++constRevIt) {
+    for (auto constRevIt = constPage.rbegin(); constRevIt != constPage.rend(); ++constRevIt) {
         const Parameter* param = *constRevIt;
         QVERIFY(param != nullptr);
         constReverseNames << param->name();
@@ -2599,7 +2803,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
     QList<double> crValues;
 
     // Manually iterate through const reverse iterators using crbegin()/crend()
-    for (auto crIt = constList.crbegin(); crIt != constList.crend(); ++crIt) {
+    for (auto crIt = constPage.crbegin(); crIt != constPage.crend(); ++crIt) {
         const Parameter* param = *crIt;
         QVERIFY(param != nullptr);
         crNames << param->name();
@@ -2612,50 +2816,50 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 
     // ===== Test const reverse iterator arrow operator =====
 
-    auto crbeginIt = constList.crbegin();
+    auto crbeginIt = constPage.crbegin();
     QCOMPARE((*crbeginIt)->name(), "Fourth");
     QCOMPARE((*crbeginIt)->value().toDouble(), 400.0);
 
-    auto rbeginConstIt = constList.rbegin();
+    auto rbeginConstIt = constPage.rbegin();
     QCOMPARE((*rbeginConstIt)->name(), "Fourth");
     QCOMPARE((*rbeginConstIt)->value().toDouble(), 400.0);
 
     // ===== Test relationship between const normal and const reverse iterators =====
 
     // rbegin() const should correspond to the element before end() const
-    auto constNormalEnd = constList.end();
+    auto constNormalEnd = constPage.end();
     --constNormalEnd;
-    auto constReverseBegin = constList.rbegin();
+    auto constReverseBegin = constPage.rbegin();
 
     QCOMPARE((*constNormalEnd)->name(), (*constReverseBegin)->name());
     QCOMPARE((*constNormalEnd)->value(), (*constReverseBegin)->value());
 
     // Same test for crbegin() and cend()
-    auto constCEnd = constList.cend();
+    auto constCEnd = constPage.cend();
     --constCEnd;
-    auto constCRBegin = constList.crbegin();
+    auto constCRBegin = constPage.crbegin();
 
     QCOMPARE((*constCEnd)->name(), (*constCRBegin)->name());
     QCOMPARE((*constCEnd)->value(), (*constCRBegin)->value());
 
     // ===== Test empty const list reverse iterators =====
 
-    ParametersPage emptyList("EmptyTest", this);
-    const ParametersPage& constEmptyList = emptyList;
+    ParametersPage emptyPage("EmptyTest", this);
+    const ParametersPage& constEmptyPage = emptyPage;
 
-    QVERIFY(constEmptyList.rbegin() == constEmptyList.rend());
-    QVERIFY(constEmptyList.crbegin() == constEmptyList.crend());
+    QVERIFY(constEmptyPage.rbegin() == constEmptyPage.rend());
+    QVERIFY(constEmptyPage.crbegin() == constEmptyPage.crend());
 
     // Test const reverse iteration over empty list
     int constReverseCount = 0;
-    for (auto constRevIt = constEmptyList.rbegin(); constRevIt != constEmptyList.rend(); ++constRevIt) {
+    for (auto constRevIt = constEmptyPage.rbegin(); constRevIt != constEmptyPage.rend(); ++constRevIt) {
         constReverseCount++;
     }
     QCOMPARE(constReverseCount, 0);
 
     // Test crbegin/crend with empty list
     int crCount = 0;
-    for (auto crIt = constEmptyList.crbegin(); crIt != constEmptyList.crend(); ++crIt) {
+    for (auto crIt = constEmptyPage.crbegin(); crIt != constEmptyPage.crend(); ++crIt) {
         crCount++;
     }
     QCOMPARE(crCount, 0);
@@ -2663,7 +2867,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
     // ===== Test const correctness =====
 
     // This should compile (reading from const iterator)
-    auto constIt = constList.crbegin();
+    auto constIt = constPage.crbegin();
     QString paramName = (*constIt)->name();
     QCOMPARE(paramName, "Fourth");
 
@@ -2673,7 +2877,7 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
     // ===== Test bidirectional const reverse iterator operations =====
 
     // Test decrement operations on const reverse iterators
-    auto constLastRevIt = constList.rbegin();
+    auto constLastRevIt = constPage.rbegin();
     ++constLastRevIt; ++constLastRevIt; ++constLastRevIt; // Move to "First"
     QCOMPARE((*constLastRevIt)->name(), "First");
 
@@ -2689,9 +2893,9 @@ void TestQtNoidAppParametersPage::testParametersPageConstReverseIterators()
 
 void TestQtNoidAppParametersPage::testQDebugOperator()
 {
-    ParametersPage list1("myApp Settings", this);
+    ParametersPage page1("myApp Settings", this);
 
-    QString output = QDebug::toString(&list1);
+    QString output = QDebug::toString(&page1);
     // qDebug() << output;
 
     QVERIFY(output.contains("\"myApp Settings\""));
@@ -2699,15 +2903,15 @@ void TestQtNoidAppParametersPage::testQDebugOperator()
     QVERIFY(output.contains("count: 0"));
     QVERIFY(output.contains("visible: true"));
 
-    ParametersPage list2("myApp Settings full", this);
-    list2.setDescription("this is my app settings");
-    list2.setTooltip("this is my app tooltip");
-    list2.emplace(37.1, "Temp", "temperature");
-    list2.emplace(101.1, "Press", "pressure");
-    list2.emplace(70.1, "Humidity");
-    list2.setValue("Humidity", 80.8);
+    ParametersPage page2("myApp Settings full", this);
+    page2.setDescription("this is my app settings");
+    page2.setTooltip("this is my app tooltip");
+    page2.emplace(37.1, "Temp", "temperature");
+    page2.emplace(101.1, "Press", "pressure");
+    page2.emplace(70.1, "Humidity");
+    page2.setValue("Humidity", 80.8);
 
-    output = QDebug::toString(&list2);
+    output = QDebug::toString(&page2);
     // qDebug() <<__func__ << output;
 
     QVERIFY(output.contains("tooltip"));
@@ -2722,9 +2926,9 @@ void TestQtNoidAppParametersPage::testQDebugOperator()
 void TestQtNoidAppParametersPage::testParametersPageWithQDebugOperatorWithPointer()
 {
     // Test with valid pointer
-    ParametersPage* list1 = new ParametersPage("myApp Settings", this);
+    ParametersPage* page1 = new ParametersPage("myApp Settings", this);
 
-    QString output = QDebug::toString(list1);
+    QString output = QDebug::toString(page1);
     // qDebug() << output;
 
     QVERIFY(output.contains("\"myApp Settings\""));
@@ -2732,7 +2936,7 @@ void TestQtNoidAppParametersPage::testParametersPageWithQDebugOperatorWithPointe
     QVERIFY(output.contains("count: 0"));
     QVERIFY(output.contains("visible: true"));
 
-    delete list1;
+    delete page1;
 
     // Test with nullptr
     ParametersPage* list2 = nullptr;

@@ -28,10 +28,14 @@ private slots:
     void testLabelProperty();
     void testDescriptionProperty();
     void testTooltipProperty();
-    void testConfigIsValueChanged();
-    void testConfigBindableIsValueChangedProperty();
-    void testConfigResetAllValues();
-    void testConfigResetAllValuesDoesNotAffectSchema();
+    void testConfigIsValueModified();
+    void testConfigBindableIsValueModifiedProperty();
+    void testConfigResetValueModifications();
+    void testConfigResetValueModificationsDoesNotAffectSchema();
+    void testConfigSetValueModifiedCascadesTrueToAllPages();
+    void testConfigSetValueModifiedFalseCapturesCurrentStateAsNewBaselineForAllPages();
+    void testConfigSetValueModifiedOverrideClearedByResetValueModifications();
+    void testConfigSetValueModifiedWithMixedPageStates();
 
     void testConfigIsSchemaChanged();
     void testConfigBindableIsSchemaChangedProperty();
@@ -54,7 +58,7 @@ private slots:
     void testRemovePage();
     void testRemoveNonExistentPage();
     void testDeletingPageDirectlyUpdatesConfigBookkeeping();
-    void testDeletingChangedPageDirectlyUpdatesIsValueChanged();
+    void testDeletingChangedPageDirectlyUpdatesIsValueModified();
     void testRenamingRemovedPageDoesNotAffectConfig();
     void testRenamingClearedPageDoesNotAffectConfig();
     void testClearPages();
@@ -625,7 +629,7 @@ void TestQtNoidAppConfig::testTooltipProperty()
     QCOMPARE(bindableTooltip.value(), "New tooltip");
 }
 
-void TestQtNoidAppConfig::testConfigIsValueChanged()
+void TestQtNoidAppConfig::testConfigIsValueModified()
 {
     // We create a config object with 2 pages with 1 parameter for page
     Config config(this);
@@ -636,30 +640,30 @@ void TestQtNoidAppConfig::testConfigIsValueChanged()
     Parameter* p2 = page2->emplace(5, "Param2");
 
     // No parameter changed yet
-    QCOMPARE(config.isValueChanged(), false);
+    QCOMPARE(config.isValueModified(), false);
 
-    QSignalSpy spy(&config, &Config::isValueChangedChanged);
+    QSignalSpy spy(&config, &Config::isValueModifiedChanged);
 
     // Changing a parameter on page1 should flip the aggregate to true
     p1->setValue(99);
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     // A parameter changing on a second page too should not emit again (already true)
     p2->setValue(50);
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the first page's parameter: the second page is still changed,
     // so the aggregate stays true
     p1->setValue(10);
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the last changed parameter: the aggregate must go back to false
     p2->setValue(5);
-    QCOMPARE(config.isValueChanged(), false);
+    QCOMPARE(config.isValueModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
@@ -670,47 +674,47 @@ void TestQtNoidAppConfig::testConfigIsValueChanged()
 
     bool res = config.append(modifiedPage);
     QCOMPARE(res, true);
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), true);
 
     // Removing that page (it stays alive, detached from Config) should
     // bring the aggregate back to false
     config.remove(modifiedPage);
-    QCOMPARE(config.isValueChanged(), false);
+    QCOMPARE(config.isValueModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 
     delete modifiedPage;
 }
 
-void TestQtNoidAppConfig::testConfigBindableIsValueChangedProperty()
+void TestQtNoidAppConfig::testConfigBindableIsValueModifiedProperty()
 {
     Config config(this);
     ParametersPage* page = config.emplace("Page1");
     Parameter* p1 = page->emplace(10, "Param1");
 
-    auto bindableIsValueChanged = config.bindableIsValueChanged();
-    QVERIFY(bindableIsValueChanged.isValid());
-    QCOMPARE(bindableIsValueChanged.value(), false);
+    auto bindableIsValueModified = config.bindableIsValueModified();
+    QVERIFY(bindableIsValueModified.isValid());
+    QCOMPARE(bindableIsValueModified.value(), false);
 
     // Test binding to another property
     QProperty<bool> externalProperty;
-    externalProperty.setBinding([&]() { return bindableIsValueChanged.value(); });
+    externalProperty.setBinding([&]() { return bindableIsValueModified.value(); });
     QCOMPARE(externalProperty.value(), false);
 
     // Changing the parameter on the contained page should propagate through the binding
     p1->setValue(20);
-    QCOMPARE(bindableIsValueChanged.value(), true);
+    QCOMPARE(bindableIsValueModified.value(), true);
     QCOMPARE(externalProperty.value(), true);
 
     // Reverting the value should propagate back to false
     p1->setValue(10);
-    QCOMPARE(bindableIsValueChanged.value(), false);
+    QCOMPARE(bindableIsValueModified.value(), false);
     QCOMPARE(externalProperty.value(), false);
 }
 
-void TestQtNoidAppConfig::testConfigResetAllValues()
+void TestQtNoidAppConfig::testConfigResetValueModifications()
 {
     Config config(this);
     ParametersPage* page1 = config.emplace("Page1");
@@ -720,18 +724,18 @@ void TestQtNoidAppConfig::testConfigResetAllValues()
 
     p1->setValue(99);
     p2->setValue(50);
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
 
-    config.resetAllValues();
+    config.resetValueModifications();
 
     QCOMPARE(p1->value(), 10);
     QCOMPARE(p2->value(), 5);
     QCOMPARE(p1->isValueModified(), false);
     QCOMPARE(p2->isValueModified(), false);
-    QCOMPARE(config.isValueChanged(), false);
+    QCOMPARE(config.isValueModified(), false);
 }
 
-void TestQtNoidAppConfig::testConfigResetAllValuesDoesNotAffectSchema()
+void TestQtNoidAppConfig::testConfigResetValueModificationsDoesNotAffectSchema()
 {
     Config config(this);
     ParametersPage* page = config.emplace("Page1");
@@ -740,18 +744,119 @@ void TestQtNoidAppConfig::testConfigResetAllValuesDoesNotAffectSchema()
     page->setLabel("Page label");
     config.setDescription("Config description");
 
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
     QCOMPARE(config.isSchemaModified(), true);
 
-    config.resetAllValues();
+    config.resetValueModifications();
 
     QCOMPARE(p1->value(), 10);
-    QCOMPARE(config.isValueChanged(), false);
-    // resetAllValues() only touches values: schema changes at every level
-    // (Config, page, parameter) must survive.
+    QCOMPARE(config.isValueModified(), false);
+    // resetValueModifications() only touches values: schema changes at every
+    // level (Config, page, parameter) must survive.
     QCOMPARE(page->label(), QString("Page label"));
     QCOMPARE(config.description(), QString("Config description"));
     QCOMPARE(config.isSchemaModified(), true);
+}
+
+void TestQtNoidAppConfig::testConfigSetValueModifiedCascadesTrueToAllPages()
+{
+    // Config::setValueModified() has no override flag of its own: it
+    // cascades to every contained ParametersPage, and Config's own aggregate
+    // flag follows automatically through the counter already wired up.
+    Config config(this);
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
+    page1->emplace(10, "Param1");
+    page2->emplace(5, "Param2");
+    QCOMPARE(config.isValueModified(), false);
+
+    QSignalSpy spy(&config, &Config::isValueModifiedChanged);
+
+    config.setValueModified(true);
+    QCOMPARE(page1->isValueModified(), true);
+    QCOMPARE(page2->isValueModified(), true);
+    QCOMPARE(config.isValueModified(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+}
+
+void TestQtNoidAppConfig::testConfigSetValueModifiedFalseCapturesCurrentStateAsNewBaselineForAllPages()
+{
+    Config config(this);
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
+    Parameter* p1 = page1->emplace(10, "Param1");
+    Parameter* p2 = page2->emplace(5, "Param2");
+
+    p1->setValue(99);
+    QCOMPARE(config.isValueModified(), true);
+
+    config.setValueModified(false);
+    QCOMPARE(page1->isValueModified(), false);
+    QCOMPARE(page2->isValueModified(), false);
+    QCOMPARE(config.isValueModified(), false);
+
+    // Each page's new baseline is its own current value (99 for p1, 5 for
+    // p2), not whatever it started with: resetValueModifications() must
+    // restore to it, not revert it.
+    p1->setValue(100);
+    p2->setValue(6);
+    config.resetValueModifications();
+    QCOMPARE(p1->value(), 99);
+    QCOMPARE(p2->value(), 5);
+    QCOMPARE(config.isValueModified(), false);
+}
+
+void TestQtNoidAppConfig::testConfigSetValueModifiedOverrideClearedByResetValueModifications()
+{
+    Config config(this);
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
+    page1->emplace(10, "Param1");
+    page2->emplace(5, "Param2");
+
+    config.setValueModified(true);
+    QCOMPARE(config.isValueModified(), true);
+
+    // Neither page actually changed, so cascading resetValueModifications()
+    // alone must bring everything back to false.
+    config.resetValueModifications();
+    QCOMPARE(page1->isValueModified(), false);
+    QCOMPARE(page2->isValueModified(), false);
+    QCOMPARE(config.isValueModified(), false);
+}
+
+void TestQtNoidAppConfig::testConfigSetValueModifiedWithMixedPageStates()
+{
+    Config config(this);
+    ParametersPage* page1 = config.emplace("Page1");
+    ParametersPage* page2 = config.emplace("Page2");
+    Parameter* p1 = page1->emplace(10, "Param1");
+    Parameter* p2 = page2->emplace(5, "Param2");
+    Q_UNUSED(p2)
+
+    // page1 is genuinely modified, page2 is not.
+    p1->setValue(99);
+    QCOMPARE(page1->isValueModified(), true);
+    QCOMPARE(page2->isValueModified(), false);
+    QCOMPARE(config.isValueModified(), true);
+
+    // Forcing true cascades to every page, including the one already modified.
+    config.setValueModified(true);
+    QCOMPARE(page1->isValueModified(), true);
+    QCOMPARE(page2->isValueModified(), true);
+    QCOMPARE(config.isValueModified(), true);
+
+    // Clearing cascades too: each page's current state becomes its own new
+    // baseline, regardless of whether it had a real change beforehand.
+    config.setValueModified(false);
+    QCOMPARE(page1->isValueModified(), false);
+    QCOMPARE(page2->isValueModified(), false);
+    QCOMPARE(config.isValueModified(), false);
+
+    // p1's new baseline is 99, not the original 10.
+    p1->resetValueModifications();
+    QCOMPARE(p1->value(), 99);
 }
 
 void TestQtNoidAppConfig::testConfigIsSchemaChanged()
@@ -791,12 +896,12 @@ void TestQtNoidAppConfig::testConfigIsSchemaChanged()
     QCOMPARE(spy.count(), 0);
 
     // Reverting the first page: the second is still changed, aggregate stays true
-    page1->resetSchemaChange();
+    page1->resetSchemaModifications();
     QCOMPARE(config.isSchemaModified(), true);
     QCOMPARE(spy.count(), 0);
 
     // Reverting the last changed page: aggregate must go back to false
-    page2->resetSchemaChange();
+    page2->resetSchemaModifications();
     QCOMPARE(config.isSchemaModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
@@ -804,7 +909,7 @@ void TestQtNoidAppConfig::testConfigIsSchemaChanged()
     // Appending a page that is already "schema changed" activates the flag immediately
     ParametersPage* modifiedPage = new ParametersPage("ModifiedPage", this);
     modifiedPage->setLabel("already changed");
-    QCOMPARE(modifiedPage->isSchemaChanged(), true);
+    QCOMPARE(modifiedPage->isSchemaModified(), true);
 
     config << modifiedPage;
     QCOMPARE(config.isSchemaModified(), true);
@@ -840,7 +945,7 @@ void TestQtNoidAppConfig::testConfigBindableIsSchemaChangedProperty()
     QCOMPARE(externalProperty.value(), true);
 
     // Reverting the page's schema should propagate back to false
-    page->resetSchemaChange();
+    page->resetSchemaModifications();
     QCOMPARE(bindableIsSchemaChanged.value(), false);
     QCOMPARE(externalProperty.value(), false);
 }
@@ -865,7 +970,7 @@ void TestQtNoidAppConfig::testConfigResetSchemaChange()
 
     // Cascades down to every contained ParametersPage too.
     QCOMPARE(page->label(), QString());
-    QCOMPARE(page->isSchemaChanged(), false);
+    QCOMPARE(page->isSchemaModified(), false);
 }
 
 void TestQtNoidAppConfig::testConfigResetSchemaChangeDoesNotAffectValues()
@@ -877,14 +982,14 @@ void TestQtNoidAppConfig::testConfigResetSchemaChangeDoesNotAffectValues()
     page->setLabel("Page label");
     config.setDescription("Config description");
 
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
     QCOMPARE(config.isSchemaModified(), true);
 
     config.resetSchemaModifications();
 
     // resetSchemaChange() only touches schema properties: values stay as set.
     QCOMPARE(p1->value(), 99);
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
     QCOMPARE(config.description(), QString());
     QCOMPARE(page->label(), QString());
     QCOMPARE(config.isSchemaModified(), false);
@@ -1290,7 +1395,7 @@ void TestQtNoidAppConfig::testDeletingPageDirectlyUpdatesConfigBookkeeping()
     QVERIFY(!config.contains("Page1Rename"));
 }
 
-void TestQtNoidAppConfig::testDeletingChangedPageDirectlyUpdatesIsValueChanged()
+void TestQtNoidAppConfig::testDeletingChangedPageDirectlyUpdatesIsValueModified()
 {
     Config config(this);
 
@@ -1299,18 +1404,18 @@ void TestQtNoidAppConfig::testDeletingChangedPageDirectlyUpdatesIsValueChanged()
     config << page;
 
     p1->setValue(99);
-    QCOMPARE(config.isValueChanged(), true);
+    QCOMPARE(config.isValueModified(), true);
 
-    QSignalSpy spy(&config, &Config::isValueChangedChanged);
+    QSignalSpy spy(&config, &Config::isValueModifiedChanged);
 
     // Delete the page directly (not through Config::remove()): this only
     // decrements Config's counter correctly if onPageAboutToBeDestroyed()
     // uses the wasChanged argument carried by ParametersPage::aboutToBeDestroyed,
     // since by the time the generic QObject::destroyed() mechanics would run,
-    // page->isValueChanged() could no longer be queried safely.
+    // page->isValueModified() could no longer be queried safely.
     delete page;
 
-    QCOMPARE(config.isValueChanged(), false);
+    QCOMPARE(config.isValueModified(), false);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.takeFirst().at(0).toBool(), false);
 }

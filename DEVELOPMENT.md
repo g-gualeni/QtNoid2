@@ -75,11 +75,7 @@
 	- [x] Non vedo il meccanismo con il contatore delle modifiche
 
 
---> Sto convertendo da Changed a Modified
-poi devo verificare tutto!
--> Il prossimo è setValueModified per paramtersPage
-poi isSchemaModified() sempre per paramtersPage
-
+- [ ] Passare a Qt 5.12
 
 
 

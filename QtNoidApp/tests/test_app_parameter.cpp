@@ -65,7 +65,7 @@ private slots:
     void testBindableTooltip();
     void testBindableVisible();
     void testBindableReadOnly();
-    void testBindableIsSchemaChanged();
+    void testBindableIsSchemaModified();
 
     // ToJSON Schema tests
     void testParameterToJsonSchema();
@@ -109,10 +109,10 @@ private slots:
     void testParameterFromJsonWithIncompleteSchemaShouldOverrideExisitingSchema();
 
     // isValueModified flag tests
-    void testParameterIsValueChangedShouldBeFalseAfterConstructor();
-    void testParameterIsValueChangedOnlyAfterValueChanged();
-    void testParameterIsValueChangedShouldBeFalseAfterLoadingADifferentJsonValues();
-    void testParameterIsValueChangedSholdBeFalseAfterSettingTheSameValue();
+    void testParameterIsValueModifiedShouldBeFalseAfterConstructor();
+    void testParameterIsValueModifiedOnlyAfterWeChangeValue();
+    void testParameterIsValueModifiedShouldBeFalseAfterLoadingADifferentJsonValues();
+    void testParameterIsValueModifiedSholdBeFalseAfterSettingTheSameValue();
 
     // isSchemaModified flag tests
     void testParameterIsSchemaModifiedShouldBeFalseAfterConstructor();
@@ -245,7 +245,7 @@ void TestQtNoidAppParameter::testParameterValueChanged()
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toDouble(), expected);
 
-    // Check that the value modification doesn't touch isSchemaChanged
+    // Check that the value modification doesn't touch isSchemaModified
     QCOMPARE(par.isSchemaModified(), false);
 }
 
@@ -1206,23 +1206,20 @@ void TestQtNoidAppParameter::testBindableReadOnly()
     QCOMPARE(externalProperty.value(), false);
 }
 
-void TestQtNoidAppParameter::testBindableIsSchemaChanged()
+void TestQtNoidAppParameter::testBindableIsSchemaModified()
 {
     Parameter par(50.0, "TestParam", this);
 
-    // qDebug() << par.isSchemaChanged();
-
-    // Get bindable isSchemaChanged
-    auto bindableIsSchemaChanged = par.bindableIsSchemaModified();
-    QVERIFY(bindableIsSchemaChanged.isValid());
-    QCOMPARE(bindableIsSchemaChanged.value(), false);
+    auto bindableIsSchemaModified = par.bindableIsSchemaModified();
+    QVERIFY(bindableIsSchemaModified.isValid());
+    QCOMPARE(bindableIsSchemaModified.value(), false);
 
     // Test binding to another QProperty
     QProperty<bool> externalProperty;
     externalProperty.setBinding([&]() { return par.bindableIsSchemaModified().value(); });
     QCOMPARE(externalProperty.value(), false);
 
-    // A value change must not affect isSchemaChanged's bindable
+    // A value change must not affect isSchemaModified's bindable
     par.setValue(99.0);
     QCOMPARE(externalProperty.value(), false);
 
@@ -2031,7 +2028,7 @@ void TestQtNoidAppParameter::testParameterFromJsonWithIncompleteSchemaShouldOver
 
 }
 
-void TestQtNoidAppParameter::testParameterIsValueChangedShouldBeFalseAfterConstructor()
+void TestQtNoidAppParameter::testParameterIsValueModifiedShouldBeFalseAfterConstructor()
 {
     // Test that a newly created parameter has isChanged() = false
     Parameter param1(this);
@@ -2060,7 +2057,7 @@ void TestQtNoidAppParameter::testParameterIsValueChangedShouldBeFalseAfterConstr
     QCOMPARE(param5.isValueModified(), false);
 }
 
-void TestQtNoidAppParameter::testParameterIsValueChangedOnlyAfterValueChanged()
+void TestQtNoidAppParameter::testParameterIsValueModifiedOnlyAfterWeChangeValue()
 {
     Parameter param(25.0, "TestParam", "Test parameter", this);
     QCOMPARE(param.isValueModified(), false);
@@ -2143,7 +2140,7 @@ void TestQtNoidAppParameter::testParameterIsValueChangedOnlyAfterValueChanged()
     QCOMPARE(paramVisible.isValueModified(), false);
 }
 
-void TestQtNoidAppParameter::testParameterIsValueChangedShouldBeFalseAfterLoadingADifferentJsonValues()
+void TestQtNoidAppParameter::testParameterIsValueModifiedShouldBeFalseAfterLoadingADifferentJsonValues()
 {
     // 1 - Create the parameter, store in a JsonValue,
     //     change, restore from Json
@@ -2172,7 +2169,7 @@ void TestQtNoidAppParameter::testParameterIsValueChangedShouldBeFalseAfterLoadin
     QCOMPARE(param2.isValueModified(), false);
 }
 
-void TestQtNoidAppParameter::testParameterIsValueChangedSholdBeFalseAfterSettingTheSameValue()
+void TestQtNoidAppParameter::testParameterIsValueModifiedSholdBeFalseAfterSettingTheSameValue()
 {
     // 1 - Create the parameter
     Parameter param(25.5, "Parameter", "this is a paramter");
@@ -2193,7 +2190,7 @@ void TestQtNoidAppParameter::testParameterIsValueChangedSholdBeFalseAfterSetting
 
 void TestQtNoidAppParameter::testParameterIsSchemaModifiedShouldBeFalseAfterConstructor()
 {
-    // Test that a newly created parameter has isSchemaChanged() = false
+    // Test that a newly created parameter has isSchemaModified() = false
     Parameter param1(this);
     QCOMPARE(param1.isSchemaModified(), false);
 
@@ -2223,23 +2220,23 @@ void TestQtNoidAppParameter::testParameterIsSchemaModifiedShouldBeFalseAfterCons
 void TestQtNoidAppParameter::testParameterIsSchemaModifiedOnlyAfterSchemaPropertyChanged()
 {
     // Every schema-like property change must flip isSchemaModified() to true.
-    auto checkFlipsSchemaChanged = [this](auto&& change) {
+    auto checkFlipsSchemaModified = [this](auto&& change) {
         Parameter par(25.0, "TestParam", this);
         QCOMPARE(par.isSchemaModified(), false);
         change(par);
         QCOMPARE(par.isSchemaModified(), true);
     };
 
-    checkFlipsSchemaChanged([](Parameter &par){ par.setName("NewName"); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setLabel("New label"); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setDescription("New description"); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setUnit("kg"); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setTooltip("New tooltip"); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setReadOnly(true); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setVisible(false); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setMin(0); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setMax(1000); });
-    checkFlipsSchemaChanged([](Parameter &par){ par.setPresets({{"Low", 10}, {"High", 900}}); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setName("NewName"); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setLabel("New label"); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setDescription("New description"); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setUnit("kg"); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setTooltip("New tooltip"); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setReadOnly(true); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setVisible(false); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setMin(0); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setMax(1000); });
+    checkFlipsSchemaModified([](Parameter &par){ par.setPresets({{"Low", 10}, {"High", 900}}); });
 }
 
 void TestQtNoidAppParameter::testParameterIsSchemaModifiedNotAffectedByValueChange()
@@ -2252,7 +2249,7 @@ void TestQtNoidAppParameter::testParameterIsSchemaModifiedNotAffectedByValueChan
     QCOMPARE(par.isSchemaModified(), false);
 
     // Even when a min change clamps the current value as a side effect,
-    // isSchemaChanged() turns true because min changed, not because of the
+    // isSchemaModified() turns true because min changed, not because of the
     // value clamp: value is never part of the schema tracking.
     Parameter paramMin(25.0, this);
     paramMin.setMin(26);

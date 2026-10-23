@@ -5,8 +5,8 @@ A Config has the following properties:
 - **label:** This can be an alias for the name or its translation in local language. Since it is not tied to the configuration name, it is the preferred one for the user interface.
 - **description**: Descriptive text explaining the purpose of the configuration.
 - **tooltip**: Tooltip text for UI elements.
-- **isValueChanged**: Read-only property, true when at least one of the contained pages currently differs from its reference value.
-- **isSchemaModified**: Read-only property, true when either this configuration's own properties (name, label, description, tooltip) differ from their reference schema, or at least one contained ParametersPage reports its own `isSchemaChanged()` as true, or the flag was manually forced via `setSchemaModified(true)`. Unlike `isValueChanged`, this never reacts to a value-only change.
+- **isValueModified**: Read-only property, true when at least one of the contained pages currently differs from its reference value. Can also be forced via `setValueModified()`, which cascades to every contained ParametersPage.
+- **isSchemaModified**: Read-only property, true when either this configuration's own properties (name, label, description, tooltip) differ from their reference schema, or at least one contained ParametersPage reports its own `isSchemaModified()` as true, or the flag was manually forced via `setSchemaModified(true)`. Unlike `isValueModified`, this never reacts to a value-only change.
 - **count**: Read-only property indicating the number of pages in the configuration.
 
 ## Static Methods
@@ -42,14 +42,15 @@ A Config has the following properties:
 - `setTooltip(const QString& value)`: Sets the tooltip text.
 - `bindableTooltip()`: Returns a bindable property for the tooltip.
 
-- `isValueChanged()`: Returns true if at least one of the contained pages has at least one parameter that currently differs from its reference value.
-- `bindableIsValueChanged()`: Returns a bindable property for isValueChanged.
-- `resetAllValues()`: Cascades `resetAllValues()` to every contained page (which in turn resets every one of its Parameters), making `isValueChanged()` become `false` again. Does not affect any page's or parameter's schema.
+- `isValueModified()`: Returns true if at least one of the contained pages has at least one parameter that currently differs from its reference value.
+- `bindableIsValueModified()`: Returns a bindable property for isValueModified.
+- `setValueModified(bool modified)`: Cascades to every contained ParametersPage's own `setValueModified()`. With `true`, forces every page's (and so every parameter's) `isValueModified()` to report `true` regardless of whether any value actually changed. With `false`, clears every page's override and accepts each one's current state as its own new reference (equivalent to calling `setValueModified(false)` on every page right after a save): `isValueModified()` goes back to `false`, and a later `resetValueModifications()` restores to these new baselines, not to the ones captured before. Unlike `setSchemaModified()`, this has no effect of its own at the configuration level — it only forwards to the contained pages.
+- `resetValueModifications()`: Cascades to every contained ParametersPage's own `resetValueModifications()` (which in turn resets every one of its Parameters), making `isValueModified()` become `false` again. Does not affect any page's or parameter's schema.
 
-- `isSchemaModified()`: Returns true if this configuration's own properties (name, label, description, tooltip) differ from their reference schema, if at least one contained ParametersPage's `isSchemaChanged()` is true, or if the flag was manually forced via `setSchemaModified(true)`.
+- `isSchemaModified()`: Returns true if this configuration's own properties (name, label, description, tooltip) differ from their reference schema, if at least one contained ParametersPage's `isSchemaModified()` is true, or if the flag was manually forced via `setSchemaModified(true)`.
 - `bindableIsSchemaModified()`: Returns a bindable property for isSchemaModified.
-- `setSchemaModified(bool modified)`: With `true`, manually forces `isSchemaModified()` to report `true` regardless of whether any tracked property actually differs from its baseline — for a change that falls outside the tracked properties but should still count as "modified" (mirrors `QTextDocument::setModified(true)`). With `false`, clears that manual override and accepts the configuration's *own* current properties as the new reference schema (same effect internally as the baseline capture done at construction/load time) — mirrors calling `QTextDocument::setModified(false)` right after a save. Note: `setSchemaModified(false)` only clears Config's own override and re-baselines Config's own properties; it does not force the aggregate to `false` if a contained page is independently reporting `isSchemaChanged()`.
-- `resetSchemaModifications()`: Restores this configuration's own properties to their reference schema, cascades `resetSchemaChange()` to every contained page (which in turn cascades to every one of its Parameters), and clears any manual override set via `setSchemaModified(true)` — so `isSchemaModified()` becomes `false` again. Does not affect any page's or parameter's `value()`/`isValueChanged()`.
+- `setSchemaModified(bool modified)`: With `true`, manually forces `isSchemaModified()` to report `true` regardless of whether any tracked property actually differs from its baseline — for a change that falls outside the tracked properties but should still count as "modified" (mirrors `QTextDocument::setModified(true)`). With `false`, clears that manual override and accepts the configuration's *own* current properties as the new reference schema (same effect internally as the baseline capture done at construction/load time) — mirrors calling `QTextDocument::setModified(false)` right after a save. Note: `setSchemaModified(false)` only clears Config's own override and re-baselines Config's own properties; it does not force the aggregate to `false` if a contained page is independently reporting `isSchemaModified()`.
+- `resetSchemaModifications()`: Restores this configuration's own properties to their reference schema, cascades `resetSchemaModifications()` to every contained page (which in turn cascades to every one of its Parameters), and clears any manual override set via `setSchemaModified(true)` — so `isSchemaModified()` becomes `false` again. Does not affect any page's or parameter's `value()`/`isValueModified()`.
 
 - `count()`: Returns the number of ParametersPage objects in the configuration.
 - `bindableCount()`: Returns a bindable property for count.
@@ -153,7 +154,7 @@ A small helper layer to save and restore the text items (and the selected one) o
 
 - `tooltipChanged(const QString& value)`: Emitted when the configuration tooltip is changed.
 
-* `isValueChangedChanged(bool value)`: Emitted when the aggregate isValueChanged state changes, i.e. when the configuration goes from "no page changed" to "at least one page changed", or back.
+* `isValueModifiedChanged(bool value)`: Emitted when the aggregate isValueModified state changes, i.e. when the configuration goes from "no page changed" to "at least one page changed", or back.
 
 * `isSchemaModifiedChanged(bool value)`: Emitted when the aggregate isSchemaModified state changes, i.e. when the configuration's own schema, any contained page's schema, or the manual override set via `setSchemaModified()`, goes from "nothing modified" to "something modified", or back.
 
@@ -165,7 +166,7 @@ A small helper layer to save and restore the text items (and the selected one) o
 
 - `pageRenameError(const QString& oldName, const QString& newName)`: Emitted when a page rename operation fails due to name conflicts.
 
-- `aboutToBeDestroyed(QtNoid::App::Config *config)`: Emitted from the destructor, before the object is torn down, with the object still fully intact. Useful for an owner that needs to react when a Config is destroyed: a slot connected to this signal can still safely call `config->isValueChanged()`, `config->isSchemaModified()`, `config->uniqueId()`, etc. on the live pointer.
+- `aboutToBeDestroyed(QtNoid::App::Config *config)`: Emitted from the destructor, before the object is torn down, with the object still fully intact. Useful for an owner that needs to react when a Config is destroyed: a slot connected to this signal can still safely call `config->isValueModified()`, `config->isSchemaModified()`, `config->uniqueId()`, etc. on the live pointer.
 
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)

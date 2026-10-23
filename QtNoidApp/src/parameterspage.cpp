@@ -25,10 +25,10 @@ int ParametersPage::getNextUniqueId()
 
 
 namespace {
-bool isTrackedForIsSchemaChanged(const QMetaProperty &prop)
+bool isTrackedForIsSchemaModified(const QMetaProperty &prop)
 {
     static const QSet<QByteArray> excluded = {
-        "objectName", "count", "isValueModified", "isSchemaChanged"
+        "objectName", "count", "isValueModified", "isSchemaModified"
     };
     return prop.isReadable() && !excluded.contains(prop.name());
 }
@@ -40,7 +40,7 @@ void ParametersPage::captureBaseline()
     const QMetaObject *mo = &ParametersPage::staticMetaObject;
     for (int ii = 0; ii < mo->propertyCount(); ++ii) {
         QMetaProperty prop = mo->property(ii);
-        if (isTrackedForIsSchemaChanged(prop)) {
+        if (isTrackedForIsSchemaModified(prop)) {
             m_schemaBaseline.insert(prop.name(), prop.read(this));
         }
     }
@@ -48,17 +48,21 @@ void ParametersPage::captureBaseline()
 
 void ParametersPage::updateIsSchemaModified()
 {
+    if (m_forceSchemaModified.value()) {
+        m_isSchemaModified = true;
+        return;
+    }
+
     bool ownChanged = false;
     const QMetaObject *mo = metaObject();
     for (int ii = 0; ii < mo->propertyCount(); ++ii) {
         QMetaProperty prop = mo->property(ii);
-        if (isTrackedForIsSchemaChanged(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
+        if (isTrackedForIsSchemaModified(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
             ownChanged = true;
             break;
         }
     }
-    m_isSchemaChanged = ownChanged || (m_parameterSchemaModifiedCounter > 0);
-
+    m_isSchemaModified = ownChanged || (m_parameterSchemaModifiedCounter > 0);
 }
 
 
@@ -355,25 +359,45 @@ QBindable<bool> ParametersPage::bindableIsValueModified()
     return QBindable<bool>(&m_isValueModified);
 }
 
-void ParametersPage::resetAllValues()
+void ParametersPage::setValueModified(bool modified)
+{
+    for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
+        it.value()->setValueModified(modified);
+    }
+}
+
+void ParametersPage::resetValueModifications()
 {
     for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
         it.value()->resetValueModifications();
     }
 }
 
-bool ParametersPage::isSchemaChanged() const
+bool ParametersPage::isSchemaModified() const
 {
-    return m_isSchemaChanged.value();
+    return m_isSchemaModified.value();
 }
 
-QBindable<bool> ParametersPage::bindableIsSchemaChanged()
+QBindable<bool> ParametersPage::bindableIsSchemaModified()
 {
-    return QBindable<bool>(&m_isSchemaChanged);
+    return QBindable<bool>(&m_isSchemaModified);
 }
 
-void ParametersPage::resetSchemaChange()
+void ParametersPage::setSchemaModified(bool modified)
 {
+    if (modified) {
+        m_forceSchemaModified = true;
+    } else {
+        m_forceSchemaModified = false;
+        captureBaseline();   // accept the page's own current properties as the new baseline
+    }
+    updateIsSchemaModified();
+}
+
+void ParametersPage::resetSchemaModifications()
+{
+    m_forceSchemaModified = false;
+
     const QMetaObject *mo = metaObject();
     for (const QByteArray &propName : m_schemaBaseline.keys()) {
         auto idx = mo->indexOfProperty(propName);
@@ -389,6 +413,8 @@ void ParametersPage::resetSchemaChange()
     for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
         it.value()->resetSchemaModifications();
     }
+
+    updateIsSchemaModified();
 }
 
 int ParametersPage::count() const
@@ -637,7 +663,7 @@ void ParametersPage::initInternalConnections()
 
     for (int ii = 0; ii < ParametersPage::staticMetaObject.propertyCount(); ++ii) {
         QMetaProperty prop = ParametersPage::staticMetaObject.property(ii);
-        if (isTrackedForIsSchemaChanged(prop) && prop.hasNotifySignal()) {
+        if (isTrackedForIsSchemaModified(prop) && prop.hasNotifySignal()) {
             connect(this, prop.notifySignal(), this, onOwnPropertyChangedSlot);
         }
     }

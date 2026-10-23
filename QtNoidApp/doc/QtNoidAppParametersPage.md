@@ -7,8 +7,8 @@ A ParametersPage has the following properties:
 - **tooltip**: Tooltip text for UI elements.
 - **readOnly**: When true, values in this parameter list cannot be modified through setValue(). Trying to change a value while readOnly is true, fires writeAttemptedWhileReadOnly(). All other methods are not considering this flag.
 - **visible:** use this flag to show or hide the parametersPage in a dialog.
-- **isValueChanged**: Read-only property, true when at least one of the internal parameters differs from its reference value. The reference value can be: the initial value, last applied preset, or last value loaded from JSON.
-- **isSchemaChanged**: Read-only property, true when either this page's own schema properties (name, label, description, tooltip, readOnly, visible) differ from their reference schema, or at least one contained Parameter reports its own `isSchemaChanged()` as true. Unlike `isValueChanged`, this never reacts to a value-only change.
+- **isValueModified**: Read-only property, true when at least one of the internal parameters differs from its reference value. The reference value can be: the initial value, last applied preset, or last value loaded from JSON. Can also be forced via `setValueModified()`, which cascades to every contained Parameter.
+- **isSchemaModified**: Read-only property, true when either this page's own schema properties (name, label, description, tooltip, readOnly, visible) differ from their reference schema, or at least one contained Parameter reports its own `isSchemaModified()` as true, or the flag was manually forced via `setSchemaModified(true)`. Unlike `isValueModified`, this never reacts to a value-only change.
 - **count**: Read-only property indicating the number of parameters in the list.
 
 ## Static Methods
@@ -22,6 +22,9 @@ A ParametersPage has the following properties:
 - `ParametersPage(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr)`: Creates a parameter list by loading configuration from JSON schema and JSON values objects.
 ## Destructors
 - `~ParametersPage()`: Destroys the object, emitting `aboutToBeDestroyed(this)` first, while the object is still fully intact.
+
+## Support methods
+- `uniqueId()`: Returns an integer that represents the object unique ID of the object.
 
 ## Properties management methods
 - `name()`: Returns the name of the parameter list.
@@ -48,13 +51,15 @@ A ParametersPage has the following properties:
 - `setVisible(bool value)`: Sets the visible flag.
 - `bindableVisible()`: Returns a bindable property for visible.
 
-- `isValueChanged()`: Returns true if at least one parameter in the list currently differs from its reference value.
-- `bindableIsValueChanged()`: Returns a bindable property for isValueChanged.
-- `resetAllValues()`: Resets every contained Parameter's value back to its reference value (as `Parameter::resetValueChange()` does for each of them), making `isValueChanged()` become `false` again. Does not affect any parameter's schema.
+- `isValueModified()`: Returns true if at least one parameter in the list currently differs from its reference value.
+- `bindableIsValueModified()`: Returns a bindable property for isValueModified.
+- `setValueModified(bool modified)`: Cascades to every contained Parameter's own `setValueModified()`. With `true`, forces every parameter's `isValueModified()` to report `true` regardless of whether its value actually changed. With `false`, clears every parameter's override and accepts each one's current value as its own new reference value (equivalent to calling `setModified(false)` right after a save on each of them): `isValueModified()` goes back to `false`, and a later `resetValueModifications()` restores to these new per-parameter baselines, not to the ones captured before. Unlike `setSchemaModified()`, this has no effect of its own at the page level — it only forwards to the contained parameters.
+- `resetValueModifications()`: Cascades to every contained Parameter's own `resetValueModifications()`, restoring each one's `value()` to its reference value and clearing any manual override, making `isValueModified()` become `false` again. Does not affect any parameter's schema.
 
-- `isSchemaChanged()`: Returns true if this page's own schema properties (name, label, description, tooltip, readOnly, visible) differ from their reference schema, or if at least one contained Parameter's `isSchemaChanged()` is true.
-- `bindableIsSchemaChanged()`: Returns a bindable property for isSchemaChanged.
-- `resetSchemaChange()`: Restores this page's own schema properties to their reference schema, AND calls `resetSchemaChange()` on every contained Parameter, making `isSchemaChanged()` become `false` again. Does not affect any parameter's `value()`/`isValueChanged()`.
+- `isSchemaModified()`: Returns true if this page's own schema properties (name, label, description, tooltip, readOnly, visible) differ from their reference schema, or if at least one contained Parameter's `isSchemaModified()` is true, or if a manual override is active (see `setSchemaModified()`).
+- `bindableIsSchemaModified()`: Returns a bindable property for isSchemaModified.
+- `setSchemaModified(bool modified)`: Mirrors `Parameter::setSchemaModified()` (and `QTextDocument::setModified()`): it only affects the page's *own* schema properties and never cascades to the contained Parameters, which keep their own independent override. With `true`, forces `isSchemaModified()` to report `true` regardless of whether any of the page's own tracked properties actually differ from their baseline. With `false`, clears that manual override and accepts the page's own current properties as the new reference schema: `isSchemaModified()` goes back to `false` (unless a contained Parameter is still modified), and a later `resetSchemaModifications()` restores the page's own properties to this new baseline, not to the one captured before.
+- `resetSchemaModifications()`: Restores this page's own schema properties to their reference schema, clears any manual override set by `setSchemaModified(true)`, AND calls `resetSchemaModifications()` on every contained Parameter, making `isSchemaModified()` become `false` again. Does not affect any parameter's `value()`/`isValueModified()`.
 
 - `count()`: Returns the number of parameters in the list.
 -  `bindableCount():` Returns a bindable property for count.
@@ -133,9 +138,9 @@ A ParametersPage has the following properties:
 
 - `visibleChanged(bool value)`: Emitted when the visible flag is changed.
 
-* `isValueChangedChanged(bool value)`: Emitted when the aggregate isValueChanged state changes, i.e. when the list goes from "no parameter changed" to "at least one parameter changed", or back.
+* `isValueModifiedChanged(bool value)`: Emitted when the aggregate isValueModified state changes, i.e. when the list goes from "no parameter changed" to "at least one parameter changed", or back.
 
-* `isSchemaChangedChanged(bool value)`: Emitted when the aggregate isSchemaChanged state changes, i.e. when the page's own schema or any contained parameter's schema goes from "no schema changed" to "at least one schema changed", or back.
+* `isSchemaModifiedChanged(bool value)`: Emitted when the aggregate isSchemaModified state changes, i.e. when the page's own schema or any contained parameter's schema goes from "no schema changed" to "at least one schema changed", or back, or because of `setSchemaModified()`.
 
 - `countChanged(int count)`: Emitted when the number of parameters in the list changes.
 
@@ -147,7 +152,7 @@ A ParametersPage has the following properties:
 
 - `writeAttemptedWhileReadOnly(const QString &parameterName)`: Emitted when setValue() is called while the list is read-only; carries the name of the parameter whose modification was blocked.
 
-- `aboutToBeDestroyed(QtNoid::App::ParametersPage *page)`: Emitted from the destructor, before the object is torn down, with the object still fully intact. Useful for an owner (for example a collection class) that needs to react when a ParametersPage is destroyed: a slot connected to this signal can still safely call `page->isValueChanged()`, `page->isSchemaChanged()`, `page->uniqueId()`, etc. on the live pointer.
+- `aboutToBeDestroyed(QtNoid::App::ParametersPage *page)`: Emitted from the destructor, before the object is torn down, with the object still fully intact. Useful for an owner (for example a collection class) that needs to react when a ParametersPage is destroyed: a slot connected to this signal can still safely call `page->isValueModified()`, `page->isSchemaModified()`, `page->uniqueId()`, etc. on the live pointer.
 
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)

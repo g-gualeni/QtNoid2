@@ -76,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent)
             [&](bool val){
                 ui->optSchemaChanged->setChecked(val);
                 convertToJson();
-                updateStatusBar("isSchemaChangedChanged signal fired " + QString(val ? "true" : "false"));
+                updateStatusBar("isSchemaModifiedChanged signal fired " + QString(val ? "true" : "false"));
             });
 
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
@@ -275,13 +275,13 @@ void MainWindow::on_cmdQDebug_clicked()
 
 void MainWindow::on_cmdResetValue_clicked()
 {
-    updateStatusBar("resetValueChange triggered");
+    updateStatusBar("resetValueModifications triggered");
     m_parameter.resetValueModifications();
 }
 
 void MainWindow::on_cmdResetSchema_clicked()
 {
-    updateStatusBar("resetSchemaChange triggered");
+    updateStatusBar("resetSchemaModifications triggered");
     m_parameter.resetSchemaModifications();
 }
 

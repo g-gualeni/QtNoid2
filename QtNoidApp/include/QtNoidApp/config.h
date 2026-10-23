@@ -21,7 +21,7 @@ class QTNOIDAPP_EXPORT Config : public QObject
     Q_PROPERTY(QString label READ label WRITE setLabel BINDABLE bindableLabel NOTIFY labelChanged FINAL)
     Q_PROPERTY(QString description READ description WRITE setDescription BINDABLE bindableDescription NOTIFY descriptionChanged FINAL)
     Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip BINDABLE bindableTooltip NOTIFY tooltipChanged FINAL)
-    Q_PROPERTY(bool isValueChanged READ isValueChanged BINDABLE bindableIsValueChanged NOTIFY isValueChangedChanged FINAL)
+    Q_PROPERTY(bool isValueModified READ isValueModified BINDABLE bindableIsValueModified NOTIFY isValueModifiedChanged FINAL)
     Q_PROPERTY(bool isSchemaModified READ isSchemaModified BINDABLE bindableIsSchemaModified NOTIFY isSchemaModifiedChanged FINAL)
     Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
 
@@ -127,15 +127,16 @@ public:
     void setTooltip(const QString& value);
     QBindable<QString> bindableTooltip();
 
-    // isValueChanged: aggregated from pages
-    bool isValueChanged() const;
-    QBindable<bool> bindableIsValueChanged();
-    void resetAllValues();   // cascades resetAllValues() to every page
+    // isValueModified: aggregated from pages
+    bool isValueModified() const;
+    QBindable<bool> bindableIsValueModified();
+    void setValueModified(bool modified);   // cascades setValueModified() to every page
+    void resetValueModifications();   // cascades resetValueModifications() to every page
 
 
     // isSchemaModified: tracks modifications to this config's own properties
     // (name, label, description, tooltip) and to any contained ParametersPage's
-    // isSchemaModified, unlike isValueChanged which only tracks value changes.
+    // isSchemaModified, unlike isValueModified which only tracks value changes.
     bool isSchemaModified() const;
     QBindable<bool> bindableIsSchemaModified();
     void setSchemaModified(bool modified);       // forces true, or accepts current state as the new baseline (false)
@@ -231,7 +232,7 @@ signals:
     void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
-    void isValueChangedChanged(bool value);
+    void isValueModifiedChanged(bool value);
     void isSchemaModifiedChanged(bool value);
     void countChanged(int count);
     void pageAdded(const QtNoid::App::ParametersPage* parametersPage);
@@ -242,15 +243,15 @@ private slots:
     void onOwnPropertyChanged();
     void onPageAboutToBeDestroyed(QtNoid::App::ParametersPage *page);
     void onPageNameEdited(const QString& oldName, const QString& newName);
-    void onPageIsValueChangedChanged(bool changed);
-    void onPageIsSchemaChangedChanged(bool changed);
+    void onPageIsValueModifiedChanged(bool changed);
+    void onPageIsSchemaModifiedChanged(bool changed);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_name, &Config::nameChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_label, &Config::labelChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_description, &Config::descriptionChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, QString, m_tooltip, &Config::tooltipChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isValueChanged, &Config::isValueChangedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isValueModified, &Config::isValueModifiedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, bool, m_isSchemaModified, &Config::isSchemaModifiedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Config, int, m_count, &Config::countChanged)
 
@@ -259,7 +260,7 @@ private:
     QHash<ParametersPage*, int> m_pageToIndex; // ParametersPage -> sortIndex
     QHash<QString, ParametersPage*> m_pagesByName;
     int m_nextPageIndex = 0;
-    int m_valueChangedCounter = 0;
+    int m_valueModifiedCounter = 0;
     int m_schemaModifiedCounter = 0;
     bool m_forceSchemaModified = false;   // manual override set by setSchemaModified(true)
 

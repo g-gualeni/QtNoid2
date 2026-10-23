@@ -27,7 +27,7 @@ namespace {
 bool isTrackedForIsSchemaModified(const QMetaProperty &prop)
 {
     static const QSet<QByteArray> excluded = {
-        "objectName", "count", "isValueChanged", "isSchemaModified"
+        "objectName", "count", "isValueModified", "isSchemaModified"
     };
     return prop.isReadable() && !excluded.contains(prop.name());
 }
@@ -332,19 +332,26 @@ QBindable<QString> Config::bindableTooltip()
 }
 
 
-bool Config::isValueChanged() const
+bool Config::isValueModified() const
 {
-    return m_isValueChanged.value();
+    return m_isValueModified.value();
 }
-QBindable<bool> Config::bindableIsValueChanged()
+QBindable<bool> Config::bindableIsValueModified()
 {
-    return QBindable<bool>(&m_isValueChanged);
+    return QBindable<bool>(&m_isValueModified);
 }
 
-void Config::resetAllValues()
+void Config::setValueModified(bool modified)
 {
     for (auto it = m_pagesByIndex.constBegin(); it != m_pagesByIndex.constEnd(); ++it) {
-        it.value()->resetAllValues();
+        it.value()->setValueModified(modified);
+    }
+}
+
+void Config::resetValueModifications()
+{
+    for (auto it = m_pagesByIndex.constBegin(); it != m_pagesByIndex.constEnd(); ++it) {
+        it.value()->resetValueModifications();
     }
 }
 
@@ -387,7 +394,7 @@ void Config::resetSchemaModifications()
     }
 
     for (auto it = m_pagesByIndex.constBegin(); it != m_pagesByIndex.constEnd(); ++it) {
-        it.value()->resetSchemaChange();
+        it.value()->resetSchemaModifications();
     }
 
     m_forceSchemaModified = false;
@@ -483,16 +490,16 @@ void Config::remove(ParametersPage *page)
     m_pagesByIndex.remove(idx);
 
     if (page->isValueModified()) {
-        onPageIsValueChangedChanged(false);
+        onPageIsValueModifiedChanged(false);
     }
-    if (page->isSchemaChanged()) {
-        onPageIsSchemaChangedChanged(false);
+    if (page->isSchemaModified()) {
+        onPageIsSchemaModifiedChanged(false);
     }
 
     disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     disconnect(page, &ParametersPage::nameEdited, this, nullptr);
-    disconnect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueChangedChanged);
-    disconnect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
+    disconnect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueModifiedChanged);
+    disconnect(page, &ParametersPage::isSchemaModifiedChanged, this, &Config::onPageIsSchemaModifiedChanged);
 
     emit pageRemoved(page);
     m_count = m_pagesByIndex.count();
@@ -522,16 +529,16 @@ void Config::clear()
 
         disconnect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
         disconnect(page, &ParametersPage::nameEdited, this, nullptr);
-        disconnect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueChangedChanged);
-        disconnect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
+        disconnect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueModifiedChanged);
+        disconnect(page, &ParametersPage::isSchemaModifiedChanged, this, &Config::onPageIsSchemaModifiedChanged);
 
         emit pageRemoved(page);
     }
     // After removing all - it's time to clear also last index
     m_pagesByIndex.clear();
 
-    m_valueChangedCounter = 0;
-    m_isValueChanged = false;
+    m_valueModifiedCounter = 0;
+    m_isValueModified = false;
     m_schemaModifiedCounter = 0;
     updateIsSchemaModified();
 
@@ -921,10 +928,10 @@ void Config::onPageAboutToBeDestroyed(ParametersPage *page)
     m_pagesByName.remove(key);
 
     if (page->isValueModified()) {
-        onPageIsValueChangedChanged(false);
+        onPageIsValueModifiedChanged(false);
     }
-    if (page->isSchemaChanged()) {
-        onPageIsSchemaChangedChanged(false);
+    if (page->isSchemaModified()) {
+        onPageIsSchemaModifiedChanged(false);
     }
 
     emit pageRemoved(page);
@@ -953,18 +960,18 @@ void Config::onPageNameEdited(const QString &oldName, const QString &newName)
     return;
 }
 
-void Config::onPageIsValueChangedChanged(bool changed)
+void Config::onPageIsValueModifiedChanged(bool changed)
 {
     if(changed) {
-        ++m_valueChangedCounter;
+        ++m_valueModifiedCounter;
     }
     else {
-        --m_valueChangedCounter;
+        --m_valueModifiedCounter;
     }
-    m_isValueChanged = (m_valueChangedCounter > 0);
+    m_isValueModified = (m_valueModifiedCounter > 0);
 }
 
-void Config::onPageIsSchemaChangedChanged(bool changed)
+void Config::onPageIsSchemaModifiedChanged(bool changed)
 {
     if(changed) {
         ++m_schemaModifiedCounter;
@@ -987,15 +994,15 @@ void Config::appendPageAndUpdateIndexs(ParametersPage *page)
 
     connect(page, &ParametersPage::aboutToBeDestroyed, this, &Config::onPageAboutToBeDestroyed);
     connect(page, &ParametersPage::nameEdited, this, &Config::onPageNameEdited);
-    connect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueChangedChanged);
-    connect(page, &ParametersPage::isSchemaChangedChanged, this, &Config::onPageIsSchemaChangedChanged);
+    connect(page, &ParametersPage::isValueModifiedChanged, this, &Config::onPageIsValueModifiedChanged);
+    connect(page, &ParametersPage::isSchemaModifiedChanged, this, &Config::onPageIsSchemaModifiedChanged);
 
 
     if (page->isValueModified()) {
-        onPageIsValueChangedChanged(true);
+        onPageIsValueModifiedChanged(true);
     }
-    if (page->isSchemaChanged()) {
-        onPageIsSchemaChangedChanged(true);
+    if (page->isSchemaModified()) {
+        onPageIsSchemaModifiedChanged(true);
     }
 
     emit pageAdded(page);

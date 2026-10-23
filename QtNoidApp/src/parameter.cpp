@@ -311,7 +311,7 @@ void Parameter::initInternalConnections()
 
 void Parameter::initIsSchemaModifiedConnections()
 {
-    // This automatically track any changes in properties used by m_isSchemaChanged()
+    // This automatically track any changes in properties used by m_isSchemaModified()
     m_isSchemaModified.setBinding([this]{
         if (m_forceSchemaModified.value()) {
             return true;

@@ -24,7 +24,7 @@ class QTNOIDAPP_EXPORT ParametersPage : public QObject
     Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly BINDABLE bindableReadOnly NOTIFY readOnlyChanged FINAL)
     Q_PROPERTY(bool visible READ visible WRITE setVisible BINDABLE bindableVisible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(bool isValueModified READ isValueModified BINDABLE bindableIsValueModified NOTIFY isValueModifiedChanged FINAL)
-    Q_PROPERTY(bool isSchemaChanged READ isSchemaChanged BINDABLE bindableIsSchemaChanged NOTIFY isSchemaChangedChanged FINAL)
+    Q_PROPERTY(bool isSchemaModified READ isSchemaModified BINDABLE bindableIsSchemaModified NOTIFY isSchemaModifiedChanged FINAL)
     Q_PROPERTY(int count READ count BINDABLE bindableCount NOTIFY countChanged FINAL)
 
 public:
@@ -141,15 +141,17 @@ public:
     // isValueModified: track modifications
     bool isValueModified() const;
     QBindable<bool> bindableIsValueModified();
-    void resetAllValues();
+    void setValueModified(bool modified);
+    void resetValueModifications();
 
-    // isSchemaChanged: tracks modifications to this page's own properties
+    // isSchemaModified: tracks modifications to this page's own properties
     // (name, label, description, tooltip, readOnly, visible) and to any
-    // contained Parameter's isSchemaChanged, unlike isValueChanged which only
+    // contained Parameter's isSchemaModified, unlike isValueModified which only
     // tracks value changes.
-    bool isSchemaChanged() const;
-    QBindable<bool> bindableIsSchemaChanged();
-    void resetSchemaChange();   // restores own properties AND cascades to every Parameter
+    bool isSchemaModified() const;
+    QBindable<bool> bindableIsSchemaModified();
+    void setSchemaModified(bool modified);
+    void resetSchemaModifications();   // restores own properties AND cascades to every Parameter
 
     // List management
     int count() const;
@@ -219,7 +221,7 @@ signals:
     void visibleChanged(bool value);
     void readOnlyChanged(bool value);
     void isValueModifiedChanged(bool value);
-    void isSchemaChangedChanged(bool changed);
+    void isSchemaModifiedChanged(bool changed);
     void writeAttemptedWhileReadOnly(const QString &parameterName);
 
 
@@ -232,7 +234,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_visible, &ParametersPage::visibleChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_readOnly, &ParametersPage::readOnlyChanged)
     Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_isValueModified, &ParametersPage::isValueModifiedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_isSchemaChanged, &ParametersPage::isSchemaChangedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(ParametersPage, bool, m_isSchemaModified, &ParametersPage::isSchemaModifiedChanged)
 
     friend class ::TestQtNoidAppParametersPage; // Only for White Box testing
 
@@ -266,6 +268,7 @@ private:
     void updateIsSchemaModified();
     QHash<QByteArray, QVariant> m_schemaBaseline;
     int m_parameterSchemaModifiedCounter = 0;
+    QProperty<bool> m_forceSchemaModified; // read inside updateIsSchemaModified() so it can override the computed state
 };
 
 } // namespace App
