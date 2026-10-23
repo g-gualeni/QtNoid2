@@ -1,0 +1,21 @@
+@PACKAGE_INIT@
+
+# @PROJECT_NAME@  Configuration File
+# This file is used by find_package(@PROJECT_NAME@) to locate the library
+
+include(CMakeFindDependencyMacro)
+
+# Find required Qt6 components
+find_dependency(Qt6 COMPONENTS Core)
+
+# QtNoidCommon is installed alongside this package under the same prefix
+find_dependency(QtNoidCommon PATHS "${PACKAGE_PREFIX_DIR}/lib/cmake/QtNoidCommon" NO_DEFAULT_PATH)
+
+# QtNoidApp is installed alongside this package under the same prefix
+find_dependency(QtNoidApp PATHS "${PACKAGE_PREFIX_DIR}/lib/cmake/QtNoidCommon" NO_DEFAULT_PATH)
+
+# Include the target definitions
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+
+# Verify that all required components are available
+check_required_components(@PROJECT_NAME@)
