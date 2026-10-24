@@ -17,9 +17,9 @@ endif()
 # =============================================================================
 # Set the target project
 # =============================================================================
-project(QtNoidApp
+project(QtNoidUiCommon
     VERSION ${PARENT_PROJECT_VERSION}
-    DESCRIPTION "QtNoidApp - Desktop Application common features helper"
+    DESCRIPTION "QtNoidUiCommo - Desktop Application Common Widgets"
     LANGUAGES CXX
 )
 
@@ -88,6 +88,7 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Core
         Qt6::Widgets
         QtNoidCommon
+        QtNoidApp
 )
 
 # Set library properties
@@ -154,13 +155,7 @@ endif()
 # Project Docs
 # =============================================================================
 set(PROJECT_DOCS
-    doc/QtNoidApp.md
-    doc/QtNoidAppCore.md
-    doc/QtNoidAppParameter.md
-    doc/QtNoidAppParametersPage.md
-    doc/QtNoidAppConfig.md
-    doc/QtNoidAppConfigFile.md
-    doc/QtNoidAppConfigGlobal.md
-    doc/QtNoidAppDevelopment.md
+    doc/QtNoidUiCommon.md
+    doc/QtNoidUiCommonCore.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

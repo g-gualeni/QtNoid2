@@ -13,6 +13,7 @@ set(LEGAL_COPYRIGHT "(C) 2025-2026 Gianbattista Gualeni")
 option(BUILD_CORE "Build QtNoidCore library" ON)
 option(BUILD_COMMON "Build QtNoidCommon library" ON)
 option(BUILD_APP "Build QtNoidApp library" ON)
+option(BUILD_UICOMMON "Build QtNoidUiCommon library" ON)
 option(BUILD_JSON "Build QtNoidJson library" ON)
 
 option(BUILD_TESTS "Build tests" ON)
@@ -62,6 +63,10 @@ endif()
 
 if(BUILD_APP)
     add_subdirectory(QtNoidApp)
+endif()
+
+if(BUILD_UICOMMON)
+    add_subdirectory(QtNoidUiCommon)
 endif()
 
 if(BUILD_JSON)
