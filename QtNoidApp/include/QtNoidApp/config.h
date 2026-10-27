@@ -14,7 +14,7 @@ class QComboBox;
 namespace QtNoid {
 namespace App {
 
-class QTNOIDAPP_EXPORT Config : public QObject
+class QTNOID_APP_EXPORT Config : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)
@@ -192,13 +192,12 @@ public:
     QByteArray restoreAsByteArray(const QString& paramName, const QByteArray defaultValue, const QString& pageName = "Settings") const;
     bool saveValue(const QString& paramName, const QByteArray& value, const QString& pageName = "Settings");
 
+    QJsonObject restoreAsJsonObject(const QString& paramName, const QJsonObject defaultValue, const QString& pageName = "Settings") const;
+    bool saveValue(const QString& paramName, const QJsonObject& value, const QString& pageName = "Settings");
+
     QStringList restoreRecentFiles(const QStringList defaultValue = {}, const QString& paramName="RecentFiles", const QString& pageName = "Settings") const;
     void clearRecentFiles(const QString& paramName="RecentFiles", const QString& pageName = "Settings");
     bool addRecentFile(QString filePath, int max = 10, const QString& paramName = "RecentFiles", const QString& pageName = "Settings");
-
-    void restoreComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings") const;
-    void saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings");
-
 
 
     // ===== ITERATOR METHODS =====

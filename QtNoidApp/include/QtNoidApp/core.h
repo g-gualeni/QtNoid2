@@ -14,7 +14,7 @@ namespace QtNoid {
 namespace App {
 
 
-class QTNOIDAPP_EXPORT Core
+class QTNOID_APP_EXPORT Core
 {
 public:
     static QString appExeOrAppBundleDirPath();

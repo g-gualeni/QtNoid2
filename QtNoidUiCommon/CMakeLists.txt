@@ -19,7 +19,7 @@ endif()
 # =============================================================================
 project(QtNoidUiCommon
     VERSION ${PARENT_PROJECT_VERSION}
-    DESCRIPTION "QtNoidUiCommo - Desktop Application Common Widgets"
+    DESCRIPTION "QtNoidUiCommon - Desktop Application Common Helpers"
     LANGUAGES CXX
 )
 
@@ -36,12 +36,6 @@ set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # =============================================================================
 set(SOURCES
     ${SOURCES_DIR}/core.cpp
-    ${SOURCES_DIR}/parameter.cpp
-    ${SOURCES_DIR}/parameterspage.cpp
-    ${SOURCES_DIR}/config.cpp
-    ${SOURCES_DIR}/configglobal.cpp
-    ${SOURCES_DIR}/configfile.cpp
-    ${SOURCES_DIR}/development.cpp
 )
 
 # File header
@@ -49,12 +43,6 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
     ${HEADERS_DIR}/${PROJECT_NAME}/core.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/parameter.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/parameterspage.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/config.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/configglobal.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/configfile.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/development.h
 )
 
 
@@ -64,7 +52,6 @@ set(HEADERS
 add_library(${PROJECT_NAME} SHARED
     ${SOURCES}
     ${HEADERS}
-    src/configglobal.cpp
 )
 
 # Define l'export control symbol

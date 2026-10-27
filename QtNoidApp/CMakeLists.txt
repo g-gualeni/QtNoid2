@@ -64,7 +64,6 @@ set(HEADERS
 add_library(${PROJECT_NAME} SHARED
     ${SOURCES}
     ${HEADERS}
-    src/configglobal.cpp
 )
 
 # Define l'export control symbol

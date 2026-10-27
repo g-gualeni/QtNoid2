@@ -7,7 +7,7 @@
 namespace QtNoid {
 namespace App {
 
-class QTNOIDAPP_EXPORT ConfigGlobal
+class QTNOID_APP_EXPORT ConfigGlobal
 {
 public:
     static ConfigFile* instance();

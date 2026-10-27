@@ -17,7 +17,7 @@ namespace QtNoid {
 namespace App {
 
 
-class QTNOIDAPP_EXPORT Development
+class QTNOID_APP_EXPORT Development
 {
 public:
     static QShortcut *initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence = "Ctrl+Shift+S",

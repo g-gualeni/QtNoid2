@@ -15,7 +15,6 @@ option(BUILD_COMMON "Build QtNoidCommon library" ON)
 option(BUILD_APP "Build QtNoidApp library" ON)
 option(BUILD_UICOMMON "Build QtNoidUiCommon library" ON)
 option(BUILD_JSON "Build QtNoidJson library" ON)
-
 option(BUILD_TESTS "Build tests" ON)
 
 option(BUILD_EXAMPLES "Build examples" ON)

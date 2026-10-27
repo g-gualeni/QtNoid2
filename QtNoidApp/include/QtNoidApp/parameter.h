@@ -14,7 +14,7 @@ namespace QtNoid {
 namespace App {
 
 
-class QTNOIDAPP_EXPORT Parameter : public QObject
+class QTNOID_APP_EXPORT Parameter : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVariant value READ value WRITE setValue BINDABLE bindableValue NOTIFY valueChanged FINAL)

@@ -1,5 +1,5 @@
 # QtNoidApp
-This module contains:
+This Library contains:
 
 - [**Core**](QtNoidAppCore.md): collection of methods to simplify the management of the application settings, or collecting app information like the app or bundle path.
 

@@ -7,6 +7,7 @@
 #include "QtNoidJson/QtNoidJson"
 #include "QtNoidCommon/QtNoidCommon"
 #include "QtNoidApp/QtNoidApp"
+#include "QtNoidUiCommon/QtNoidUiCommon"
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
@@ -114,7 +115,11 @@ void MainWindow::restoreFromAppConfig()
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
 
     // Recent test collection folder list
-    appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
+    auto comboJ = appConfig->restoreAsJsonObject("CollectionFolderList", {});
+    QtNoid::UiCommon::Core::restoreComboBoxTextItems(ui->txtCollectionFolder, comboJ);
+    // appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
+
+
     updateUI_scanTestCollectionFolder(collectionFolderAbsolutePath());
 
     // Last selected file
@@ -126,7 +131,9 @@ void MainWindow::restoreFromAppConfig()
 MainWindow::~MainWindow()
 {
     appConfig->saveValue("Geometry", saveGeometry());
-    appConfig->saveComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList");
+    // appConfig->saveComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList");
+    auto comboJ = QtNoid::UiCommon::Core::saveComboBoxTextItems(ui->txtCollectionFolder);
+    appConfig->saveValue("CollectionFolderList", comboJ);
     appConfig->saveValue("yamlTestCollectionListCurrent", m_yamlTestCollectionListCurrent);
     delete ui;
 }

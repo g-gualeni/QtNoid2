@@ -10,6 +10,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Widgets)
 find_package(QtNoidCommon REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 find_package(QtNoidJson REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 find_package(QtNoidApp REQUIRED HINTS "../../../ExtLibs/QtNoid2")
+find_package(QtNoidUiCommon REQUIRED HINTS "../../../ExtLibs/QtNoid2")
 
 
 qt_standard_project_setup()
@@ -51,6 +52,7 @@ target_link_libraries(${PROJECT_NAME}
         QtNoid::QtNoidCommon
         QtNoid::QtNoidApp
         QtNoid::QtNoidJson
+        QtNoid::QtNoidUiCommon
 )
 
 install(TARGETS ${PROJECT_NAME}

@@ -1,0 +1,4 @@
+// QtNoidUiCommon - Main convenience header
+// Include this to get all QtNoid::UiCommon functionality
+
+#include "core.h"  // IWYU pragma: export

@@ -22,7 +22,7 @@ function(create_qt_test test_name)
         Qt6::Gui
         QtNoidCommon
         QtNoidApp
-
+        QtNoidUiCommon
     )
 
     add_test(NAME ${test_name} COMMAND ${test_name})

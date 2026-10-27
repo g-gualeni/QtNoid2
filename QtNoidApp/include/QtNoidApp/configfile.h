@@ -6,7 +6,7 @@
 namespace QtNoid {
 namespace App {
 
-class QTNOIDAPP_EXPORT ConfigFile : public Config
+class QTNOID_APP_EXPORT ConfigFile : public Config
 {
     Q_OBJECT
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName BINDABLE bindableFileName NOTIFY fileNameChanged FINAL)

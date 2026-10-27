@@ -14,7 +14,7 @@ class TestQtNoidAppParametersPage;
 namespace QtNoid {
 namespace App {
 
-class QTNOIDAPP_EXPORT ParametersPage : public QObject
+class QTNOID_APP_EXPORT ParametersPage : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName BINDABLE bindableName NOTIFY nameChanged FINAL)

@@ -794,6 +794,32 @@ bool Config::saveValue(const QString &paramName, const QByteArray &value, const 
     return saveValuePrivate(paramName, valueString, pageName);
 }
 
+QJsonObject Config::restoreAsJsonObject(const QString &paramName, const QJsonObject defaultValue, const QString &pageName) const
+{
+    ParametersPage* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
+        return defaultValue;
+
+    if(!page->contains(paramName))
+        return defaultValue;
+
+    auto valueAsString = page->value(paramName).toString();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(valueAsString.toUtf8(), &parseError);
+    if(parseError.error != QJsonParseError::NoError || !doc.isObject())
+        return defaultValue;
+
+    return doc.object();
+}
+
+bool Config::saveValue(const QString &paramName, const QJsonObject &value, const QString &pageName)
+{
+    QJsonDocument doc(value);
+    auto valueString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    return saveValuePrivate(paramName, valueString, pageName);
+}
+
 QStringList Config::restoreRecentFiles(const QStringList defaultValue, const QString &paramName, const QString &pageName) const
 {
     ParametersPage* page = m_pagesByName.value(pageName, nullptr);
@@ -860,51 +886,6 @@ bool Config::addRecentFile(QString filePath, int max, const QString &paramName, 
     return true;
 }
 
-void Config::restoreComboBoxTextItems(QComboBox *cbo, const QString &paramName, const QStringList &defaultValue, const QString &pageName) const
-{
-    if(cbo == nullptr)
-        return;
-
-    QStringList items = defaultValue;
-    QString currentItem;
-
-    do {
-        ParametersPage* page = m_pagesByName.value(pageName, nullptr);
-        if(page == nullptr)
-            break;
-        if(!page->contains(paramName))
-            break;
-        items = page->value(paramName).toStringList();
-
-        QString selectedItemParamName = paramName + QStringLiteral("Current");
-        if(!page->contains(selectedItemParamName))
-            break;
-
-        currentItem = page->value(selectedItemParamName).toString();
-
-    } while(0);
-
-    cbo->clear();
-    cbo->addItems(items);
-    cbo->setCurrentText(currentItem);
-}
-
-void Config::saveComboBoxTextItems(QComboBox *cbo, const QString &paramName, const QString &pageName)
-{
-    if(cbo == nullptr)
-        return;
-
-    QStringList items;
-    for(int ii=0; ii<cbo->count(); ii++) {
-        items << cbo->itemText(ii);
-    }
-    saveValuePrivate(paramName, items, pageName);
-
-    QString currentItem = cbo->currentText();
-    QString selectedItemParamName = paramName + QStringLiteral("Current");
-    saveValuePrivate(selectedItemParamName, currentItem, pageName);
-
-}
 
 void Config::onOwnPropertyChanged()
 {

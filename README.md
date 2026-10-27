@@ -22,6 +22,9 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
     This lib contains the class Yaml2Json that simplify the creation of simple
     JSON doc, starting from a quick textual description with a few rules.
     This is still under development.
+* **[QtNoidJson](QtNoidUiCommon/doc/QtNoidUiCommon.md)**: 
+  This library is a collection of functionality that each desktop application should use.
+ 
     
 * ***More modules are coming soon.***
 
