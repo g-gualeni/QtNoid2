@@ -119,6 +119,7 @@ private slots:
     void testParameterIsSchemaModifiedOnlyAfterSchemaPropertyChanged();
     void testParameterIsSchemaModifiedNotAffectedByValueChange();
     void testParameterIsSchemaModifiedShouldBeFalseAfterLoadingFromJson();
+    void testParameterIsSchemaModifiedTracksEveryPropertyAcrossMultipleChanges();
 
     // resetValueModifications() / resetSchemaModifications() tests
     void testParameterResetValueModifications();
@@ -2237,6 +2238,51 @@ void TestQtNoidAppParameter::testParameterIsSchemaModifiedOnlyAfterSchemaPropert
     checkFlipsSchemaModified([](Parameter &par){ par.setMin(0); });
     checkFlipsSchemaModified([](Parameter &par){ par.setMax(1000); });
     checkFlipsSchemaModified([](Parameter &par){ par.setPresets({{"Low", 10}, {"High", 900}}); });
+}
+
+void TestQtNoidAppParameter::testParameterIsSchemaModifiedTracksEveryPropertyAcrossMultipleChanges()
+{
+    // Regression test for a real bug: isSchemaModified()'s binding scans
+    // every tracked property in a loop and used to `return true` as soon
+    // as it found the first one that differed from the baseline. Qt's
+    // automatic binding dependency tracking only registers a dependency on
+    // a property that actually gets READ during an evaluation, so exiting
+    // the loop early meant every property read AFTER the first mismatch
+    // (in Q_PROPERTY declaration order) permanently stopped being tracked,
+    // until a later evaluation happened to run the full loop again.
+    //
+    // Every other isSchemaModified test either changes a single property
+    // on a brand-new Parameter (the very first evaluation always runs the
+    // full loop, since nothing differs from the just-captured baseline yet,
+    // so it can't expose this), or changes the SAME property before and
+    // after a rebaseline (so property order never comes into play). This
+    // test changes two DIFFERENT properties in sequence on the SAME
+    // instance, with the second one ("name") coming after the first
+    // ("unit") in the Q_PROPERTY declaration order, to catch the loss of
+    // tracking.
+    Parameter par(25.0, "TestParam", this);
+    QCOMPARE(par.isSchemaModified(), false);
+
+    // "unit" is the first tracked property in declaration order: changing
+    // it is what used to make the binding's loop exit before ever reaching
+    // "name", "label", "description", etc.
+    par.setUnit("kg");
+    QCOMPARE(par.isSchemaModified(), true);
+
+    // Re-capture the baseline from the current state (unit: "kg"), so
+    // isSchemaModified() reports false again, WITHOUT touching the
+    // properties themselves the way resetSchemaModifications() does -
+    // exactly what happens in real usage, where nothing resets the baseline
+    // between two unrelated edits made by the user.
+    par.setSchemaModified(false);
+    QCOMPARE(par.isSchemaModified(), false);
+
+    // "name" comes after "unit" in the property declaration order. If the
+    // earlier "unit" change made the binding lose track of properties past
+    // it, this change goes undetected and isSchemaModified() incorrectly
+    // stays false.
+    par.setName("NewName");
+    QCOMPARE(par.isSchemaModified(), true);
 }
 
 void TestQtNoidAppParameter::testParameterIsSchemaModifiedNotAffectedByValueChange()

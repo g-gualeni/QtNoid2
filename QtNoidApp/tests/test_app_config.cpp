@@ -1886,8 +1886,9 @@ void TestQtNoidAppConfig::testSaveAndRestoreJsonObject()
 {
     Config config(this);
 
-    // A nested object, to make sure the round trip through the compact-JSON
-    // string survives more than just flat key/value pairs.
+    // A nested object, to make sure the round trip through the QVariant
+    // (which holds the QJsonObject directly, not as text) survives more
+    // than just flat key/value pairs.
     QJsonObject json;
     json["name"] = "test";
     json["count"] = 42;
@@ -1900,13 +1901,13 @@ void TestQtNoidAppConfig::testSaveAndRestoreJsonObject()
     bool result = config.saveValue("Data", json);
     QVERIFY(result);
 
-    QJsonObject value = config.restoreAsJsonObject("Data", QJsonObject());
+    QJsonObject value = config.restoreAsJson("Data", QJsonObject());
     QCOMPARE(value, json);
 
     // Test default value
     QJsonObject defaultJson;
     defaultJson["default"] = true;
-    QJsonObject defaultValue = config.restoreAsJsonObject("NonExistent", defaultJson);
+    QJsonObject defaultValue = config.restoreAsJson("NonExistent", defaultJson);
     QCOMPARE(defaultValue, defaultJson);
 }
 
@@ -1914,16 +1915,15 @@ void TestQtNoidAppConfig::testRestoreAsJsonObjectWithInvalidStoredDataReturnsDef
 {
     Config config(this);
 
-    // Store something that is not valid JSON under the parameter directly
-    // (bypassing saveValue(QJsonObject)), to exercise the parse-error
-    // fallback in restoreAsJsonObject() rather than crashing or returning
-    // a garbage object.
+    // Store a plain string under the parameter directly (bypassing
+    // saveValue(QJsonObject)), to exercise the not-an-object fallback in
+    // restoreAsJson() rather than crashing or returning a garbage object.
     bool result = config.saveValue("Data", QString("not valid json"));
     QVERIFY(result);
 
     QJsonObject defaultJson;
     defaultJson["default"] = true;
-    QJsonObject value = config.restoreAsJsonObject("Data", defaultJson);
+    QJsonObject value = config.restoreAsJson("Data", defaultJson);
     QCOMPARE(value, defaultJson);
 }
 

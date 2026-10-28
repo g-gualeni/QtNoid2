@@ -115,7 +115,7 @@ void MainWindow::restoreFromAppConfig()
     restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
 
     // Recent test collection folder list
-    auto comboJ = appConfig->restoreAsJsonObject("CollectionFolderList", {});
+    auto comboJ = appConfig->restoreAsJson("CollectionFolderList", {});
     QtNoid::UiCommon::Core::restoreComboBoxTextItems(ui->txtCollectionFolder, comboJ);
     // appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
 

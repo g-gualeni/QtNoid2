@@ -17,26 +17,27 @@ bool Core::restoreComboBoxTextItems(QComboBox *cbo, const QJsonObject &cboConfig
             break;
         }
 
-        if(!cboConfig.contains("Items")) {
+        if(!cboConfig.contains("items")) {
             break;
         }
 
-        if(!cboConfig.value("Items").isArray()) {
+        if(!cboConfig.value("items").isArray()) {
             break;
         }
 
-        if(!cboConfig.contains("CurrentText")) {
+        if(!cboConfig.contains("currentText")) {
             break;
         }
 
         QStringList items;
-        const QJsonArray itemsArray = cboConfig.value("Items").toArray();
+        const QJsonArray itemsArray = cboConfig.value("items").toArray();
         for (const QJsonValue &val : itemsArray) {
             items << val.toString();
         }
+        items.removeDuplicates();
 
         QString currentItem;
-        currentItem = cboConfig.value("CurrentText").toString();
+        currentItem = cboConfig.value("currentText").toString();
 
         // All test ok we can touch cbo
         cbo->clear();
@@ -65,8 +66,8 @@ QJsonObject Core::saveComboBoxTextItems(QComboBox *cbo)
     for(int ii=0; ii<cbo->count(); ii++) {
         items << cbo->itemText(ii);
     }
-    cboJson["Items"] = QJsonArray::fromStringList(items);
-    cboJson["CurrentText"] = cbo->currentText();
+    cboJson["items"] = QJsonArray::fromStringList(items);
+    cboJson["currentText"] = cbo->currentText();
 
     return cboJson;
 }

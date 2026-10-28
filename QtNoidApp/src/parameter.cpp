@@ -311,19 +311,22 @@ void Parameter::initInternalConnections()
 
 void Parameter::initIsSchemaModifiedConnections()
 {
+    // qDebug() << Q_FUNC_INFO;
     // This automatically track any changes in properties used by m_isSchemaModified()
     m_isSchemaModified.setBinding([this]{
         if (m_forceSchemaModified.value()) {
             return true;
         }
         const QMetaObject mo = Parameter::staticMetaObject;
+        bool anyChanged = false;
         for (int ii = 0; ii < mo.propertyCount(); ++ii) {
             QMetaProperty prop = mo.property(ii);
+            // qDebug() << "initIsSchemaModifiedConnections" << prop.name() << "current: " << prop.read(this) << "baseline" << m_schemaBaseline.value(prop.name());
             if (isTrackedForIsSchemaModified(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
-                return true;
+                anyChanged = true;
             }
-        }
-        return false;
+        }        
+        return anyChanged;
     });
 }
 

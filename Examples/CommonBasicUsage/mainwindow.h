@@ -30,7 +30,7 @@ private slots:
 private:
     void restoreFromAppConfig();
     QStringList txtFolderList();
-    QStringList txtNameFilters();
+    QStringList txtNameFilters() const;
     void update_txtPathList(const QStringList &list, qint64 elapsedTime);
 
 private:

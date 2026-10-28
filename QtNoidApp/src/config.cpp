@@ -794,7 +794,7 @@ bool Config::saveValue(const QString &paramName, const QByteArray &value, const 
     return saveValuePrivate(paramName, valueString, pageName);
 }
 
-QJsonObject Config::restoreAsJsonObject(const QString &paramName, const QJsonObject defaultValue, const QString &pageName) const
+QJsonObject Config::restoreAsJson(const QString &paramName, const QJsonObject defaultValue, const QString &pageName) const
 {
     ParametersPage* page = m_pagesByName.value(pageName, nullptr);
     if(page == nullptr)
@@ -803,21 +803,17 @@ QJsonObject Config::restoreAsJsonObject(const QString &paramName, const QJsonObj
     if(!page->contains(paramName))
         return defaultValue;
 
-    auto valueAsString = page->value(paramName).toString();
-
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(valueAsString.toUtf8(), &parseError);
-    if(parseError.error != QJsonParseError::NoError || !doc.isObject())
+    const QJsonValue storedValue = QJsonValue::fromVariant(page->value(paramName));
+    if(!storedValue.isObject()) {
         return defaultValue;
+    }
 
-    return doc.object();
+    return storedValue.toObject();
 }
 
 bool Config::saveValue(const QString &paramName, const QJsonObject &value, const QString &pageName)
 {
-    QJsonDocument doc(value);
-    auto valueString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
-    return saveValuePrivate(paramName, valueString, pageName);
+    return saveValuePrivate(paramName, value, pageName);
 }
 
 QStringList Config::restoreRecentFiles(const QStringList defaultValue, const QString &paramName, const QString &pageName) const

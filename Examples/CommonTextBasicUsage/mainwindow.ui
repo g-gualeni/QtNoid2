@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>755</width>
-    <height>490</height>
+    <width>655</width>
+    <height>424</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -114,7 +114,7 @@
       <item row="0" column="0" colspan="3">
        <widget class="QLineEdit" name="txtInTokenize">
         <property name="text">
-         <string>C:\MyFile01April.txt</string>
+         <string>C:\MyFile01April_log-1.txt</string>
         </property>
        </widget>
       </item>
@@ -339,7 +339,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>755</width>
+     <width>655</width>
      <height>22</height>
     </rect>
    </property>

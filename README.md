@@ -13,7 +13,7 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
 	* [**QtNoid::Common::File**](QtNoidCommon/doc/QtnoidCommonFile.md): methods to list and manage files, rename, read and write text files. 
 	* [**QtNoid::Common::Scale**](QtNoidCommon/doc/QtNoidCommonScale.md): this class convert numbers to a human readable format using suffix like kilo, Mega, and so on.
 	* [**QtNoid::Common::Text**](QtNoidCommon/doc/QtNoidCommonText.md): methods to clean-up text, tokenize, convert to camel case or snake case.
-* **[QtNoidApp](QtNoidApp.md)**:
+* **[QtNoidApp](QtNoidApp/doc/QtNoidApp.md)**:
     This is a collection of class to simplify the implementation of common feature of a Desktop Application. Main classes are:
     * [**Core**](QtNoidApp/doc/QtNoidAppCore.md): class to manage the application initial configuration file.
     * [**Config**](QtNoidApp/doc/QtNoidAppConfig.md): container class to manage a list of parameters with binding support and serialization.
@@ -22,10 +22,10 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
     This lib contains the class Yaml2Json that simplify the creation of simple
     JSON doc, starting from a quick textual description with a few rules.
     This is still under development.
-* **[QtNoidJson](QtNoidUiCommon/doc/QtNoidUiCommon.md)**: 
-  This library is a collection of functionality that each desktop application should use.
- 
-    
+* **[QtNoidUiCommon](QtNoidUiCommon/doc/QtNoidUiCommon.md)**:
+    This library is a collection of functionality that each desktop application should use. Main classes are:
+    * [**Core**](QtNoidUiCommon/doc/QtNoidUiCommonCore.md): save and restore the content of UI widgets (for example a combo box) to and from a `QJsonObject`.
+
 * ***More modules are coming soon.***
 
 

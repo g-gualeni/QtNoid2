@@ -3,7 +3,7 @@ This example shows how [QtNoid::Common::Text](../../../QtNoidCommon/doc/QtNoidCo
 List of API tested:
 * tokenizeSnakeCase(): extract tokens from a snake_case_string
 * tokenizeCamelCase(): extract tokens from a CaMeL case string
-* tokenize(): this is the generic function to split a string into tokens
+* tokenize(): this is the generic function to split a string into tokens and it can be tested using a custom splitterString, enable or disabling CamelCase and with different minNumBlockLen.
 * convertToCamelCase(): convert a string into his CaMeL case representation
 * convertToSnakeCase(): convert a string into his snake_case representation
 

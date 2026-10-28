@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "QtNoidCommon/QtNoidCommon"
+#include "QtNoidUiCommon/QtNoidUiCommon"
 #include "QtNoidApp/QtNoidApp"
 
 
@@ -22,11 +23,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    appConfig->saveValue("Geometry", saveGeometry());
-    appConfig->saveValue("RecentList", txtFolderList());
-    appConfig->saveValue("RecentListCurrent", ui->txtFolder->currentText());
-    appConfig->saveValue("NameFilters", txtNameFilters());
-    appConfig->saveValue("NameFiltersCurrent", ui->txtNameFilters->currentText());
+    appConfig->saveValue("geometry", saveGeometry());
+
+    auto txtFolderJ = QtNoid::UiCommon::Core::saveComboBoxTextItems(ui->txtFolder);
+    appConfig->saveValue("txtFolder", txtFolderJ);
+    auto txtNameFiltersJ = QtNoid::UiCommon::Core::saveComboBoxTextItems(ui->txtNameFilters);
+    appConfig->saveValue("txtNameFilters", txtNameFiltersJ);
+
     delete ui;
 }
 
@@ -41,20 +44,9 @@ QStringList MainWindow::txtFolderList()
     return items;
 }
 
-QStringList MainWindow::txtNameFilters()
+QStringList MainWindow::txtNameFilters() const
 {
-    QStringList items;
-    auto itemCount = ui->txtNameFilters->count();
-    items.reserve(itemCount+1);
-    for (int ii = 0; ii < itemCount; ++ii) {
-        items << ui->txtNameFilters->itemText(ii);
-    }
-    auto current = ui->txtNameFilters->currentText();
-    if(!current.isEmpty()) {
-        items << current;
-    }
-    items.removeDuplicates();
-    return items;
+    return QStringList(ui->txtNameFilters->currentText());
 }
 
 void MainWindow::update_txtPathList(const QStringList &list, qint64 elapsedTime)
@@ -96,6 +88,7 @@ void MainWindow::on_cmdListPathRecursively_clicked()
 
     const QStringList res = QtNoid::Common::File::listPathRecursively(
         ui->txtFolder->currentText(), nameFilters);
+
     ui->txtPathList->appendPlainText("Scanning folder... Done!\nCreating result text...");
     QApplication::processEvents();
 
@@ -130,27 +123,18 @@ void MainWindow::on_cmdListSubPathRecursively_clicked()
 void MainWindow::restoreFromAppConfig()
 {
     // Geometry
-    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+    restoreGeometry(appConfig->restoreAsByteArray("geometry", saveGeometry()));
 
-    // Recent folder list
-    auto list = appConfig->restoreAsStringList("RecentList", {});
-    list.removeDuplicates();
-    ui->txtFolder->clear();
-    ui->txtFolder->addItems(list);
-    auto current = appConfig->restoreAsString("RecentListCurrent", ui->txtFolder->currentText());
-    if(current.isEmpty() && list.isEmpty()) {
+    auto txtFolderJ = appConfig->restoreAsJson("txtFolder", {});
+    QtNoid::UiCommon::Core::restoreComboBoxTextItems(ui->txtFolder, txtFolderJ);
+    auto txtNameFiltersJ = appConfig->restoreAsJson("txtNameFilters", {});
+    QtNoid::UiCommon::Core::restoreComboBoxTextItems(ui->txtNameFilters, txtNameFiltersJ);
+
+    if(txtFolderJ.isEmpty()) {
         // qDebug() << Q_FUNC_INFO;
-        current = QtNoid::App::Core::appExeOrAppBundleDirPath();
+        auto current = QtNoid::App::Core::appExeOrAppBundleDirPath();
+        ui->txtFolder->setCurrentText(current);
     }
-    ui->txtFolder->setCurrentText(current);
-
-
-    list = appConfig->restoreAsStringList("NameFilters", txtNameFilters());
-    list.removeDuplicates();
-    ui->txtNameFilters->clear();
-    ui->txtNameFilters->addItems(list);
-    current = appConfig->restoreAsString("NameFiltersCurrent", ui->txtNameFilters->currentText());
-    ui->txtNameFilters->setCurrentText(current);
 
 }
 

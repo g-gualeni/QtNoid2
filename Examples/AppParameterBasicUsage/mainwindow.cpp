@@ -10,8 +10,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setWindowTitle("QtNoid::App::Parameter Basic Usage");
-    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
-    ui->splitter->restoreState(appConfig->restoreAsByteArray("Splitter", ui->splitter->saveState()));
+    restoreGeometry(appConfig->restoreAsByteArray("geometry", saveGeometry()));
+    ui->splitter->restoreState(appConfig->restoreAsByteArray("splitter", ui->splitter->saveState()));
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
     ui->optIsValueChanged->setEnabled(false);
@@ -20,49 +20,49 @@ MainWindow::MainWindow(QWidget *parent)
     // Listening to UI modifications
     connect(ui->txtName, &QLineEdit::textChanged, this,
             [&](const QString& val){
+                updateStatusBar("ui->txtName::textChanged " + val);
                 m_parameter.setName(val);
-                updateStatusBar("ui->txtName::textChanged");
             });
     connect(ui->txtLabel, &QLineEdit::textChanged, this,
             [&](const QString& val){
+                updateStatusBar("ui->txLabel::textChanged " + val);
                 m_parameter.setLabel(val);
-                updateStatusBar("ui->txLabel::textChanged");
             });
 
     connect(ui->txtDescription, &QLineEdit::textChanged, this,
             [&](const QString& val){
+                updateStatusBar("ui->txtDescription::textChanged " + val);
                 m_parameter.setDescription(val);
-                updateStatusBar("ui->txtDescription::textChanged");
             });
     connect(ui->txtTooltip, &QLineEdit::textChanged, this,
             [&](const QString& val){
+                updateStatusBar("ui->txtTooltip::textChanged " + val);
                 m_parameter.setTooltip(val);
-                updateStatusBar("ui->txtTooltip::textChanged");
             });
     connect(ui->txtRange, &QLineEdit::textChanged, this,
             [&](const QString& val){
+                updateStatusBar("ui->txtRange::textChanged " + val);
                 setRangeFromText(val);
-                updateStatusBar("ui->txtRange::textChanged");
             });
     connect(ui->txtUnit, &QLineEdit::textChanged, this,
             [&](const QString& val){
+                updateStatusBar("ui->txtUnit::textChanged " + val);
                 m_parameter.setUnit(val);
-                updateStatusBar("ui->txtUnit::textChanged");
             });
     connect(ui->txtValue, &QDoubleSpinBox::valueChanged, this,
             [&](double val){
+                updateStatusBar("ui->txtValue::valueChanged "  + QString::number(val));
                 m_parameter.setValue(val);
-                updateStatusBar("ui->txtValue::valueChanged");
             });
     connect(ui->optReadOnly, &QCheckBox::clicked, this,
             [&](bool val){
+                updateStatusBar("ui->optReadOnly::clicked " + QString(val? "true" : "false"));
                 m_parameter.setReadOnly(val);
-                updateStatusBar("ui->optReadOnly::clicked");
             });
     connect(ui->optVisible, &QCheckBox::clicked, this,
             [&](bool val){
+                updateStatusBar("ui->optVisible::clicked" + QString(val? "true" : "false"));
                 m_parameter.setVisible(val);
-                updateStatusBar("ui->optVisible::clicked");
             });
     connect(ui->cboPresets, &QComboBox::activated, this,
              [&](){
@@ -71,59 +71,67 @@ MainWindow::MainWindow(QWidget *parent)
                 updateStatusBar("ui->cboPresets::currentIndexChanged Res: " + res.toString());
             });
 
+    // -------------------------------------
     // Listening to m_paramter modifications
     connect(&m_parameter, &QtNoid::App::Parameter::isSchemaModifiedChanged, this,
             [&](bool val){
                 ui->optSchemaChanged->setChecked(val);
-                convertToJson();
                 updateStatusBar("isSchemaModifiedChanged signal fired " + QString(val ? "true" : "false"));
             });
-
     connect(&m_parameter, &QtNoid::App::Parameter::nameChanged, this,
             [&](QString val){
                 ui->txtName->setText((val));
-                updateStatusBar("QtNoid::App::Parameter::nameChanged");
+                updateStatusBar("QtNoid::App::Parameter::nameChanged " + val);
+                convertToJson();
             });
     connect(&m_parameter, &QtNoid::App::Parameter::labelChanged, this,
             [&](QString val){
                 ui->txtLabel->setText((val));
-                updateStatusBar("QtNoid::App::Parameter::labelChanged");
+                updateStatusBar("QtNoid::App::Parameter::labelChanged " + val);
+                convertToJson();
             });
     connect(&m_parameter, &QtNoid::App::Parameter::descriptionChanged, this,
             [&](QString val){
                 ui->txtDescription->setText((val));
-                updateStatusBar("QtNoid::App::Parameter::descriptionChanged");
+                updateStatusBar("QtNoid::App::Parameter::descriptionChanged " + val);
+                convertToJson();
             });
     connect(&m_parameter, &QtNoid::App::Parameter::tooltipChanged, this,
             [&](QString val){
                 ui->txtTooltip->setText((val));
-                updateStatusBar("QtNoid::App::Parameter::tooltipChanged");
+                updateStatusBar("QtNoid::App::Parameter::tooltipChanged "  + val);
+                convertToJson();
             });
     connect(&m_parameter, &QtNoid::App::Parameter::rangeChanged, this,
             [&](const QVariant& min, const QVariant& max){
                 QString range = QString("%1 %2").arg(min.toString(), max.toString());
                 ui->txtRange->setText(range);
-                updateStatusBar("QtNoid::App::Parameter::rangeChanged");
+                updateStatusBar("QtNoid::App::Parameter::rangeChanged " + range);
+                convertToJson();
             });
     connect(&m_parameter, &QtNoid::App::Parameter::unitChanged, this,
             [&](QString val){
                 ui->txtUnit->setText((val));
-                updateStatusBar("QtNoid::App::Parameter::unitChanged");
+                updateStatusBar("QtNoid::App::Parameter::unitChanged " + val);
+                convertToJson();
             });
     connect(&m_parameter, &QtNoid::App::Parameter::valueChanged, this,
             [&](QVariant val){
                 ui->txtValue->setValue(val.toDouble());
                 updateStatusBar("QtNoid::App::Parameter::valueChanged " + val.toString());
+                convertToJson();
             });
     connect(&m_parameter, &QtNoid::App::Parameter::readOnlyChanged, this,
             [&](bool val){
                 ui->optReadOnly->setChecked(val);
-                updateStatusBar("QtNoid::App::Parameter::readOnlyChanged");
+                updateStatusBar("QtNoid::App::Parameter::readOnlyChanged "+ QString(val ? "true" : "false"));
+                convertToJson();
             });    
     connect(&m_parameter, &QtNoid::App::Parameter::visibleChanged, this,
             [&](bool val){
                 ui->optVisible->setChecked(val);
-                updateStatusBar("QtNoid::App::Parameter::visibleChanged");
+                updateStatusBar("QtNoid::App::Parameter::visibleChanged "+ QString(val ? "true" : "false"));
+                convertToJson();
             });
     connect(&m_parameter, &QtNoid::App::Parameter::isValueModifiedChanged, this,
             [&](bool val){
@@ -143,15 +151,12 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     updateFromGui();
-
-    // Set the reference value for m_paramter
-    m_parameter.valueFromJson(QJsonObject{{m_parameter.name(), 0}});
 }
 
 MainWindow::~MainWindow()
 {
-    appConfig->saveValue("Geometry", saveGeometry());
-    appConfig->saveValue("Splitter", ui->splitter->saveState());
+    appConfig->saveValue("geometry", saveGeometry());
+    appConfig->saveValue("splitter", ui->splitter->saveState());
     delete ui;
 }
 
@@ -166,7 +171,11 @@ void MainWindow::updateFromGui()
     m_parameter.setValue(ui->txtValue->value());
     m_parameter.setReadOnly(ui->optReadOnly->checkState());
     m_parameter.setVisible(ui->optVisible->checkState());
-    // m_parameter.
+
+    // Reset the modified flag
+    m_parameter.setValueModified(false);
+    m_parameter.setSchemaModified(false);
+
 }
 
 void MainWindow::updatePresetList()

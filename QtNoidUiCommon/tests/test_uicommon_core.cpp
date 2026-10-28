@@ -17,6 +17,7 @@ private slots:
     // ComboBox tests
     void testSaveComboBoxTextItems();
     void testRestoreComboBoxTextItems();
+    void testRestoreComboBoxTextItemsRemovesDuplicates();
 
 
 private:
@@ -50,8 +51,8 @@ void TestQtNoidUiCommonCore::testSaveComboBoxTextItems()
     QComboBox* cbo0 = new QComboBox();
     QJsonObject cbo0Json = Core::saveComboBoxTextItems(cbo0);
     // qDebug() << cbo0Json;
-    QVERIFY(cbo0Json.contains("Items"));
-    QVERIFY(cbo0Json.contains("CurrentText"));
+    QVERIFY(cbo0Json.contains("items"));
+    QVERIFY(cbo0Json.contains("currentText"));
     delete cbo0;
 
     // Test 1: Save combo box items
@@ -60,14 +61,14 @@ void TestQtNoidUiCommonCore::testSaveComboBoxTextItems()
     QJsonObject cbo1Json = Core::saveComboBoxTextItems(cbo1);
     // qDebug() << cbo1Json;
 
-    const QJsonArray itemsArray = cbo1Json["Items"].toArray();
+    const QJsonArray itemsArray = cbo1Json["items"].toArray();
     QCOMPARE(itemsArray.size(), 3);
     QCOMPARE(itemsArray.at(0), "Option1");
     QCOMPARE(itemsArray.at(1), "Option2");
     QCOMPARE(itemsArray.at(2), "Option3");
 
     // Verify current item was saved as "CurrentText"
-    QString cbo1CurrentText = cbo1Json["CurrentText"].toString();
+    QString cbo1CurrentText = cbo1Json["currentText"].toString();
     QCOMPARE(cbo1->currentText(), cbo1CurrentText);
 
     delete cbo1;
@@ -77,8 +78,8 @@ void TestQtNoidUiCommonCore::testRestoreComboBoxTextItems()
 {
     // Create a json object and initialize a combo box
     QJsonObject combo1;
-    combo1["CurrentText"] = "Item1";
-    combo1["Items"] = QJsonArray::fromStringList({"Item0", "Item1"});
+    combo1["currentText"] = "Item1";
+    combo1["items"] = QJsonArray::fromStringList({"Item0", "Item1"});
     QComboBox* cbo1 = new QComboBox();
     auto res1 = Core::restoreComboBoxTextItems(cbo1, combo1);
     QVERIFY(res1);
@@ -89,8 +90,8 @@ void TestQtNoidUiCommonCore::testRestoreComboBoxTextItems()
 
     // Create a JSON object and try with a non existing current text
     QJsonObject combo2;
-    combo2["CurrentText"] = "Item5";
-    combo2["Items"] = QJsonArray::fromStringList({"Item0", "Item1"});
+    combo2["currentText"] = "Item5";
+    combo2["items"] = QJsonArray::fromStringList({"Item0", "Item1"});
     QComboBox* cbo2 = new QComboBox();
     auto res2 = Core::restoreComboBoxTextItems(cbo2, combo2);
     QVERIFY(!res2);
@@ -119,6 +120,26 @@ void TestQtNoidUiCommonCore::testRestoreComboBoxTextItems()
     QCOMPARE(cbo4->itemText(2), "Item2");
     QCOMPARE(cbo4->currentText(), "Item0");
     delete cbo4;
+}
+
+void TestQtNoidUiCommonCore::testRestoreComboBoxTextItemsRemovesDuplicates()
+{
+    // "Item0" and "Item1" each appear more than once, interleaved rather
+    // than adjacent, to make sure dedup isn't just collapsing runs of
+    // consecutive repeats. The first occurrence of each should survive,
+    // in its original relative order, and the rest should be dropped.
+    QJsonObject combo;
+    combo["currentText"] = "Item1";
+    combo["items"] = QJsonArray::fromStringList({"Item0", "Item1", "Item0", "Item2", "Item1"});
+    QComboBox* cbo = new QComboBox();
+    auto res = Core::restoreComboBoxTextItems(cbo, combo);
+    QVERIFY(res);
+    QCOMPARE(cbo->count(), 3);
+    QCOMPARE(cbo->itemText(0), "Item0");
+    QCOMPARE(cbo->itemText(1), "Item1");
+    QCOMPARE(cbo->itemText(2), "Item2");
+    QCOMPARE(cbo->currentText(), "Item1");
+    delete cbo;
 }
 
 

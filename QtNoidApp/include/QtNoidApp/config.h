@@ -192,7 +192,7 @@ public:
     QByteArray restoreAsByteArray(const QString& paramName, const QByteArray defaultValue, const QString& pageName = "Settings") const;
     bool saveValue(const QString& paramName, const QByteArray& value, const QString& pageName = "Settings");
 
-    QJsonObject restoreAsJsonObject(const QString& paramName, const QJsonObject defaultValue, const QString& pageName = "Settings") const;
+    QJsonObject restoreAsJson(const QString& paramName, const QJsonObject defaultValue, const QString& pageName = "Settings") const;
     bool saveValue(const QString& paramName, const QJsonObject& value, const QString& pageName = "Settings");
 
     QStringList restoreRecentFiles(const QStringList defaultValue = {}, const QString& paramName="RecentFiles", const QString& pageName = "Settings") const;

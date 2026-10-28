@@ -1,10 +1,10 @@
 # QtNoid::App::Core Basic Usage
 This example shows how the following support methods work:
-* QtNoid::App::Core::appExeOrAppBundleDirPath() 
-* QtNoid::App::Core::appExeOrAppBundleFilePath()
-* QtNoid::App::Core::filePathAsAppSibling()
-* QtNoid::App::Core::groupNameFromObjectOrClass()
-* QtNoid::App::Core::fullDialogGrab()
+* `QtNoid::App::Core::appExeOrAppBundleDirPath()` 
+* `QtNoid::App::Core::appExeOrAppBundleFilePath()` 
+* `QtNoid::App::Core::filePathAsAppSibling()` 
+* `QtNoid::App::Core::groupNameFromObjectOrClass()` 
+* `QtNoid::App::Core::fullDialogGrab()` 
 
 ## Used libraries
 * [QtNoidApp](QtNoidApp.md) 
@@ -18,6 +18,6 @@ This example shows how the following support methods work:
 
 ![AppSettingsBasicUsage-macOS](QtNoidAppCoreBasicUsage-macOS.png)
 
-⬆[Examples](../../Examples.md)
 
+⬆[Examples](../../Examples.md)
 [← Back to README](../../../README.md)

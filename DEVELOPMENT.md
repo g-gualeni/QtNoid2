@@ -1,42 +1,68 @@
 # QtNoid Development Status
 
-## Current Sprint (Sprint-004)
+# Current Sprint (Sprint-004)
 
-### Sprint Goals
+# Sprint Goals
 - Implementation of the QtNoid::Yaml2Json library: 
      - this the first implementation
      - Main goal is to handle all YAML Suite test without crash.     
 - Implementation of QtNoid::App::Config class from Parameters
 - Implementation of appConfig global instance 
 - Implementation of QtNoid::App::Development class to help the application    development
+- Implementation of `QtNoid::UiCommon::Core` class with just 2 methods: `restoreComboBoxTextItems() saveComboBoxTextItems()`
 - Review of Parameter / ParametersPage after deriving Config / ConfigFile / ConfigGlobal
-- 
+- New release using Qt 5.12
 - Release of QtNoid2 version 2.2.0
 
-# Hierarchy
+# Library Hierarchy
 * QtNoidCore
 * QtNoidCommon
 * QtNoidApp
+* QtNoidUiCommon
 
 
 
-### Progress Status
+# Da fare
+	-> finisci esempio QtNoid App Parameter Basic Usage
+	-> continua il controllo delle classi partendo da ConfigFile (implementazione, test, documentazione)
+
+# Progress Status
 
 - [x] Controllo di tutti i progetti Documentazione
 - [x] Revisione QtNoid::App::Parameter
 - [x] Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile
 
-- [ ] Aggiornare esempio QtNoid::Core Basic Usage
+- [ ] Esempio **QtNoid Core Basic Usage**
 	- [ ] Aggiornare screenshot macOS
-- [ ] Aggiornare esempio QtNoid::Common Basic Usage
+- [ ] Esempio **QtNoid::Common Basic Usage**
+	- [x] Dialog review with testing for relative and absolute path
+	- [x] Form Geometry stored in JSON
+	- [x] Recent folder list stored
+	- [x] Example documentation
+	- [x] Screenshot Win11
+	- [x] Inserire save restore combo box
 	- [ ] Aggiornare screenshot macOS
-- [ ] Creare esempio per QtNoid::Common::Text Basic Usage
-	- [ ] Aggiornare screenshot macOS
-- [ ] Aggiornare esempio QtNoid::App:Core Basic Usage
+- [ ] Esempio **QtNoid Common Text Basic Usage**
+	- [x] Creare esempio per QtNoid::Common::Text Basic Usage
+	- [x] `tokenize()`
+	- [x] `convertToCamelCase()`
+	- [x] `convertToSnakeCase()`
+	- [x] Inserire Screenshot Win11
+	- [x] Aggiornare Doc
+	- [ ] Inserire screenshot macOS
+- [ ] Aggiornare esempio **QtNoid App Core Basic Usage**
+	- [x] update to support the new `appExeOrAppBundleDirPath()` API
 	- [x] Aggiornare UI
+	- [x] Update labels using bold 
+	- [x] Update Screenshot win11
 	- [x] Aggiornare Doc
 	- [ ] Aggiornare screenshot macOS
-- [ ] Sistemare esempio QtNoid::App:Parameter Basic Usage - controllare non va bene
+
+
+- [ ] Esempio **QtNoid App Parameter Basic Usage**
+	- ==controllare non va bene -> Sistemare preset il resto è ok==
+	- [ ] Modificare la funzione updateStatusBar() per gestire messaggio e value
+	- [ ] Inserire  il testo in italics per evidenziare il campo value
 	- [x] Creare il test per segnale changed()
 	- [x] automatizzareJSON
 	- [x] Documentare changed() e spiegare il consolidamento dei messaggi in uno solo
@@ -44,21 +70,35 @@
 	- [x] rendere automatica generazione del JSON usando un nuovo evento della classe Parameter che mi notifica quando qualcosa cambia.
 	- [x] Aggiornare Doc
 	- [ ] Aggiornare screenshot macOS
-- [ ] Sistemare esempio QtNoid::App:ParametersPage Basic Usage
+- [ ] Esempio **QtNoid App ParametersPage Basic Usage**
 	- [x] Aggiornare UI
 	- [x] Aggiornare documentazione
 	- [x] Aggiornare screenshot Win11
 	- [ ] Aggiornare screenshot macOS
-- [ ] Sistemare esempio QtNoid::App::ParametersPage Benchmark
+- [ ] Esempio **QtNoid::App::ParametersPage Benchmark**
 	- [x] Aggiornare UI
 	- [x] Scrivere la documentazione
 	- [x] Screenshot Win11
 	- [ ] Screenshot masOs
 
-- [x] Sempre per ParamtersPage
-	- [x] Inserire segnale changed
-	- [x] Inserire sengale aboutToBeDestroyed
-- [ ] Revisione classe QtNoid::App::Config
+- [x] Classe **`QtNoid::Common::Text`** 
+     - [x] `TestQtNoidCommonText::testTokenizeJsonArray()` adding more test cases with string or a mixture of strings and numbers  (mixed types array)
+- [x] class **`QtNoid::Common::File`** 
+     - [x] listPathRecursively() converted to static to simplify usage
+     - [x] listPathRecursively(): optimization for speed
+     - [x] create listSubPathRecursively() to return relative path
+     - [x] Doc for listSubPathRecursively()
+     - [x] Test for listSubPathRecursively()
+
+- [x] Libreria **`QtNoidApp`**
+	- [ ] Aggiungere la dipendenza da `QtNoidCommon`
+- [x] Classe **`QtNoid::App::Core`**
+   - [x] test di `mainWindowFromWidget()`: reference instead of pointer version
+   - [x] test di `groupNameFromObjectOrClass()`: reference instead of pointer version
+- [x] Classe **`QtNoid::App::ParamtersPage`**
+	- [x] Inserire segnale `changed()`
+	- [x] Inserire segnale `aboutToBeDestroyed()`
+- [x] Classe **`QtNoid::App::Config`**
 	- [x] Studiare la classe Config
 	- [x] Inserire Label
 	- [x] Inseire UniqueID
@@ -67,30 +107,21 @@
 	- [x] aboutToBeDestroyed()
 	- [x] Aggiornare la documentazione di Config
 	- [x] C'è un test che fallisce
-- [x] Non mi piace changed(). Cambiare la gestione usando un contatore di modifiche
+	- [x] Non mi piace changed(). Cambiare la gestione usando un contatore di modifiche
 	- [x] Chi lo resetta questo contatore? Posso evitare di mantenere il valore di default? Oppure avrebbe senso dato che potrei gestire il comando Annulla e aggiungere un metodo tipo ResetToDefault?
 	- [x] Paramter
 	- [x] ParamtersPage
 	- [x] Config
 	- [x] Non vedo il meccanismo con il contatore delle modifiche
 
-
-- [ ] Passare a Qt 5.12
-
-
-
-Non funziona l'esempio
-C:\GitHub\g-gualeni-public-QtNoid2\Examples\AppParameterBasicUsage
-
-
-## QtNoid User Interface
--> [[Dettaglio]]
+- [x] classe **`QtNoid::UiCommon::Core`** 
+	- [x] Documentare `restoreComboBoxTextItems()` 
+	- [x] Documentare `saveComboBoxTextItems()` 
+	* [x] `restoreComboBoxTextItems()` clean for duplicated items
 
 
 
-Fare il test di:
-   - [x] mainWindowFromWidget(): reference instead of pointer version
-   - [x] groupNameFromObjectOrClass(): reference instead of pointer version
+
 
 Rimuovere Txt2Json
 Rimuovere JSON Txt2Json Basic Usage example
@@ -123,56 +154,21 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	* [x] Text
 * [x] QtNoidApp
 	* [x] Split the documentation into 1 file for each class
-	* [x] Core
-	* [x] Parameter
-	* [x] ParameterList
-	* [ ] Config: è un abbozzo
-	* [ ] ConfigFIle è abbozzata
-	* [ ] ConfigGlobal è abbozzata
+	* [x] QtNoid::App::Core
+	* [x] QtNoid::App::Parameter
+	* [x] QtNoid::App::ParameterList
+	* [x] QtNoid::App::Config: completata
+	* [ ] QtNoid::App::ConfigFIle è abbozzata
+	* [ ] QtNoid::App::ConfigGlobal è abbozzata
+	* [ ] QtNoid::App::Development è da finire di controllare
 * [ ] QtNoidJson: - è ancora in sviluppo
-* [ ] Development è da finire di controllare
-* [ ] Examples
-	* [ ] Examples.md
-	* [ ] AppParameterBasicUsage
-	* [ ] AppParameterListBasicUsage
-	* [ ] AppParameterListBenchmark
-	* [ ] AppSettingsBasicUsage
-	* [x] CommonBasicUsage:
-		* [x] CommonBasicUsage.md
-		* [x] Win11 Screenshot
-		* [x] macOS Screenshot
-	* [x] CoreBasicUsage
-		* [x] CoreBasicUsage.md
-		* [x] Win11 Screenshot
-		* [x] macOS Screenshot
+* [ ] Examples ancora in sviluppo
 	* [ ] JsonTxt2JsonBasicUsage
 	* [ ] JsonYamlToJsonTestSuite
 
-# QtNoidCommon
-- [ ] Create and example for QtNoid::Common::Text
-	- [ ] isValidUrl
-	- [ ] isValidEmail
-	- [ ] sanitizeString
-	- [ ] tokenize
-	- [ ] convertToCamelCase
-	- [ ] convertToSnakeCase
-
-- [ ] class **Text** 
-     - [x] TestQtNoidCommonText::testTokenizeJsonArray() adding
-          more test cases with string or a mixture of strings and numbers 
-          (mixed types array)
-- [ ] class **File** 
-     - [x] listPathRecursively() converted to static to simplify usage
-     - [x] listPathRecursively(): optimization for speed
-     - [x] create listSubPathRecursively() to return relative path
-     - [x] Doc for listSubPathRecursively()
-     - [x] Test for listSubPathRecursively()
-
 
 # QtNoidApp
-
-- [x] Aggiungere a QtNoidApp la dipendenza da QtNoidCommon
-- [ ] class **Core** update
+- [x] class **Core** update
 	 - [x] Rename QtNoid::App::Settings to QtNoid::App::Core
      - [x] appExeOrAppBundleDirPath();
      - [x] appExeOrAppBundleFilePath();
@@ -184,13 +180,13 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] fullDialogGrab: now returns QImage and fix the QColorSpace          
      - [x] mainWindowFromWidget(): reference instead of pointer version
      - [x] groupNameFromObjectOrClass(): reference instead of pointer version
-     - [ ] check Core Documentation
+     - [x] check Core Documentation
      
 - [ ] class **Parameter** update
      - [x] all json names should be camelCase lowercase
      - [x] check all properties are in the JsonSchema
      - [x] check all properties are in the << Debug operator
-     - [ ] check Parameter Documentation
+     - [x] check Parameter Documentation
         
 - [ ] class **ParameterList** update
      - [x] add the visible flag
@@ -206,7 +202,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] test signal nameEdited(old, new)
      - [x] test signal visibleChanged
      - [x] count should be bindable
-     - [ ] check ParameterList Documentation
+     - [x] check ParameterList Documentation
 
 - [ ] class **Config** as a container for ParamterList
      - [x] uniqueId for Parameter starts from 1000
@@ -233,7 +229,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [x] add iterator and reverse iterator for Config
      - [x] restoreComboBoxTextItems
      - [x] saveComboBoxTextItems
-     - [ ] class Config Documentation
+     - [x] class Config Documentation
 
 
 - [ ] class **ConfigFile** as an extension of Config
@@ -277,32 +273,6 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 
 ---
-# Examples
-- [x] AppSettingsBasicUsage 
-	- [ ] update to support the new appExeOrAppBundleDirPath API
-	- [x] Update labels using bold 
-	- [ ] Update Screenshot win11
-	- [ ] Update screenshot macOS
-
-- [ ] [[Examples/CommonBasicUsage/doc/QtNoidCommonBasicUsage]]:
-	- [x] Dialog review with testing for relative and absolute path
-	- [x] Form Geometry stored in JSON
-	- [x] Recent folder list stored
-	- [x] Example documentation
-	- [x] Screenshot Win11
-	- [ ] Screenshot macOS
-
-
-- [ ] Update all examples with the new auto identification of os in the screenshot name
-     - [ ] CoreBasicUsage
-     - [ ] AppSettingsBasicUsage
-     - [ ] AppParameterBasicUsage
-     - [ ] AppParameterListBasicUsage
-     - [ ] AppParameterListBenchmark
-     - [ ] JsonTxt2JsonBasicUsage
-     - [ ] YAMLtoJsonTestSuite
-     
-
 # YAML to JSON test suite example
 - [x] Scaffolding
 - [x] Store all the yaml suite in a config file and add a method to
@@ -450,10 +420,10 @@ key: [
 # Qt Noid User Interface Library
 
 **QtNoid::UiCommon**: this is a collection of simple functionality that all desktop application need.
-	- [ ] QtNoid::UiCommon::Core
-		- [x] ComboBox config Save/Restore from settings
-		- [ ] Recent Files Menu from settings
-	- [ ] QtNoid::UiCommon::Combo: Folder comboBox Widget control with button to open file from folder and keep recent list using appConfig file.
+- [ ] QtNoidUiCommon::Core
+	- [x] ComboBox config Save/Restore from settings
+	- [ ] Recent Files Menu from settings
+	- [ ] QtNoidUiCommon::Combo: Folder comboBox Widget control with button to open file from folder and keep recent list using appConfig file.
 	- [ ] QtNoid::UiCommon::Core::About
 		- [ ] About Dialog with library information, application folder access, configuration file access
 	- [ ] QtNoid::UiCommon::Log

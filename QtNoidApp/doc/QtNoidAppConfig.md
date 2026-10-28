@@ -95,6 +95,7 @@ These methods read and write a single parameter's value without the caller havin
 - `saveValue(const QString& paramName, const QStringList& value, const QString& pageName = "Settings")`: Same as above, for a QStringList value.
 - `saveValue(const QString& paramName, const QVariant& value, const QString& pageName = "Settings")`: Same as above, for a QVariant value.
 - `saveValue(const QString& paramName, const QByteArray& value, const QString& pageName = "Settings")`: Same as above, for a QByteArray value. This is used for the Window's geometry of a UI dialog.
+- `saveValue(const QString& paramName, const QJsonObject& value, const QString& pageName = "Settings")`: Same as above, for a QJsonObject value. The object is stored as-is inside the parameter's `QVariant`. This means `toJsonValues()` (and so `ConfigFile`) write it out as a real nested JSON object in the configuration file.
 
 **Restore methods:** Recover a parameter from a specific page and value, automatically using the defaultValue if the parameter is not present.
 - `restoreAsBool(const QString& paramName, bool defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a bool.
@@ -104,19 +105,14 @@ These methods read and write a single parameter's value without the caller havin
 - `restoreAsStringList(const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QStringList.
 - `restoreAsVariant(const QString& paramName, const QVariant& defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QVariant.
 - `restoreAsByteArray(const QString& paramName, const QByteArray defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QByteArray. This is used to restore the UI Windows geometry.
+- `restoreAsJson(const QString& paramName, const QJsonObject defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QJsonObject, starting from `QVariantMap` reloaded from file and converts it into a `QJsonObject`. Returns `defaultValue` if the page or the parameter is missing (like every other `restoreAsX`), and when the stored value isn't convertible into a JSON *object* (e.g. it's a plain string, number, or array).
 
-## RecentFiles methods
+## Recent Files methods
 A small helper layer built on top of `saveValue()`/`restoreAsStringList()`, dedicated to maintaining a most-recently-used file list in a single QStringList parameter.
 
 - `restoreRecentFiles(const QStringList defaultValue = {}, const QString& paramName = "RecentFiles", const QString& pageName = "Settings")`: Returns the stored recent-files list, or `defaultValue` if the page or the parameter does not exist.
 - `clearRecentFiles(const QString& paramName = "RecentFiles", const QString& pageName = "Settings")`: Empties the recent-files list, if the parameter exists.
 - `addRecentFile(QString filePath, int max = 10, const QString& paramName = "RecentFiles", const QString& pageName = "Settings")`: Adds `filePath` to the front of the recent-files list, creating the page and/or the parameter if needed. An existing occurrence of the same path is removed first (so it moves to the front instead of being duplicated), and the list is then truncated to at most `max` entries. Returns false if `filePath` is empty or the page could not be created.
-
-## ComboBox methods
-A small helper layer to save and restore the text items (and the selected one) of a `QComboBox`, storing them as two parameters: the items list, and the current selection under `paramName + "Current"`.
-
-- `restoreComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings")`: Clears `cbo` and repopulates it from the stored items (or `defaultValue` if not found), then restores the previously selected text, if any.
-- `saveComboBoxTextItems(QComboBox* cbo, const QString& paramName, const QString& pageName = "Settings")`: Saves all of `cbo`'s current text items and its current selection.
 
 ## Iterator methods
 - `begin()`: Returns an iterator to the beginning of the pages.
