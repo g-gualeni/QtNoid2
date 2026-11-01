@@ -63,30 +63,39 @@ bool ConfigFile::isValid() const
 
 bool ConfigFile::load()
 {
+    QJsonParseError jsonError;
+
     // qDebug() << Q_FUNC_INFO;
     if(!isValid())
         return false;
 
     QFile file(m_fileName);
     if(!file.open(QIODevice::ReadOnly)){
+        emit fileLoadError(m_fileName, "Failed to open the file");
         return false;
     }
 
-    auto doc = QJsonDocument::fromJson(file.readAll(), &m_jsonError);
-    if(m_jsonError.error != QJsonParseError::NoError) {
-        qDebug() << Q_FUNC_INFO << "ERRROR ToDo";
+    auto doc = QJsonDocument::fromJson(file.readAll(), &jsonError);
+    if(jsonError.error != QJsonParseError::NoError) {
+        emit fileLoadError(m_fileName, jsonError.errorString());
+        return false;
     }
 
-    if(!doc.isObject())
+    if(!doc.isObject()) {
+        emit fileLoadError(m_fileName, "File content is not a JSON object");
         return false;
+    }
+
+    auto json = doc.object();
+    const bool nameWillBeAdoptedFromJson = name().isEmpty() && (json.count() == 1);
+    if(!nameWillBeAdoptedFromJson && !json.contains(name())) {
+        // This is not the correct JSON model
+        emit fileLoadError(m_fileName, "JSON content doesn't match the expected Config structure");
+        return false;
+    }
 
     clear(); // Remove previous content
-
-    auto res = valuesFromJson(doc.object());
-    if(!res) {
-        return false;
-    }
-
+    valuesFromJson(json);
     emit fileLoaded(m_fileName);
     return true;
 }

@@ -38,10 +38,11 @@ private slots:
     void testConfigFileIsNotValidWithEmptyFileName();
     void testConfigFileSaveAndLoad();
     void testConfigFileSaveWithEmptyFileName();
-    void testConfigFileSaveWithEmptyConfig();
-    void testConfigFileSaveWithEmptyConfigDoesNotEraseExistingFileContent();
+    void testConfigFileSaveEmptyFileResetTheFileContent();
     void testConfigFileLoadNonExistentFile();
     void testConfigFileLoadInvalidJson();
+    void testConfigFileLoadErrorSignalOnNonObjectJson();
+    void testConfigFileLoadErrorSignalNotEmittedOnSuccess();
     void testConfigFileInit_Load_Modify_Save();
     void testConfigFileLoadShouldReplacesContent();
 
@@ -268,21 +269,8 @@ void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyFileName()
     QVERIFY(!saveResult);
 }
 
-void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyConfig()
-{
-    QString testFileName = __func__ + QString(".json");
 
-    // Test save with empty config should fail
-    ConfigFile configFile(testFileName, this);
-    configFile.setName("EmptyConfig");
-
-    // Try to save empty config
-    bool saveResult = configFile.save();
-    QVERIFY(!saveResult);
-
-}
-
-void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyConfigDoesNotEraseExistingFileContent()
+void TestQtNoidAppConfigFile::testConfigFileSaveEmptyFileResetTheFileContent()
 {
     QString testFileName = __func__ + QString(".json");
     QFile::remove(testFileName);
@@ -305,16 +293,6 @@ void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyConfigDoesNotEraseExist
     QVERIFY(reloadFile.isEmpty());
     QCOMPARE(reloadFile.toJsonValues(), configFile.toJsonValues());
 
-
-
-    QVERIFY(false);
-
-    QFile file(testFileName);
-    QVERIFY(file.open(QIODevice::ReadOnly));
-    QByteArray contentAfterFailedSave = file.readAll();
-    file.close();
-    QCOMPARE(contentAfterFailedSave.size(), 0);
-
 }
 
 void TestQtNoidAppConfigFile::testConfigFileLoadNonExistentFile()
@@ -324,30 +302,92 @@ void TestQtNoidAppConfigFile::testConfigFileLoadNonExistentFile()
     // Ensure file doesn't exist
     QFile::remove(nonExistentFile);
 
-    ConfigFile configFile(nonExistentFile, this);
+    ConfigFile configFile(this);
+    QSignalSpy errorSpy(&configFile, &ConfigFile::fileLoadError);
+    QSignalSpy loadedSpy(&configFile, &ConfigFile::fileLoaded);
+    configFile.setFileName(nonExistentFile);
 
     // Try to load non-existent file
     bool loadResult = configFile.load();
     QVERIFY(!loadResult);
+
+    QCOMPARE(errorSpy.count(), 1);
+    QCOMPARE(loadedSpy.count(), 0);
+    auto arguments = errorSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), nonExistentFile);
+    QVERIFY(!arguments.at(1).toString().isEmpty());
 }
 
 void TestQtNoidAppConfigFile::testConfigFileLoadInvalidJson()
 {
     QString testFileName = __func__ + QString(".json");
 
-    // Create a file with invalid JSON
+    // Create a file with syntactically invalid JSON.
     QFile file(testFileName);
     QVERIFY(file.open(QIODevice::WriteOnly));
     QTextStream out(&file);
     out << "{ this is not valid json }";
     file.close();
 
-    ConfigFile configFile(testFileName, this);
+    // Use the default constructor + setFileName() rather than the
+    // fileName constructor, which would call load() immediately and fire
+    // the signal before the spy below gets a chance to connect to it.
+    ConfigFile configFile(this);
+    QSignalSpy errorSpy(&configFile, &ConfigFile::fileLoadError);
+    QSignalSpy loadedSpy(&configFile, &ConfigFile::fileLoaded);
 
-    // Try to load invalid JSON
+    configFile.setFileName(testFileName);
     bool loadResult = configFile.load();
     QVERIFY(!loadResult);
 
+    QCOMPARE(errorSpy.count(), 1);
+    QCOMPARE(loadedSpy.count(), 0);
+    auto arguments = errorSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), testFileName);
+    QVERIFY(!arguments.at(1).toString().isEmpty());
+}
+
+void TestQtNoidAppConfigFile::testConfigFileLoadErrorSignalOnNonObjectJson()
+{
+    QString testFileName = __func__ + QString(".json");
+
+    // Syntactically valid JSON, but not an object: load() must still fail
+    // without crashing, and fileLoadError must fire explaining why.
+    QFile file(testFileName);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    QTextStream out(&file);
+    out << "[1, 2, 3]";
+    file.close();
+
+    ConfigFile configFile(this);
+    configFile.setFileName(testFileName);
+
+    QSignalSpy errorSpy(&configFile, &ConfigFile::fileLoadError);
+
+    QVERIFY(!configFile.load());
+    QCOMPARE(errorSpy.count(), 1);
+
+    auto arguments = errorSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), testFileName);
+    QVERIFY(!arguments.at(1).toString().isEmpty());
+}
+
+void TestQtNoidAppConfigFile::testConfigFileLoadErrorSignalNotEmittedOnSuccess()
+{
+    QString testFileName = __func__ + QString(".json");
+    QFile::remove(testFileName);
+
+    // Save a valid, well-formed file first.
+    ConfigFile configFile(testFileName, this);
+    configFile.saveValue("Volume", 50.0);
+    QVERIFY(configFile.save());
+
+    QSignalSpy errorSpy(&configFile, &ConfigFile::fileLoadError);
+    QSignalSpy loadedSpy(&configFile, &ConfigFile::fileLoaded);
+
+    QVERIFY(configFile.load());
+    QCOMPARE(errorSpy.count(), 0);
+    QCOMPARE(loadedSpy.count(), 1);
 }
 
 void TestQtNoidAppConfigFile::testConfigFileInit_Load_Modify_Save()

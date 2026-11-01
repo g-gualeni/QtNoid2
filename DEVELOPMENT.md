@@ -112,6 +112,16 @@
 	- [x] ParamtersPage
 	- [x] Config
 	- [x] Non vedo il meccanismo con il contatore delle modifiche
+- [ ] Classe **`QtNoid::App::ConfigFile`**
+	- [x] Inserire signal per il caso errore di caricamento file
+	- [x] Creare il test per fileLoadError()
+	- [x] Sistemare la documentazione
+	- [ ] Creare il test per bindableFileName()
+
+- [ ] Classe **`QtNoid::App::ConfigFile`**
+	- [ ] Controllo generale
+	- [ ] Controllo dei test
+	- [ ] Controllo documentazione - [Dettaglio](Dettaglio.md)
 
 - [x] classe **`QtNoid::UiCommon::Core`** 
 	- [x] Documentare `restoreComboBoxTextItems()` 

@@ -20,9 +20,11 @@ private:
 
 };
 
-#define appConfig (QtNoid::App::ConfigGlobal::instance())
 
 } // namespace App
 } // namespace QtNoid
+
+#define appConfig (QtNoid::App::ConfigGlobal::instance())
+
 
 #endif // QTNOID_APP_CONFIGGLOBAL_H

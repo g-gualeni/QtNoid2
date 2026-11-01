@@ -3,8 +3,6 @@
 
 #include "config.h"
 
-#include <QJsonParseError>
-
 namespace QtNoid {
 namespace App {
 
@@ -29,15 +27,13 @@ public:
 signals:
     void fileNameChanged(const QString& value);
     void fileLoaded(const QString& fileName);
+    void fileLoadError(const QString& fileName, const QString& errorString);
 
 private:
     void initFileName(const QString& fileName);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(ConfigFile, QString, m_fileName, &ConfigFile::fileNameChanged)
-
-    QJsonParseError m_jsonError;
-
 };
 
 } // namespace App
