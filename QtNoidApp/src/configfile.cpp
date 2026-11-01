@@ -52,7 +52,7 @@ QBindable<QString> ConfigFile::bindableFileName()
 }
 
 
-bool ConfigFile::isValid()
+bool ConfigFile::isValid() const
 {
     QString name = m_fileName;
     if(name.isEmpty()) return false;
@@ -72,10 +72,15 @@ bool ConfigFile::load()
         return false;
     }
 
-    QJsonParseError m_jsonError;
-    auto doc = QJsonDocument::fromJson(file.readAll(), &m_jsonError) ;
+    auto doc = QJsonDocument::fromJson(file.readAll(), &m_jsonError);
+    if(m_jsonError.error != QJsonParseError::NoError) {
+        qDebug() << Q_FUNC_INFO << "ERRROR ToDo";
+    }
+
     if(!doc.isObject())
         return false;
+
+    clear(); // Remove previous content
 
     auto res = valuesFromJson(doc.object());
     if(!res) {
@@ -91,13 +96,14 @@ bool ConfigFile::save()
 {
     if(!isValid())
         return false;
+
+    // if(isEmpty())
+    //    return false;
+
     QFile file(m_fileName);
     if(!file.open(QIODevice::WriteOnly)){
         return false;
     }
-
-    if(isEmpty())
-        return false;
 
     QJsonDocument doc = QJsonDocument(toJsonValues());
     QTextStream text(&file);

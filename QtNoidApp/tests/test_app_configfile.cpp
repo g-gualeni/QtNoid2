@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QtNoidApp/QtNoidApp>
+#include <qtestcase.h>
 
 using namespace QtNoid::App;
 
@@ -38,9 +39,11 @@ private slots:
     void testConfigFileSaveAndLoad();
     void testConfigFileSaveWithEmptyFileName();
     void testConfigFileSaveWithEmptyConfig();
+    void testConfigFileSaveWithEmptyConfigDoesNotEraseExistingFileContent();
     void testConfigFileLoadNonExistentFile();
     void testConfigFileLoadInvalidJson();
     void testConfigFileInit_Load_Modify_Save();
+    void testConfigFileLoadShouldReplacesContent();
 
     void testConfigFileShouldLoadFileOnCreation();
     void testConfigFileShouldSaveFileOnDestruction();
@@ -279,6 +282,41 @@ void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyConfig()
 
 }
 
+void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyConfigDoesNotEraseExistingFileContent()
+{
+    QString testFileName = __func__ + QString(".json");
+    QFile::remove(testFileName);
+
+    // Create a configuration file
+    ConfigFile configFile(testFileName, this);
+    configFile.setName("Settings File");
+    configFile.saveValue("Volume", 100.0);
+    QVERIFY(configFile.save());
+
+    // Reset the ConfigFile content
+    configFile.clear();
+    QVERIFY(configFile.isEmpty());
+
+    // Save the file
+    QVERIFY(configFile.save());
+
+    // Check that the file is empty
+    ConfigFile reloadFile(testFileName, this);
+    QVERIFY(reloadFile.isEmpty());
+    QCOMPARE(reloadFile.toJsonValues(), configFile.toJsonValues());
+
+
+
+    QVERIFY(false);
+
+    QFile file(testFileName);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QByteArray contentAfterFailedSave = file.readAll();
+    file.close();
+    QCOMPARE(contentAfterFailedSave.size(), 0);
+
+}
+
 void TestQtNoidAppConfigFile::testConfigFileLoadNonExistentFile()
 {
     QString nonExistentFile = "non_existent_file.json";
@@ -348,6 +386,27 @@ void TestQtNoidAppConfigFile::testConfigFileInit_Load_Modify_Save()
     ConfigFile configFile3(testFileName, this);
     QCOMPARE(configFile3.restoreAsDouble("Brightness", 0.0), 100.00);
     QCOMPARE(configFile3.restoreAsBool("DarkMode", false), true);
+
+}
+
+void TestQtNoidAppConfigFile::testConfigFileLoadShouldReplacesContent()
+{
+    // Reading a configFile should reset the Config content
+    QString testFileName = __func__ + QString(".json");
+    QFile::remove(testFileName);
+    ConfigFile configFile(testFileName, this);
+    configFile.saveValue("Volume", 50.0, "Page");
+    auto res = configFile.save();
+    QVERIFY(res);
+
+    ConfigFile configFileA(testFileName, this);
+    configFileA.saveValue("Bass", 50.0, "PageA");
+    QCOMPARE(configFileA.count(), 2);
+
+    configFileA.load(); // Load reset the ConfigFile content
+    QCOMPARE(configFileA.count(), 1);
+    QVERIFY(configFileA.contains("Page"));
+    QVERIFY(!configFileA.contains("PageA"));
 
 }
 
