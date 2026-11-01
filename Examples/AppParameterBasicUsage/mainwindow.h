@@ -31,7 +31,7 @@ private slots:
 private:
     void setRangeFromText(const QString& val);
     void setPresetsFromText(const QString& val);
-    void updateStatusBar(const QString& msg);
+    void updateStatusBar(const QString& msg, const QString &value = {});
 
 private:
     Ui::MainWindow *ui;

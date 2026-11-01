@@ -23,7 +23,6 @@
 
 
 # Da fare
-	-> finisci esempio QtNoid App Parameter Basic Usage
 	-> continua il controllo delle classi partendo da ConfigFile (implementazione, test, documentazione)
 
 # Progress Status
