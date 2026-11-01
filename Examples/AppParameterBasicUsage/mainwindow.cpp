@@ -141,8 +141,10 @@ MainWindow::MainWindow(QWidget *parent)
                 updateStatusBar("QtNoid::App::Parameter::optIsValueChanged", QString(val? "true" : "false"));
             });
     connect(&m_parameter, &QtNoid::App::Parameter::presetsChanged, this,
-            [&](const QVariantMap&){
-                updatePresetList();
+            [&](const QVariantMap& presets){
+                UiUpdatePresetList(presets);
+                updateStatusBar("QtNoid::App::Parameter::presetsChanged", presets.keys().join(" "));
+                convertToJson();
             });
 
     // Listening to m_paramter errors
@@ -152,7 +154,7 @@ MainWindow::MainWindow(QWidget *parent)
             ui->txtValue->setValue(current.toFloat());
     });
 
-    updateFromGui();
+    updateFromUi();
 }
 
 MainWindow::~MainWindow()
@@ -162,7 +164,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::updateFromGui()
+void MainWindow::updateFromUi()
 {
     m_parameter.setName(ui->txtName->text());
     m_parameter.setLabel(ui->txtLabel->text());
@@ -180,32 +182,29 @@ void MainWindow::updateFromGui()
 
 }
 
-void MainWindow::updatePresetList()
+void MainWindow::UiUpdatePresetList(const QVariantMap& presets)
 {
     const QSignalBlocker blocker(ui->cboPresets);
-    ui->cboPresets->clear();
     QStringList lines{{"None"}};
-    auto presets = m_parameter.presets();
     for (auto it = presets.constBegin(); it != presets.constEnd(); ++it) {
         lines << QString("%1 %2").arg(it.key(), it.value().toString());
     }
+    ui->cboPresets->clear();
     ui->cboPresets->addItems(lines);
 }
 
 void MainWindow::on_cmdEditPresets_clicked()
 {
     PresetsDialog dlg(this);
-
-    QStringList lines;
     const auto presets = m_parameter.presets();
-    for (auto it = presets.constBegin(); it != presets.constEnd(); ++it) {
-        lines << QString("%1 %2").arg(it.key(), it.value().toString());
-    }
     if(!presets.isEmpty()) {
+        QStringList lines;
+        for (auto it = presets.constBegin(); it != presets.constEnd(); ++it) {
+            lines << QString("%1 %2").arg(it.key(), it.value().toString());
+        }
         dlg.setPresetsText(lines.join('\n'));
     }
     if (dlg.exec() == QDialog::Accepted) {
-        m_parameter.clearPresets();
         setPresetsFromText(dlg.presetsText());
     }
 }
@@ -265,12 +264,22 @@ void MainWindow::setRangeFromText(const QString &val)
 
 void MainWindow::setPresetsFromText(const QString &val)
 {
-    const QStringList presetTxtList = val.split('\n', Qt::SkipEmptyParts);
-    for(const QString& preset : presetTxtList) {
-        QStringList nameValue = preset.split(" ");
-        double val = nameValue.last().toDouble();
-        m_parameter.setPreset(nameValue.first(), val);
+    QVariantMap presets;
+    const QStringList lines  = val.split('\n', Qt::SkipEmptyParts);
+
+    for(const QString& line : lines) {
+        const QStringList parts = line.simplified().split(' ', Qt::SkipEmptyParts);
+        if (parts.size() < 2)
+            continue;                       // malformed line
+
+        bool ok = false;
+        const double value = parts.last().toDouble(&ok);
+        if (!ok)
+            continue;       // it is not a numeric value
+
+        presets.insert(parts.first(), value);
     }
+    m_parameter.setPresets(presets);
 }
 
 void MainWindow::updateStatusBar(const QString &msg, const QString &value)
@@ -279,7 +288,7 @@ void MainWindow::updateStatusBar(const QString &msg, const QString &value)
     cursor.movePosition(QTextCursor::End);
 
     if (!ui->txtLog->document()->isEmpty())
-        cursor.insertBlock();               // Add a new row after
+        cursor.insertBlock();  // Add a new row after
 
     QTextCharFormat msgFormat;
     msgFormat.setForeground(Qt::darkGray);

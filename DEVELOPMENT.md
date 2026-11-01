@@ -59,16 +59,16 @@
 
 
 - [ ] Esempio **QtNoid App Parameter Basic Usage**
-	- ==controllare non va bene -> Sistemare preset il resto è ok==
-	- [ ] Modificare la funzione updateStatusBar() per gestire messaggio e value
-	- [ ] Inserire  il testo in italics per evidenziare il campo value
+	- [x] Fare in modo che la modifica al preset salvi la configurazione nel json
+	- [x] Modificare la funzione updateStatusBar() per gestire messaggio e value
+	- [x] Log rivisto per renderlo più intelleggibile
 	- [x] Creare il test per segnale changed()
 	- [x] automatizzareJSON
 	- [x] Documentare changed() e spiegare il consolidamento dei messaggi in uno solo
 	- [x] Aggiornare UI
 	- [x] rendere automatica generazione del JSON usando un nuovo evento della classe Parameter che mi notifica quando qualcosa cambia.
 	- [x] Aggiornare Doc
-	- [ ] Aggiornare screenshot macOS
+	- [x] Aggiornare screenshot macOS
 - [ ] Esempio **QtNoid App ParametersPage Basic Usage**
 	- [x] Aggiornare UI
 	- [x] Aggiornare documentazione

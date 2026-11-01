@@ -38,8 +38,8 @@ private:
     QShortcut *m_screenshotShortcut = nullptr;
 
     QtNoid::App::Parameter m_parameter;
-    void updateFromGui();
-    void updatePresetList();
+    void updateFromUi();
+    void UiUpdatePresetList(const QVariantMap &presets);
     void convertToJson();
 };
 #endif // MAINWINDOW_H
