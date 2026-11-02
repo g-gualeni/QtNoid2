@@ -1,10 +1,12 @@
 # Class: ConfigGlobal
-This is a singleton class that create a unique instance of the class [**ConfigFile**](QtNoidAppConfigFile.md), available as a global variable called **appConfig** that can be used to save and restore automatically the application last configuration.
-The configuration is stored in a file called as the application executable with suffix .json
-The configuration is saved automatically when the application is terminated and it is restored when the application start.
-This is the macro that map appConfig, in the configglobal.h file:
+`ConfigGlobal` is a non-instantiable singleton holder: it owns a single, lazily-created [**ConfigFile**](QtNoidAppConfigFile.md) instance, available as the global **appConfig** macro defined in `configglobal.h`:
 
-`#define appConfig (QtNoid::App::ConfigGlobal::instance())`
+```cpp
+#define appConfig (QtNoid::App::ConfigGlobal::instance())
+```
+
+The intended usage is via **appConfig**, nothing else.
+The underlying `ConfigFile` is created the first time `appConfig` (or `ConfigGlobal::instance()`) is used, with its fileName defaulting to `Core::filePathAsAppSibling()` - a JSON file named after the application executable, next to it. Because it's a `ConfigFile`, it loads automatically when created and saves automatically when the application terminates (when the global instance is destroyed). Everything `Config`/`ConfigFile` offers - pages, parameters, binding, JSON round trip, `load()`/`save()`, `fileLoaded`/`fileLoadError`/`fileSaveError` - is available through `appConfig`.
 
 ## CMake
 ```
@@ -12,23 +14,19 @@ find_package: QtNoidApp
 
 target_link_libraries: QtNoid::QtNoidApp
 ```
-## Header
 
+## Header
 ```cpp
 #include "QtNoidApp/QtNoidApp"
 ```
 
+## Static Methods
+- `ConfigGlobal::instance()`: Returns the single, lazily-created `ConfigFile*` instance. Equivalent to, and more conveniently used as, the `appConfig` macro.
 
-ConfigFile
-- in a JSON filed with the same name of the application
-- #define appConfig (QtNoid::App::ConfigGlobal::instance())
-
-namespace QtNoid {
-namespace App {
+## Constructors
+- `ConfigGlobal` can't be constructed: its default constructor, copy constructor, destructor, and assignment operator are all deleted. The class only exists to provide the static `instance()` accessor.
 
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)
-
-&nbsp;
 
 [← Back to README](../../README.md)

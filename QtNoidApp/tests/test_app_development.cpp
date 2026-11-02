@@ -2,12 +2,14 @@
 #include <QtGui/qclipboard.h>
 #include <QtGui/qshortcut.h>
 #include <QtNoidApp/QtNoidApp>
+#include <QtNoidCommon/QtNoidCommon>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMimeData>
 #include <QDir>
 #include <QFileInfo>
+#include <QSysInfo>
 
 class TestQtNoidAppDevelopment : public QObject
 {
@@ -20,6 +22,8 @@ private slots:
     void cleanup();
     void testInitFullDialogGrabShortcut();
     void testInitFullDialogGrabShortcut_withFileName();
+    void testInitFullDialogGrabShortcut_withNullParent();
+    void testScreenshotFileName();
 
 private:
     void initMainDialog(QMainWindow* frm, const QString &caption);
@@ -129,6 +133,50 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withFileName()
     QFileInfo fileInfo(sstFile);
     QVERIFY2(fileInfo.exists(), "Screenshot file not found");
     QVERIFY(fileInfo.size() > 0);
+}
+
+
+void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withNullParent()
+{
+    // A null parent must not crash: initFullDialogGrabShortcut() must bail
+    // out early and return nullptr instead of dereferencing it.
+    QShortcut *shortcut = Development::initFullDialogGrabShortcut(nullptr);
+    QCOMPARE(shortcut, nullptr);
+}
+
+
+void TestQtNoidAppDevelopment::testScreenshotFileName()
+{
+    QString appDir = Core::appExeOrAppBundleDirPath();
+    QString osName = QSysInfo::productType();
+
+    // 1) A plain QWidget, with no QMainWindow ancestor, and no destination
+    //    given: generic name, in the app's own folder.
+    QWidget plainWidget;
+    QString expectedGeneric = QDir::cleanPath(appDir + "/Screenshot-" + osName + ".png");
+    QCOMPARE(Development::screenshotFileName(&plainWidget, QString()), expectedGeneric);
+
+    // 2) A QMainWindow, no destination given: name built from the window
+    //    title, in the app's own folder.
+    QMainWindow mainWin;
+    mainWin.setWindowTitle(__func__);
+    QString expectedFromTitle = QDir::cleanPath(appDir + "/"
+            + QtNoid::Common::Text::convertToCamelCase(mainWin.windowTitle())
+            + "-" + osName + ".png");
+    QCOMPARE(Development::screenshotFileName(&mainWin, QString()), expectedFromTitle);
+
+    // 3) A QMainWindow, destination is a bare folder (no extension): same
+    //    title-based name, but inside that folder instead of the app dir.
+    QString folder = QDir::tempPath();
+    QString expectedInFolder = QDir::cleanPath(folder + "/"
+            + QtNoid::Common::Text::convertToCamelCase(mainWin.windowTitle())
+            + "-" + osName + ".png");
+    QCOMPARE(Development::screenshotFileName(&mainWin, folder), expectedInFolder);
+
+    // 4) An explicit full file path with extension: returned as-is
+    //    (absolute), the window/title is ignored entirely.
+    QString filePath = QDir::tempPath() + "/myCustomShot.png";
+    QCOMPARE(Development::screenshotFileName(&mainWin, filePath), QFileInfo(filePath).absoluteFilePath());
 }
 
 

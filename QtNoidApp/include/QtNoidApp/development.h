@@ -8,7 +8,6 @@
 
 class QWidget;
 class QShortcut;
-class QString;
 class QAction;
 class QMenu;
 

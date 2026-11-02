@@ -39,7 +39,8 @@ void TestQtNoidAppConfigGlobal::cleanupTestCase()
 void TestQtNoidAppConfigGlobal::init()
 {
     // Clean up any existing state in the global config before each tests
-    Config* cfg = ConfigGlobal::instance();
+    Config* cfg = appConfig;
+
     cfg->clear();
 }
 
@@ -49,7 +50,7 @@ void TestQtNoidAppConfigGlobal::cleanup()
 
 void TestQtNoidAppConfigGlobal::testConfigGlobalInstanceIsNotNull()
 {
-    Config* instance = ConfigGlobal::instance();
+    Config* instance = appConfig;
     QVERIFY(instance != nullptr);
 }
 
@@ -98,7 +99,7 @@ void TestQtNoidAppConfigGlobal::testAppConfigSaveAndLoad()
     // Save
     bool saveResult = appConfig->save();
     QVERIFY(saveResult);
-\
+
     // Modify value
     appConfig->saveValue("TestParameter", 99.0);
     QCOMPARE(appConfig->restoreAsVariant("TestParameter", 0).toDouble(), 99.0);

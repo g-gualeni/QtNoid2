@@ -9,7 +9,7 @@
 #include <QDebug>
 #include <QSysInfo>
 #include <QWidget>
-#include <QMainwindow>
+#include <QMainWindow>
 #include <QMenu>
 #include <QDir>
 #include <QCoreApplication>
@@ -24,6 +24,10 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
                                                    QString destinationFileOrPath,
                                                    bool saveToClipboard, bool openDestinationPath)
 {
+    if(parent == nullptr){
+        return nullptr;
+    }
+
     QShortcut* shortCut = new QShortcut(QKeySequence(keySequence), parent);
     parent->connect(shortCut, &QShortcut::activated, parent, [=](){
         auto screenshot =  Core::fullDialogGrab(parent);
@@ -31,8 +35,8 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
         QFileInfo FI(destinationFileOrPath);
         QString fullFilePath = destinationFileOrPath;
         QString finalFilePath;
-        // if(!FI.isFile()) {
         if (FI.suffix().isEmpty()) {
+            // No extension provided - it is a path not a full file path
             // Gather the class / window name
             if(fullFilePath.isEmpty())
             {
@@ -53,6 +57,7 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
         }
         else {
             finalFilePath = FI.absoluteFilePath();
+            fullFilePath = FI.absolutePath();
         }
         finalFilePath = QtNoid::Common::File::autoNaming(finalFilePath);
         bool res = screenshot.save(finalFilePath);
@@ -128,9 +133,10 @@ QAction* Development::initConfigFromResources(QMenu *developmentMenu, const QStr
     auto parent = developmentMenu->parent();
     if(parent == nullptr) {
         return {};
+
     }
 
-    QAction *action = developmentMenu->addAction(parent->tr("Init Config From Project"));
+    QAction *action = developmentMenu->addAction(parent->tr("Init Config From Resources"));
     QFileInfo FI(appConfig->fileName());
 
     auto msg = QString(parent->tr("Rewrite %1 configuration file using the model from the resources")).arg(FI.fileName());

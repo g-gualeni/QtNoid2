@@ -90,7 +90,7 @@
      - [x] Test for listSubPathRecursively()
 
 - [x] Libreria **`QtNoidApp`**
-	- [ ] Aggiungere la dipendenza da `QtNoidCommon`
+	- [x] Aggiungere la dipendenza da `QtNoidCommon`
 - [x] Classe **`QtNoid::App::Core`**
    - [x] test di `mainWindowFromWidget()`: reference instead of pointer version
    - [x] test di `groupNameFromObjectOrClass()`: reference instead of pointer version
@@ -112,16 +112,25 @@
 	- [x] ParamtersPage
 	- [x] Config
 	- [x] Non vedo il meccanismo con il contatore delle modifiche
-- [ ] Classe **`QtNoid::App::ConfigFile`**
+- [x] Classe **`QtNoid::App::ConfigFile`**
 	- [x] Inserire signal per il caso errore di caricamento file
 	- [x] Creare il test per fileLoadError()
 	- [x] Sistemare la documentazione
-	- [ ] Creare il test per bindableFileName()
-
-- [ ] Classe **`QtNoid::App::ConfigFile`**
+	- [x] Creare il test per bindableFileName()
+	- [x] Controllo generale
+	- [x] Controllo dei test
+	- [x] Controllo documentazione
+- [x] Classe **`QtNoid::App::ConfigGlobal`**
+	- [x] Controllo generale
+	- [x] Controllo dei test
+	- [x] Controllo documentazione+
+- [ ] Classe **`QtNoid::App::Development`**
+	- [x] initFullDialogGrabShortcut() - codice
+	- [ ] initFullDialogGrabShortcut() - test [Dettaglio](Dettaglio.md)
+	- [ ] initFullDialogGrabShortcut() - documentazione
 	- [ ] Controllo generale
 	- [ ] Controllo dei test
-	- [ ] Controllo documentazione - [Dettaglio](Dettaglio.md)
+	- [ ] Controllo documentazione
 
 - [x] classe **`QtNoid::UiCommon::Core`** 
 	- [x] Documentare `restoreComboBoxTextItems()` 

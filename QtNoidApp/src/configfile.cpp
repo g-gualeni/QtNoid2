@@ -66,8 +66,10 @@ bool ConfigFile::load()
     QJsonParseError jsonError;
 
     // qDebug() << Q_FUNC_INFO;
-    if(!isValid())
+    if(!isValid()) {
+        emit fileLoadError(m_fileName, "Invalid fileName");
         return false;
+    }
 
     QFile file(m_fileName);
     if(!file.open(QIODevice::ReadOnly)){
@@ -103,14 +105,14 @@ bool ConfigFile::load()
 
 bool ConfigFile::save()
 {
-    if(!isValid())
+    if(!isValid()) {
+        emit fileSaveError(m_fileName, "Invalid fileName");
         return false;
-
-    // if(isEmpty())
-    //    return false;
+    }
 
     QFile file(m_fileName);
     if(!file.open(QIODevice::WriteOnly)){
+        emit fileSaveError(m_fileName, file.errorString());
         return false;
     }
 

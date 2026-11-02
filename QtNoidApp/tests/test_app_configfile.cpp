@@ -38,6 +38,9 @@ private slots:
     void testConfigFileIsNotValidWithEmptyFileName();
     void testConfigFileSaveAndLoad();
     void testConfigFileSaveWithEmptyFileName();
+    void testConfigFileSaveWithEmptyFileNameShouldEmitSaveError();
+    void testConfigFileSaveOnWrongFileNameShoulEmitSaveError();
+    void testConfigFileSaveErrorSignalNotEmittedOnSuccess();
     void testConfigFileSaveEmptyFileResetTheFileContent();
     void testConfigFileLoadNonExistentFile();
     void testConfigFileLoadInvalidJson();
@@ -45,6 +48,7 @@ private slots:
     void testConfigFileLoadErrorSignalNotEmittedOnSuccess();
     void testConfigFileInit_Load_Modify_Save();
     void testConfigFileLoadShouldReplacesContent();
+    void testConfigFileLoadingTheWrongFileShouldNotEraseExistingContent();
 
     void testConfigFileShouldLoadFileOnCreation();
     void testConfigFileShouldSaveFileOnDestruction();
@@ -270,6 +274,53 @@ void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyFileName()
 }
 
 
+void TestQtNoidAppConfigFile::testConfigFileSaveWithEmptyFileNameShouldEmitSaveError()
+{
+    // save() with no fileName set must fail and report why via fileSaveError.
+    ConfigFile configFile(this);
+    QSignalSpy errorSpy(&configFile, &ConfigFile::fileSaveError);
+
+    bool saveResult = configFile.save();
+    QVERIFY(!saveResult);
+    QCOMPARE(errorSpy.count(), 1);
+
+    auto arguments = errorSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), QString());
+    QVERIFY(!arguments.at(1).toString().isEmpty());
+}
+
+void TestQtNoidAppConfigFile::testConfigFileSaveOnWrongFileNameShoulEmitSaveError()
+{
+    // A fileName inside a directory that doesn't exist can't be opened for
+    // writing: save() must fail and report why via fileSaveError.
+    QString testFileName = QStringLiteral("no_such_directory_for_configfile_test/") + __func__ + QStringLiteral(".json");
+
+    ConfigFile configFile(this);
+    configFile.setFileName(testFileName);
+    QSignalSpy errorSpy(&configFile, &ConfigFile::fileSaveError);
+
+    bool saveResult = configFile.save();
+    QVERIFY(!saveResult);
+    QCOMPARE(errorSpy.count(), 1);
+
+    auto arguments = errorSpy.takeFirst();
+    QCOMPARE(arguments.at(0).toString(), testFileName);
+    QVERIFY(!arguments.at(1).toString().isEmpty());
+}
+
+void TestQtNoidAppConfigFile::testConfigFileSaveErrorSignalNotEmittedOnSuccess()
+{
+    QString testFileName = __func__ + QString(".json");
+    QFile::remove(testFileName);
+
+    ConfigFile configFile(testFileName, this);
+    configFile.saveValue("Volume", 50.0);
+
+    QSignalSpy errorSpy(&configFile, &ConfigFile::fileSaveError);
+    QVERIFY(configFile.save());
+    QCOMPARE(errorSpy.count(), 0);
+}
+
 void TestQtNoidAppConfigFile::testConfigFileSaveEmptyFileResetTheFileContent()
 {
     QString testFileName = __func__ + QString(".json");
@@ -448,6 +499,42 @@ void TestQtNoidAppConfigFile::testConfigFileLoadShouldReplacesContent()
     QVERIFY(configFileA.contains("Page"));
     QVERIFY(!configFileA.contains("PageA"));
 
+}
+
+void TestQtNoidAppConfigFile::testConfigFileLoadingTheWrongFileShouldNotEraseExistingContent()
+{
+    // A load() that is rejected because the file's content doesn't match
+    // this Config's name must not touch what was already in memory: the
+    // validation has to happen before clear(), not after.
+    QString testFileName = __func__ + QString(".json");
+    QFile::remove(testFileName);
+
+    // Save a file under a name that will NOT match the config under test.
+    ConfigFile other(testFileName, this);
+    other.setName("OtherConfig");
+    other.saveValue("Volume", 50.0);
+    QVERIFY(other.save());
+
+    // This config already has its own name and content before attempting
+    // to load the mismatched file.
+    ConfigFile configFile(this);
+    configFile.setName("MyConfig");
+    configFile.saveValue("Brightness", 75.0);
+    QCOMPARE(configFile.count(), 1);
+
+    configFile.setFileName(testFileName);
+    QSignalSpy errorSpy(&configFile, &ConfigFile::fileLoadError);
+    QSignalSpy loadedSpy(&configFile, &ConfigFile::fileLoaded);
+
+    bool loadResult = configFile.load();
+    QVERIFY(!loadResult);
+    QCOMPARE(errorSpy.count(), 1);
+    QCOMPARE(loadedSpy.count(), 0);
+
+    // The failed load must not have wiped the content that was already there.
+    QCOMPARE(configFile.name(), "MyConfig");
+    QCOMPARE(configFile.count(), 1);
+    QCOMPARE(configFile.restoreAsDouble("Brightness", 0.0), 75.0);
 }
 
 void TestQtNoidAppConfigFile::testConfigFileShouldLoadFileOnCreation()

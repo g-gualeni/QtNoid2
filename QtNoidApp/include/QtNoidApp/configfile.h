@@ -28,6 +28,7 @@ signals:
     void fileNameChanged(const QString& value);
     void fileLoaded(const QString& fileName);
     void fileLoadError(const QString& fileName, const QString& errorString);
+    void fileSaveError(const QString& fileName, const QString& errorString);
 
 private:
     void initFileName(const QString& fileName);
