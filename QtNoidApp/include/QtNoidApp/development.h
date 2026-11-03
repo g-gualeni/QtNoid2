@@ -11,6 +11,8 @@ class QShortcut;
 class QAction;
 class QMenu;
 
+class TestQtNoidAppDevelopment;   // forward declaration, in the global namespace
+
 
 namespace QtNoid {
 namespace App {
@@ -27,6 +29,9 @@ public:
     static QAction *initConfigFromResources(QMenu *developmentMenu, const QString &resFileOrPrefix);
 
 private:
+    static QString screenshotFileName(QWidget *parent, const QString &destinationFileOrPath);
+    friend class ::TestQtNoidAppDevelopment; // Only for White Box testing
+
 };
 
 

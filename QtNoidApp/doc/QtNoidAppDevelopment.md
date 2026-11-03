@@ -4,16 +4,18 @@ The design prioritizes ease of integration through automation, though this appro
 
 ## Static Methods
 
-- `QShortcut *initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence, QString destinationPath, bool saveToClipboard, bool openDestinationPath)`: 
-  This is an helper method to simplify creating screenshots of an application, for documentation purpose. The method Initializes and returns a keyboard shortcut for capturing full dialog screenshot of current dialog. The lambda function to intercept the shortcut and save it to a file or to the clipboard is automatically created. When triggered, this shortcut captures a screenshot of the entire dialog window and saves it to the specified **destination path**. By default, the captured image ia copied to the system clipboard for immediate use, and the folder where it has been saved will be opened.
-	* ***Parameters**:
-		*  **parent**: the parent widget that will own the shortcut and destinationPath is empty it is used to evaluate the screenshot image file name.
-		* **keySequence**: the keyboard combination that triggers the screenshot. Ff empty the default value **"Ctrl+Shift+S"** will be used. This is translated as "Cmd+Shift+S" on macOS.
-		* **destinationFileOrPath**: it could be a file path for the resulting screenshot or a folder where the screenshot will be saved. If empty the screenshot will be saved in the application execution folder. If it doesn't contains a FileName, the image file name will be the application window title followed by -windows or by -macos depending on the operating system. If the **destinationPath** is empty then the screenshot will be saved in appExeOrAppBundleDirPath(). Multiple screenshot are managed using [QtNoid::Common::File::autoNaming()](../../QtNoidCommon/doc/QtnoidCommonFile.md).
-		* **saveToClipboard**: If true, copies the captured image to clipboard, as an image, in addition to saving to the file.
-		* **openDestinationPath**: if true opens the folder where the image has been saved to speed up the use for documentation.
-	  * ***Returns**: 
-		  * A pointer to the configured QShortcut object that handles the screenshot  functionality. The object is destroyed automatically when parent is destroyed.
+- `QShortcut *initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence = "Ctrl+Shift+S", QString destinationFileOrPath = {}, bool saveToClipboard = true, bool openDestinationPath = true)`:
+  A helper to simplify creating screenshots of an application, for documentation purposes. It creates and returns a keyboard shortcut that, when triggered, grabs a screenshot and saves it to disk, optionally also copying it to the clipboard and revealing the folder it was saved to. Returns `nullptr`, without doing anything else, if `parent` is `nullptr`.
+
+  The screenshot itself is of the `QMainWindow` found by walking up from `parent` (its frame, not just `parent`'s own geometry) - if `parent` isn't, and isn't contained in, a `QMainWindow`, nothing is captured (an empty image) and saving it fails.
+	* **Parameters**:
+		* **parent**: the widget that will own the shortcut (destroyed together with it), and whose `QMainWindow` ancestor is captured. It's also used, when `destinationFileOrPath` doesn't name a file, to find that same `QMainWindow` and use its title to build the screenshot's file name.
+		* **keySequence**: the key combination that triggers the screenshot. Defaults to `"Ctrl+Shift+S"`, which (like any sequence built from the portable `"Ctrl"` mnemonic) is triggered with Cmd+Shift+S on macOS, since Qt remaps `Ctrl`/`Cmd` on that platform.
+		* **destinationFileOrPath**: a full file path for the screenshot, a folder to save it in, or empty. If it names a file (i.e. it has a suffix), that exact path is used as-is. Otherwise it's treated as a folder - the application's own folder (`Core::appExeOrAppBundleDirPath()`) if empty - and the file name is built as `<Title>-<os>.png`, where `<Title>` is the camelCase title of the `QMainWindow` found from `parent` (or just `Screenshot` if none is found) and `<os>` is `QSysInfo::productType()` (e.g. `windows`, `macos`). Either way, [`QtNoid::Common::File::autoNaming()`](../../QtNoidCommon/doc/QtnoidCommonFile.md) is applied to avoid overwriting an existing screenshot.
+		* **saveToClipboard**: if true, also copies the captured image to the system clipboard, whether or not saving to disk succeeded.
+		* **openDestinationPath**: if true, and the screenshot was saved successfully, opens (via `QDesktopServices::openUrl()`) the folder that received the file.
+	* **Returns**: a pointer to the configured `QShortcut`, owned by `parent` and destroyed together with it; or `nullptr` if `parent` is `nullptr`.
+
 
 - `QAction *saveConfigToProject(QMenu *developmentMenu, const QString &projectFolder)`:
 

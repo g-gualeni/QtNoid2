@@ -35,27 +35,36 @@ set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # Source Files
 # =============================================================================
 set(SOURCES
-    ${SOURCES_DIR}/txt2json.cpp
     ${SOURCES_DIR}/yaml2json.cpp
-    ${SOURCES_DIR}/yaml_token.h
-    ${SOURCES_DIR}/yaml_token.cpp
-    ${SOURCES_DIR}/yaml_astnode.h
-    ${SOURCES_DIR}/yaml_astnode.cpp
-    ${SOURCES_DIR}/yaml_lexer.h
-    ${SOURCES_DIR}/yaml_lexer.cpp
-    ${SOURCES_DIR}/yaml_parser.h
-    ${SOURCES_DIR}/yaml_parser.cpp
-    ${SOURCES_DIR}/yaml_generator.h
-    ${SOURCES_DIR}/yaml_generator.cpp
 )
 
 # File header
 set(HEADERS
-    ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
+    ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
-    ${HEADERS_DIR}/${PROJECT_NAME}/txt2json.h
     ${HEADERS_DIR}/${PROJECT_NAME}/yaml2json.h
 )
+
+
+# =============================================================================
+# Third party: rapidyaml (https://github.com/biojppm/rapidyaml), MIT license
+# Built as a static library and linked PRIVATE: it is not exposed to the users
+# of QtNoidJson.
+# =============================================================================
+include(FetchContent)
+set(RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS ON CACHE BOOL "ryml exception classes" FORCE)
+set(RYML_INSTALL OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(ryml
+    GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+    GIT_TAG        v0.16.0
+    GIT_SHALLOW    TRUE
+    SOURCE_SUBDIR  _download_only_   # download only: the project is added below
+)
+FetchContent_MakeAvailable(ryml)
+# EXCLUDE_FROM_ALL: ryml is only used to build QtNoidJson, and its files are
+# not copied by "cmake --install"
+add_subdirectory(${ryml_SOURCE_DIR} ${ryml_BINARY_DIR} EXCLUDE_FROM_ALL)
+set_target_properties(ryml PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 # =============================================================================
@@ -86,6 +95,8 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
         Qt6::Core
         QtNoidCommon
+    PRIVATE
+        $<BUILD_INTERFACE:ryml::ryml>
 )
 
 # Set library properties
@@ -155,5 +166,6 @@ endif()
 # =============================================================================
 set(PROJECT_DOCS
     doc/QtNoidJson.md
+    doc/QtNoidJsonYaml2Json.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

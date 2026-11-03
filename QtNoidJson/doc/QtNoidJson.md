@@ -1,24 +1,7 @@
 # QtNoidJson
+This Library contains:
 
-## Overview
-
-This module contains:
-* Yaml2Json: this is a class that parse Yaml text into JSON
-* 
-
-The basic application is to help humans to generate JSON files using YAML that is more readable, less redundant and faster to write.
-There are a plenty of resources available to convert YAML to JSON, such as:
-https://onlineyamltools.com/convert-yaml-to-json
-
-
-
-
----------------------------------------------------
-
-- [**Txt2Json**](#class-txt2json): that simplify the creation of JSON docs using
-a simple plain text description.
-
-This is an example with almost all combinations
+- [**Yaml2Json**](QtNoidJsonYaml2Json.md): class that parses YAML text and converts it into a `QJsonObject`. The basic application is to help humans generate JSON files using YAML, which is more readable, less redundant and faster to write. The parsing is done by [rapidyaml](https://github.com/biojppm/rapidyaml) (MIT license), downloaded automatically by CMake and linked privately, and errors are reported through `isValid()`, `errorString()` and the `errorOccurred()` signal.
 
 ## CMake
 ```
@@ -26,16 +9,11 @@ find_package: QtNoidJson
 
 target_link_libraries: QtNoid::QtNoidJson
 ```
-
-&nbsp;
-
 ## Header
 
 ```cpp
 #include "QtNoidJson/QtNoidJson"
 ```
-
-&nbsp;
 
 ## Namespace
 
@@ -43,93 +21,9 @@ target_link_libraries: QtNoid::QtNoidJson
 using namespace QtNoid::Json;
 ```
 
-&nbsp;
+## Examples Using this module
 
-## Examples
+- **[JsonYamlToJsonTestSuite:](../../Examples/JsonYamlToJsonTestSuite/doc/JsonYamlToJsonTestSuite.md)** use this example to run the [**Yaml2Json**](QtNoidJsonYaml2Json.md) class against the official YAML test suite data sets and to compare the generated JSON with the expected one. Note: the tokens panel is no longer filled, since `tokens()` was removed with the new implementation.
 
-
-&nbsp;
-## Class: Txt2Json
-
-&nbsp;
-
-&nbsp;
-
-
-
-# YAML IS THE FUTURE
-
-Latest version for YAML is 1.2.2 on Oct 1, 2021
-https://github.com/yaml/yaml-spec/tags
-
-
-Test Suite to validate the translator:
-https://github.com/yaml/yaml-test-suite
--> To have a data set for test, checkout the latest branch data
-
-
-This is the YAML test matrix
-https://github.com/perlpunk/yaml-test-matrix
-
-Notice the - YAML style to create an array of objects
-
-Online converter YAML to JSON
-https://jsonformatter.org/yaml-to-json
-
-## YAML Lexer Naming
- - STR: (+STR / -STR) this is the start and stop of the stream
- - DOC: (+DOC / -DOC) this is the start and stop of a YAML doc. A YAML stream can 
-    contains multiple docs.
- - MAP: this is key value structure
- - VAL (=VAL): this is the key or the value in a key value pair
- - SEQ (+SEQ / -SEQ): this mark the start or end of a sequence in a list or an array
-
-
-## Example
-```
-person:
-    name: "Mario Rossi"
-    age: 30
-    active: true
-    email: mario.rossi@example.com
-    address:
-        city: Milano
-        cap: 20100
-        street: "Via Roma 123"
-    hobbies: [calcio, cucina, lettura]
-    tags: ["tag con spazi", semplice, altro]
-    social:
-        platforms: [facebook, twitter, linkedin, instagram]
-        followers: [1500, 2300, 890, 4200]
-    contacts:
-        - name: "Luca Bianchi"
-          phone: "333-1234567"
-          email: luca@example.com
-        - name: "Anna Verdi"
-          phone: "347-7654321"
-          email: anna@example.com
-
-```
-
-
-Caratteristiche chiave:
-- ✅ Indentazione invece di graffe (opzionale)
-- ✅ Stringhe senza virgolette (se senza spazi)
-- ✅ Sintassi ibrida (graffe + indentazione)
-- ✅ Array bracket [...] e lista con -
-- ✅ Commenti // e #
-- ✅ Conversione bidirezionale DSL ↔ JSON
-- ✅ Gestione errori con linea e colonna
-
-
-&nbsp;
-## 3 Levels architecture
-
-DSL Text → [LEXER] → Tokens → [PARSER] → AST → [GENERATOR] → JSON
-
-DSL: 
-AST: Abstract Syntax Tree
-&nbsp;
 
 [← Back to README](../../README.md)
-

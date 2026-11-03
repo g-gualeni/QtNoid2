@@ -17,7 +17,7 @@ int Config::getNextUniqueId()
 {
     QMutexLocker locker(&s_uniqueIdMutex);
     if (s_nextUniqueId == INT_MAX) {
-        s_nextUniqueId = 0;  // Reset if overflow
+        s_nextUniqueId = 20;  // Reset if overflow
     }
     return s_nextUniqueId++;
 }

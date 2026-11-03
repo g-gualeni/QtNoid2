@@ -25,9 +25,6 @@ Each example is a standalone CMake project with its own documentation page, link
 
 ## QtNoidJson examples
 
-* **[JsonTxt2JsonBasicUsage](JsonTxt2JsonBasicUsage/doc/JsonTxt2JsonBasicUsage.md)**:
-  Basic usage of the Txt2Json conversion features from QtNoidJson.
-
 * **[JsonYamlToJsonTestSuite](JsonYamlToJsonTestSuite/doc/JsonYamlToJsonTestSuite.md)**:
   Comprehensive test suite that validates YAML to JSON conversion across various formats and edge cases.
 

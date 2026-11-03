@@ -7,59 +7,43 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QSharedPointer>
 
-
-// YAML Text → [LEXER] → Tokens → [PARSER] → AST → [GENERATOR] → QJsonObject
-
-class TestQtNoidJsonYaml2Json;
+// YAML Text → [rapidyaml] → JSON text → [QJsonDocument] → QJsonObject / QJsonArray
 
 namespace QtNoid {
 namespace Json {
 
-namespace Internal {
-    class Lexer;
-    class Parser;
-}
-
-
-
-class QTNOIDJSON_EXPORT Yaml2Json :  public QObject
+class QTNOIDJSON_EXPORT Yaml2Json : public QObject
 {
     Q_OBJECT
 
-    friend class ::TestQtNoidJsonYaml2Json;
-
 public:
     explicit Yaml2Json(QObject *parent = nullptr);
-    explicit Yaml2Json(const QString yaml, QObject *parent = nullptr);
+    explicit Yaml2Json(const QString &yaml, QObject *parent = nullptr);
 
-    bool isValid() const {return m_isValid;}
+    bool isValid() const { return m_isValid; }
     QString errorString() const { return m_error; }
 
-    QString yaml() const;
+    QString yaml() const { return m_yaml; }
     void setYaml(const QString &newYaml);
 
-    QJsonObject json() const { return m_json; }
-    QString jsonAsString() const;
+    QJsonDocument document() const { return m_doc; }
+    QJsonObject json() const { return m_doc.object(); }
+    QJsonArray jsonArray() const { return m_doc.array(); }
+    QString jsonAsString(QJsonDocument::JsonFormat format = QJsonDocument::Indented) const;
 
-    QStringList tokens();
+    static QJsonDocument convert(const QString &yaml, QString *error = nullptr);
 
 signals:
-    void errorOccurred(const QString& error);
+    void errorOccurred(const QString &error);
 
 private:
     QString m_yaml;
-    QJsonObject m_json;
+    QJsonDocument m_doc;
     bool m_isValid = true;
     QString m_error;
-    QSharedPointer<Internal::Lexer> m_lexer;
-    QSharedPointer<Internal::Parser> m_parser;
 
-    QSharedPointer<Internal::Lexer> lexer() const;
-    void setError(const QString& error);
-    void convert();
-
+    void update();
 };
 
 } // namespace Json

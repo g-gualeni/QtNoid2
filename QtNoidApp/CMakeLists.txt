@@ -46,7 +46,7 @@ set(SOURCES
 
 # File header
 set(HEADERS
-    ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
+    ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
     ${HEADERS_DIR}/${PROJECT_NAME}/core.h
     ${HEADERS_DIR}/${PROJECT_NAME}/parameter.h

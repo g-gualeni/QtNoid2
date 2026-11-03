@@ -1,4 +1,5 @@
 #include <QTest>
+#include <QSignalSpy>
 #include <QtNoidJson/QtNoidJson>
 
 class TestQtNoidJsonYaml2Json : public QObject
@@ -189,7 +190,6 @@ R"(User:
     // qDebug() << converter.yaml();
     // qDebug() << converter.json();
     // qDebug() << expected;
-    // qDebug() << converter.errorString();
 
     QVERIFY(converter.isValid());
 
@@ -234,13 +234,29 @@ User Object:
 
 void TestQtNoidJsonYaml2Json::testDeepNesting()
 {
-    QVERIFY(0);
+    QtNoid::Json::Yaml2Json converter(
+        "a:\n"
+        "  b:\n"
+        "    c:\n"
+        "      d:\n"
+        "        e:\n"
+        "          f: deep\n");
 
+    QVERIFY(converter.isValid());
+    QJsonObject obj = converter.json();
+    QJsonValue v = obj;
+    for (const char *key : {"a", "b", "c", "d", "e"})
+        v = v.toObject().value(QLatin1String(key));
+    QCOMPARE(v.toObject().value("f").toString(), QString("deep"));
 }
 
 
 void TestQtNoidJsonYaml2Json::testMixedStructures_data()
 {
+    QTest::addColumn<QString>("yaml");
+    QTest::addColumn<QString>("path");      // keys separated by '/', array index as number
+    QTest::addColumn<QVariant>("expected");
+
     QString yaml;
 
     // Array of multiple objects
@@ -256,6 +272,8 @@ users:
     age: 35
     active: true
 )";
+    QTest::newRow("array of objects") << yaml << "users/1/name" << QVariant("Bob");
+    QTest::newRow("array of objects bool") << yaml << "users/2/active" << QVariant(true);
 
     // Array and Objects mixed
     yaml = R"(
@@ -272,6 +290,9 @@ product:
     - rating: 4
       comment: Good value
 )";
+    QTest::newRow("mixed double") << yaml << "product/price" << QVariant(999.99);
+    QTest::newRow("mixed flow seq") << yaml << "product/tags/2" << QVariant("portable");
+    QTest::newRow("mixed seq of maps") << yaml << "product/reviews/1/rating" << QVariant(4);
 
     // Configuration File
     yaml = R"(
@@ -294,21 +315,68 @@ server:
         url: redis://localhost:6379
         pool: 5
 )";
-
-
-
-
+    QTest::newRow("config url") << yaml << "server/database/connections/1/url" << QVariant("redis://localhost:6379");
+    QTest::newRow("config methods") << yaml << "server/endpoints/0/methods/1" << QVariant("POST");
+    QTest::newRow("config int") << yaml << "server/port" << QVariant(8080);
 }
 
 void TestQtNoidJsonYaml2Json::testMixedStructures()
 {
-    QVERIFY(0);
+    QFETCH(QString, yaml);
+    QFETCH(QString, path);
+    QFETCH(QVariant, expected);
 
+    QtNoid::Json::Yaml2Json converter(yaml);
+    QVERIFY2(converter.isValid(), qPrintable(converter.errorString()));
+
+    QJsonValue value = converter.json();
+    const QStringList keys = path.split('/');
+    for (const QString &key : keys) {
+        bool isIndex = false;
+        int index = key.toInt(&isIndex);
+        value = isIndex ? value.toArray().at(index) : value.toObject().value(key);
+    }
+    QCOMPARE(value.toVariant(), expected);
 }
 
 void TestQtNoidJsonYaml2Json::testYaml2Json()
 {
-    QVERIFY(0);
+    // Error reporting
+    QtNoid::Json::Yaml2Json converter;
+    QSignalSpy spy(&converter, &QtNoid::Json::Yaml2Json::errorOccurred);
+    converter.setYaml("a: [1, 2\nb: 3\n");
+    QVERIFY(!converter.isValid());
+    QVERIFY(converter.errorString().startsWith("YAML error at line 2, column 1"));
+    QVERIFY(converter.json().isEmpty());
+    QCOMPARE(spy.count(), 1);
+
+    // Recovery after a valid text
+    converter.setYaml("ok: true");
+    QVERIFY(converter.isValid());
+    QVERIFY(converter.errorString().isEmpty());
+    QCOMPARE(converter.json()["ok"].toBool(), true);
+
+    // Empty text gives an empty object
+    converter.setYaml("");
+    QVERIFY(converter.isValid());
+    QVERIFY(converter.json().isEmpty());
+
+    // Anchors and aliases are resolved
+    converter.setYaml("base: &b {x: 1}\ncopy: *b\n");
+    QVERIFY(converter.isValid());
+    QCOMPARE(converter.json().value("copy").toObject().value("x").toInt(), 1);
+
+    // Root sequence
+    converter.setYaml("- 1\n- two\n");
+    QVERIFY(converter.isValid());
+    QVERIFY(converter.document().isArray());
+    QCOMPARE(converter.jsonArray().at(1).toString(), QString("two"));
+
+    // Static helper
+    QString error;
+    QJsonDocument doc = QtNoid::Json::Yaml2Json::convert("k: v", &error);
+    QVERIFY(error.isEmpty());
+    QCOMPARE(doc.object()["k"].toString(), QString("v"));
 }
 
 

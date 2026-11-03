@@ -19,6 +19,28 @@
 namespace QtNoid {
 namespace App {
 
+QString Development::screenshotFileName(QWidget *parent, const QString &destinationFileOrPath)
+{
+    QFileInfo FI(destinationFileOrPath);
+    if (!FI.suffix().isEmpty()) {
+        // destinationFileOrPath is already a full file path.
+        return FI.absoluteFilePath();
+    }
+
+    // No extension: destinationFileOrPath is a folder (or, if empty, the
+    // app's own folder is used), and the file name is built from the
+    // window title (or a generic name) plus the OS.
+    QString folder = destinationFileOrPath.isEmpty() ? Core::appExeOrAppBundleDirPath()
+                                                     : destinationFileOrPath;
+
+    QString osName = QSysInfo::productType();
+    auto mainWindow = Core::mainWindowFromWidget(parent);
+    QString baseName = (mainWindow == nullptr)
+                           ? QStringLiteral("Screenshot")
+                           : QtNoid::Common::Text::convertToCamelCase(mainWindow->windowTitle());
+
+    return QDir::cleanPath(folder + "/" + baseName + "-" + osName + ".png");
+}
 
 QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence,
                                                    QString destinationFileOrPath,
@@ -32,41 +54,16 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
     parent->connect(shortCut, &QShortcut::activated, parent, [=](){
         auto screenshot =  Core::fullDialogGrab(parent);
 
-        QFileInfo FI(destinationFileOrPath);
-        QString fullFilePath = destinationFileOrPath;
-        QString finalFilePath;
-        if (FI.suffix().isEmpty()) {
-            // No extension provided - it is a path not a full file path
-            // Gather the class / window name
-            if(fullFilePath.isEmpty())
-            {
-                fullFilePath = QtNoid::App::Core::appExeOrAppBundleDirPath();
-            }
-
-            QString osName = QSysInfo::productType();
-            auto mainWindow = Core::mainWindowFromWidget(parent);
-            if(mainWindow == nullptr){
-                osName =  "Screenshot-" + osName + ".png";
-            }
-            else {
-                osName = QtNoid::Common::Text::convertToCamelCase(mainWindow->windowTitle())
-                         + "-" + osName + ".png";
-                // qDebug() << Q_FUNC_INFO << osName;
-            }
-            finalFilePath = QDir::cleanPath(fullFilePath + "/" + osName);            
-        }
-        else {
-            finalFilePath = FI.absoluteFilePath();
-            fullFilePath = FI.absolutePath();
-        }
+        QString finalFilePath = screenshotFileName(parent, destinationFileOrPath);
         finalFilePath = QtNoid::Common::File::autoNaming(finalFilePath);
         bool res = screenshot.save(finalFilePath);
+
         if(saveToClipboard) {
             QClipboard *clipboard = QApplication::clipboard();
             clipboard->setImage(screenshot);
         }
         if(res && openDestinationPath) {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(fullFilePath));
+            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(finalFilePath).absolutePath()));
         }
         qDebug() << "saveToClipboard:" << saveToClipboard <<
             "Destination:" << finalFilePath << "->SaveResult:" << res;

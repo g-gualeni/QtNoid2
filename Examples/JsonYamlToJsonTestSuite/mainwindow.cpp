@@ -515,7 +515,7 @@ void MainWindow::updateUI_convertYamlToJson()
 
     auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
     ui->txtJsonOutput->setPlainText(converter.jsonAsString());
-    ui->txtTokensOutput->setPlainText(converter.tokens().join("\n"));
+    ui->txtTokensOutput->clear(); // tokens() removed: the parser is now rapidyaml
     ui->txtErrorOutput->setPlainText(converter.errorString());
 }
 

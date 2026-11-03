@@ -19,9 +19,7 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
     * [**Config**](QtNoidApp/doc/QtNoidAppConfig.md): container class to manage a list of parameters with binding support and serialization.
     * [**Development**](QtNoidApp/doc/QtNoidAppDevelopment.md): API collection to simplify the application development and not intended to be customer facing.
 * **[QtNoidJson](QtNoidJson/doc/QtNoidJson.md)**:
-    This lib contains the class Yaml2Json that simplify the creation of simple
-    JSON doc, starting from a quick textual description with a few rules.
-    This is still under development.
+    This lib contains the class Yaml2Json that simplify the creation of JSON doc, starting from a quick textual description (Yaml) with a few rules. This is still under development.
 * **[QtNoidUiCommon](QtNoidUiCommon/doc/QtNoidUiCommon.md)**:
     This library is a collection of functionality that each desktop application should use. Main classes are:
     * [**Core**](QtNoidUiCommon/doc/QtNoidUiCommonCore.md): save and restore the content of UI widgets (for example a combo box) to and from a `QJsonObject`.
