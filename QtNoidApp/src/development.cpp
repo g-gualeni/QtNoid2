@@ -149,11 +149,15 @@ QAction* Development::initConfigFromResources(QMenu *developmentMenu, const QStr
     QString resConfigFile = resFile.filePath();
 
     parent->connect(action, &QAction::triggered, [appConfigFile, resConfigFile](){
+        if (!QFile::exists(resConfigFile)) {
+            qDebug() << "initConfigFromResources: " << resConfigFile << "not found - check set(CMAKE_AUTORCC ON)";
+            return;
+        }
         QFile::remove(appConfigFile);
-        QFile newFile(resConfigFile);
+        QFile newFile(resConfigFile);        
         auto res = newFile.copy(appConfigFile);
         if(!res) {
-            qDebug() << "initConfigFromResources Error copying file" << resConfigFile;
+            qDebug() << "initConfigFromResources Error copying file" << resConfigFile << "to: " << appConfigFile;
             return;
         }
         QFile::setPermissions(appConfigFile, QFile::ReadOwner | QFile::WriteOwner);

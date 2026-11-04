@@ -1,21 +1,31 @@
 {
-    "ConfigName": {
+    "QtNoid::Json::YamlToJson Test Suite": {
         "pages": [
             {
-                "Settings": {
+                "MainWindow": {
                     "parameters": [
                         {
-                            "Geometry": "AdnQywADAAAAAAIsAAAArwAABfwAAAM7AAACLAAAAM4AAAX8AAADOwAAAAAAAAAAB4AAAAIsAAAAzgAABfwAAAM7"
+                            "geometry": "AdnQywADAAAAAAKjAAABCgAABUkAAAMkAAACowAAASkAAAVJAAADJAAAAAAAAAAAB4AAAAKjAAABKQAABUkAAAMk"
                         },
                         {
-                            "CollectionFolderList": [
-                            ]
+                            "splitter": "AAAA/wAAAAEAAAADAAAAhQAAAUMAAADDAf////8BAAAAAQA="
                         },
                         {
-                            "CollectionFolderListCurrent": ""
+                            "CollectionFolderList": {
+                                "currentText": "",
+                                "items": [
+                                ]
+                            }
                         },
                         {
                             "yamlTestCollectionListCurrent": -1
+                        },
+                        {
+                            "collectionFolderList": {
+                                "currentText": "",
+                                "items": [
+                                ]
+                            }
                         }
                     ]
                 }

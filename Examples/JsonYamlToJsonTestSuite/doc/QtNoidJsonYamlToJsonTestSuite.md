@@ -8,6 +8,12 @@ This example provides a comprehensive test suite for YAML to JSON conversion fea
 
 JsonYamlToJsonTestSuite provides a Qt application that tests and validates the YAML to JSON conversion functionality from QtNoidJson library, ensuring correct handling of various YAML formats and edge cases.
 
+### Windows 11
+
+![](QtNoidJsonYamlToJsonTestSuite-windows.png)
+
+
+
 ## Building
 
 This example uses CMake for building. Ensure you have:

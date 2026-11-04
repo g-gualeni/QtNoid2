@@ -25,7 +25,7 @@ Each example is a standalone CMake project with its own documentation page, link
 
 ## QtNoidJson examples
 
-* **[JsonYamlToJsonTestSuite](JsonYamlToJsonTestSuite/doc/JsonYamlToJsonTestSuite.md)**:
+* **[QtNoidJsonYamlToJsonTestSuite](JsonYamlToJsonTestSuite/doc/QtNoidJsonYamlToJsonTestSuite.md)**:
   Comprehensive test suite that validates YAML to JSON conversion across various formats and edge cases.
 
 

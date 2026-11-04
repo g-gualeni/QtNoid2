@@ -74,11 +74,11 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] Aggiornare documentazione
 	- [x] Aggiornare screenshot Win11
 	- [ ] Aggiornare screenshot macOS
-- [ ] Esempio **QtNoid::App::ParametersPage Benchmark**
+- [ ] Esempio **QtNoid App ParametersPage Benchmark**
 	- [x] Aggiornare UI
 	- [x] Scrivere la documentazione
 	- [x] Screenshot Win11
-	- [ ] Screenshot masOs
+	- [ ] Screenshot macOS
 
 * [x] Libreria **`QtNoidCore`**
 	* [x] Check again
@@ -225,6 +225,8 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] Rimuovere Txt2Json
 	- [x] Rimuovere JSON Txt2Json Basic Usage example
 	- [x] QtNoidJson.md - aggiungere pagina per Yaml2Json
+	- [x] Incorporare rapidyaml come libreria
+	- [ ] Provare a compilare su macOS
 	- [ ] 
 
 
@@ -234,18 +236,29 @@ Passa a QtNoidJson - Yaml2Json
 
 ==🟡Come faccio a rendere esplicita la dipendenza da rapidyaml?==
 
+Non mi piace dipendere da GitHub per compilare, meglio qualcosa di statico
+
+
+
 finire implementation Yaml2Json library 
 Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
 * [ ] Examples ancora in sviluppo
 	* [ ] JsonTxt2JsonBasicUsage
 	* [ ] JsonYamlToJsonTestSuite
+- [ ] Esempio **QtNoid::Json::Yaml2Json JsonYamlToJsonTestSuite**
+	- [ ] Sistemare save / restore dei parametri iniziali
+	- [ ] Inserire Tab per selezionale modalità file o collection
+		- [x] Crea il tab
+		- [x] Salva / recupera la configurazione
+		- [ ] Attiva il salvataggio del file singolo
+		- [ ] sistemare l'attivazione del file usato l'ultima volta
+		- [ ] Mostrare il tab di errore se la conversione è fallita o il tab JSON se ha successo
+	- [ ] 
+	- [ ] 
+	- [ ] Devo anche creare un file esempio e metterlo nelle risorse
+	- [ ] 
 
-
-
-
-# QtNoidJson - DEV
-	- [ ] Avanti con YamlExample
 * Sistemare i campi nella finestra di dialogo principale
  - Creare il dataset per i numeri
  - Aggiornare anche qrc: 

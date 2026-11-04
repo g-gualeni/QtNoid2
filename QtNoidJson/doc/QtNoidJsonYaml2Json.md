@@ -10,7 +10,7 @@ YAML Text → [rapidyaml] → JSON text → [QJsonDocument::fromJson] → QJsonD
 - Anchors and aliases (`&name` / `*name`) are resolved before the conversion.
 - For a multi-document stream (`---`), only the first document is converted.
 - The root node must be a map (converted into a `QJsonObject`) or a sequence (converted into a `QJsonArray`). A plain scalar as root is reported as an error. An empty text gives an empty `QJsonObject`.
-- Scalars follow YAML 1.2 rules: `true`/`false` are booleans, `null` is null, numbers are numbers, everything else (including `yes`, `no`, `~`) is a string.
+- Scalars follow YAML 1.2 rules: `true`/`false` are Booleans, `null` is null, numbers are numbers, everything else (including `yes`, `no`, `~`) is a string.
 
 ## CMake dependency
 rapidyaml is downloaded by `FetchContent` (tag `v0.16.0`) at configure time, built as a static library and linked `PRIVATE` into QtNoidJson. It is not installed and it is not visible to the users of QtNoidJson. The first configure needs network access to github.com.

@@ -28,42 +28,23 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    // ui->cmdPrevious->setText("\u2B05");
-    // ui->cmdNext->setText("\u27a1\ufe0f"); // ➡️
-    auto save_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
-    ui->cmdSaveTestDataset->setIcon(save_icon);
-    ui->cmdSaveTestDataset->setIconSize({16,16});
-
-    auto new_icon = style()->standardIcon(QStyle::SP_FileIcon);
-    ui->cmdNewTestDataset->setIcon(new_icon);
-    ui->cmdNewTestDataset->setIconSize({16,16});
-
-    auto iconArrowLeft = style()->standardIcon(QStyle::SP_ArrowLeft);
-    ui->cmdPrevious->setIcon(iconArrowLeft);
-    ui->cmdPrevious->setIconSize({32,32});
-    ui->cmdPrevious->setText("");
-    auto iconArrowRight = style()->standardIcon(QStyle::SP_ArrowRight);
-    ui->cmdNext->setIcon(iconArrowRight);
-    ui->cmdNext->setIconSize({32,32});
-    ui->cmdNext->setText("");
-    ui->txtDescription->clear();
-
-    updateUI_initDevelopment();
 
     initAppConfigFile();
-    connect(appConfig, &QtNoid::App::ConfigFile::fileLoaded, this, [&](const QString& fName){
-        restoreFromAppConfig();
-    });
-    appConfig->load();
+    restoreFromAppConfig();
 
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
 
+    setWindowTitle("QtNoid::Json::YamlToJson Test Suite");
+
+    customizeUI();
+    customizeUI_initDevelopment();
+
+
+    //------------------------
     // Recent files management
     m_recentFilesManager = new recentFilesManager(ui->actionRecent_Files, this);
     connect(m_recentFilesManager, &recentFilesManager::fileSelected, this, [this](const QString& absoluteYamlFilePath){
-        updateUI_loadYamlFile(absoluteYamlFilePath);
-        updateUI_statusBar();
-        updateUI_convertYamlToJson();
+        loadSingleFile(absoluteYamlFilePath);
     });
     connect(m_recentFilesManager, &recentFilesManager::listCleared, this, [this](){
         appConfig->clearRecentFiles();
@@ -78,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Connect double-click signal from folder comboBox
     connect(ui->txtCollectionFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
     connect(ui->txtCollectionFolder, &FolderComboBox::currentTextChanged, this, [&](const QString &folder){
-        updateUI_scanTestCollectionFolder(collectionFolderAbsolutePath());
+        updateUI_scanTestCollectionFolder(collectionFolderPath());
         updateUI_progressBar();
         updateUI_txtCurrentFile();
         updateUI_cmdPrevNext();
@@ -106,21 +87,40 @@ MainWindow::MainWindow(QWidget *parent)
 
 }
 
+MainWindow::~MainWindow()
+{
+    const QString pageName = QtNoid::App::Core::groupNameFromObjectOrClass(this);
+    appConfig->setName(windowTitle());
+    appConfig->saveValue("geometry", saveGeometry(), pageName);
+    appConfig->saveValue("splitter", ui->splitter->saveState(), pageName);
+    auto comboJ = QtNoid::UiCommon::Core::saveComboBoxTextItems(ui->txtCollectionFolder);
+    appConfig->saveValue("collectionFolderList", comboJ, pageName);
+    appConfig->saveValue("yamlTestCollectionListCurrent", m_yamlTestCollectionListCurrent, pageName);
+    appConfig->saveValue("sourceMode", ui->tabWidgetSource->currentWidget()->objectName(), pageName);
+    appConfig->saveValue("singleFilePath", ui->txtSingleFile->text(), pageName);
+
+    delete ui;
+}
 
 void MainWindow::restoreFromAppConfig()
 {
-    // qDebug() << __func__ ;
+    // qDebug() << Q_FUNC_INFO;
+    const QString pageName = QtNoid::App::Core::groupNameFromObjectOrClass(this);
+    restoreGeometry(appConfig->restoreAsByteArray("geometry", saveGeometry(), pageName));
+    ui->splitter->restoreState(appConfig->restoreAsByteArray("splitter", ui->splitter->saveState(), pageName));
 
-    // Geometry
-    restoreGeometry(appConfig->restoreAsByteArray("Geometry", saveGeometry()));
+    const QString mode = appConfig->restoreAsString("sourceMode", "tabSingleFile", pageName);
+    if (auto page = ui->tabWidgetSource->findChild<QWidget*>(mode))
+        ui->tabWidgetSource->setCurrentWidget(page);
+
+    ui->txtSingleFile->setText(appConfig->restoreAsString("singleFilePath", {}, pageName));
 
     // Recent test collection folder list
-    auto comboJ = appConfig->restoreAsJson("CollectionFolderList", {});
+    auto comboJ = appConfig->restoreAsJson("collectionFolderList", {}, pageName);
     QtNoid::UiCommon::Core::restoreComboBoxTextItems(ui->txtCollectionFolder, comboJ);
-    // appConfig->restoreComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList", {});
 
 
-    updateUI_scanTestCollectionFolder(collectionFolderAbsolutePath());
+    updateUI_scanTestCollectionFolder(collectionFolderPath());
 
     // Last selected file
     setYamlTestCollectionListCurrent(appConfig->restoreAsInt("yamlTestCollectionListCurrent", 0));
@@ -128,15 +128,107 @@ void MainWindow::restoreFromAppConfig()
 }
 
 
-MainWindow::~MainWindow()
+
+void MainWindow::customizeUI()
 {
-    appConfig->saveValue("Geometry", saveGeometry());
-    // appConfig->saveComboBoxTextItems(ui->txtCollectionFolder, "CollectionFolderList");
-    auto comboJ = QtNoid::UiCommon::Core::saveComboBoxTextItems(ui->txtCollectionFolder);
-    appConfig->saveValue("CollectionFolderList", comboJ);
-    appConfig->saveValue("yamlTestCollectionListCurrent", m_yamlTestCollectionListCurrent);
-    delete ui;
+    // ui->cmdPrevious->setText("\u2B05");
+    // ui->cmdNext->setText("\u27a1\ufe0f"); // ➡️
+    auto save_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
+    ui->cmdSaveTestDataset->setIcon(save_icon);
+    ui->cmdSaveTestDataset->setIconSize({16,16});
+    ui->cmdSaveSingleFile->setIcon(save_icon);
+    ui->cmdSaveSingleFile->setIconSize({16,16});
+
+    auto new_icon = style()->standardIcon(QStyle::SP_FileIcon);
+    ui->cmdNewTestDataset->setIcon(new_icon);
+    ui->cmdNewTestDataset->setIconSize({16,16});
+
+    auto iconArrowLeft = style()->standardIcon(QStyle::SP_ArrowLeft);
+    ui->cmdPrevious->setIcon(iconArrowLeft);
+    ui->cmdPrevious->setIconSize({32,32});
+    ui->cmdPrevious->setText("");
+    auto iconArrowRight = style()->standardIcon(QStyle::SP_ArrowRight);
+    ui->cmdNext->setIcon(iconArrowRight);
+    ui->cmdNext->setIconSize({32,32});
+    ui->cmdNext->setText("");
+    ui->txtDescription->clear();
 }
+
+void MainWindow::customizeUI_initDevelopment()
+{
+    // qDebug() << __func__;
+#ifdef QT_NO_DEBUG
+    // Hide the menù Development when in release
+    QMenu* dev = ui->menuDevelopment;
+    dev->menuAction()->setVisible(false);
+    return;
+#else
+    auto developmentMenu = ui->menuDevelopment;
+    developmentMenu->addSeparator();
+    QtNoid::App::Development::saveConfigToProject(developmentMenu, SOURCE_FILES_PATH);
+    QtNoid::App::Development::initConfigFromResources(developmentMenu, ":/");
+
+    // Update the configuration if the config file is reloaded.
+    connect(appConfig, &QtNoid::App::ConfigFile::fileLoaded, this, [&](const QString& fName){
+        qDebug() << "File Loaded" << Q_FUNC_INFO;
+        restoreFromAppConfig();
+    });
+
+#endif
+
+
+}
+
+void MainWindow::loadSingleFile(const QString& fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return;
+    }
+
+    QTextStream in(&file);
+    auto yamlContent = in.readAll();
+    file.close();
+    setSingleFilePath(fileName);
+    // qDebug() << Q_FUNC_INFO << yamlContent.size();
+
+    updateUI_yamlInput(yamlContent);
+    updateUI_convertYamlToJson();
+    updateUI_recentFiles(fileName);
+    updateUI_statusBar(fileName);
+
+}
+
+void MainWindow::updateUI_yamlInput(const QString &yamlContent)
+{
+    ui->txtYAML->clear();
+    ui->txtYAML->setToolTip({});
+
+    if(yamlContent.isEmpty()){
+        // No YAML no party
+        ui->txtYAML->setPlainText("<-- Empty file -->");
+        return;
+    }
+
+    ui->txtYAML->setPlainText(yamlContent);
+}
+
+void MainWindow::fileOpenSingleFile()
+{
+    QString currentPath = singleFilePath();
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Load YAML File"), currentPath,
+                                                    tr("YAML Files (*.yml *.yaml);;All Files (*)"));
+
+    if (fileName.isEmpty())
+        return;
+
+    loadSingleFile(fileName);
+}
+
+
+
+
 
 void MainWindow::on_cmdConvertToJson_clicked()
 {
@@ -233,31 +325,7 @@ void MainWindow::updateUI_statusBar(const QString& msg)
 
 void MainWindow::on_actionLoadYAML_triggered()
 {
-    QString currentPath = collectionFolderAbsolutePath();
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Load YAML File"), currentPath,
-        tr("YAML Files (*.yml *.yaml);;All Files (*)"));
-
-    if (fileName.isEmpty())
-        return;
-
-    if(fileName.contains(currentPath)) {
-        // Is new file part of current collection?
-        auto relPath = QDir(currentPath).relativeFilePath(fileName);
-        if(m_yamlTestCollectionList.contains(relPath)) {
-            ui->txtCurrentFile->setCurrentText(relPath);
-        }
-        return;
-    }
-
-    // This is a different folder, so disable the collection
-    setCollectionFolder({});
-    ui->txtCurrentFile->clear();
-    m_yamlTestCollectionList.clear();
-
-    updateUI_loadYamlFile(fileName);
-    updateUI_convertYamlToJson();
-    updateUI_recentFiles(fileName);
+    fileOpenSingleFile();
 }
 
 void MainWindow::on_actionTestSuite_2022_01_17_triggered()
@@ -399,7 +467,7 @@ void MainWindow::setYamlTestCollectionListCurrent(int newYamlTestCollectionListC
 
 void MainWindow::updateUI_loadYamlFile(const QString &yamlFilePath)
 {
-    // qDebug() << __func__ << yamlFilePath;
+    qDebug() << __func__ << yamlFilePath;
 
     QString absoluteYamlFilePath;
     QString yamlContent;
@@ -410,7 +478,7 @@ void MainWindow::updateUI_loadYamlFile(const QString &yamlFilePath)
 
         absoluteYamlFilePath = yamlFilePath;
         if(QDir::isRelativePath(yamlFilePath)){
-            absoluteYamlFilePath = collectionFolderAbsolutePath()
+            absoluteYamlFilePath = collectionFolderPath()
                                + QDir::separator() + yamlFilePath;
         }
 
@@ -440,7 +508,7 @@ void MainWindow::updateUI_loadYamlFile(const QString &yamlFilePath)
     }
 
     ui->txtYAML->setPlainText(yamlContent);
-    QDir baseDir(collectionFolderAbsolutePath());
+    QDir baseDir(collectionFolderPath());
     auto tooltipPath = baseDir.relativeFilePath(absoluteYamlFilePath);
     ui->txtYAML->setToolTip(tooltipPath);
     ui->tabWidgetInput->setToolTip(tooltipPath);
@@ -515,21 +583,20 @@ void MainWindow::updateUI_convertYamlToJson()
 
     auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
     ui->txtJsonOutput->setPlainText(converter.jsonAsString());
-    ui->txtTokensOutput->clear(); // tokens() removed: the parser is now rapidyaml
     ui->txtErrorOutput->setPlainText(converter.errorString());
 }
 
 void MainWindow::onFolderComboBoxDoubleClicked()
 {
-    qDebug() << __func__ ;
+    qDebug() << Q_FUNC_INFO;
 
-    QString folderPath = collectionFolderAbsolutePath();
+    QString folderPath = collectionFolderPath();
     folderPath = QFileDialog::getExistingDirectory(this, tr("Select the main folder"), folderPath);
 
     if (folderPath.isEmpty())
         return;
 
-    setCollectionFolder(folderPath);
+    setCollectionFolderPath(folderPath);
 }
 
 
@@ -662,25 +729,11 @@ void MainWindow::initAppConfigFile()
     QFile newFile("://resources/JsonYamlToJsonTestSuite.json");
     newFile.copy(appConfigFile);
     QFile::setPermissions(appConfigFile, QFile::ReadOwner | QFile::WriteOwner);
+    appConfig->load();
+    // qDebug() << Q_FUNC_INFO << "appConfigFile: " << appConfigFile;
 }
 
 
-void MainWindow::updateUI_initDevelopment()
-{
-    // qDebug() << __func__;
-#ifdef QT_NO_DEBUG
-    // Hide the menù Development when in release
-    QMenu* dev = ui->menuDevelopment;
-    dev->menuAction()->setVisible(false);
-    return;
-#endif
-    // Creare i 2 menu
-    auto developmentMenu = ui->menuDevelopment;
-    developmentMenu->addSeparator();
-
-    QtNoid::App::Development::saveConfigToProject(developmentMenu, SOURCE_FILES_PATH);
-    QtNoid::App::Development::initConfigFromResources(developmentMenu, ":/");
-}
 
 
 
@@ -690,7 +743,7 @@ void MainWindow::onCreateNewTest()
 
     frmNewDataset dialog(this);
     QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
-    auto rootFolder = collectionFolderAbsolutePath();
+    auto rootFolder = collectionFolderPath();
     dialog.setRootFolder(rootFolder);
     if(dialog.exec() == 0) {
         // Request not accepted
@@ -762,16 +815,12 @@ void MainWindow::onCreateNewTest()
 void MainWindow::on_actionOpen_JsonYamlToJsonTestSuite_md_triggered()
 {
     QDialog dialog(this);
-    QString fileName = qAppName() + ".md";
+    QString fileName = QtNoid::Common::Text::convertToCamelCase(windowTitle()) + ".md";;
     dialog.setWindowTitle(this->windowTitle() + ": " +  fileName);
     dialog.resize(800, 600);
-    dialog.restoreGeometry(appConfig->restoreAsByteArray("Geometry", dialog.saveGeometry(), "MdViewer"));
-
+    dialog.restoreGeometry(appConfig->restoreAsByteArray("geometry", dialog.saveGeometry(), "MdViewer"));
 
     auto *browser = new QTextBrowser(&dialog);
-    // open link in the same text browser
-    browser->setOpenExternalLinks(true);
-
     auto *layout = new QVBoxLayout(&dialog);
     layout->addWidget(browser);
 
@@ -783,18 +832,20 @@ void MainWindow::on_actionOpen_JsonYamlToJsonTestSuite_md_triggered()
     }
     QString markdown = QString::fromUtf8(file.readAll());
     browser->setMarkdown(markdown);
+    browser->setOpenExternalLinks(false);
+    browser->setOpenLinks(false);
 
     dialog.exec();
 
-    appConfig->saveValue("Geometry", dialog.saveGeometry(), "MdViewer");
+    appConfig->saveValue("geometry", dialog.saveGeometry(), "MdViewer");
 
     dialog.saveGeometry();
 
 }
 
-void MainWindow::setCollectionFolder(const QString &absolutePath)
+void MainWindow::setCollectionFolderPath(const QString &path)
 {
-    if(absolutePath.isEmpty()) {
+    if(path.isEmpty()) {  // Set an empty path
         int index = ui->txtCollectionFolder->findText({});
         if (index == -1) {
             ui->txtCollectionFolder->addItem({});
@@ -805,7 +856,9 @@ void MainWindow::setCollectionFolder(const QString &absolutePath)
 
     // Remove root
     QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
-    auto folderPath = QDir(root).relativeFilePath(absolutePath);
+    auto folderPath = QDir(root).relativeFilePath(path);
+
+
 
     // Add the folder to the comboBox if it's not already there
     int index = ui->txtCollectionFolder->findText(folderPath);
@@ -818,7 +871,7 @@ void MainWindow::setCollectionFolder(const QString &absolutePath)
     }
 }
 
-QString MainWindow::collectionFolderAbsolutePath() const
+QString MainWindow::collectionFolderPath() const
 {
     auto relPath = ui->txtCollectionFolder->currentText();
     if(relPath.isEmpty()) {
@@ -828,5 +881,54 @@ QString MainWindow::collectionFolderAbsolutePath() const
                                    QDir::separator() + relPath);
 
     return resPath;
+}
+
+void MainWindow::setSingleFilePath(const QString &path)
+{
+    QDir base(QtNoid::App::Core::appExeOrAppBundleDirPath());
+    QString rel = base.relativeFilePath(path);
+
+    bool inside = QDir::isRelativePath(rel) && !rel.startsWith("../") && rel != "..";
+    if(inside) {
+        ui->txtSingleFile->setText(rel);
+    }
+    else {
+        ui->txtSingleFile->setText(path);
+    }
+}
+
+QString MainWindow::singleFilePath() const
+{
+    return ui->txtSingleFile->text();
+}
+
+
+
+void MainWindow::on_tabWidgetSource_currentChanged(int index)
+{
+    qDebug() << Q_FUNC_INFO << ui->tabWidgetSource->currentWidget()->objectName();
+
+    const bool single = (ui->tabWidgetSource->currentWidget() == ui->tabSingleFile);
+
+    if(single) {
+        ui->verticalLayoutWidget->setVisible(false);
+        loadSingleFile(singleFilePath());
+    }
+    else {
+        ui->verticalLayoutWidget->setVisible(true);
+
+    }
+}
+
+
+void MainWindow::on_cmdBrowseSingleFile_clicked()
+{
+    fileOpenSingleFile();
+}
+
+
+void MainWindow::on_cmdSaveSingleFile_clicked()
+{
+    qDebug() << Q_FUNC_INFO << "FINIRE";
 }
 

@@ -14,7 +14,7 @@ void recentFilesManager::updateRecentFilesMenu(const QStringList &recentFiles)
 
     QMenu *recentFilesMenu = m_recentFilesParent->menu();
     if (!recentFilesMenu) {
-        // Se non esiste ancora, crealo
+        // if the menu is not there, we create it
         recentFilesMenu = new QMenu(m_parentWidget);
         m_recentFilesParent->setMenu(recentFilesMenu);
     }
@@ -27,20 +27,20 @@ void recentFilesManager::updateRecentFilesMenu(const QStringList &recentFiles)
         QString displayName = QString("%1| %2").arg(ii + 1).arg(fileTitle);
 
         QAction *fileAction = recentFilesMenu->addAction(displayName);
-        fileAction->setData(fileName); // salva il path completo
+        fileAction->setData(fileName); // save the path without elision
 
-        // Connetti all'apertura del file
+        // Connect the action
         connect(fileAction, &QAction::triggered, this, [this, fileName](){
             emit fileSelected(fileName);
         });
     }
-    // Aggiungi separatore e opzione per pulire
+    // add separator and a command to reset the menu content
     if (!recentFiles.isEmpty()) {
         recentFilesMenu->addSeparator();
         QAction *clearAction = recentFilesMenu->addAction(tr("Clear Recent Files"));
         connect(clearAction, &QAction::triggered, this, [this, recentFilesMenu]() {
             recentFilesMenu->clear();
-            qDebug() << "clearRecentFiles()";
+            // qDebug() << "clearRecentFiles()";
             emit listCleared();
         });
     }

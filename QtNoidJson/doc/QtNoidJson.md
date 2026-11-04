@@ -23,7 +23,7 @@ using namespace QtNoid::Json;
 
 ## Examples Using this module
 
-- **[JsonYamlToJsonTestSuite:](../../Examples/JsonYamlToJsonTestSuite/doc/JsonYamlToJsonTestSuite.md)** use this example to run the [**Yaml2Json**](QtNoidJsonYaml2Json.md) class against the official YAML test suite data sets and to compare the generated JSON with the expected one. Note: the tokens panel is no longer filled, since `tokens()` was removed with the new implementation.
+- **[JsonYamlToJsonTestSuite:](../../Examples/JsonYamlToJsonTestSuite/doc/QtNoidJsonYamlToJsonTestSuite.md)** use this example to run the [**Yaml2Json**](QtNoidJsonYaml2Json.md) class against the official YAML test suite data sets and to compare the generated JSON with the expected one. Note: the tokens panel is no longer filled, since `tokens()` was removed with the new implementation.
 
 
 [← Back to README](../../README.md)

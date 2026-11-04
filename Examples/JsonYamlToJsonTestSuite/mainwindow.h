@@ -34,6 +34,12 @@ private slots:
 
     void on_actionOpen_JsonYamlToJsonTestSuite_md_triggered();
 
+    void on_tabWidgetSource_currentChanged(int index);
+
+    void on_cmdBrowseSingleFile_clicked();
+
+    void on_cmdSaveSingleFile_clicked();
+
 private:
     Ui::MainWindow *ui;
     QShortcut* m_screenshotShortcut;
@@ -42,10 +48,22 @@ private:
     int m_yamlTestCollectionListCurrent = 0;
 
 protected:
-    void setCollectionFolder(const QString &absolutePath);
-    QString collectionFolderAbsolutePath() const;
+    void setCollectionFolderPath(const QString &path);
+    QString collectionFolderPath() const;
+    void setSingleFilePath(const QString& path);
+    QString singleFilePath() const;
+
+
 
 private:
+    void customizeUI();
+    void customizeUI_initDevelopment();
+    void loadSingleFile(const QString &fileName);
+    void updateUI_yamlInput(const QString &yamlContent);
+
+    void fileOpenSingleFile();
+
+    //---- OLD to review
     void setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent);
     
     bool generateTestDataFromResource(const QString &dataPrefix);
@@ -58,7 +76,6 @@ private:
     void updateUI_txtCurrentFile();
 
     void updateUI_statusBar(const QString &msg = {});
-    void updateUI_initDevelopment();
 
     void onFolderComboBoxDoubleClicked();
     void onPreviousTest();
