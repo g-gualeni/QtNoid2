@@ -19,8 +19,10 @@
 #include <QUrl>
 
 #include <QColorSpace>
+#include <QSaveFile>
 #include <QStringLiteral>
 #include <QTextBrowser>
+
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -40,11 +42,18 @@ MainWindow::MainWindow(QWidget *parent)
     customizeUI_initDevelopment();
 
 
+    connect(ui->tabWidgetSource, &QTabWidget::currentChanged, [&](){
+        tabWidgetSourceUiUpdate();
+    });
+
     //------------------------
     // Recent files management
     m_recentFilesManager = new recentFilesManager(ui->actionRecent_Files, this);
     connect(m_recentFilesManager, &recentFilesManager::fileSelected, this, [this](const QString& absoluteYamlFilePath){
-        loadSingleFile(absoluteYamlFilePath);
+        updateUI_yamlInput(loadSingleFile(absoluteYamlFilePath));
+        updateUI_convertYamlToJson();
+        updateUI_recentFiles(absoluteYamlFilePath);
+        updateUI_statusBar(absoluteYamlFilePath);
     });
     connect(m_recentFilesManager, &recentFilesManager::listCleared, this, [this](){
         appConfig->clearRecentFiles();
@@ -109,22 +118,21 @@ void MainWindow::restoreFromAppConfig()
     restoreGeometry(appConfig->restoreAsByteArray("geometry", saveGeometry(), pageName));
     ui->splitter->restoreState(appConfig->restoreAsByteArray("splitter", ui->splitter->saveState(), pageName));
 
-    const QString mode = appConfig->restoreAsString("sourceMode", "tabSingleFile", pageName);
-    if (auto page = ui->tabWidgetSource->findChild<QWidget*>(mode))
-        ui->tabWidgetSource->setCurrentWidget(page);
-
+    // Load singl file collection
     ui->txtSingleFile->setText(appConfig->restoreAsString("singleFilePath", {}, pageName));
 
-    // Recent test collection folder list
+    // Load last collection configuration
     auto comboJ = appConfig->restoreAsJson("collectionFolderList", {}, pageName);
     QtNoid::UiCommon::Core::restoreComboBoxTextItems(ui->txtCollectionFolder, comboJ);
-
-
     updateUI_scanTestCollectionFolder(collectionFolderPath());
-
-    // Last selected file
     setYamlTestCollectionListCurrent(appConfig->restoreAsInt("yamlTestCollectionListCurrent", 0));
-    updateUI_loadYamlFile(m_yamlTestCollectionList.value(m_yamlTestCollectionListCurrent, {}));
+
+    // Restore tabWidgetSource configuration
+    const QString mode = appConfig->restoreAsString("sourceMode", "tabSingleFile", pageName);
+    if (auto page = ui->tabWidgetSource->findChild<QWidget*>(mode)) {
+        ui->tabWidgetSource->setCurrentWidget(page);
+    }
+    tabWidgetSourceUiUpdate();
 }
 
 
@@ -152,6 +160,24 @@ void MainWindow::customizeUI()
     ui->cmdNext->setIconSize({32,32});
     ui->cmdNext->setText("");
     ui->txtDescription->clear();
+
+    connect(ui->txtYAML->document(), &QTextDocument::modificationChanged, [&](bool changed){
+        // qDebug() << Q_FUNC_INFO << changed;
+        QString current = ui->tabWidgetInput->tabText(0);
+        if(changed) {
+            // tabInputYAML->windowTitle();
+            current += " [*]";
+            ui->tabWidgetInput->setTabText(0, current);
+        }
+        else {
+            current.replace("[*]", "");
+            ui->tabWidgetInput->setTabText(0, current.simplified());
+        }
+    });
+
+
+
+
 }
 
 void MainWindow::customizeUI_initDevelopment()
@@ -179,37 +205,40 @@ void MainWindow::customizeUI_initDevelopment()
 
 }
 
-void MainWindow::loadSingleFile(const QString& fileName)
+QString MainWindow::loadSingleFile(const QString& fileName)
 {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return;
+        return {};
     }
-
     QTextStream in(&file);
-    auto yamlContent = in.readAll();
+    QString yamlContent = in.readAll();
     file.close();
     setSingleFilePath(fileName);
-    // qDebug() << Q_FUNC_INFO << yamlContent.size();
+    return yamlContent;
+}
 
-    updateUI_yamlInput(yamlContent);
+void MainWindow::tabWidgetSourceUiUpdate()
+{
+    QString path;
+    if(ui->tabWidgetSource->currentWidget() == ui->tabSingleFile) {
+        ui->verticalLayoutWidget->setVisible(false);
+        path = singleFilePath();
+        updateUI_yamlInput(loadSingleFile(path));
+    }
+    else {
+        ui->verticalLayoutWidget->setVisible(true);
+        path = m_yamlTestCollectionList.value(0, {});
+        updateUI_loadYamlFile(path);
+    }
     updateUI_convertYamlToJson();
-    updateUI_recentFiles(fileName);
-    updateUI_statusBar(fileName);
-
+    updateUI_statusBar(path);
 }
 
 void MainWindow::updateUI_yamlInput(const QString &yamlContent)
 {
     ui->txtYAML->clear();
     ui->txtYAML->setToolTip({});
-
-    if(yamlContent.isEmpty()){
-        // No YAML no party
-        ui->txtYAML->setPlainText("<-- Empty file -->");
-        return;
-    }
-
     ui->txtYAML->setPlainText(yamlContent);
 }
 
@@ -223,7 +252,10 @@ void MainWindow::fileOpenSingleFile()
     if (fileName.isEmpty())
         return;
 
-    loadSingleFile(fileName);
+    updateUI_yamlInput(loadSingleFile(currentPath));
+    updateUI_convertYamlToJson();
+    updateUI_recentFiles(currentPath);
+    updateUI_statusBar(currentPath);
 }
 
 
@@ -577,13 +609,17 @@ void MainWindow::updateUI_loadYamlFile(const QString &yamlFilePath)
 
 void MainWindow::updateUI_convertYamlToJson()
 {
-
     QString yamlText = ui->txtYAML->toPlainText();
-    // qDebug() << __func__ << "LastYaml:" << yamlText;
-
     auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
     ui->txtJsonOutput->setPlainText(converter.jsonAsString());
     ui->txtErrorOutput->setPlainText(converter.errorString());
+
+    if(converter.errorString().isEmpty()) {
+        ui->tabWidgetOutput->setCurrentWidget(ui->tabOutputJson);
+    }
+    else {
+        ui->tabWidgetOutput->setCurrentWidget(ui->tabOutputErrors);
+    }
 }
 
 void MainWindow::onFolderComboBoxDoubleClicked()
@@ -902,25 +938,6 @@ QString MainWindow::singleFilePath() const
     return ui->txtSingleFile->text();
 }
 
-
-
-void MainWindow::on_tabWidgetSource_currentChanged(int index)
-{
-    qDebug() << Q_FUNC_INFO << ui->tabWidgetSource->currentWidget()->objectName();
-
-    const bool single = (ui->tabWidgetSource->currentWidget() == ui->tabSingleFile);
-
-    if(single) {
-        ui->verticalLayoutWidget->setVisible(false);
-        loadSingleFile(singleFilePath());
-    }
-    else {
-        ui->verticalLayoutWidget->setVisible(true);
-
-    }
-}
-
-
 void MainWindow::on_cmdBrowseSingleFile_clicked()
 {
     fileOpenSingleFile();
@@ -929,6 +946,39 @@ void MainWindow::on_cmdBrowseSingleFile_clicked()
 
 void MainWindow::on_cmdSaveSingleFile_clicked()
 {
-    qDebug() << Q_FUNC_INFO << "FINIRE";
+    const QString yaml = ui->txtYAML->toPlainText();
+    const QString fileName = singleFilePath();
+
+    if(QFileInfo::exists(fileName)) {
+        const auto answer = QMessageBox::warning(this, tr("Save YAML File"),
+                                                 tr("%1 already exists.\nDo you want to overwrite it?")
+                                                     .arg(QDir::toNativeSeparators(fileName)),
+                                                 QMessageBox::Yes | QMessageBox::No,
+                                                 QMessageBox::No);
+        if (answer != QMessageBox::Yes)
+            return;
+    }
+
+    QSaveFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Save YAML File"),
+                             tr("Cannot open %1:\n%2").arg(QDir::toNativeSeparators(fileName), file.errorString()));
+        return;
+    }
+    QTextStream out(&file);
+    out << yaml;
+    out.flush();
+
+    if (!file.commit()) {
+        QMessageBox::warning(this, tr("Save YAML File"),
+                             tr("Cannot save %1:\n%2").arg(QDir::toNativeSeparators(fileName), file.errorString()));
+        return;
+    }
+
+    ui->txtYAML->document()->setModified(false);
+
+    const QString bytes = QtNoid::Common::Scale::autoUpToExaByte(yaml.size());
+    updateUI_statusBar(tr("Saved %1 - %2").arg(QDir::toNativeSeparators(fileName), bytes));
+
 }
 

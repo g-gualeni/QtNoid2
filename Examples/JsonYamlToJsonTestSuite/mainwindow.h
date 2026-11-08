@@ -21,6 +21,7 @@ public:
     ~MainWindow();
 
 
+
 private slots:
     void on_cmdConvertToJson_clicked();
     void on_cmdConvertToYAML_clicked();
@@ -33,8 +34,6 @@ private slots:
     void on_actionSave_Dataset_triggered();
 
     void on_actionOpen_JsonYamlToJsonTestSuite_md_triggered();
-
-    void on_tabWidgetSource_currentChanged(int index);
 
     void on_cmdBrowseSingleFile_clicked();
 
@@ -58,7 +57,9 @@ protected:
 private:
     void customizeUI();
     void customizeUI_initDevelopment();
-    void loadSingleFile(const QString &fileName);
+    QString loadSingleFile(const QString &fileName);
+    void tabWidgetSourceUiUpdate();
+
     void updateUI_yamlInput(const QString &yamlContent);
 
     void fileOpenSingleFile();

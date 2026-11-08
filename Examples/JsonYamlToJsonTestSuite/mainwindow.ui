@@ -231,7 +231,7 @@
             <item>
              <widget class="QPlainTextEdit" name="txtYAML">
               <property name="placeholderText">
-               <string>Enter YAML here...</string>
+               <string>&lt;-EMPTY File-&gt; Enter YAML here...</string>
               </property>
              </widget>
             </item>
@@ -256,7 +256,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidgetExpected">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tabJsonExpected">
            <attribute name="title">
@@ -298,7 +298,7 @@
             <item>
              <widget class="QPlainTextEdit" name="txtErrorExpected">
               <property name="placeholderText">
-               <string>Error file is usually empty</string>
+               <string>No Error file</string>
               </property>
              </widget>
             </item>
@@ -345,7 +345,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidgetOutput">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tabOutputJson">
            <attribute name="title">
@@ -458,7 +458,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoadYAML">
    <property name="text">
-    <string>Load YAML...</string>
+    <string>Load Single YAML File...</string>
    </property>
   </action>
   <action name="actionTestSuite_2022_01_17">

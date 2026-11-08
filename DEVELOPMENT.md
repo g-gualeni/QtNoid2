@@ -235,10 +235,11 @@ Passa a QtNoidJson - Yaml2Json
 # QtNoidJson - DEV
 
 ==🟡Come faccio a rendere esplicita la dipendenza da rapidyaml?==
-
 Non mi piace dipendere da GitHub per compilare, meglio qualcosa di statico
 
-
+-> Creare un doc con la roadmap che raccolga tutte le user stories e le metta assieme
+-> Collegarlo alla pagina DEV
+-> Inserire il tutto in userStories.
 
 finire implementation Yaml2Json library 
 Finire
@@ -251,9 +252,17 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	- [ ] Inserire Tab per selezionale modalità file o collection
 		- [x] Crea il tab
 		- [x] Salva / recupera la configurazione
-		- [ ] Attiva il salvataggio del file singolo
-		- [ ] sistemare l'attivazione del file usato l'ultima volta
-		- [ ] Mostrare il tab di errore se la conversione è fallita o il tab JSON se ha successo
+		- [x] Attiva il salvataggio del file singolo
+		- [x] Cambia menu da load Yaml a load single file
+		- [x] Sincronizza contenuto pannelli con contenuto tab source
+		- [x] sistemare l'attivazione del file usato l'ultima volta
+		- [x] Mostrare il tab di errore se la conversione è fallita o il tab JSON se ha successo
+	- [ ] Sistemare la gestione della libreria di test
+		- [x] Gestire il caricamento in fase di startup
+		- [x] Quando clicco su collection carico il test selezionato
+		- [ ] Mostrare expected error se il file è presente nel test
+		- [ ] Mostrare un messaggio se il file atteso e quello caricato non sono gli stessi, usando confronto tra modelli json
+	- [ ] 
 	- [ ] 
 	- [ ] 
 	- [ ] Devo anche creare un file esempio e metterlo nelle risorse
@@ -296,6 +305,8 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
      - [ ] Scroll of all prefix
      - [ ] Update of prefix content
      
+## Yaml to Json validation test
+- [ ] Add a run feature that run through all examples and generate a report
 
 
 
@@ -322,11 +333,18 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 
 
 ---
-# Next Sprint Ideas
+# Known Issue
+* [ ] fullDialogGrab()  wrong display captured on macOs. It take a screenshot from the main display of the computer.
+
+
+---
+
+# Next Sprint Ideas / Roadmap
 
 # Qt Noid User Interface Library
 
-**QtNoid::UiCommon**: this is a collection of simple functionality that all desktop application need.
+# QtNoid::UiCommon: 
+this is a collection of simple functionality that all desktop application need.
 - [ ] QtNoidUiCommon::Core
 	- [x] ComboBox config Save/Restore from settings
 	- [ ] Recent Files Menu from settings
@@ -340,24 +358,33 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	- [ ] QtNoid::UiCommon::Settings: this dialog merge schema and value into an automatically generated dialog.
 	- [ ] QtNoid::UiCommon::Yaml: this dialog help the creation of a YAML script.
 
-**QtNoid::UiLogger**: this is a library with all you need to get logger from a device, save them, merge, display, rotate log files, search and so on
+# QtNoid::UiLogger: 
+this is a library with all you need to get logger from a device, save them, merge, display, rotate log files, search and so on
 
-**QtNoid::UiDisplay**: this is a library that handle image display:  ImageViewer with all functionality: Zoom, Pan, Keystone, Pixel value zoom, Histogram, Image Component, Histogram Stretching using CLAHE
+# QtNoid::UiDisplay: 
+this is a library that handle image display:  ImageViewer with all functionality: Zoom, Pan, Keystone, Pixel value zoom, Histogram, Image Component, Histogram Stretching using CLAHE
 	 **Keystone**: When a projector is tilted up, down, or sideways relative to the wall, the image stops being a perfect rectangle and becomes a **trapezoid** (narrower at one end, wider at the other). The term comes from its resemblance to the wedge-shaped keystone in stone arches.
 	
-**QtNoid::UiCommander:** this is a library with all widget and class necessary to play with files with a strong commitments on images
-	- [ ] File Move/Copy/Rename/Marshal using pattern matching
-	- [ ] File preview as tiles
+# QtNoid::UiCommander:
+this is a library with all widget and class necessary to play with files with a strong commitments on images:
+- [ ] File Move/Copy/Rename/Marshal using pattern matching
+- [ ] File preview as tiles
+- [ ] File selection
 
-## Yaml to Json validation test
-- [ ] Add a run feature that run through all examples and generate a report
+## QtNoid::ImgCollection
+Library to handle images as a collection creating a database of thumbnails, smart thumbnails, pre calculated preview
+The resulting collection can be feed into UICommander or UI Display for a fast image browsing
 
-## New QtNoid::JsonUI library 
-- Yaml / JSON UI editor
+
+
+## QtNoid::JsonUI library 
+- [ ] Yaml / JSON UI editor
+- [ ] Apply syntax highlighting
+- [ ] Simplify creation using snippets
 
 ## Upgrade QtNoid::Common::File
+This is just a library, without UI
 - [ ] Massive File Copy / Rename / Move could became Copy Move Marshal 
 - [ ] Massive File Rename: replace token in huge file list in multiple folders
 
-# Known Issue
-* [ ] fullDialogGrab()  wrong display captured on macOs. It take a screenshot from the main display of the computer.
+
