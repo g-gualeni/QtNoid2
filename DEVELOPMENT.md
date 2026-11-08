@@ -1,5 +1,12 @@
 # QtNoid Development Status
 
+> See also **[UserStories/RoadMap.md](UserStories/RoadMap.md)**
+>
+> See also **[QtNoidJson - DEV](#qtnoidjson-dev)**
+> 
+
+
+
 # Current Sprint (Sprint-004)
 
 # Sprint Goals
@@ -232,7 +239,7 @@ Passa a QtNoidJson - Yaml2Json
 
  
 
-# QtNoidJson - DEV
+# QtNoidJson-DEV
 
 ==🟡Come faccio a rendere esplicita la dipendenza da rapidyaml?==
 Non mi piace dipendere da GitHub per compilare, meglio qualcosa di statico
@@ -240,6 +247,9 @@ Non mi piace dipendere da GitHub per compilare, meglio qualcosa di statico
 -> Creare un doc con la roadmap che raccolga tutte le user stories e le metta assieme
 -> Collegarlo alla pagina DEV
 -> Inserire il tutto in userStories.
+
+appConfig->saveValue come qsizet
+
 
 finire implementation Yaml2Json library 
 Finire
@@ -260,10 +270,24 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 	- [ ] Sistemare la gestione della libreria di test
 		- [x] Gestire il caricamento in fase di startup
 		- [x] Quando clicco su collection carico il test selezionato
-		- [ ] Mostrare expected error se il file è presente nel test
+		- [x] Mostrare expected error se il file è presente nel test
+		- [x] updateUI_loadYamlFile: divedere in due parti con updateUI_loadExpectedFiles
+		- [x] updateUI_yamlInput(loadSingleFile(path)); servono o posso collassare su updateUI_loadYamlFile()?
+		- [x] Sistema file->Load single file
+		- [x] updateUI_statusBar() semplificare e rimuovere il calcolo del percorso spostandolo la responsabilità sul chiamanante
+		- [x] yamlStatusBarMsgFromCollectionList sbaglia il calcolo
+		- [x] C'è un problema con il marker del file modificato `[*] [*]`
+		- [ ] Gestire il caso del YAML modificato, con un pop-up per fare save delle modifiche
+
+
+
 		- [ ] Mostrare un messaggio se il file atteso e quello caricato non sono gli stessi, usando confronto tra modelli json
-	- [ ] 
-	- [ ] 
+		
+
+		- [ ] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
+	
+		- [ ] Controllare tutta la gestione recent files e vedere se la posso mettere in libreria
+		- [ ] QtNoid::Common::File - metodo per leggere e scriveere una stringa com file di testo.
 	- [ ] 
 	- [ ] Devo anche creare un file esempio e metterlo nelle risorse
 	- [ ] 
@@ -335,56 +359,3 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 ---
 # Known Issue
 * [ ] fullDialogGrab()  wrong display captured on macOs. It take a screenshot from the main display of the computer.
-
-
----
-
-# Next Sprint Ideas / Roadmap
-
-# Qt Noid User Interface Library
-
-# QtNoid::UiCommon: 
-this is a collection of simple functionality that all desktop application need.
-- [ ] QtNoidUiCommon::Core
-	- [x] ComboBox config Save/Restore from settings
-	- [ ] Recent Files Menu from settings
-	- [ ] QtNoidUiCommon::Combo: Folder comboBox Widget control with button to open file from folder and keep recent list using appConfig file.
-	- [ ] QtNoid::UiCommon::Core::About
-		- [ ] About Dialog with library information, application folder access, configuration file access
-	- [ ] QtNoid::UiCommon::Log
-		- [ ] UI for log display (Clear / Save to file / load from file)
-	- [ ] QtNoid::UiCommon::Doc
-		- [ ] Mark Down viewer for documentation with hyperlink triggering web browser
-	- [ ] QtNoid::UiCommon::Settings: this dialog merge schema and value into an automatically generated dialog.
-	- [ ] QtNoid::UiCommon::Yaml: this dialog help the creation of a YAML script.
-
-# QtNoid::UiLogger: 
-this is a library with all you need to get logger from a device, save them, merge, display, rotate log files, search and so on
-
-# QtNoid::UiDisplay: 
-this is a library that handle image display:  ImageViewer with all functionality: Zoom, Pan, Keystone, Pixel value zoom, Histogram, Image Component, Histogram Stretching using CLAHE
-	 **Keystone**: When a projector is tilted up, down, or sideways relative to the wall, the image stops being a perfect rectangle and becomes a **trapezoid** (narrower at one end, wider at the other). The term comes from its resemblance to the wedge-shaped keystone in stone arches.
-	
-# QtNoid::UiCommander:
-this is a library with all widget and class necessary to play with files with a strong commitments on images:
-- [ ] File Move/Copy/Rename/Marshal using pattern matching
-- [ ] File preview as tiles
-- [ ] File selection
-
-## QtNoid::ImgCollection
-Library to handle images as a collection creating a database of thumbnails, smart thumbnails, pre calculated preview
-The resulting collection can be feed into UICommander or UI Display for a fast image browsing
-
-
-
-## QtNoid::JsonUI library 
-- [ ] Yaml / JSON UI editor
-- [ ] Apply syntax highlighting
-- [ ] Simplify creation using snippets
-
-## Upgrade QtNoid::Common::File
-This is just a library, without UI
-- [ ] Massive File Copy / Rename / Move could became Copy Move Marshal 
-- [ ] Massive File Rename: replace token in huge file list in multiple folders
-
-

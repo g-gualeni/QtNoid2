@@ -22,6 +22,7 @@ public:
 
 
 
+
 private slots:
     void on_cmdConvertToJson_clicked();
     void on_cmdConvertToYAML_clicked();
@@ -44,24 +45,22 @@ private:
     QShortcut* m_screenshotShortcut;
     recentFilesManager* m_recentFilesManager;
     QStringList m_yamlTestCollectionList;
-    int m_yamlTestCollectionListCurrent = 0;
+    qsizetype m_yamlTestCollectionListCurrent = 0;
 
 protected:
     void setCollectionFolderPath(const QString &path);
     QString collectionFolderPath() const;
     void setSingleFilePath(const QString& path);
     QString singleFilePath() const;
-
+    QString yamlFullPathFromCollectionList();
+    QString yamlStatusBarMsgFromCollectionList();
+    void setCurrentSourceWidget(QWidget* widget);
 
 
 private:
     void customizeUI();
     void customizeUI_initDevelopment();
-    QString loadSingleFile(const QString &fileName);
     void tabWidgetSourceUiUpdate();
-
-    void updateUI_yamlInput(const QString &yamlContent);
-
     void fileOpenSingleFile();
 
     //---- OLD to review
@@ -69,14 +68,17 @@ private:
     
     bool generateTestDataFromResource(const QString &dataPrefix);
     void updateUI_loadYamlFile(const QString &yamlFilePath);
+    void updateUI_loadExpectedFiles(const QString &yamlFilePath);
+
     void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);
     void updateUI_scanTestCollectionFolder(const QString &folder);
     void updateUI_progressBar();
     void updateUI_cmdPrevNext();
     void updateUI_txtCurrentFile();
-
     void updateUI_statusBar(const QString &msg = {});
+    void updateUI_tabInputTitle();
+
 
     void onFolderComboBoxDoubleClicked();
     void onPreviousTest();

@@ -473,7 +473,7 @@
   </action>
   <action name="actionRecent_Files">
    <property name="text">
-    <string>Recent Files</string>
+    <string>Recent Single Files</string>
    </property>
   </action>
   <action name="actionTxt2JsonTestSuite_QtNoid_2_2_0">
