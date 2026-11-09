@@ -9,7 +9,7 @@ namespace UiCommon {
 
 
 
-bool Core::restoreComboBoxTextItems(QComboBox *cbo, const QJsonObject &cboConfig)
+bool Core::restoreComboBoxTextItems(QComboBox* cbo, const QJsonObject& cboConfig)
 {
     bool finalResult = false;
     do {
@@ -31,7 +31,7 @@ bool Core::restoreComboBoxTextItems(QComboBox *cbo, const QJsonObject &cboConfig
 
         QStringList items;
         const QJsonArray itemsArray = cboConfig.value("items").toArray();
-        for (const QJsonValue &val : itemsArray) {
+        for (const QJsonValue& val : itemsArray) {
             items << val.toString();
         }
         items.removeDuplicates();
@@ -55,7 +55,7 @@ bool Core::restoreComboBoxTextItems(QComboBox *cbo, const QJsonObject &cboConfig
     return finalResult;
 }
 
-QJsonObject Core::saveComboBoxTextItems(QComboBox *cbo)
+QJsonObject Core::saveComboBoxTextItems(QComboBox* cbo)
 {
     if(cbo == nullptr)
         return {};

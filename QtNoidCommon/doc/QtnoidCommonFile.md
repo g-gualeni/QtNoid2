@@ -21,12 +21,17 @@ This class contains a set of helper methods to work with files
   fileInfo and returns true if it guess this is a text file. 
 
 - `QString saveAsTextFile(const QString &data, const QString &filePath, const QString &basePath="", const QString &fileSuffix="*")`:
-  Save data from a string to a text file as specified by filePath. The parameter filePath can be a fileName with or without suffix (i.e. txt). We can also specify a base folder force the file suffix fileSuffix.
+  Quick method to save data from a string to a text file using `resolveAndPrepareFilePath()` to evaluate the full file name. In case of error the method returns an empty string 
   
 - `QString saveAsTextFile(const QStringList &data, const QString &filePath, const QString &basePath="", const QString &fileSuffix="*")`
-  Save a string list to a text file as specified by filePath. The parameter filePath can be a fileName with or without suffix (aka extension). We can also specify a base folder and ask the method to replace the file suffix.
+  Quick method to save data from a QStringList to a text file using `resolveAndPrepareFilePath()` to evaluate the full file name. In case of error the method returns an empty string. 
+
+- `QString resolveAndPrepareFilePath(const QString &filePath, const QString &basePath, const QString &fileSuffix)`:
+  Computes the absolute path to use for `filePath`, joining it with `basePath` when one is given, and makes sure its destination folder exists on disk - creating it, and any missing parent folder, with `QDir::mkpath()`. `filePath` can be relative or absolute and can include subfolders, but it cannot be empty. If `basePath` is empty, `filePath` is used as-is and resolved against the current working directory when it's relative. `fileSuffix` controls the extension of the returned path: `"*"` leaves filePath's own suffix untouched, an empty string strips any existing suffix, and any other value forces that suffix instead (a leading "." is added automatically if missing). The returned path is always absolute, regardless of `basePath` or `fileSuffix`. In case of error the method returns an empty string.
 
 - `QStringList readAsStringList(const QString &absoluteFilePath)`: reads a text file and return it as a string list.
+
+- `QString readAsString(const QString &absoluteFilePath)`: reads a text file and returns its whole content as a single string. Returns an empty string both if the file doesn't exist (or can't be opened for reading) and if the file exists but is genuinely empty - the two cases can't be told apart from the return value alone.
   
 - `QStringList listPathRecursively(const QString &path, const QStringList &nameFilters)`: returns a string list containing the **full path** of all files matching the given nameFilters, found recursively under the specified path. If path refers to a file, the method returns the file and all siblings files in the same directory. Filters can be a list of strings and validate the file name using endsWith() method.
 

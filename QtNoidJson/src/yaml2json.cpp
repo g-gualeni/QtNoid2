@@ -12,17 +12,17 @@ namespace {
 
 // Replace ryml's default error handlers (which print to stderr) with handlers
 // that only throw: the error is then reported through Yaml2Json::errorString().
-[[noreturn]] void throwBasic(ryml::csubstr msg, ryml::ErrorDataBasic const &data, void *)
+[[noreturn]] void throwBasic(ryml::csubstr msg, ryml::ErrorDataBasic const& data, void *)
 {
     throw ryml::ExceptionBasic(msg, data);
 }
 
-[[noreturn]] void throwParse(ryml::csubstr msg, ryml::ErrorDataParse const &data, void *)
+[[noreturn]] void throwParse(ryml::csubstr msg, ryml::ErrorDataParse const& data, void *)
 {
     throw ryml::ExceptionParse(msg, data);
 }
 
-[[noreturn]] void throwVisit(ryml::csubstr msg, ryml::ErrorDataVisit const &data, void *)
+[[noreturn]] void throwVisit(ryml::csubstr msg, ryml::ErrorDataVisit const& data, void *)
 {
     throw ryml::ExceptionVisit(msg, data);
 }
@@ -45,19 +45,19 @@ void installRymlCallbacks()
 namespace QtNoid {
 namespace Json {
 
-Yaml2Json::Yaml2Json(QObject *parent)
+Yaml2Json::Yaml2Json(QObject* parent)
     : QObject(parent)
 {
 }
 
-Yaml2Json::Yaml2Json(const QString &yaml, QObject *parent)
+Yaml2Json::Yaml2Json(const QString& yaml, QObject* parent)
     : QObject(parent)
     , m_yaml(yaml)
 {
     update();
 }
 
-void Yaml2Json::setYaml(const QString &newYaml)
+void Yaml2Json::setYaml(const QString& newYaml)
 {
     if (m_yaml == newYaml)
         return;
@@ -72,7 +72,7 @@ QString Yaml2Json::jsonAsString(QJsonDocument::JsonFormat format) const
     return QString::fromUtf8(m_doc.toJson(format));
 }
 
-QJsonDocument Yaml2Json::convert(const QString &yaml, QString *error)
+QJsonDocument Yaml2Json::convert(const QString& yaml, QString* error)
 {
     if (error)
         error->clear();
@@ -106,13 +106,13 @@ QJsonDocument Yaml2Json::convert(const QString &yaml, QString *error)
             return {};
         }
         return doc;
-    } catch (const ryml::ExceptionParse &e) {
-        const ryml::Location &loc = e.errdata_parse.ymlloc;
+    } catch (const ryml::ExceptionParse& e) {
+        const ryml::Location& loc = e.errdata_parse.ymlloc;
         if (error)
             *error = QStringLiteral("YAML error at line %1, column %2: %3")
                          .arg(loc.line).arg(loc.col).arg(QString::fromUtf8(e.what()));
         return {};
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
         if (error)
             *error = QStringLiteral("YAML error: %1").arg(QString::fromUtf8(e.what()));
         return {};

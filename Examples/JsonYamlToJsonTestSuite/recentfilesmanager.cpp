@@ -2,17 +2,17 @@
 #include <QMenu>
 #include <QDebug>
 
-recentFilesManager::recentFilesManager(QAction *recentFilesParent, QWidget *parent) :
+recentFilesManager::recentFilesManager(QAction* recentFilesParent, QWidget* parent) :
     QObject(parent), m_parentWidget(parent), m_recentFilesParent(recentFilesParent)
 {
 }
 
-void recentFilesManager::updateRecentFilesMenu(const QStringList &recentFiles)
+void recentFilesManager::updateRecentFilesMenu(const QStringList& recentFiles)
 {
     if(m_recentFilesParent == nullptr)
         return;
 
-    QMenu *recentFilesMenu = m_recentFilesParent->menu();
+    QMenu* recentFilesMenu = m_recentFilesParent->menu();
     if (!recentFilesMenu) {
         // if the menu is not there, we create it
         recentFilesMenu = new QMenu(m_parentWidget);
@@ -26,7 +26,7 @@ void recentFilesManager::updateRecentFilesMenu(const QStringList &recentFiles)
         auto fileTitle = recentFilesMenu->fontMetrics().elidedText(fileName, Qt::ElideMiddle, 200);
         QString displayName = QString("%1| %2").arg(ii + 1).arg(fileTitle);
 
-        QAction *fileAction = recentFilesMenu->addAction(displayName);
+        QAction* fileAction = recentFilesMenu->addAction(displayName);
         fileAction->setData(fileName); // save the path without elision
 
         // Connect the action
@@ -37,7 +37,7 @@ void recentFilesManager::updateRecentFilesMenu(const QStringList &recentFiles)
     // add separator and a command to reset the menu content
     if (!recentFiles.isEmpty()) {
         recentFilesMenu->addSeparator();
-        QAction *clearAction = recentFilesMenu->addAction(tr("Clear Recent Files"));
+        QAction* clearAction = recentFilesMenu->addAction(tr("Clear Recent Files"));
         connect(clearAction, &QAction::triggered, this, [this, recentFilesMenu]() {
             recentFilesMenu->clear();
             // qDebug() << "clearRecentFiles()";

@@ -12,11 +12,11 @@ class frmSaveDataset : public QDialog
     Q_OBJECT
 
 public:
-    explicit frmSaveDataset(QWidget *parent = nullptr);
+    explicit frmSaveDataset(QWidget* parent = nullptr);
     ~frmSaveDataset();
-    void setCollectionFolder(const QString &collectionFolder);
+    void setCollectionFolder(const QString& collectionFolder);
     QString collectionFolder() const;
-    void setDatasetFolder(const QString &datasetFolder);
+    void setDatasetFolder(const QString& datasetFolder);
     QString datasetFolder() const;
 
     bool saveDescription() const;
@@ -33,7 +33,7 @@ private:
     void updateUI_dataSetFolder();
 
 private:
-    Ui::frmSaveDataset *ui;
+    Ui::frmSaveDataset* ui;
     QString m_baseFolderPath;
     QString m_filePath;
 };

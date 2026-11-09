@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
 
@@ -41,20 +41,21 @@ private slots:
     void on_cmdSaveSingleFile_clicked();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow* ui;
     QShortcut* m_screenshotShortcut;
     recentFilesManager* m_recentFilesManager;
     QStringList m_yamlTestCollectionList;
     qsizetype m_yamlTestCollectionListCurrent = 0;
 
 protected:
-    void setCollectionFolderPath(const QString &path);
+    void setCollectionFolderPath(const QString& path);
     QString collectionFolderPath() const;
     void setSingleFilePath(const QString& path);
     QString singleFilePath() const;
     QString yamlFullPathFromCollectionList();
     QString yamlStatusBarMsgFromCollectionList();
     void setCurrentSourceWidget(QWidget* widget);
+    bool maybeSaveYaml();
 
 
 private:
@@ -63,20 +64,21 @@ private:
     void tabWidgetSourceUiUpdate();
     void fileOpenSingleFile();
 
+    void setYamlTestCollectionListCurrent(qsizetype newYamlTestCollectionListCurrent);
+
+
     //---- OLD to review
-    void setYamlTestCollectionListCurrent(int newYamlTestCollectionListCurrent);
-    
-    bool generateTestDataFromResource(const QString &dataPrefix);
-    void updateUI_loadYamlFile(const QString &yamlFilePath);
-    void updateUI_loadExpectedFiles(const QString &yamlFilePath);
+    bool generateTestDataFromResource(const QString& dataPrefix);
+    void updateUI_loadYamlFile(const QString& yamlFilePath);
+    void updateUI_loadExpectedFiles(const QString& yamlFilePath);
 
     void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);
-    void updateUI_scanTestCollectionFolder(const QString &folder);
+    void updateUI_scanTestCollectionFolder(const QString& folder);
     void updateUI_progressBar();
     void updateUI_cmdPrevNext();
     void updateUI_txtCurrentFile();
-    void updateUI_statusBar(const QString &msg = {});
+    void updateUI_statusBar(const QString& msg = {});
     void updateUI_tabInputTitle();
 
 

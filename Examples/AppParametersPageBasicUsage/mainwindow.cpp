@@ -10,7 +10,7 @@
 #include <QTabWidget>
 #include <QStyle>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -98,7 +98,7 @@ QWidget* MainWindow::createUiTabFromList()
     return tab;
 }
 
-QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *par, int width)
+QLayout* MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter* par, int width)
 {
     QHBoxLayout* layout = new QHBoxLayout();
     auto label = new QLabel(par->name());
@@ -121,7 +121,7 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         spinInt->setValue(par->value().toInt());
         spinInt->setReadOnly(par->readOnly());
         connect(spinInt, &QSpinBox::valueChanged, par, &QtNoid::App::Parameter::setValue);
-        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
+        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant& val){
             updateStyleSheet(spinInt, par);
             if(spinInt->value() != val.toInt()){
                 spinInt->setValue(val.toInt());
@@ -142,7 +142,7 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         spinDouble->setValue(par->value().toDouble());
         spinDouble->setReadOnly(par->readOnly());
         connect(spinDouble, &QDoubleSpinBox::valueChanged, par, &QtNoid::App::Parameter::setValue);
-        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
+        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant& val){
             updateStyleSheet(spinDouble, par);
             if(spinDouble->value() != val.toDouble()) {
                 spinDouble->setValue(val.toDouble());
@@ -155,7 +155,7 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
         text->setText(par->value().toString());
         text->setReadOnly(par->readOnly());
         connect(text, &QLineEdit::textEdited, par, &QtNoid::App::Parameter::setValue);
-        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant &val){
+        connect(par, &QtNoid::App::Parameter::valueChanged, this, [=, this](const QVariant& val){
             updateStyleSheet(text, par);
             if(text->text() != val.toString()) {
                 text->setText(val.toString());
@@ -170,7 +170,7 @@ QLayout *MainWindow::createUiParamterGroupFromParameter(QtNoid::App::Parameter *
     return layout;
 }
 
-QWidget *MainWindow::createUiDescriptionFromParameter(QtNoid::App::Parameter *par)
+QWidget* MainWindow::createUiDescriptionFromParameter(QtNoid::App::Parameter* par)
 {
     if(par->description().isEmpty())
         return nullptr;
@@ -181,7 +181,7 @@ QWidget *MainWindow::createUiDescriptionFromParameter(QtNoid::App::Parameter *pa
     return label;
 }
 
-void MainWindow::updateStyleSheet(QWidget *spinInt, QtNoid::App::Parameter *par)
+void MainWindow::updateStyleSheet(QWidget* spinInt, QtNoid::App::Parameter* par)
 {
     QString styleSheet = par->isValueModified()? "font-weight: bold;" : "font-weight: normal;";
     if(spinInt->styleSheet() != styleSheet){

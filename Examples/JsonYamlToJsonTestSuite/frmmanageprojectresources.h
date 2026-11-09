@@ -25,30 +25,30 @@ public:
         ColCount
     };
 
-    explicit frmManageProjectResources(QWidget *parent = nullptr);
+    explicit frmManageProjectResources(QWidget* parent = nullptr);
     ~frmManageProjectResources();
 
     QString sourceBaseFolder() const;
-    void setSourceBaseFolder(const QString &newSourceBaseFolder);
+    void setSourceBaseFolder(const QString& newSourceBaseFolder);
     QString sourceSubFolder() const;
-    void setSourceSubFolder(const QString &newSourceSubFolder);
+    void setSourceSubFolder(const QString& newSourceSubFolder);
     QString sourceFolder() const;
-    QString sourceAbsoluteFile(const QString &relFile) const;
+    QString sourceAbsoluteFile(const QString& relFile) const;
 
     QString destinationFolder() const;
-    void setDestinationFolder(const QString &newDestinationFolder);
+    void setDestinationFolder(const QString& newDestinationFolder);
 
     QString destinationResourceFile() const;
     QString destinationResourceAbsoluteFile() const;
     void setDestinationResourceFile(const QString& newDestinationResourceFile);
 
-    QString destinationAbsoluteFile(const QString &relFile) const;
+    QString destinationAbsoluteFile(const QString& relFile) const;
 
     QString projectResPrefix() const;
-    void setProjectResPrefix(const QString &newProjectResPrefix);
+    void setProjectResPrefix(const QString& newProjectResPrefix);
 
     // File comparison model methods
-    void addFileComparison(const QString &sourceFile, const QString &status, const QString &destinationFile);
+    void addFileComparison(const QString& sourceFile, const QString& status, const QString& destinationFile);
 
     void updateFileCompare();
     void clearFileComparisons();
@@ -56,14 +56,14 @@ public:
 
 
 protected:
-    bool eventFilter(QObject *watched, QEvent *event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
     void on_cmdUpdate_clicked();
     void onCopyButtonClicked(int row);
     void onUpdateSourceButtonClicked(int row);
     void createVisibleButtons();
-    void onTableDoubleClicked(const QModelIndex &index);
+    void onTableDoubleClicked(const QModelIndex& index);
     void onPreviousFile();
     void onNextFile();
 
@@ -80,12 +80,12 @@ private:
     int findNextDiffRow(int fromRow, int direction);
 
 private:
-    Ui::frmManageProjectResources *ui;
-    QStandardItemModel *m_fileComparisonModel;
+    Ui::frmManageProjectResources* ui;
+    QStandardItemModel* m_fileComparisonModel;
     QSet<QString> m_sourceFileList;
     QSet<QString> m_destinationFileList;
     QSet<int> m_comparedRows;
-    DlgFileDiff *m_diffDialog = nullptr;
+    DlgFileDiff* m_diffDialog = nullptr;
     int m_currentDiffRow = -1;
 
 };

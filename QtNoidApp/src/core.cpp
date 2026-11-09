@@ -51,7 +51,7 @@ QString Core::appExeOrAppBundleFilePath()
 }
 
 
-QString Core::filePathAsAppSibling(const QString &fileName)
+QString Core::filePathAsAppSibling(const QString& fileName)
 {
 
     QString cleanFName;
@@ -70,17 +70,17 @@ QString Core::filePathAsAppSibling(const QString &fileName)
 
 
 
-QMainWindow *Core::mainWindowFromWidget(QWidget &ref)
+QMainWindow* Core::mainWindowFromWidget(QWidget& ref)
 {
     return mainWindowFromWidget(&ref);
 }
 
-QMainWindow *Core::mainWindowFromWidget(QWidget *ref)
+QMainWindow* Core::mainWindowFromWidget(QWidget* ref)
 {
     if (ref == nullptr)
         return nullptr;
 
-    QObject *parent = ref->parent();
+    QObject* parent = ref->parent();
     if (parent == nullptr) {
         // Could be this is already the main window
         return qobject_cast<QMainWindow *>(ref);;
@@ -97,12 +97,12 @@ QMainWindow *Core::mainWindowFromWidget(QWidget *ref)
 
 
 
-QString Core::groupNameFromObjectOrClass(const QObject &ref)
+QString Core::groupNameFromObjectOrClass(const QObject& ref)
 {
     return groupNameFromObjectOrClass(&ref);
 }
 
-QString Core::groupNameFromObjectOrClass(const QObject *ref)
+QString Core::groupNameFromObjectOrClass(const QObject* ref)
 {
     if (ref == nullptr)
         return QString();
@@ -116,7 +116,7 @@ QString Core::groupNameFromObjectOrClass(const QObject *ref)
     }
 }
 
-bool Core::updateMainWindowTitle(bool changed, QWidget *ref)
+bool Core::updateMainWindowTitle(bool changed, QWidget* ref)
 {
     auto mainWindow = mainWindowFromWidget(ref);
     if(mainWindow == nullptr)
@@ -138,7 +138,7 @@ bool Core::updateMainWindowTitle(bool changed, QWidget *ref)
     return true;
 }
 
-QImage Core::fullDialogGrab(QWidget *ref)
+QImage Core::fullDialogGrab(QWidget* ref)
 {
     auto mainWindow = mainWindowFromWidget(ref);
     if(mainWindow == nullptr)

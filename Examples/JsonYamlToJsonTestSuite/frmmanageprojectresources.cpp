@@ -20,7 +20,7 @@
 #include <QtNoidApp/core.h>
 #include <QtNoidCommon/QtNoidCommon>
 
-frmManageProjectResources::frmManageProjectResources(QWidget *parent)
+frmManageProjectResources::frmManageProjectResources(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::frmManageProjectResources)
 {
@@ -50,10 +50,10 @@ frmManageProjectResources::~frmManageProjectResources()
     delete ui;
 }
 
-bool frmManageProjectResources::eventFilter(QObject *watched, QEvent *event)
+bool frmManageProjectResources::eventFilter(QObject* watched, QEvent* event)
 {
     if (watched == ui->tableView->viewport() && event->type() == QEvent::MouseButtonDblClick) {
-        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
         QModelIndex index = ui->tableView->indexAt(mouseEvent->pos());
         if (index.isValid()) {
             onTableDoubleClicked(index);
@@ -68,7 +68,7 @@ QString frmManageProjectResources::destinationFolder() const
     return ui->txtProjectFolder->text();
 }
 
-void frmManageProjectResources::setDestinationFolder(const QString &newDestinationFolder)
+void frmManageProjectResources::setDestinationFolder(const QString& newDestinationFolder)
 {
     auto destinationFolder = ui->txtProjectFolder->text();
     if(destinationFolder != newDestinationFolder) {
@@ -86,7 +86,7 @@ QString frmManageProjectResources::destinationResourceAbsoluteFile() const
     return QDir::cleanPath(destinationFolder() + "/" + ui->txtProjectRes->currentText());
 }
 
-void frmManageProjectResources::setDestinationResourceFile(const QString &newDestinationResourceFile)
+void frmManageProjectResources::setDestinationResourceFile(const QString& newDestinationResourceFile)
 {
     auto destinatinoResourceFile = ui->txtProjectRes->currentText();
     if(destinatinoResourceFile != newDestinationResourceFile) {
@@ -96,7 +96,7 @@ void frmManageProjectResources::setDestinationResourceFile(const QString &newDes
     }
 }
 
-QString frmManageProjectResources::destinationAbsoluteFile(const QString &relFile) const
+QString frmManageProjectResources::destinationAbsoluteFile(const QString& relFile) const
 {
     auto prefixLen = projectResPrefix().length();
     return QDir::cleanPath(destinationFolder() + "/" + relFile.sliced(prefixLen));
@@ -107,7 +107,7 @@ QString frmManageProjectResources::sourceBaseFolder() const
     return ui->txtSourceBaseFolder->text();
 }
 
-void frmManageProjectResources::setSourceBaseFolder(const QString &newSourceBaseFolder)
+void frmManageProjectResources::setSourceBaseFolder(const QString& newSourceBaseFolder)
 {
     auto sourceBaseFolder = ui->txtSourceBaseFolder->text();
     if(sourceBaseFolder != newSourceBaseFolder) {
@@ -203,7 +203,7 @@ QString frmManageProjectResources::projectResPrefix() const
     return ui->txtProjectResPrefix->currentText();
 }
 
-void frmManageProjectResources::setProjectResPrefix(const QString &newProjectResPrefix)
+void frmManageProjectResources::setProjectResPrefix(const QString& newProjectResPrefix)
 {
     auto current = ui->txtProjectResPrefix->currentText();
     if(current != newProjectResPrefix){
@@ -218,7 +218,7 @@ QString frmManageProjectResources::sourceSubFolder() const
     return QDir::cleanPath(ui->txtSourceSubFolder->text());
 }
 
-void frmManageProjectResources::setSourceSubFolder(const QString &newSourceSubFolder)
+void frmManageProjectResources::setSourceSubFolder(const QString& newSourceSubFolder)
 {
     auto localFolder = ui->txtSourceSubFolder->text();
     if(localFolder != newSourceSubFolder) {
@@ -236,7 +236,7 @@ QString frmManageProjectResources::sourceAbsoluteFile(const QString& relFile) co
     return QDir::cleanPath(sourceBaseFolder() + "/" + relFile);
 }
 
-void frmManageProjectResources::addFileComparison(const QString &sourceFile, const QString &status, const QString &destinationFile)
+void frmManageProjectResources::addFileComparison(const QString& sourceFile, const QString& status, const QString& destinationFile)
 {
     QList<QStandardItem*> items(ColCount, nullptr);
     items[ColSource] = new QStandardItem(sourceFile);
@@ -265,7 +265,7 @@ void frmManageProjectResources::createButtonForRow(int row)
     QModelIndex actionIndex = m_fileComparisonModel->index(row, ColAction);
     bool showCopyToDest = !sourceFile.isEmpty() && (status == "!=" || status == "=>");
     if (!ui->tableView->indexWidget(actionIndex) && showCopyToDest) {
-        QToolButton *btn = new QToolButton();
+        QToolButton* btn = new QToolButton();
         btn->setText("->");
         btn->setProperty("row", row);
         connect(btn, &QToolButton::clicked, this, [this, btn]() {
@@ -280,7 +280,7 @@ void frmManageProjectResources::createButtonForRow(int row)
     QModelIndex updateSourceIndex = m_fileComparisonModel->index(row, ColUpdateSource);
     bool showUpdateSource = !destFile.isEmpty() && (status == "!=" || status == "<=");
     if (!ui->tableView->indexWidget(updateSourceIndex) && showUpdateSource) {
-        QToolButton *btn = new QToolButton();
+        QToolButton* btn = new QToolButton();
         btn->setText("<-");
         btn->setProperty("row", row);
         connect(btn, &QToolButton::clicked, this, [this, btn]() {
@@ -349,11 +349,11 @@ void frmManageProjectResources::compareFileForRow(int row)
 
     // If files differ, highlight source in red
     if (!filesMatch) {
-        QStandardItem *sourceItem = m_fileComparisonModel->item(row, ColSource);
+        QStandardItem* sourceItem = m_fileComparisonModel->item(row, ColSource);
         sourceItem->setForeground(QBrush(Qt::red));
 
         // Update status to show difference
-        QStandardItem *statusItem = m_fileComparisonModel->item(row, ColStatus);
+        QStandardItem* statusItem = m_fileComparisonModel->item(row, ColStatus);
         statusItem->setText("!=");
         statusItem->setForeground(QBrush(Qt::red));
 
@@ -382,7 +382,7 @@ void frmManageProjectResources::updateFileCompare()
     QList<QString> allFilesList(allFilesSet.begin(), allFilesSet.end());
     std::ranges::sort(allFilesList);
 
-    for (const QString &file : std::as_const(allFilesList)) {
+    for (const QString& file : std::as_const(allFilesList)) {
         bool src = srcSet.contains(file);
         bool dst = dstSet.contains(file);
 
@@ -496,9 +496,9 @@ void frmManageProjectResources::onCopyButtonClicked(int row)
         m_fileComparisonModel->item(row, ColDestination)->setText(sourceFile);
 
         // Reset highlighting (remove red color if present)
-        QStandardItem *sourceItem = m_fileComparisonModel->item(row, ColSource);
+        QStandardItem* sourceItem = m_fileComparisonModel->item(row, ColSource);
         sourceItem->setForeground(QBrush(Qt::black));
-        QStandardItem *statusItem = m_fileComparisonModel->item(row, ColStatus);
+        QStandardItem* statusItem = m_fileComparisonModel->item(row, ColStatus);
         statusItem->setForeground(QBrush(Qt::black));
 
         updateTableFooter();
@@ -552,9 +552,9 @@ void frmManageProjectResources::onUpdateSourceButtonClicked(int row)
         m_fileComparisonModel->item(row, ColSource)->setText(destFile);
 
         // Reset highlighting (remove red color if present)
-        QStandardItem *sourceItem = m_fileComparisonModel->item(row, ColSource);
+        QStandardItem* sourceItem = m_fileComparisonModel->item(row, ColSource);
         sourceItem->setForeground(QBrush(Qt::black));
-        QStandardItem *statusItem = m_fileComparisonModel->item(row, ColStatus);
+        QStandardItem* statusItem = m_fileComparisonModel->item(row, ColStatus);
         statusItem->setForeground(QBrush(Qt::black));
 
         updateTableFooter();
@@ -567,7 +567,7 @@ void frmManageProjectResources::onUpdateSourceButtonClicked(int row)
     }
 }
 
-void frmManageProjectResources::onTableDoubleClicked(const QModelIndex &index)
+void frmManageProjectResources::onTableDoubleClicked(const QModelIndex& index)
 {
     showDiffForRow(index.row());
 }

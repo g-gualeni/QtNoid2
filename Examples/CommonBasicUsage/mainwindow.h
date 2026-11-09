@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -31,10 +31,10 @@ private:
     void restoreFromAppConfig();
     QStringList txtFolderList();
     QStringList txtNameFilters() const;
-    void update_txtPathList(const QStringList &list, qint64 elapsedTime);
+    void update_txtPathList(const QStringList& list, qint64 elapsedTime);
 
 private:
-    Ui::MainWindow *ui;
-    QShortcut *m_screenshotShortcut = nullptr;
+    Ui::MainWindow* ui;
+    QShortcut* m_screenshotShortcut = nullptr;
 };
 #endif // MAINWINDOW_H

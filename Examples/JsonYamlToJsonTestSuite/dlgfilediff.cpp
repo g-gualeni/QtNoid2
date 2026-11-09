@@ -13,27 +13,27 @@
 #include <QUrl>
 #include <QFileInfo>
 
-DlgFileDiff::DlgFileDiff(QWidget *parent)
+DlgFileDiff::DlgFileDiff(QWidget* parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("File Comparison"));
     resize(1000, 600);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
     // Splitter for two columns
-    QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
+    QSplitter* splitter = new QSplitter(Qt::Horizontal, this);
 
     // Source side
-    QWidget *sourceWidget = new QWidget();
-    QVBoxLayout *sourceLayout = new QVBoxLayout(sourceWidget);
+    QWidget* sourceWidget = new QWidget();
+    QVBoxLayout* sourceLayout = new QVBoxLayout(sourceWidget);
     sourceLayout->setContentsMargins(0, 0, 0, 0);
 
     // Source header with label and button
-    QHBoxLayout *sourceHeaderLayout = new QHBoxLayout();
-    QLabel *sourceLabel = new QLabel(tr("Source"));
+    QHBoxLayout* sourceHeaderLayout = new QHBoxLayout();
+    QLabel* sourceLabel = new QLabel(tr("Source"));
     sourceLabel->setObjectName("sourceLabel");
-    QPushButton *btnOpenSource = new QPushButton(tr("Edit"));
+    QPushButton* btnOpenSource = new QPushButton(tr("Edit"));
     btnOpenSource->setFixedWidth(100);
     connect(btnOpenSource, &QPushButton::clicked, this, &DlgFileDiff::onOpenSourceInEditor);
     sourceHeaderLayout->addWidget(sourceLabel, 1);
@@ -49,15 +49,15 @@ DlgFileDiff::DlgFileDiff(QWidget *parent)
     sourceLayout->addWidget(m_sourceEdit);
 
     // Destination side
-    QWidget *destWidget = new QWidget();
-    QVBoxLayout *destLayout = new QVBoxLayout(destWidget);
+    QWidget* destWidget = new QWidget();
+    QVBoxLayout* destLayout = new QVBoxLayout(destWidget);
     destLayout->setContentsMargins(0, 0, 0, 0);
 
     // Destination header with label and button
-    QHBoxLayout *destHeaderLayout = new QHBoxLayout();
-    QLabel *destLabel = new QLabel(tr("Destination"));
+    QHBoxLayout* destHeaderLayout = new QHBoxLayout();
+    QLabel* destLabel = new QLabel(tr("Destination"));
     destLabel->setObjectName("destLabel");
-    QPushButton *btnOpenDest = new QPushButton(tr("Edit"));
+    QPushButton* btnOpenDest = new QPushButton(tr("Edit"));
     btnOpenDest->setFixedWidth(100);
     connect(btnOpenDest, &QPushButton::clicked, this, &DlgFileDiff::onOpenDestInEditor);
     destHeaderLayout->addWidget(destLabel, 1);
@@ -87,16 +87,16 @@ DlgFileDiff::DlgFileDiff(QWidget *parent)
             m_sourceEdit->horizontalScrollBar(), &QScrollBar::setValue);
 
     // Button box with navigation and actions
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
 
-    QPushButton *btnRefresh = new QPushButton(tr("Refresh"));
+    QPushButton* btnRefresh = new QPushButton(tr("Refresh"));
     connect(btnRefresh, &QPushButton::clicked, this, &DlgFileDiff::onRefresh);
     buttonLayout->addWidget(btnRefresh);
 
     buttonLayout->addStretch();
 
     // Navigation buttons for prev/next file
-    QPushButton *btnPrevious = new QPushButton(tr("< Previous"));
+    QPushButton* btnPrevious = new QPushButton(tr("< Previous"));
     connect(btnPrevious, &QPushButton::clicked, this, &DlgFileDiff::previousFileRequested);
     buttonLayout->addWidget(btnPrevious);
 
@@ -105,13 +105,13 @@ DlgFileDiff::DlgFileDiff(QWidget *parent)
     m_navLabel->setAlignment(Qt::AlignCenter);
     buttonLayout->addWidget(m_navLabel);
 
-    QPushButton *btnNext = new QPushButton(tr("Next >"));
+    QPushButton* btnNext = new QPushButton(tr("Next >"));
     connect(btnNext, &QPushButton::clicked, this, &DlgFileDiff::nextFileRequested);
     buttonLayout->addWidget(btnNext);
 
     buttonLayout->addStretch();
 
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Close);
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Close);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     buttonLayout->addWidget(buttonBox);
     mainLayout->addLayout(buttonLayout);
@@ -121,17 +121,17 @@ DlgFileDiff::~DlgFileDiff()
 {
 }
 
-void DlgFileDiff::setFiles(const QString &sourceFilePath, const QString &destFilePath)
+void DlgFileDiff::setFiles(const QString& sourceFilePath, const QString& destFilePath)
 {
     m_sourceFilePath = sourceFilePath;
     m_destFilePath = destFilePath;
     loadAndCompare();
 }
 
-void DlgFileDiff::setTitles(const QString &sourceTitle, const QString &destTitle)
+void DlgFileDiff::setTitles(const QString& sourceTitle, const QString& destTitle)
 {
-    QLabel *sourceLabel = findChild<QLabel*>("sourceLabel");
-    QLabel *destLabel = findChild<QLabel*>("destLabel");
+    QLabel* sourceLabel = findChild<QLabel*>("sourceLabel");
+    QLabel* destLabel = findChild<QLabel*>("destLabel");
     if (sourceLabel) {
         QString html = sourceTitle;
         html.replace("Source:", "<b>Source:</b>");
@@ -172,7 +172,7 @@ void DlgFileDiff::loadAndCompare()
     highlightDifferences(sourceLines, destLines);
 }
 
-void DlgFileDiff::highlightDifferences(const QStringList &sourceLines, const QStringList &destLines)
+void DlgFileDiff::highlightDifferences(const QStringList& sourceLines, const QStringList& destLines)
 {
     m_sourceEdit->clear();
     m_destEdit->clear();
@@ -245,7 +245,7 @@ void DlgFileDiff::onRefresh()
     loadAndCompare();
 }
 
-void DlgFileDiff::openFileInEditor(const QString &filePath)
+void DlgFileDiff::openFileInEditor(const QString& filePath)
 {
     if (filePath.isEmpty() || !QFileInfo::exists(filePath))
         return;
@@ -256,7 +256,7 @@ void DlgFileDiff::openFileInEditor(const QString &filePath)
         "C:/Program Files (x86)/Notepad++/notepad++.exe"
     };
 
-    for (const QString &nppPath : notepadPlusPlusPaths) {
+    for (const QString& nppPath : notepadPlusPlusPaths) {
         if (QFileInfo::exists(nppPath)) {
             QProcess::startDetached(nppPath, {filePath});
             return;

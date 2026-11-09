@@ -9,10 +9,10 @@ class FolderComboBox : public QComboBox
     Q_OBJECT
 
 public:
-    explicit FolderComboBox(QWidget *parent = nullptr);
+    explicit FolderComboBox(QWidget* parent = nullptr);
 
 protected:
-    bool event(QEvent *event) override;
+    bool event(QEvent* event) override;
 
 signals:
     void doubleClicked();
@@ -22,7 +22,7 @@ private:
 
     // QWidget interface
 protected:
-    virtual void contextMenuEvent(QContextMenuEvent *event) override;
+    virtual void contextMenuEvent(QContextMenuEvent* event) override;
 };
 
 #endif // FOLDERCOMBOBOX_H

@@ -14,17 +14,17 @@ class PresetsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PresetsDialog(QWidget *parent = nullptr);
+    explicit PresetsDialog(QWidget* parent = nullptr);
     ~PresetsDialog();
 
-    void setPresetsText(const QString &text);
+    void setPresetsText(const QString& text);
     QString presetsText() const;
 
 private slots:
     void on_cmdClear_clicked();
 
 private:
-    Ui::Dialog *ui;
+    Ui::Dialog* ui;
 };
 
 #endif // PRESETSDIALOG_H

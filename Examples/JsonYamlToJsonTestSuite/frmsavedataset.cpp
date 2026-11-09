@@ -3,7 +3,7 @@
 #include <QFileDialog>
 #include <QtNoidApp/QtNoidApp>
 
-frmSaveDataset::frmSaveDataset(QWidget *parent)
+frmSaveDataset::frmSaveDataset(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::frmSaveDataset)
 {
@@ -15,7 +15,7 @@ frmSaveDataset::~frmSaveDataset()
     delete ui;
 }
 
-void frmSaveDataset::setCollectionFolder(const QString &collectionFolder)
+void frmSaveDataset::setCollectionFolder(const QString& collectionFolder)
 {
     ui->txtCollectionFolder->setText(collectionFolder);
 }
@@ -30,7 +30,7 @@ QString frmSaveDataset::collectionFolder() const
 }
 
 
-void frmSaveDataset::setDatasetFolder(const QString &datasetFolder)
+void frmSaveDataset::setDatasetFolder(const QString& datasetFolder)
 {
     ui->txtDatasetFolder->setText(datasetFolder);
 }

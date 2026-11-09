@@ -7,7 +7,7 @@ namespace QtNoid {
 namespace Common {
 
 
-bool Text::isValidUrl(const QString &text)
+bool Text::isValidUrl(const QString& text)
 {
     if (text.isEmpty()) {
         return false;
@@ -27,7 +27,7 @@ bool Text::isValidUrl(const QString &text)
     return true;
 }
 
-bool Text::isValidEmail(const QString &email)
+bool Text::isValidEmail(const QString& email)
 {
     if (email.isEmpty()) {
         return false;
@@ -40,7 +40,7 @@ bool Text::isValidEmail(const QString &email)
     return match.hasMatch();
 }
 
-QString Text::sanitizeString(const QString &input)
+QString Text::sanitizeString(const QString& input)
 {
     if (input.isEmpty()) {
         return {};
@@ -59,21 +59,21 @@ QString Text::sanitizeString(const QString &input)
     return result;
 }
 
-QStringList Text::tokenizeSnakeCase(const QString &list)
+QStringList Text::tokenizeSnakeCase(const QString& list)
 {
     return list.split('_', Qt::SkipEmptyParts);
 }
 
-QStringList Text::tokenizeSnakeCase(const QStringList &list)
+QStringList Text::tokenizeSnakeCase(const QStringList& list)
 {
     QStringList out;
-    for(const QString &txt : list) {
+    for(const QString& txt : list) {
         out.append(txt.split('_', Qt::SkipEmptyParts));
     }
     return out;
 }
 
-QStringList Text::tokenizeCamelCase(const QString &text)
+QStringList Text::tokenizeCamelCase(const QString& text)
 {
     QStringList outTokenList;
 
@@ -118,17 +118,17 @@ QStringList Text::tokenizeCamelCase(const QString &text)
     return outTokenList;
 }
 
-QStringList Text::tokenizeCamelCase(const QStringList &list)
+QStringList Text::tokenizeCamelCase(const QStringList& list)
 {
     QStringList out;
-    for(const QString &txt : list) {
+    for(const QString& txt : list) {
         out.append(tokenizeCamelCase(txt));
     }
     return out;
 }
 
 
-QStringList Text::tokenizeNumberBlocks(const QString &txt, int numberBlockLen)
+QStringList Text::tokenizeNumberBlocks(const QString& txt, int numberBlockLen)
 {
     QStringList outTokenList;
     int startBlock = -1;
@@ -176,10 +176,10 @@ QStringList Text::tokenizeNumberBlocks(const QString &txt, int numberBlockLen)
     return outTokenList;
 }
 
-QStringList Text::tokenizeNumberBlocks(const QStringList &list, int numberBlockLen)
+QStringList Text::tokenizeNumberBlocks(const QStringList& list, int numberBlockLen)
 {
     QStringList outTokenList;
-    for(const QString &txt : list) {
+    for(const QString& txt : list) {
         outTokenList.append(tokenizeNumberBlocks(txt, numberBlockLen));
     }
     return outTokenList;
@@ -194,7 +194,7 @@ QStringList Text::tokenizeNumberBlocks(const QStringList &list, int numberBlockL
  * @param numberBlockLen: min lengh of the number block or 0 to skip number tokenize
  * @return
  */
-QStringList Text::tokenize(const QString &text, const QString &splittersString,
+QStringList Text::tokenize(const QString& text, const QString& splittersString,
                            bool splitCamelCase, int minNumBlockLen)
 {
     // Convert all splitter char we see into splitChar. This is much faster than
@@ -221,7 +221,7 @@ QStringList Text::tokenize(const QString &text, const QString &splittersString,
     return tokenList;
 }
 
-QString Text::convertToCamelCase(const QString &text)
+QString Text::convertToCamelCase(const QString& text)
 {
     QString camelCase;
     auto tokenList = tokenize(text, "_ :");
@@ -230,7 +230,7 @@ QString Text::convertToCamelCase(const QString &text)
 
     // Convert first character to UpperCase
     camelCase = std::accumulate(tokenList.begin(), tokenList.end(), QString(),
-                                [](const QString &camelCase, const QString &word){
+                                [](const QString& camelCase, const QString& word){
                                     return camelCase + word.at(0).toUpper() + word.mid(1);
                                 });
     // -> std::accumulate should be better! At least this is what CPP Check says!
@@ -246,7 +246,7 @@ QString Text::convertToCamelCase(const QString &text)
  *                            resulting string to lower case
  * @return
  */
-QString Text::convertToSnakeCase(const QString &text, int minNumBlockLen)
+QString Text::convertToSnakeCase(const QString& text, int minNumBlockLen)
 {
     auto tokenList = tokenize(text, "_.: ", true, minNumBlockLen);
     return tokenList.join('_').toLower();

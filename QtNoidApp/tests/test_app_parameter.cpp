@@ -2228,16 +2228,16 @@ void TestQtNoidAppParameter::testParameterIsSchemaModifiedOnlyAfterSchemaPropert
         QCOMPARE(par.isSchemaModified(), true);
     };
 
-    checkFlipsSchemaModified([](Parameter &par){ par.setName("NewName"); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setLabel("New label"); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setDescription("New description"); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setUnit("kg"); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setTooltip("New tooltip"); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setReadOnly(true); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setVisible(false); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setMin(0); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setMax(1000); });
-    checkFlipsSchemaModified([](Parameter &par){ par.setPresets({{"Low", 10}, {"High", 900}}); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setName("NewName"); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setLabel("New label"); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setDescription("New description"); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setUnit("kg"); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setTooltip("New tooltip"); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setReadOnly(true); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setVisible(false); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setMin(0); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setMax(1000); });
+    checkFlipsSchemaModified([](Parameter& par){ par.setPresets({{"Low", 10}, {"High", 900}}); });
 }
 
 void TestQtNoidAppParameter::testParameterIsSchemaModifiedTracksEveryPropertyAcrossMultipleChanges()
@@ -2641,7 +2641,7 @@ void TestQtNoidAppParameter::testParameterWithQDebugOperator()
 void TestQtNoidAppParameter::testParameterWithQDebugOperatorWithPointer()
 {
     // Test with valid pointer
-    Parameter *param1 = new Parameter(42.0, "PointerParam", this);
+    Parameter* param1 = new Parameter(42.0, "PointerParam", this);
     QString output1 = QDebug::toString(param1);
     QVERIFY(output1.contains("Parameter("));
     QVERIFY(output1.contains("name: \"PointerParam\""));
@@ -2649,7 +2649,7 @@ void TestQtNoidAppParameter::testParameterWithQDebugOperatorWithPointer()
     delete param1;
 
     // Test with nullptr
-    Parameter *param2 = nullptr;
+    Parameter* param2 = nullptr;
     QString output2 = QDebug::toString(param2);
     QVERIFY(output2.contains("Parameter(nullptr)"));
 }

@@ -5,13 +5,14 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
+#include <QSaveFile>
 #include <QTime>
 #include <QUrl>
 
 namespace QtNoid {
 namespace Common {
 
-QString File::autoNamingNextName(const QString &currentName)
+QString File::autoNamingNextName(const QString& currentName)
 {
     QFileInfo FI(currentName);
     QString baseName = FI.baseName();
@@ -55,7 +56,7 @@ QString File::autoNamingNextName(const QString &currentName)
     return newFileName;
 }
 
-QString File::autoNaming(const QString &filePath)
+QString File::autoNaming(const QString& filePath)
 {
     QFileInfo fileInfo(filePath);
     if(!fileInfo.exists())
@@ -69,7 +70,7 @@ QString File::autoNaming(const QString &filePath)
     return newPath;
 }
 
-QFileInfo QtNoid::Common::File::autoNaming(const QFileInfo &fileInfo)
+QFileInfo QtNoid::Common::File::autoNaming(const QFileInfo& fileInfo)
 {
     if(!fileInfo.exists())
         return fileInfo;
@@ -83,12 +84,12 @@ QFileInfo QtNoid::Common::File::autoNaming(const QFileInfo &fileInfo)
     return QFileInfo(newFileName);
 }
 
-bool File::compareIfEqual(const QString &filePath1, const QString &filePath2)
+bool File::compareIfEqual(const QString& filePath1, const QString& filePath2)
 {
     return compareIfEqual(QFileInfo(filePath1), QFileInfo(filePath2));
 }
 
-bool File::compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2)
+bool File::compareIfEqual(const QFileInfo& fileInfo1, const QFileInfo& fileInfo2)
 {
     // Non existing files are equal
     if (!fileInfo1.exists() && !fileInfo2.exists()) {
@@ -136,13 +137,13 @@ bool File::compareIfEqual(const QFileInfo &fileInfo1, const QFileInfo &fileInfo2
     return false;
 }
 
-bool File::isTextFile(const QString &filePath)
+bool File::isTextFile(const QString& filePath)
 {
     QFileInfo FI(filePath);
     return isTextFile(FI);
 }
 
-bool File::isTextFile(const QFileInfo &fileInfo)
+bool File::isTextFile(const QFileInfo& fileInfo)
 {
     // Sanity check
     if (!fileInfo.exists()) {
@@ -196,65 +197,74 @@ bool File::isTextFile(const QFileInfo &fileInfo)
     return false;
 }
 
-QFileInfo File::saveAsTextFileCreatePath(const QString &filePath, const QString &basePath, const QString &fileSuffix)
+QString File::resolveAndPrepareFilePath(const QString& filePath, const QString& basePath, const QString& fileSuffix)
 {
-    QString newPath = basePath + "/" + filePath;
+    if(filePath.isEmpty()) {
+        return {};
+    }
+    QString newPath;
+    if(basePath.isEmpty()) {
+        newPath = filePath;
+    }
+    else {
+        newPath = QDir(basePath).filePath(filePath);
+    }
     QFileInfo fileInfo(newPath);
 
-    QDir dir;
-
-    if(!dir.mkpath(fileInfo.absolutePath())){
+    if(!QDir().mkpath(fileInfo.absolutePath())){
         return {};
     };
 
-    if(fileSuffix != "*") {
-        QString newFileName = fileSuffix.trimmed();
-        if(newFileName.isEmpty()){
+    QString newFileSuffix = fileSuffix.trimmed();
+    if(newFileSuffix != "*") {
+        if(newFileSuffix.isEmpty()){
         }
-        else if(newFileName.startsWith(".")) {
+        else if(!newFileSuffix.startsWith(".")) {
+            newFileSuffix.prepend(".");
         }
-        else {
-            newFileName = "." + newFileName;
-        }
-        newFileName = fileInfo.completeBaseName() + newFileName;
-        fileInfo.setFile(fileInfo.absoluteDir(), newFileName);
+        fileInfo.setFile(fileInfo.absoluteDir(), fileInfo.completeBaseName() + newFileSuffix);
     }
 
-    return fileInfo;
+    return fileInfo.absoluteFilePath();
 }
 
 
-QString File::saveAsTextFile(const QString &data, const QString &filePath, const QString &basePath, const QString &fileSuffix)
+QString File::saveAsTextFile(const QString& data, const QString& filePath, const QString& basePath, const QString& fileSuffix)
 {
-    auto path = saveAsTextFileCreatePath(filePath, basePath, fileSuffix).absoluteFilePath();
+    const QString& path = resolveAndPrepareFilePath(filePath, basePath, fileSuffix);
 
-    auto file = QFile(path);
+    auto file = QSaveFile(path);
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         return {};
     }
+    QTextStream textStream(&file);
+    textStream << data;
+    if(!file.commit()) {
+        return {};
+    }
+    return path;
+}
 
-    auto stream = QTextStream(&file);
-    stream << data;
+
+QString File::saveAsTextFile(const QStringList& data, const QString& filePath, const QString& basePath, const QString& fileSuffix)
+{
+    const QString& path = resolveAndPrepareFilePath(filePath, basePath, fileSuffix);
+
+    auto file = QSaveFile(path);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return {};
+    }
+    QTextStream textStream(&file);
+    textStream << data.join("\n");
+    if(!file.commit()) {
+        return {};
+    }
 
     return path;
 }
 
-QString File::saveAsTextFile(const QStringList &data, const QString &filePath, const QString &basePath, const QString &fileSuffix)
-{
-    auto path = saveAsTextFileCreatePath(filePath, basePath, fileSuffix).absoluteFilePath();
 
-    auto file = QFile(path);
-    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        return {};
-    }
-
-    auto stream = QTextStream(&file);
-    stream << data.join("\n");
-
-    return path;
-}
-
-QStringList File::readAsStringList(const QString &absoluteFilePath)
+QStringList File::readAsStringList(const QString& absoluteFilePath)
 {
     QFile f(absoluteFilePath);
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -272,8 +282,21 @@ QStringList File::readAsStringList(const QString &absoluteFilePath)
     return lines;
 }
 
+QString File::readAsString(const QString& absoluteFilePath)
+{
+    QFile f(absoluteFilePath);
+    if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return {};
+    }
+    QTextStream stream(&f);
 
-QStringList File::listPathRecursively(const QString &path, const QStringList &nameFilters)
+    QString content = stream.readAll();
+    f.close();
+    return content;
+}
+
+
+QStringList File::listPathRecursively(const QString& path, const QStringList& nameFilters)
 {
     QFileInfo pathFI(path);
     QString basePath;
@@ -300,7 +323,7 @@ QStringList File::listPathRecursively(const QString &path, const QStringList &na
         QString filePath = it.next();
         bool matches = nameFilters.isEmpty();
         if (!matches) {
-            for (const QString &ext : nameFilters) {
+            for (const QString& ext : nameFilters) {
                 if (filePath.endsWith(ext, Qt::CaseInsensitive)) {
                     matches = true;
                     break;
@@ -317,7 +340,7 @@ QStringList File::listPathRecursively(const QString &path, const QStringList &na
 }
 
 
-QStringList File::listSubPathRecursively(const QString &path, const QStringList &nameFilters)
+QStringList File::listSubPathRecursively(const QString& path, const QStringList& nameFilters)
 {
     QFileInfo pathFI(path);
     QString basePath;
@@ -352,7 +375,7 @@ QStringList File::listSubPathRecursively(const QString &path, const QStringList 
         QString filePath = it.next();
         bool matches = nameFilters.isEmpty();
         if (!matches) {
-            for (const QString &ext : nameFilters) {
+            for (const QString& ext : nameFilters) {
                 if (filePath.endsWith(ext, Qt::CaseInsensitive)) {
                     matches = true;
                     break;

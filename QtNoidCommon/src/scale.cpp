@@ -6,7 +6,7 @@
 namespace QtNoid {
 namespace Common {
 
-qint64 Scale::multiplier(const QString &prefix)
+qint64 Scale::multiplier(const QString& prefix)
 {
     QString filteredPrefix = prefix.trimmed();
     filteredPrefix.truncate(1);
@@ -34,7 +34,7 @@ QString Scale::multiplierPrefix(qint64 value)
     return prefixList().at(index);
 }
 
-QString Scale::autoUpToExaByte(qint64 value, const QString &unitOfMeasure)
+QString Scale::autoUpToExaByte(qint64 value, const QString& unitOfMeasure)
 {
     // log2(1024) = 10
     qint64 absValue = abs(value);
@@ -50,7 +50,7 @@ QString Scale::autoUpToExaByte(qint64 value, const QString &unitOfMeasure)
 
 }
 
-QString Scale::autoUpToExa(qint64 value, const QString &unitOfMeasure)
+QString Scale::autoUpToExa(qint64 value, const QString& unitOfMeasure)
 {
     // log10(1000) = 3
     qint64 absValue = abs(value);
@@ -108,7 +108,7 @@ QString Scale::nanoSecsUpToDays(qint64 ns)
     return nanoSecsUpToDays(static_cast<quint64>(ns));
 }
 
-QString Scale::removeBracketsAndSpacesFromUnitOfMeasure(const QString &unitOfMeasure)
+QString Scale::removeBracketsAndSpacesFromUnitOfMeasure(const QString& unitOfMeasure)
 {
     // Check and clean-up measuring unit
     QString bareUnitOfMeasure=unitOfMeasure;

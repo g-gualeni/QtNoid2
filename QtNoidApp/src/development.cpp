@@ -19,7 +19,7 @@
 namespace QtNoid {
 namespace App {
 
-QString Development::screenshotFileName(QWidget *parent, const QString &destinationFileOrPath)
+QString Development::screenshotFileName(QWidget* parent, const QString& destinationFileOrPath)
 {
     QFileInfo FI(destinationFileOrPath);
     if (!FI.suffix().isEmpty()) {
@@ -42,7 +42,7 @@ QString Development::screenshotFileName(QWidget *parent, const QString &destinat
     return QDir::cleanPath(folder + "/" + baseName + "-" + osName + ".png");
 }
 
-QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence,
+QShortcut* Development::initFullDialogGrabShortcut(QWidget* parent, const QString& keySequence,
                                                    QString destinationFileOrPath,
                                                    bool saveToClipboard, bool openDestinationPath)
 {
@@ -59,7 +59,7 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
         bool res = screenshot.save(finalFilePath);
 
         if(saveToClipboard) {
-            QClipboard *clipboard = QApplication::clipboard();
+            QClipboard* clipboard = QApplication::clipboard();
             clipboard->setImage(screenshot);
         }
         if(res && openDestinationPath) {
@@ -74,7 +74,7 @@ QShortcut *Development::initFullDialogGrabShortcut(QWidget *parent, const QStrin
 
 
 
-QAction* Development::saveConfigToProject(QMenu *developmentMenu, const QString &projectFolder)
+QAction* Development::saveConfigToProject(QMenu* developmentMenu, const QString& projectFolder)
 {
     if(developmentMenu == nullptr) {
         return {};
@@ -85,7 +85,7 @@ QAction* Development::saveConfigToProject(QMenu *developmentMenu, const QString 
         return {};
     }
 
-    QAction *action = developmentMenu->addAction(parent->tr("Save Config To Project"));
+    QAction* action = developmentMenu->addAction(parent->tr("Save Config To Project"));
 
     QFileInfo FI(appConfig->fileName());
     QString configFile = FI.fileName();
@@ -121,7 +121,7 @@ QAction* Development::saveConfigToProject(QMenu *developmentMenu, const QString 
     return action;
 }
 
-QAction* Development::initConfigFromResources(QMenu *developmentMenu, const QString &resFileOrPrefix)
+QAction* Development::initConfigFromResources(QMenu* developmentMenu, const QString& resFileOrPrefix)
 {
     if(developmentMenu == nullptr) {
         return {};
@@ -133,7 +133,7 @@ QAction* Development::initConfigFromResources(QMenu *developmentMenu, const QStr
 
     }
 
-    QAction *action = developmentMenu->addAction(parent->tr("Init Config From Resources"));
+    QAction* action = developmentMenu->addAction(parent->tr("Init Config From Resources"));
     QFileInfo FI(appConfig->fileName());
 
     auto msg = QString(parent->tr("Rewrite %1 configuration file using the model from the resources")).arg(FI.fileName());

@@ -26,7 +26,7 @@ private slots:
     void testScreenshotFileName();
 
 private:
-    void initMainDialog(QMainWindow* frm, const QString &caption);
+    void initMainDialog(QMainWindow* frm, const QString& caption);
 
 };
 
@@ -65,7 +65,7 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut()
     initMainDialog(&frm, __func__);
 
     // Actitate shortcut
-    QShortcut *shortcut = Development::initFullDialogGrabShortcut(&frm, {}, {},
+    QShortcut* shortcut = Development::initFullDialogGrabShortcut(&frm, {}, {},
                                                                   true,  // Save to clipboard
                                                                   false);
 
@@ -94,8 +94,8 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut()
     //qDebug() << __func__ << pixmap.size();
 
     // Verify the clipboard content
-    QClipboard *clipboard = QApplication::clipboard();
-    const QMimeData *mimeData = clipboard->mimeData();
+    QClipboard* clipboard = QApplication::clipboard();
+    const QMimeData* mimeData = clipboard->mimeData();
     QVERIFY2(mimeData->hasImage(), "Clipboard should contain an image");
     auto actual = clipboard->image();
     // qDebug() << __func__ << actual.size();
@@ -114,7 +114,7 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withFileName()
     QString keySeq = "Ctrl+Shift+Q";
 
     // Actitate shortcut
-    QShortcut *shortcut = Development::initFullDialogGrabShortcut(&frm,
+    QShortcut* shortcut = Development::initFullDialogGrabShortcut(&frm,
                                                                keySeq,
                                                                sstFile,
                                                                false,
@@ -140,7 +140,7 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withNullParent()
 {
     // A null parent must not crash: initFullDialogGrabShortcut() must bail
     // out early and return nullptr instead of dereferencing it.
-    QShortcut *shortcut = Development::initFullDialogGrabShortcut(nullptr);
+    QShortcut* shortcut = Development::initFullDialogGrabShortcut(nullptr);
     QCOMPARE(shortcut, nullptr);
 }
 

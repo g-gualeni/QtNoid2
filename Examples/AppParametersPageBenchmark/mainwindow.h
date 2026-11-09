@@ -18,7 +18,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -32,7 +32,7 @@ private slots:
 
 
 private:
-    void setCmdGORunning(QPushButton *btn, bool running);
+    void setCmdGORunning(QPushButton* btn, bool running);
     quint64 benchmarkParameterUsingNewAndDelete(int iterations);
     std::pair<quint64, quint64> benchmarkParameterUsingJsonValueAndSchema(int iterations);
     std::pair<quint64, quint64> benchmarkParametersPageUsingJSON(int paramtersCount);
@@ -41,8 +41,8 @@ private:
     quint64 benchmarkSignalsAndSlot(int iterations);
 
 private:
-    Ui::MainWindow *ui;
-    QShortcut *m_screenshotShortcut = nullptr;
+    Ui::MainWindow* ui;
+    QShortcut* m_screenshotShortcut = nullptr;
 
 };
 #endif // MAINWINDOW_H

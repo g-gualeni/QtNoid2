@@ -245,7 +245,7 @@ void TestQtNoidJsonYaml2Json::testDeepNesting()
     QVERIFY(converter.isValid());
     QJsonObject obj = converter.json();
     QJsonValue v = obj;
-    for (const char *key : {"a", "b", "c", "d", "e"})
+    for (const char* key : {"a", "b", "c", "d", "e"})
         v = v.toObject().value(QLatin1String(key));
     QCOMPARE(v.toObject().value("f").toString(), QString("deep"));
 }
@@ -331,7 +331,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 
     QJsonValue value = converter.json();
     const QStringList keys = path.split('/');
-    for (const QString &key : keys) {
+    for (const QString& key : keys) {
         bool isIndex = false;
         int index = key.toInt(&isIndex);
         value = isIndex ? value.toArray().at(index) : value.toObject().value(key);

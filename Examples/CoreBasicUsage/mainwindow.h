@@ -17,11 +17,11 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
-    QShortcut *m_screenshotShortcut = nullptr;
+    Ui::MainWindow* ui;
+    QShortcut* m_screenshotShortcut = nullptr;
 };
 #endif // MAINWINDOW_H

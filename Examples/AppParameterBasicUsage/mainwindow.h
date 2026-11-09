@@ -16,7 +16,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -31,15 +31,15 @@ private slots:
 private:
     void setRangeFromText(const QString& val);
     void setPresetsFromText(const QString& val);
-    void updateStatusBar(const QString& msg, const QString &value = {});
+    void updateStatusBar(const QString& msg, const QString& value = {});
 
 private:
-    Ui::MainWindow *ui;
-    QShortcut *m_screenshotShortcut = nullptr;
+    Ui::MainWindow* ui;
+    QShortcut* m_screenshotShortcut = nullptr;
 
     QtNoid::App::Parameter m_parameter;
     void updateFromUi();
-    void UiUpdatePresetList(const QVariantMap &presets);
+    void UiUpdatePresetList(const QVariantMap& presets);
     void convertToJson();
 };
 #endif // MAINWINDOW_H

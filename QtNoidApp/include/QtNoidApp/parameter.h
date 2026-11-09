@@ -34,11 +34,11 @@ class QTNOID_APP_EXPORT Parameter : public QObject
     Q_PROPERTY(bool isSchemaModified READ isSchemaModified BINDABLE bindableIsSchemaModified NOTIFY isSchemaModifiedChanged FINAL)
 
 public:
-    explicit Parameter(QObject *parent = nullptr);
-    explicit Parameter(const QVariant& initialValue, QObject *parent = nullptr);
-    explicit Parameter(const QVariant& initialValue, const QString &name, QObject *parent = nullptr);
-    explicit Parameter(const QVariant& initialValue, const QString &name, const QString &description, QObject *parent = nullptr);
-    explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject *parent = nullptr);
+    explicit Parameter(QObject* parent = nullptr);
+    explicit Parameter(const QVariant& initialValue, QObject* parent = nullptr);
+    explicit Parameter(const QVariant& initialValue, const QString& name, QObject* parent = nullptr);
+    explicit Parameter(const QVariant& initialValue, const QString& name, const QString& description, QObject* parent = nullptr);
+    explicit Parameter(const QJsonObject& schema, const QJsonObject& value, QObject* parent = nullptr);
      ~Parameter() override;
 
     int uniqueId() const { return m_uniqueId; }
@@ -133,24 +133,24 @@ public:
     void resetSchemaModifications();
 
 signals:
-    void valueChanged(const QVariant &newValue);
-    void minChanged(const QVariant &min);
-    void maxChanged(const QVariant &max);
-    void rangeChanged(const QVariant &min, const QVariant &max);
-    void presetsChanged(const QVariantMap &presets);
-    void nameChanged(const QString &newName);
-    void nameEdited(const QString &oldName, const QString &newName);
-    void labelChanged(const QString &value);
-    void descriptionChanged(const QString &value);
-    void unitChanged(const QString &value);
-    void tooltipChanged(const QString &value);
+    void valueChanged(const QVariant& newValue);
+    void minChanged(const QVariant& min);
+    void maxChanged(const QVariant& max);
+    void rangeChanged(const QVariant& min, const QVariant& max);
+    void presetsChanged(const QVariantMap& presets);
+    void nameChanged(const QString& newName);
+    void nameEdited(const QString& oldName, const QString& newName);
+    void labelChanged(const QString& value);
+    void descriptionChanged(const QString& value);
+    void unitChanged(const QString& value);
+    void tooltipChanged(const QString& value);
     void readOnlyChanged(bool value);
     void visibleChanged(bool value);
-    void writeAttemptedWhileReadOnly(const QString &parameterName, const QVariant& current);
+    void writeAttemptedWhileReadOnly(const QString& parameterName, const QVariant& current);
     void isValidChanged(bool isValid);
     void isValueModifiedChanged(bool value);
     void isSchemaModifiedChanged(bool value);
-    void aboutToBeDestroyed(QtNoid::App::Parameter *parameter);
+    void aboutToBeDestroyed(QtNoid::App::Parameter* parameter);
 
 public slots:
     void setValue(const QVariant& val);
@@ -179,8 +179,8 @@ private:
     void initIsSchemaModifiedConnections();
     bool computeIsValid() const;
     void enforceRange();
-    QVariant clampValue(const QVariant &value) const;
-    bool compareVariants(const QVariant &a, const QVariant &b, int comparison) const;
+    QVariant clampValue(const QVariant& value) const;
+    bool compareVariants(const QVariant& a, const QVariant& b, int comparison) const;
     bool canModify() const; // Modification control
 
 private:
@@ -200,7 +200,7 @@ private:
 } // namespace QtNoid
 
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter &param)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter& param)
 {
     QDebugStateSaver saver(debug);
     debug.nospace() << "Parameter("
@@ -243,7 +243,7 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter &param)
     return debug;
 }
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter *param)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::Parameter* param)
 {
     if (param) {
         return ::operator<<(debug, *param);

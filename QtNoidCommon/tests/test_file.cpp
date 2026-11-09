@@ -40,13 +40,23 @@ private slots:
     void testSaveAsTextFile4String();
 
 
-    void testSaveAsTextFile4StringList_data();
     void testSaveAsTextFile4StringList();
 
-    void testSaveAsTextFileWithSubFolder_data();
     void testSaveAsTextFileWithSubFolder();
 
+    void testResolveAndPrepareFilePath_data();
+    void testResolveAndPrepareFilePath();
+
+    void testResolveAndPrepareFilePath_EmptyFilePathReturnsEmptyString();
+    void testResolveAndPrepareFilePath_EmptyBasePathStillReturnsAbsolutePath();
+    void testResolveAndPrepareFilePath_CreatesNestedSubfolders();
+    void testResolveAndPrepareFilePath_MkPathFailureReturnsEmptyString();
+
     void testReadAsStringList();
+
+    void testReadAsString();
+    void testReadAsString_FileDoesNotExistReturnsEmptyString();
+    void testReadAsString_EmptyFileReturnsEmptyString();
 
 
     void testListPathRecursively_data();
@@ -75,7 +85,7 @@ private slots:
 
 
 private:
-    QDir testDataDir(const QString &testMethod, const QString &dataTag = {}) const
+    QDir testDataDir(const QString& testMethod, const QString& dataTag = {}) const
     {
         QString dataPath = QDir::currentPath() +
                            QDir::separator() + metaObject()->className() +
@@ -88,7 +98,7 @@ private:
         return QDir(dataPath);
     }
 
-    bool testDataDirInit(const QDir &dataDir, const QStringList &fileList) const
+    bool testDataDirInit(const QDir& dataDir, const QStringList& fileList) const
     {
         auto dir = dataDir;
         dir.removeRecursively();
@@ -101,7 +111,7 @@ private:
 
         // Create files
         QFileInfo FI;
-        for(const QString &fName : fileList){
+        for(const QString& fName : fileList){
             FI.setFile(dir, fName);
             dir.mkpath(FI.path());
             QFile f(FI.absoluteFilePath());
@@ -113,7 +123,7 @@ private:
         return true;
     }
 
-    bool testDataFileInit(const QDir &dataDir, const QString &fileName, const QByteArray &data) const
+    bool testDataFileInit(const QDir& dataDir, const QString& fileName, const QByteArray& data) const
     {
         QFileInfo FI(dataDir.absoluteFilePath(fileName));
         auto path = FI.absolutePath();
@@ -423,14 +433,12 @@ void TestQtNoidCommonFile::testSaveAsTextFile4String_data()
     QTest::addColumn<QString>("fileSuffix");
     QTest::addColumn<QString>("expectedFileName");
 
-    QTest::newRow("TxtFileNoSuffix"         ) << "TxtFile" << "" << "TxtFile";
-    QTest::newRow("TxtFileRemoveSuffix"     ) << "TxtFileRemoveSuffix.abc" << "" << "TxtFileRemoveSuffix";
-
-    QTest::newRow("TxtFile+SuffixNoDot"     ) << "TxtFileSuffix.ini" << "txt" <<"TxtFileSuffix.txt" ;
-    QTest::newRow("TxtFile+DotSuffix"       ) << "TxtFileDotSuffix.ini" << ".txt" << "TxtFileDotSuffix.txt";
-    QTest::newRow("TxtFile+DotDubleSuffix"  ) << "TxtFileDotSuffix.tar.ini" << ".txt" << "TxtFileDotSuffix.tar.txt";
-    QTest::newRow("TxtFile+BadSuffix"       ) << "TxtFile+BadSuffix" << " .txt" << "TxtFile+BadSuffix.txt";
-    QTest::newRow("TxtFile+BadSuffix2"      ) << "TxtFile+BadSuffix2" << " txt" << "TxtFile+BadSuffix2.txt";
+    // All the fileSuffix transformation edge cases (empty/dot/no-dot/padding)
+    // are covered directly by TestQtNoidCommonFile::testResolveAndPrepareFilePath.
+    // These two rows are just a smoke test that saveAsTextFile() still forwards
+    // fileSuffix correctly and actually writes the content to the resolved path.
+    QTest::newRow("DefaultSuffix" ) << "TxtFile.txt" << "*" << "TxtFile.txt";
+    QTest::newRow("SuffixOverride") << "TxtFileSuffix.ini" << "txt" << "TxtFileSuffix.txt";
 }
 
 void TestQtNoidCommonFile::testSaveAsTextFile4String()
@@ -459,20 +467,14 @@ void TestQtNoidCommonFile::testSaveAsTextFile4String()
     QCOMPARE(outText, data);
 }
 
-void TestQtNoidCommonFile::testSaveAsTextFile4StringList_data()
-{
-    QTest::addColumn<QString>("filePath");
-    QTest::addColumn<QString>("fileSuffix");
-    QTest::addColumn<QString>("expectedFileName");
-
-    QTest::newRow("TxtFile+DotDubleSuffix"  ) << "TxtFileDotSuffix.tar.ini" << ".txt" << "TxtFileDotSuffix.tar.txt";
-}
-
 void TestQtNoidCommonFile::testSaveAsTextFile4StringList()
 {
-    QFETCH(QString, filePath);
-    QFETCH(QString, fileSuffix);
-    QFETCH(QString, expectedFileName);
+    // The fileSuffix transformation itself is covered by
+    // TestQtNoidCommonFile::testResolveAndPrepareFilePath; this only checks
+    // that the joined QStringList content is actually written out.
+    QString filePath = "TxtFile.txt";
+    QString fileSuffix = "*";
+    QString expectedFileName = "TxtFile.txt";
 
     QDir dir = testDataDir(__func__);
     QStringList data = {"AA BB CC", "KK"};
@@ -497,21 +499,15 @@ void TestQtNoidCommonFile::testSaveAsTextFile4StringList()
     QCOMPARE(outText, data);
 }
 
-void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder_data()
-{
-    QTest::addColumn<QString>("filePath");
-    QTest::addColumn<QString>("fileSuffix");
-    QTest::addColumn<QString>("expectedRelativePath");
-
-    QTest::newRow("TxtFileWithSubFolder"  ) << "a/TxtFileWithSubFolder" << "" << "a/TxtFileWithSubFolder";
-    QTest::newRow("IniFile+SubFolderNo"  ) << "a/IniFile+SubFolder.txt" << ".ini" << "a/IniFile+SubFolder.ini";
-}
-
 void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder()
 {
-    QFETCH(QString, filePath);
-    QFETCH(QString, fileSuffix);
-    QFETCH(QString, expectedRelativePath);
+    // Creating missing subfolders, and the fileSuffix transform, are both
+    // covered directly by TestQtNoidCommonFile::testResolveAndPrepareFilePath
+    // (incl. nested folders). This only checks that saveAsTextFile() still
+    // writes correctly when the resolved destination is inside a subfolder.
+    QString filePath = "a/TxtFileWithSubFolder";
+    QString fileSuffix = "";
+    QString expectedRelativePath = "a/TxtFileWithSubFolder";
 
     QDir dir = testDataDir(__func__);
     QStringList data = {"AA BB CC", "KK"};
@@ -519,6 +515,95 @@ void TestQtNoidCommonFile::testSaveAsTextFileWithSubFolder()
 
     auto relPath = dir.relativeFilePath(resPath);
     QCOMPARE(relPath, expectedRelativePath);
+}
+
+void TestQtNoidCommonFile::testResolveAndPrepareFilePath_data()
+{
+    QTest::addColumn<QString>("filePath");
+    QTest::addColumn<QString>("fileSuffix");
+    QTest::addColumn<QString>("expectedFileName");
+
+    QTest::newRow("NoSuffixChange"        ) << "TxtFile" << "*" << "TxtFile";
+    QTest::newRow("RemoveSuffix"          ) << "TxtFileRemoveSuffix.abc" << "" << "TxtFileRemoveSuffix";
+    QTest::newRow("AddSuffixNoDot"        ) << "TxtFileSuffix.ini" << "txt" << "TxtFileSuffix.txt";
+    QTest::newRow("AddSuffixWithDot"      ) << "TxtFileDotSuffix.ini" << ".txt" << "TxtFileDotSuffix.txt";
+    QTest::newRow("DoubleExtensionSuffix" ) << "TxtFileDotSuffix.tar.ini" << ".txt" << "TxtFileDotSuffix.tar.txt";
+    QTest::newRow("SuffixWithLeadingSpace") << "TxtFile+BadSuffix" << " .txt" << "TxtFile+BadSuffix.txt";
+    QTest::newRow("SuffixNoDotWithSpace"  ) << "TxtFile+BadSuffix2" << " txt" << "TxtFile+BadSuffix2.txt";
+}
+
+void TestQtNoidCommonFile::testResolveAndPrepareFilePath()
+{
+    QFETCH(QString, filePath);
+    QFETCH(QString, fileSuffix);
+    QFETCH(QString, expectedFileName);
+
+    QDir dir = testDataDir(__func__, QTest::currentDataTag());
+    dir.removeRecursively();
+
+    QString result = File::resolveAndPrepareFilePath(filePath, dir.absolutePath(), fileSuffix);
+
+    QVERIFY2(!result.isEmpty(), "resolveAndPrepareFilePath should not fail on a valid request");
+    QCOMPARE(QFileInfo(result).fileName(), expectedFileName);
+
+    // mkpath() is a documented side effect: the destination folder must
+    // already exist after the call, even though no file was written yet.
+    QVERIFY2(QFileInfo(result).absoluteDir().exists(), "Destination folder should have been created");
+
+    // The result must always be usable as-is, regardless of basePath/fileSuffix.
+    QVERIFY2(QFileInfo(result).isAbsolute(), "resolveAndPrepareFilePath must always return an absolute path");
+}
+
+void TestQtNoidCommonFile::testResolveAndPrepareFilePath_EmptyFilePathReturnsEmptyString()
+{
+    QCOMPARE(File::resolveAndPrepareFilePath(QString(), QString(), QString()), QString());
+    QCOMPARE(File::resolveAndPrepareFilePath(QString(), testDataDir(__func__).absolutePath(), "*"), QString());
+}
+
+void TestQtNoidCommonFile::testResolveAndPrepareFilePath_EmptyBasePathStillReturnsAbsolutePath()
+{
+    // Regression test: with an empty basePath and the "*" suffix sentinel -
+    // the combination saveAsTextFile() itself defaults to - the result must
+    // still be an absolute path, not whatever (possibly relative) filePath
+    // was passed in.
+    QString fileName = QString(__func__) + ".txt";
+
+    QString result = File::resolveAndPrepareFilePath(fileName, QString(), "*");
+
+    QVERIFY2(!result.isEmpty(), "Should succeed for a valid relative fileName");
+    QVERIFY2(QFileInfo(result).isAbsolute(),
+              "Result must be absolute even when basePath is empty and fileSuffix is \"*\"");
+    QCOMPARE(QFileInfo(result).fileName(), fileName);
+}
+
+void TestQtNoidCommonFile::testResolveAndPrepareFilePath_CreatesNestedSubfolders()
+{
+    QDir dir = testDataDir(__func__);
+    dir.removeRecursively();
+
+    QString result = File::resolveAndPrepareFilePath("a/b/c/deepFile.txt", dir.absolutePath(), "*");
+
+    QVERIFY2(!result.isEmpty(), "Should succeed and create the missing nested folders");
+    QVERIFY2(QFileInfo(result).absoluteDir().exists(), "Nested destination folder should have been created");
+    QCOMPARE(QFileInfo(result).fileName(), QString("deepFile.txt"));
+}
+
+void TestQtNoidCommonFile::testResolveAndPrepareFilePath_MkPathFailureReturnsEmptyString()
+{
+    QDir dir = testDataDir(__func__);
+    dir.removeRecursively();
+    QVERIFY(dir.mkpath(dir.absolutePath()));
+
+    // Create a plain file where the code will then try to create a sub-folder:
+    // mkpath() can't descend into a path component that is a file, not a folder.
+    QString blockerPath = dir.absoluteFilePath("blocker");
+    QFile blocker(blockerPath);
+    QVERIFY(blocker.open(QIODevice::WriteOnly));
+    blocker.close();
+
+    QString result = File::resolveAndPrepareFilePath("blocker/sub/file.txt", dir.absolutePath(), "*");
+
+    QCOMPARE(result, QString());
 }
 
 void TestQtNoidCommonFile::testReadAsStringList()
@@ -538,6 +623,53 @@ void TestQtNoidCommonFile::testReadAsStringList()
     auto out = File::readAsStringList(path);
 
     QCOMPARE(out, data);
+}
+
+void TestQtNoidCommonFile::testReadAsString()
+{
+    QDir dir = testDataDir(__func__);
+    dir.mkpath(dir.absolutePath());
+
+    auto path = dir.absoluteFilePath("readAsString.txt");
+
+    QFile f(path);
+    QCOMPARE(f.open(QIODevice::WriteOnly | QIODevice::Text), true);
+    QTextStream stream(&f);
+    QString data = "AA BB CC\nKK\n\n";
+    stream << data;
+    f.close();
+
+    auto out = File::readAsString(path);
+    QCOMPARE(out.length(), data.length());
+    QCOMPARE(out, data);
+
+    qDebug() << out;
+}
+
+void TestQtNoidCommonFile::testReadAsString_FileDoesNotExistReturnsEmptyString()
+{
+    QDir dir = testDataDir(__func__);
+    dir.mkpath(dir.absolutePath());
+
+    auto path = dir.absoluteFilePath("thisFileDoesNotExist.txt");
+
+    QCOMPARE(File::readAsString(path), QString());
+}
+
+void TestQtNoidCommonFile::testReadAsString_EmptyFileReturnsEmptyString()
+{
+    QDir dir = testDataDir(__func__);
+    dir.mkpath(dir.absolutePath());
+
+    auto path = dir.absoluteFilePath("emptyFile.txt");
+
+    QFile f(path);
+    QCOMPARE(f.open(QIODevice::WriteOnly | QIODevice::Text), true);
+    f.close();
+
+    // Documented ambiguity: a genuinely empty file and a missing/unreadable
+    // one both return an empty string - this locks in that known behavior.
+    QCOMPARE(File::readAsString(path), QString());
 }
 
 void TestQtNoidCommonFile::testListPathRecursively_data()
@@ -560,7 +692,7 @@ void TestQtNoidCommonFile::testListPathRecursively()
     QCOMPARE(res, true);
 
     QStringList expected;
-    for(const auto &item : std::as_const(fileList)) {
+    for(const auto& item : std::as_const(fileList)) {
         expected << dir.absoluteFilePath(item);
     }
     expected.sort();
@@ -579,7 +711,7 @@ void TestQtNoidCommonFile::testListPathRecursively_PathIsAFileInTheFolder()
     QCOMPARE(res, true);
 
     QStringList expected;
-    for(const auto &item : std::as_const(fileList)) {
+    for(const auto& item : std::as_const(fileList)) {
         expected << dir.absoluteFilePath(item);
     }
     expected.sort();
@@ -631,7 +763,7 @@ void TestQtNoidCommonFile::testListPathRecursively_UsingFilters()
     QCOMPARE(res, true);
 
     QStringList expectedGood;
-    for(const auto &item : std::as_const(goodList)) {
+    for(const auto& item : std::as_const(goodList)) {
         expectedGood << dir.absoluteFilePath(item);
     }
     expectedGood.sort();
@@ -661,7 +793,7 @@ void TestQtNoidCommonFile::testListSubPathRecursively()
     QCOMPARE(res, true);
 
     QStringList expected;
-    for(const auto &item : std::as_const(fileList)) {
+    for(const auto& item : std::as_const(fileList)) {
         expected << item;
     }
     expected.sort();

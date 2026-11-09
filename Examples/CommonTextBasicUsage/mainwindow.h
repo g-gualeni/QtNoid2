@@ -15,7 +15,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
 private slots:
@@ -30,8 +30,8 @@ private slots:
     void on_cmdConvertToSnakeCase_clicked();
 
 private:
-    Ui::MainWindow *ui;
-    QShortcut *m_screenshotShortcut = nullptr;
+    Ui::MainWindow* ui;
+    QShortcut* m_screenshotShortcut = nullptr;
 
 };
 #endif // MAINWINDOW_H

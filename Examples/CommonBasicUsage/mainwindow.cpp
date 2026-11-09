@@ -10,7 +10,7 @@
 
 #include <QShortcut>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -49,7 +49,7 @@ QStringList MainWindow::txtNameFilters() const
     return QStringList(ui->txtNameFilters->currentText());
 }
 
-void MainWindow::update_txtPathList(const QStringList &list, qint64 elapsedTime)
+void MainWindow::update_txtPathList(const QStringList& list, qint64 elapsedTime)
 {
     ui->txtPathList->appendPlainText(list.join('\n'));
     // ui->txtPathList->setPlainText(list.join('\n'));

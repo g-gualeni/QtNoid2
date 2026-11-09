@@ -11,14 +11,14 @@
 namespace QtNoid {
 namespace App {
 
-ConfigFile::ConfigFile(QObject *parent)
+ConfigFile::ConfigFile(QObject* parent)
     : Config(parent)
 {
     // qDebug() << Q_FUNC_INFO;
 }
 
 
-ConfigFile::ConfigFile(const QString &fileName, QObject *parent)
+ConfigFile::ConfigFile(const QString& fileName, QObject* parent)
     : Config(parent)
 {
     // qDebug() << Q_FUNC_INFO << "|" << this;
@@ -40,7 +40,7 @@ QString ConfigFile::fileName() const
 }
 
 
-void ConfigFile::setFileName(const QString &value)
+void ConfigFile::setFileName(const QString& value)
 {
     m_fileName = value;
 }
@@ -125,7 +125,7 @@ bool ConfigFile::save()
 }
 
 
-void ConfigFile::initFileName(const QString &fileName)
+void ConfigFile::initFileName(const QString& fileName)
 {
     if(fileName.isEmpty()) {
         m_fileName = Core::filePathAsAppSibling();

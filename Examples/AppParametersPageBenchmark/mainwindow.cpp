@@ -11,7 +11,7 @@
 #include <QTimer>
 #include <QStyle>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -28,7 +28,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::setCmdGORunning(QPushButton *btn, bool running)
+void MainWindow::setCmdGORunning(QPushButton* btn, bool running)
 {
     QSize sizehint = btn->sizeHint();
     if(running) {
@@ -203,7 +203,7 @@ std::pair<quint64, quint64> MainWindow::benchmarkParameterUsingJsonValueAndSchem
     auto preparation = ET.nsecsElapsed();
 
     ET.start();
-    for(const QJsonObject &val : std::as_const(valueList))
+    for(const QJsonObject& val : std::as_const(valueList))
     {
         QtNoid::App::Parameter p(schema, val, this);
         Q_UNUSED(p)

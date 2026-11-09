@@ -18,7 +18,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -36,17 +36,17 @@ private slots:
 private:
     void createList();
     void createUiFromList();
-    QWidget *createUiTabFromList();
-    QLayout *createUiParamterGroupFromParameter(QtNoid::App::Parameter* par, int width);
-    QWidget *createUiDescriptionFromParameter(QtNoid::App::Parameter* par);
-    void updateStyleSheet(QWidget *spinInt, QtNoid::App::Parameter *par);
+    QWidget* createUiTabFromList();
+    QLayout* createUiParamterGroupFromParameter(QtNoid::App::Parameter* par, int width);
+    QWidget* createUiDescriptionFromParameter(QtNoid::App::Parameter* par);
+    void updateStyleSheet(QWidget* spinInt, QtNoid::App::Parameter* par);
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow* ui;
     QtNoid::App::ParametersPage m_list;
 
     QTabWidget* m_tabWidget;
-    QShortcut *m_screenshotShortcut = nullptr;
+    QShortcut* m_screenshotShortcut = nullptr;
 
 };
 #endif // MAINWINDOW_H

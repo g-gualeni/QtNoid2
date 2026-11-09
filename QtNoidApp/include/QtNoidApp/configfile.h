@@ -12,8 +12,8 @@ class QTNOID_APP_EXPORT ConfigFile : public Config
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName BINDABLE bindableFileName NOTIFY fileNameChanged FINAL)
 
 public:
-    explicit ConfigFile(QObject *parent = nullptr);
-    explicit ConfigFile(const QString &fileName, QObject *parent = nullptr);
+    explicit ConfigFile(QObject* parent = nullptr);
+    explicit ConfigFile(const QString& fileName, QObject* parent = nullptr);
     ~ConfigFile();
 
     // FileName
@@ -41,7 +41,7 @@ private:
 } // namespace QtNoid
 
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::ConfigFile &configFile)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ConfigFile& configFile)
 {
     QDebugStateSaver saver(debug);
     debug.nospace() << "ConfigFile(" << configFile.fileName() << "->";
@@ -51,7 +51,7 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::ConfigFile &configFile
     return debug;
 }
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::ConfigFile *configFile)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ConfigFile* configFile)
 {
     if (configFile) {
         return ::operator<<(debug, *configFile);

@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QScrollBar>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -254,7 +254,7 @@ void MainWindow::on_cmdFromJson_clicked()
     updateStatusBar(resMsg);
 }
 
-void MainWindow::setRangeFromText(const QString &val)
+void MainWindow::setRangeFromText(const QString& val)
 {
     QStringList range = val.split(" ");
     auto min = range.first().toFloat();
@@ -262,7 +262,7 @@ void MainWindow::setRangeFromText(const QString &val)
     m_parameter.setRange(min, max);
 }
 
-void MainWindow::setPresetsFromText(const QString &val)
+void MainWindow::setPresetsFromText(const QString& val)
 {
     QVariantMap presets;
     const QStringList lines  = val.split('\n', Qt::SkipEmptyParts);
@@ -282,7 +282,7 @@ void MainWindow::setPresetsFromText(const QString &val)
     m_parameter.setPresets(presets);
 }
 
-void MainWindow::updateStatusBar(const QString &msg, const QString &value)
+void MainWindow::updateStatusBar(const QString& msg, const QString& value)
 {
     QTextCursor cursor(ui->txtLog->document());
     cursor.movePosition(QTextCursor::End);
@@ -304,7 +304,7 @@ void MainWindow::updateStatusBar(const QString &msg, const QString &value)
     cursor.insertText(value, valueFormat);
 
     // Scroll to the end without changing user selection
-    auto *sb = ui->txtLog->verticalScrollBar();
+    auto* sb = ui->txtLog->verticalScrollBar();
     sb->setValue(sb->maximum());
 }
 

@@ -25,7 +25,7 @@ int ParametersPage::getNextUniqueId()
 
 
 namespace {
-bool isTrackedForIsSchemaModified(const QMetaProperty &prop)
+bool isTrackedForIsSchemaModified(const QMetaProperty& prop)
 {
     static const QSet<QByteArray> excluded = {
         "objectName", "count", "isValueModified", "isSchemaModified"
@@ -37,7 +37,7 @@ bool isTrackedForIsSchemaModified(const QMetaProperty &prop)
 void ParametersPage::captureBaseline()
 {
     m_schemaBaseline.clear();
-    const QMetaObject *mo = &ParametersPage::staticMetaObject;
+    const QMetaObject* mo = &ParametersPage::staticMetaObject;
     for (int ii = 0; ii < mo->propertyCount(); ++ii) {
         QMetaProperty prop = mo->property(ii);
         if (isTrackedForIsSchemaModified(prop)) {
@@ -54,7 +54,7 @@ void ParametersPage::updateIsSchemaModified()
     }
 
     bool ownChanged = false;
-    const QMetaObject *mo = metaObject();
+    const QMetaObject* mo = metaObject();
     for (int ii = 0; ii < mo->propertyCount(); ++ii) {
         QMetaProperty prop = mo->property(ii);
         if (isTrackedForIsSchemaModified(prop) && prop.read(this) != m_schemaBaseline.value(prop.name())) {
@@ -66,21 +66,21 @@ void ParametersPage::updateIsSchemaModified()
 }
 
 
-ParametersPage::ParametersPage(QObject *parent)
+ParametersPage::ParametersPage(QObject* parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
     initInternalConnections();
     captureBaseline();
 }
 
-ParametersPage::ParametersPage(const QString &name, QObject *parent)
+ParametersPage::ParametersPage(const QString& name, QObject* parent)
     : QObject(parent), m_name(name), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
     initInternalConnections();
     captureBaseline();
 }
 
-ParametersPage::ParametersPage(const QJsonObject &schemaList, const QJsonObject &valueList, QObject *parent)
+ParametersPage::ParametersPage(const QJsonObject& schemaList, const QJsonObject& valueList, QObject* parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_count(0), m_visible(true)
 {
     initInternalConnections();
@@ -157,7 +157,7 @@ QJsonObject ParametersPage::toJsonSchema() const
  * @param json
  * @return
  */
-bool ParametersPage::valuesFromJson(const QJsonObject &json)
+bool ParametersPage::valuesFromJson(const QJsonObject& json)
 {
     QString name = m_name.value();
     if(name.isEmpty() && (json.count() == 1)) {
@@ -196,7 +196,7 @@ bool ParametersPage::valuesFromJson(const QJsonObject &json)
     return true;
 }
 
-bool ParametersPage::schemaFromJson(const QJsonObject &json)
+bool ParametersPage::schemaFromJson(const QJsonObject& json)
 {
     QString name = m_name.value();
     if(name.isEmpty() && (json.count() == 1)) {
@@ -258,7 +258,7 @@ QString ParametersPage::name() const
 }
 
 
-void ParametersPage::setName(const QString &newName)
+void ParametersPage::setName(const QString& newName)
 {
     if(m_name == newName)
         return;
@@ -279,7 +279,7 @@ QString ParametersPage::label() const
     return m_label.value();
 }
 
-void ParametersPage::setLabel(const QString &newLabel)
+void ParametersPage::setLabel(const QString& newLabel)
 {
     m_label = newLabel;
 }
@@ -294,7 +294,7 @@ QString ParametersPage::description() const
     return m_description.value();
 }
 
-void ParametersPage::setDescription(const QString &value)
+void ParametersPage::setDescription(const QString& value)
 {
     m_description = value;
 }
@@ -309,7 +309,7 @@ QString ParametersPage::tooltip() const
     return m_tooltip.value();
 }
 
-void ParametersPage::setTooltip(const QString &value)
+void ParametersPage::setTooltip(const QString& value)
 {
     m_tooltip = value;
 }
@@ -398,8 +398,8 @@ void ParametersPage::resetSchemaModifications()
 {
     m_forceSchemaModified = false;
 
-    const QMetaObject *mo = metaObject();
-    for (const QByteArray &propName : m_schemaBaseline.keys()) {
+    const QMetaObject* mo = metaObject();
+    for (const QByteArray& propName : m_schemaBaseline.keys()) {
         auto idx = mo->indexOfProperty(propName);
         if (idx < 0) {
             continue;
@@ -427,7 +427,7 @@ QBindable<int> ParametersPage::bindableCount()
     return QBindable<int>(&m_count);
 }
 
-bool ParametersPage::append(Parameter *parameter)
+bool ParametersPage::append(Parameter* parameter)
 {
     if (parameter == nullptr) {
         return false;
@@ -487,7 +487,7 @@ Parameter* ParametersPage::emplace(const QJsonObject& schema, const QJsonObject&
     return parameter;
 }
 
-void ParametersPage::removeParameterInternal(Parameter *parameter)
+void ParametersPage::removeParameterInternal(Parameter* parameter)
 {
     m_parametersByUniqueId.remove(parameter->uniqueId());
     m_parametersByName.remove(parameter->name());
@@ -519,7 +519,7 @@ void ParametersPage::removeParameterInternal(Parameter *parameter)
     }
 }
 
-bool ParametersPage::canModify(const QString &parameterName) const
+bool ParametersPage::canModify(const QString& parameterName) const
 {
     if (m_readOnly.value()) {
         emit const_cast<ParametersPage*>(this)->writeAttemptedWhileReadOnly(parameterName);
@@ -529,7 +529,7 @@ bool ParametersPage::canModify(const QString &parameterName) const
 }
 
 
-void ParametersPage::removeParameter(Parameter *parameter)
+void ParametersPage::removeParameter(Parameter* parameter)
 {
     if (parameter == nullptr) {
         return;
@@ -541,7 +541,7 @@ void ParametersPage::removeParameter(Parameter *parameter)
     removeParameterInternal(parameter);
 }
 
-void ParametersPage::removeParameter(const QString &name)
+void ParametersPage::removeParameter(const QString& name)
 {
     Parameter* parameter = m_parametersByName.value(name, nullptr);
     if (parameter == nullptr) {
@@ -582,34 +582,34 @@ bool ParametersPage::isEmpty() const
     return m_parametersByIndex.isEmpty();
 }
 
-Parameter *ParametersPage::parameter(int index) const
+Parameter* ParametersPage::parameter(int index) const
 {
     return m_parametersByIndex.value(index, nullptr);
 }
 
-Parameter *ParametersPage::parameter(const QString &name) const
+Parameter* ParametersPage::parameter(const QString& name) const
 {
     return m_parametersByName.value(name, nullptr);
 }
 
-int ParametersPage::indexOf(Parameter *parameter) const
+int ParametersPage::indexOf(Parameter* parameter) const
 {
     return m_parameterToIndex.value(parameter, -1);
 }
 
-int ParametersPage::indexOf(const QString &name) const
+int ParametersPage::indexOf(const QString& name) const
 {
-    Parameter *param = m_parametersByName.value(name, nullptr);
+    Parameter* param = m_parametersByName.value(name, nullptr);
 
     return m_parameterToIndex.value(param, -1);
 }
 
-bool ParametersPage::contains(Parameter *parameter) const
+bool ParametersPage::contains(Parameter* parameter) const
 {
     return m_parameterToIndex.contains(parameter);
 }
 
-bool ParametersPage::contains(const QString &name) const
+bool ParametersPage::contains(const QString& name) const
 {
     return m_parametersByName.contains(name);
 }
@@ -624,18 +624,18 @@ QList<Parameter *> ParametersPage::parameters() const
     return res;
 }
 
-QVariant ParametersPage::value(const QString &name) const
+QVariant ParametersPage::value(const QString& name) const
 {
-    Parameter *param = m_parametersByName.value(name, nullptr);
+    Parameter* param = m_parametersByName.value(name, nullptr);
     if(param == nullptr)
         return {};
 
     return param->value();
 }
 
-bool ParametersPage::setValue(const QString &name, const QVariant &value)
+bool ParametersPage::setValue(const QString& name, const QVariant& value)
 {
-    Parameter *param = m_parametersByName.value(name, nullptr);
+    Parameter* param = m_parametersByName.value(name, nullptr);
     if(param == nullptr) {
         return false;
     }
@@ -647,7 +647,7 @@ bool ParametersPage::setValue(const QString &name, const QVariant &value)
     return true;
 }
 
-void ParametersPage::applyPreset(const QString &presetName)
+void ParametersPage::applyPreset(const QString& presetName)
 {
     for (auto it = m_parametersByIndex.constBegin(); it != m_parametersByIndex.constEnd(); ++it) {
         Parameter* param = it.value();
@@ -670,7 +670,7 @@ void ParametersPage::initInternalConnections()
 }
 
 
-void ParametersPage::onParameterNameEdited(const QString &oldName, const QString &newName)
+void ParametersPage::onParameterNameEdited(const QString& oldName, const QString& newName)
 {
     if(!m_parametersByName.contains(oldName)) {
         emit parameterRenameError(oldName, newName);
@@ -710,7 +710,7 @@ void ParametersPage::onParameterIsSchemaModifiedChanged(bool changed)
     updateIsSchemaModified();
 }
 
-void ParametersPage::appendParameterAndUpdateIndexs(Parameter *parameter)
+void ParametersPage::appendParameterAndUpdateIndexs(Parameter* parameter)
 {
     m_parametersByUniqueId.insert(parameter->uniqueId(), parameter);
     m_parameterToIndex.insert(parameter, m_nextParameterIndex);
@@ -738,7 +738,7 @@ void ParametersPage::onOwnPropertyChanged()
     updateIsSchemaModified();
 }
 
-void ParametersPage::onParameterAboutToBeDestroyed(Parameter *parameter)
+void ParametersPage::onParameterAboutToBeDestroyed(Parameter* parameter)
 {
     int idx = m_parameterToIndex.value(parameter, -1);
     if(idx == -1) {

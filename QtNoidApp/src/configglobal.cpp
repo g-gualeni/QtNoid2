@@ -6,7 +6,7 @@ namespace App {
 
 Q_GLOBAL_STATIC_WITH_ARGS(ConfigFile, globalConfigInstance, (""))
 
-ConfigFile *ConfigGlobal::instance()
+ConfigFile* ConfigGlobal::instance()
 {
     // qDebug() << __func__ ;
     return globalConfigInstance;

@@ -24,7 +24,7 @@ int Parameter::getNextUniqueId()
 
 
 namespace {
-bool isTrackedForIsSchemaModified(const QMetaProperty &prop)
+bool isTrackedForIsSchemaModified(const QMetaProperty& prop)
 {
     static const QSet<QByteArray> excluded = {
         "objectName", "value", "range", "isValid", "isValueModified", "isSchemaModified"
@@ -51,7 +51,7 @@ void Parameter::captureBaseline()
 }
 
 
-Parameter::Parameter(QObject *parent)
+Parameter::Parameter(QObject* parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
     initInternalConnections();
@@ -59,7 +59,7 @@ Parameter::Parameter(QObject *parent)
     initIsSchemaModifiedConnections();
 }
 
-Parameter::Parameter(const QVariant &initialValue, QObject *parent)
+Parameter::Parameter(const QVariant& initialValue, QObject* parent)
     : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
     m_value(initialValue), m_visible(true)
 {
@@ -68,7 +68,7 @@ Parameter::Parameter(const QVariant &initialValue, QObject *parent)
     initIsSchemaModifiedConnections();
 }
 
-Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject *parent)
+Parameter::Parameter(const QVariant& initialValue, const QString& name, QObject* parent)
     : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
     m_name(name), m_value(initialValue), m_visible(true)
 {
@@ -77,7 +77,7 @@ Parameter::Parameter(const QVariant &initialValue, const QString &name, QObject 
     initIsSchemaModifiedConnections();
 }
 
-Parameter::Parameter(const QVariant &initialValue, const QString &name, const QString &description, QObject *parent)
+Parameter::Parameter(const QVariant& initialValue, const QString& name, const QString& description, QObject* parent)
     : QObject(parent), m_initialValue(initialValue), m_uniqueId(getNextUniqueId()),
     m_name(name), m_description(description), m_value(initialValue), m_visible(true)
 {
@@ -86,7 +86,7 @@ Parameter::Parameter(const QVariant &initialValue, const QString &name, const QS
     initIsSchemaModifiedConnections();
 }
 
-Parameter::Parameter(const QJsonObject &schema, const QJsonObject &value, QObject *parent)
+Parameter::Parameter(const QJsonObject& schema, const QJsonObject& value, QObject* parent)
     : QObject(parent), m_uniqueId(getNextUniqueId()), m_visible(true)
 {
     initInternalConnections();
@@ -157,7 +157,7 @@ QJsonObject Parameter::toJsonSchema() const
     return res;
 }
 
-bool Parameter::fromJson(const QJsonObject &schema, const QJsonObject &value)
+bool Parameter::fromJson(const QJsonObject& schema, const QJsonObject& value)
 {
     // Override the parameter name using schema
     if(schema.isEmpty())
@@ -205,7 +205,7 @@ bool Parameter::valueFromJson(const QJsonObject& json)
     return false;
 }
 
-bool Parameter::schemaFromJson(const QJsonObject &json)
+bool Parameter::schemaFromJson(const QJsonObject& json)
 {
     // Sanity check
     if(json.isEmpty())
@@ -335,7 +335,7 @@ QVariant Parameter::value() const
     return m_value.value();
 }
 
-void Parameter::setValue(const QVariant &val)
+void Parameter::setValue(const QVariant& val)
 {
     if (canModify()) {
         // No needs for checking if different or to manually emit value changed
@@ -354,7 +354,7 @@ QVariant Parameter::min() const
     return m_min.value();
 }
 
-void Parameter::setMin(const QVariant &val)
+void Parameter::setMin(const QVariant& val)
 {
     m_min = val;
 }
@@ -368,7 +368,7 @@ QVariant Parameter::max() const
 {
     return m_max.value();
 }
-void Parameter::setMax(const QVariant &val)
+void Parameter::setMax(const QVariant& val)
 {
     m_max = val;
 }
@@ -383,7 +383,7 @@ std::pair<QVariant, QVariant> Parameter::range() const
     return {m_min.value(), m_max.value()};
 }
 
-void Parameter::setRange(const QVariant &min, const QVariant &max)
+void Parameter::setRange(const QVariant& min, const QVariant& max)
 {
     QVariant newMin = min;
     QVariant newMax = max;
@@ -439,7 +439,7 @@ QVariantMap Parameter::presets() const
     return m_presets.value();
 }
 
-void Parameter::setPresets(const QVariantMap &presets)
+void Parameter::setPresets(const QVariantMap& presets)
 {
     m_presets = presets;
 }
@@ -449,7 +449,7 @@ void Parameter::clearPresets()
     m_presets = QVariantMap();
 }
 
-QVariant Parameter::preset(const QString &name) const
+QVariant Parameter::preset(const QString& name) const
 {
     if(!m_presets.value().contains(name)) {
         return QVariant();
@@ -457,19 +457,19 @@ QVariant Parameter::preset(const QString &name) const
     return m_presets.value()[name];
 }
 
-void Parameter::setPreset(const QString &name, const QVariant &value)
+void Parameter::setPreset(const QString& name, const QVariant& value)
 {
     QVariantMap current = m_presets.value();
     current[name] = value;
     m_presets = current;
 }
 
-void Parameter::setPreset(const std::pair<QString, QVariant> &preset)
+void Parameter::setPreset(const std::pair<QString, QVariant>& preset)
 {
     setPreset(preset.first, preset.second);
 }
 
-void Parameter::removePreset(const QString &name)
+void Parameter::removePreset(const QString& name)
 {
     if(m_presets.value().contains(name)) {
         QVariantMap currentPresets = m_presets.value();
@@ -483,7 +483,7 @@ void Parameter::removePreset(const QString &name)
  * @param name
  * @return
  */
-bool Parameter::applyPreset(const QString &name)
+bool Parameter::applyPreset(const QString& name)
 {
     if(!m_presets.value().contains(name)) {
         return false;
@@ -505,7 +505,7 @@ QString Parameter::name() const
     return m_name.value();
 }
 
-void Parameter::setName(const QString &newName)
+void Parameter::setName(const QString& newName)
 {
     if(m_name == newName)
         return;
@@ -526,7 +526,7 @@ QString Parameter::label() const
     return m_label.value();
 }
 
-void Parameter::setLabel(const QString &value)
+void Parameter::setLabel(const QString& value)
 {
     m_label = value;
 }
@@ -541,7 +541,7 @@ QString Parameter::description() const
     return m_description.value();
 }
 
-void Parameter::setDescription(const QString &value)
+void Parameter::setDescription(const QString& value)
 {
     m_description = value;
 }
@@ -557,7 +557,7 @@ QString Parameter::unit() const
     return m_unit.value();
 }
 
-void Parameter::setUnit(const QString &value)
+void Parameter::setUnit(const QString& value)
 {
     m_unit = value;
 }
@@ -572,7 +572,7 @@ QString Parameter::tooltip() const
     return m_tooltip.value();
 }
 
-void Parameter::setTooltip(const QString &value)
+void Parameter::setTooltip(const QString& value)
 {
     m_tooltip = value;
 }
@@ -671,7 +671,7 @@ void Parameter::setSchemaModified(bool modified)
 void Parameter::resetSchemaModifications()
 {
     const QMetaObject mo = Parameter::staticMetaObject;
-    for(const QByteArray &propName : m_schemaBaseline.keys()) {
+    for(const QByteArray& propName : m_schemaBaseline.keys()) {
         auto idx = mo.indexOfProperty(propName);
         if(idx<0) {
             continue;
@@ -742,7 +742,7 @@ void Parameter::enforceRange()
     m_value = newVal;
 }
 
-QVariant Parameter::clampValue(const QVariant &value) const
+QVariant Parameter::clampValue(const QVariant& value) const
 {
     // qDebug() << __func__ << "value:" << value << "range:" << range();
     QVariant result = value;
@@ -767,7 +767,7 @@ QVariant Parameter::clampValue(const QVariant &value) const
  * @param comparison -1 sa < sb, 0 sa == sb, +1 sa > sb
  * @return
  */
-bool Parameter::compareVariants(const QVariant &a, const QVariant &b, int comparison) const
+bool Parameter::compareVariants(const QVariant& a, const QVariant& b, int comparison) const
 {
     if (!a.isValid() || !b.isValid())
         return false;

@@ -99,6 +99,13 @@ Passa a QtNoidJson - Yaml2Json
 	     - [x] create listSubPathRecursively() to return relative path
 	     - [x] Doc for listSubPathRecursively()
 	     - [x] Test for listSubPathRecursively()
+	     - [x] readAsString() to simplify reading a text file and feed it into a QPlainText
+	     - [x] readAsString() -> Scrivere doc
+	     - [x] readAsString() -> Scrivere test
+	     - [x] resolveAndPrepareFilePath nuova funzione pubblica
+	     - [x] resolveAndPrepareFilePath documentare
+	     - [x] resolveAndPrepareFilePath testare
+	     - [x] riscrivi saveAsTextFile usando QSaveFile file(fileName); per usare file temporaneo e poi commit.
 
 - [x] Libreria **`QtNoidApp`**
 	- [x] Aggiungere la dipendenza da `QtNoidCommon`
@@ -180,6 +187,11 @@ Passa a QtNoidJson - Yaml2Json
 		- [x] ParamtersPage
 		- [x] Config
 		- [x] Non vedo il meccanismo con il contatore delle modifiche
+		- [ ] saveValue (qsizetype)  / restoreAsQSizeType()
+			- [x] Implementazione
+			- [ ] sistemare i test per la coppia
+			- [ ] sistemare la documentazione per la coppia
+	
 	- [x] Classe **`QtNoid::App::ConfigFile`**
 		- [x] class **ConfigFile** as an extension of Config
 		- [x] load / save configuration 
@@ -233,24 +245,15 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] Rimuovere JSON Txt2Json Basic Usage example
 	- [x] QtNoidJson.md - aggiungere pagina per Yaml2Json
 	- [x] Incorporare rapidyaml come libreria
+	- [ ] Creare un metodo per fare da json a yaml
 	- [ ] Provare a compilare su macOS
-	- [ ] 
+	- [ ] ==🟡Come faccio a rendere esplicita la dipendenza da rapidyaml?==
+	- [ ] Non mi piace dipendere da GitHub per compilare, meglio qualcosa di statico
 
 
  
 
 # QtNoidJson-DEV
-
-==🟡Come faccio a rendere esplicita la dipendenza da rapidyaml?==
-Non mi piace dipendere da GitHub per compilare, meglio qualcosa di statico
-
--> Creare un doc con la roadmap che raccolga tutte le user stories e le metta assieme
--> Collegarlo alla pagina DEV
--> Inserire il tutto in userStories.
-
-appConfig->saveValue come qsizet
-
-
 finire implementation Yaml2Json library 
 Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
@@ -277,17 +280,20 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 		- [x] updateUI_statusBar() semplificare e rimuovere il calcolo del percorso spostandolo la responsabilità sul chiamanante
 		- [x] yamlStatusBarMsgFromCollectionList sbaglia il calcolo
 		- [x] C'è un problema con il marker del file modificato `[*] [*]`
+		- [x] Gestire il salvataggio del file yaml usando saveAsTextFile(...)
+
+		
 		- [ ] Gestire il caso del YAML modificato, con un pop-up per fare save delle modifiche
-
-
+			- [ ] maybeSaveYaml
 
 		- [ ] Mostrare un messaggio se il file atteso e quello caricato non sono gli stessi, usando confronto tra modelli json
 		
-
 		- [ ] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
 	
 		- [ ] Controllare tutta la gestione recent files e vedere se la posso mettere in libreria
-		- [ ] QtNoid::Common::File - metodo per leggere e scriveere una stringa com file di testo.
+
+
+		- [ ] 
 	- [ ] 
 	- [ ] Devo anche creare un file esempio e metterlo nelle risorse
 	- [ ] 

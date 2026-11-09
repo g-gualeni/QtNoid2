@@ -93,9 +93,9 @@ public:
 
     // ===== END ITERATOR CLASSES =====
 
-    explicit Config(QObject *parent = nullptr);
-    explicit Config(const QString& name, QObject *parent = nullptr);
-    explicit Config(const QJsonObject &schemaConfig, const QJsonObject& valueConfig, QObject *parent = nullptr);
+    explicit Config(QObject* parent = nullptr);
+    explicit Config(const QString& name, QObject* parent = nullptr);
+    explicit Config(const QJsonObject& schemaConfig, const QJsonObject& valueConfig, QObject* parent = nullptr);
     ~Config() override;
 
     int uniqueId() const { return m_uniqueId; }
@@ -147,7 +147,7 @@ public:
     int count() const;
     QBindable<int> bindableCount();
 
-    bool append(ParametersPage *page);
+    bool append(ParametersPage* page);
     bool append(const QJsonObject& schema, const QJsonObject& value);
     ParametersPage* emplace(const QString& name, const QString& description = {});
     ParametersPage* emplace(const QJsonObject& schema, const QJsonObject& values);
@@ -177,6 +177,9 @@ public:
     int restoreAsInt(const QString& paramName, int defaultValue, const QString& pageName = "Settings") const;
     bool saveValue(const QString& paramName, int value, const QString& pageName = "Settings");
 
+    qsizetype restoreAsQSizeType(const QString& paramName, qsizetype defaultValue, const QString& pageName = "Settings") const;
+    bool saveValue(const QString& paramName, qsizetype value, const QString& pageName = "Settings");
+
     double restoreAsDouble(const QString& paramName, double defaultValue, const QString& pageName = "Settings") const;
     bool saveValue(const QString& paramName, double value, const QString& pageName = "Settings");
 
@@ -186,7 +189,7 @@ public:
     QStringList restoreAsStringList(const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings") const;
     bool saveValue(const QString& paramName, const QStringList& value, const QString& pageName = "Settings");
 
-    QVariant restoreAsVariant(const QString &paramName, const QVariant &defaultValue, const QString &pageName = "Settings") const;
+    QVariant restoreAsVariant(const QString& paramName, const QVariant& defaultValue, const QString& pageName = "Settings") const;
     bool saveValue(const QString& paramName, const QVariant& value, const QString& pageName = "Settings");
 
     QByteArray restoreAsByteArray(const QString& paramName, const QByteArray defaultValue, const QString& pageName = "Settings") const;
@@ -216,17 +219,17 @@ public:
     const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
 
 public:
-    Config &operator<<(ParametersPage& page){
+    Config& operator<<(ParametersPage& page){
         append(&page);
         return *this;
     };
-    Config &operator<<(ParametersPage* page){
+    Config& operator<<(ParametersPage* page){
         if(page) append(page);
         return *this;
     };
 
 signals:
-    void aboutToBeDestroyed(QtNoid::App::Config *config);
+    void aboutToBeDestroyed(QtNoid::App::Config* config);
     void nameChanged(const QString& value);
     void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
@@ -240,7 +243,7 @@ signals:
 
 private slots:
     void onOwnPropertyChanged();
-    void onPageAboutToBeDestroyed(QtNoid::App::ParametersPage *page);
+    void onPageAboutToBeDestroyed(QtNoid::App::ParametersPage* page);
     void onPageNameEdited(const QString& oldName, const QString& newName);
     void onPageIsValueModifiedChanged(bool changed);
     void onPageIsSchemaModifiedChanged(bool changed);
@@ -274,14 +277,14 @@ private:
 
     QHash<QByteArray, QVariant> m_schemaBaseline;
 
-    void appendPageAndUpdateIndexs(ParametersPage *page);
-    bool saveValuePrivate(const QString &paramName, const QVariant &value, const QString &pageName);
+    void appendPageAndUpdateIndexs(ParametersPage* page);
+    bool saveValuePrivate(const QString& paramName, const QVariant& value, const QString& pageName);
 };
 
 } // namespace App
 } // namespace QtNoid
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::Config &config)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::Config& config)
 {
     QDebugStateSaver saver(debug);
     debug.nospace() << "Config(" << config.name()
@@ -311,7 +314,7 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::Config &config)
     return debug;
 }
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::Config *config)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::Config* config)
 {
     if (config) {
         return ::operator<<(debug, *config);

@@ -4,7 +4,7 @@
 #include <QFileDialog>
 #include <QDir>
 
-frmNewDataset::frmNewDataset(QWidget *parent)
+frmNewDataset::frmNewDataset(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::frmNewDataset)
 {
@@ -22,7 +22,7 @@ frmNewDataset::~frmNewDataset()
 }
 
 
-void frmNewDataset::setRootFolder(const QString &rootFolder)
+void frmNewDataset::setRootFolder(const QString& rootFolder)
 {
     QDir dir(QtNoid::App::Core::appExeOrAppBundleDirPath());
     auto relativeRootFolder = dir.relativeFilePath(rootFolder);
@@ -39,7 +39,7 @@ QString frmNewDataset::description() const
 {
     return ui->txtDescription->text();
 }
-void frmNewDataset::setDescription(const QString &description)
+void frmNewDataset::setDescription(const QString& description)
 {
     ui->txtDescription->setText(description);
 }
@@ -49,7 +49,7 @@ QString frmNewDataset::yamlInput() const
 {
     return ui->txtYamlInput->toPlainText();
 }
-void frmNewDataset::setYamlInput(const QString &yaml)
+void frmNewDataset::setYamlInput(const QString& yaml)
 {
     ui->txtYamlInput->setPlainText(yaml);
 }
@@ -59,7 +59,7 @@ QString frmNewDataset::datasetFolder() const
 {
     return ui->txtDatasetFolder->text();
 }
-void frmNewDataset::setDatasetFolder(const QString &datasetFolder)
+void frmNewDataset::setDatasetFolder(const QString& datasetFolder)
 {
     ui->txtDatasetFolder->setText(datasetFolder);
 }
@@ -102,7 +102,7 @@ void frmNewDataset::onCmdBrowseDatasetFolder()
     setDatasetFolder(dir.relativeFilePath(currentFolder));
 }
 
-void frmNewDataset::onTxtDatasetTextChanged(const QString &text)
+void frmNewDataset::onTxtDatasetTextChanged(const QString& text)
 {
     auto datasetFolderPath = rootFolder() + QDir::separator() + text;
     QDir dir(datasetFolderPath);
@@ -118,7 +118,7 @@ void frmNewDataset::onTxtDatasetTextChanged(const QString &text)
 }
 
 
-void frmNewDataset::loadDescription(const QString &folder)
+void frmNewDataset::loadDescription(const QString& folder)
 {
     auto filePath = folder + "/===";
     QFile file(filePath);
@@ -133,7 +133,7 @@ void frmNewDataset::loadDescription(const QString &folder)
 }
 
 
-void frmNewDataset::loadYamlInput(const QString &folder)
+void frmNewDataset::loadYamlInput(const QString& folder)
 {
     auto filePath = folder + "/in.yaml";
     QFile file(filePath);

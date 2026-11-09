@@ -2020,12 +2020,12 @@ void TestQtNoidAppParametersPage::testParametersPageSetSchemaModifiedDoesNotCasc
 
 void TestQtNoidAppParametersPage::testParameterRenameError()
 {
-    ParametersPage *page = new ParametersPage("MyList", this);
+    ParametersPage* page = new ParametersPage("MyList", this);
     QSignalSpy renameErrorSpy(page, &ParametersPage::parameterRenameError);
 
     // Create two parameters with different names
-    Parameter *param1 = new Parameter(100.0, "Param1", this);
-    Parameter *param2 = new Parameter(200.0, "Param2", this);
+    Parameter* param1 = new Parameter(100.0, "Param1", this);
+    Parameter* param2 = new Parameter(200.0, "Param2", this);
 
     page->append(param1);
     page->append(param2);
@@ -2237,12 +2237,12 @@ void TestQtNoidAppParametersPage::testOperatorLeftShiftWithParameterReference()
 void TestQtNoidAppParametersPage::testDeletingParamtersPageDestroyOwnedParamters()
 {
     // Create 2 objects and verify they are destroyed with the list
-    ParametersPage *page = new ParametersPage("MyBeautifullList");
+    ParametersPage* page = new ParametersPage("MyBeautifullList");
 
-    Parameter *parameter1 = new Parameter(1, "Paramter1", page);
+    Parameter* parameter1 = new Parameter(1, "Paramter1", page);
     QSignalSpy parameter1Spy(parameter1, &QObject::destroyed);
 
-    Parameter *parameter2 = new Parameter(2, "Paramter2", page);
+    Parameter* parameter2 = new Parameter(2, "Paramter2", page);
     QSignalSpy parameter2Spy(parameter2, &QObject::destroyed);
     *page << parameter1 << parameter2;
 

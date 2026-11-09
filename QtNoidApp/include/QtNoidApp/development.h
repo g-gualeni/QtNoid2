@@ -21,15 +21,15 @@ namespace App {
 class QTNOID_APP_EXPORT Development
 {
 public:
-    static QShortcut *initFullDialogGrabShortcut(QWidget *parent, const QString &keySequence = "Ctrl+Shift+S",
+    static QShortcut* initFullDialogGrabShortcut(QWidget* parent, const QString& keySequence = "Ctrl+Shift+S",
                                                  QString destinationFileOrPath = {}, bool saveToClipboard = true,
                                                  bool openDestinationPath = true);
 
-    static QAction *saveConfigToProject(QMenu *developmentMenu, const QString &projectFolder);
-    static QAction *initConfigFromResources(QMenu *developmentMenu, const QString &resFileOrPrefix);
+    static QAction* saveConfigToProject(QMenu* developmentMenu, const QString& projectFolder);
+    static QAction* initConfigFromResources(QMenu* developmentMenu, const QString& resFileOrPrefix);
 
 private:
-    static QString screenshotFileName(QWidget *parent, const QString &destinationFileOrPath);
+    static QString screenshotFileName(QWidget* parent, const QString& destinationFileOrPath);
     friend class ::TestQtNoidAppDevelopment; // Only for White Box testing
 
 };

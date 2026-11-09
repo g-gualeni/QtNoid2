@@ -95,9 +95,9 @@ public:
 
     // ===== END ITERATOR CLASSES =====
 
-    explicit ParametersPage(QObject *parent = nullptr);
-    explicit ParametersPage(const QString& name, QObject *parent = nullptr);
-    explicit ParametersPage(const QJsonObject &schemaList, const QJsonObject& valueList, QObject *parent = nullptr);
+    explicit ParametersPage(QObject* parent = nullptr);
+    explicit ParametersPage(const QString& name, QObject* parent = nullptr);
+    explicit ParametersPage(const QJsonObject& schemaList, const QJsonObject& valueList, QObject* parent = nullptr);
      ~ParametersPage() override;
 
     int uniqueId() const { return m_uniqueId; }
@@ -156,7 +156,7 @@ public:
     // List management
     int count() const;
     QBindable<int> bindableCount();
-    bool append(Parameter *parameter);
+    bool append(Parameter* parameter);
     bool append(const QJsonObject& schema, const QJsonObject& value);
     Parameter* emplace(const QVariant& initialValue, const QString& name, const QString& description = {});
     Parameter* emplace(const QJsonObject& schema, const QJsonObject& value);
@@ -197,20 +197,20 @@ public:
     const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
 
 public:
-    ParametersPage &operator<<(Parameter& param){
+    ParametersPage& operator<<(Parameter& param){
         append(&param);
         return *this;
     };
-    ParametersPage &operator<<(Parameter* param){
+    ParametersPage& operator<<(Parameter* param){
         if(param) append(param);
         return *this;
     };
 
 
 signals:
-    void aboutToBeDestroyed(QtNoid::App::ParametersPage *page);
+    void aboutToBeDestroyed(QtNoid::App::ParametersPage* page);
     void nameChanged(const QString& value);
-    void nameEdited(const QString &oldName, const QString &newName);
+    void nameEdited(const QString& oldName, const QString& newName);
     void labelChanged(const QString& value);
     void descriptionChanged(const QString& value);
     void tooltipChanged(const QString& value);
@@ -222,7 +222,7 @@ signals:
     void readOnlyChanged(bool value);
     void isValueModifiedChanged(bool value);
     void isSchemaModifiedChanged(bool changed);
-    void writeAttemptedWhileReadOnly(const QString &parameterName);
+    void writeAttemptedWhileReadOnly(const QString& parameterName);
 
 
 private:
@@ -239,13 +239,13 @@ private:
     friend class ::TestQtNoidAppParametersPage; // Only for White Box testing
 
     void initInternalConnections();
-    bool canModify(const QString &parameterName) const; // Modification control
-    void removeParameterInternal(Parameter *parameter);
-    void appendParameterAndUpdateIndexs(Parameter *parameter);
+    bool canModify(const QString& parameterName) const; // Modification control
+    void removeParameterInternal(Parameter* parameter);
+    void appendParameterAndUpdateIndexs(Parameter* parameter);
 
 private slots:
     void onOwnPropertyChanged();
-    void onParameterAboutToBeDestroyed(QtNoid::App::Parameter *parameter);
+    void onParameterAboutToBeDestroyed(QtNoid::App::Parameter* parameter);
     void onParameterNameEdited(const QString& oldName, const QString& newName);
     void onParameterIsValueModifiedChanged(bool changed);
     void onParameterIsSchemaModifiedChanged(bool changed);
@@ -274,7 +274,7 @@ private:
 } // namespace App
 } // namespace QtNoid
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::ParametersPage &list)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ParametersPage& list)
 {
     QDebugStateSaver saver(debug);
     debug.nospace() << list.name() << list.label()
@@ -307,7 +307,7 @@ inline QDebug operator<<(QDebug debug, const QtNoid::App::ParametersPage &list)
     return debug;
 }
 
-inline QDebug operator<<(QDebug debug, const QtNoid::App::ParametersPage *list)
+inline QDebug operator<<(QDebug debug, const QtNoid::App::ParametersPage* list)
 {
     if (list) {
         return ::operator<<(debug, *list);

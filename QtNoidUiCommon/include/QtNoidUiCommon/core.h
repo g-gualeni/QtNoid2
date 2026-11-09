@@ -15,8 +15,8 @@ namespace UiCommon {
 class QTNOID_UICOMMON_EXPORT Core
 {
 public:
-    static bool restoreComboBoxTextItems(QComboBox *cbo, const QJsonObject &cboConfig);
-    static QJsonObject saveComboBoxTextItems(QComboBox *cbo);
+    static bool restoreComboBoxTextItems(QComboBox* cbo, const QJsonObject& cboConfig);
+    static QJsonObject saveComboBoxTextItems(QComboBox* cbo);
 };
 
 

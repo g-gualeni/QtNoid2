@@ -4,7 +4,7 @@
 #include "QtNoidApp/QtNoidApp"
 
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {

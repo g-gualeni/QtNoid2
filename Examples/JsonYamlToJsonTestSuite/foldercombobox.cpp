@@ -3,15 +3,15 @@
 #include <QMenu>
 #include <QMouseEvent>
 
-FolderComboBox::FolderComboBox(QWidget *parent)
+FolderComboBox::FolderComboBox(QWidget* parent)
     : QComboBox(parent)
 {
 }
 
-bool FolderComboBox::event(QEvent *event)
+bool FolderComboBox::event(QEvent* event)
 {
     if (event->type() == QEvent::MouseButtonPress) {
-        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
         QRect dropdownRect = rect();
         dropdownRect.setLeft(width() - 20);
         if (dropdownRect.contains(mouseEvent->pos())) {
@@ -23,7 +23,7 @@ bool FolderComboBox::event(QEvent *event)
     }
     else if (event->type() == QEvent::MouseButtonDblClick) {
         // qDebug() << __func__ << event;
-        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
         if (mouseEvent->button() == Qt::LeftButton) {
             emit doubleClicked();
             m_ignoreNextMouseRelease = true;
@@ -39,11 +39,11 @@ bool FolderComboBox::event(QEvent *event)
 }
 
 
-void FolderComboBox::contextMenuEvent(QContextMenuEvent *event)
+void FolderComboBox::contextMenuEvent(QContextMenuEvent* event)
 {
     QMenu menu;
-    QAction *resetAction = menu.addAction("Reset");
-    QAction *selected = menu.exec(event->globalPos());
+    QAction* resetAction = menu.addAction("Reset");
+    QAction* selected = menu.exec(event->globalPos());
 
     if (selected == resetAction) {
         clear();

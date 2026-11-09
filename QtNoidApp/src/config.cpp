@@ -696,6 +696,23 @@ bool Config::saveValue(const QString &paramName, int value, const QString &pageN
     return saveValuePrivate(paramName, value, pageName);
 }
 
+qsizetype Config::restoreAsQSizeType(const QString &paramName, qsizetype defaultValue, const QString &pageName) const
+{
+    ParametersPage* page = m_pagesByName.value(pageName, nullptr);
+    if(page == nullptr)
+        return defaultValue;
+
+    if(!page->contains(paramName))
+        return defaultValue;
+
+    return static_cast<qsizetype>(page->value(paramName).toLongLong());
+}
+
+bool Config::saveValue(const QString &paramName, qsizetype value, const QString &pageName)
+{
+    return saveValuePrivate(paramName, value, pageName);
+}
+
 
 double Config::restoreAsDouble(const QString &paramName, double defaultValue, const QString &pageName) const
 {

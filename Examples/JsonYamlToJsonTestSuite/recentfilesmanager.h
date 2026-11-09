@@ -11,8 +11,8 @@ class recentFilesManager : public QObject
     Q_OBJECT
 
 public:
-    recentFilesManager(QAction *recentFilesParent, QWidget *parent);
-    void updateRecentFilesMenu(const QStringList &recentFiles);
+    recentFilesManager(QAction* recentFilesParent, QWidget* parent);
+    void updateRecentFilesMenu(const QStringList& recentFiles);
 
 signals:
     void fileSelected(const QString& fileName);
