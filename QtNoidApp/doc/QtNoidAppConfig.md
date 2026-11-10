@@ -82,7 +82,7 @@ A Config has the following properties:
 - `pages()`: Returns a QList containing all ParametersPage pointers in the configuration.
 
 ## Convenience methods for nested access
-These methods read and write a single parameter's value without the caller having to look up the containing page first. Every one of them takes a `pageName` that defaults to `"Settings"`, and the `saveValue()`/`addRecentFile()`/`saveComboBoxTextItems()` family creates the page and/or the parameter on demand if it doesn't exist yet.
+These methods read and write a single parameter's value without the caller having to look up the containing page first. Every one of them takes a `pageName` that defaults to `"Settings"`, and the `saveValue()` methods create the page and/or the parameter on demand if it doesn't exist yet.
 
 - `parametersCount(const QString& pageName = "Settings")`: Returns the number of parameters in the given page, or 0 if the page does not exist.
 - `parameter(const QString& paramName, const QString& pageName = "Settings")`: Returns the Parameter with the given name in the given page, or nullptr if either the page or the parameter does not exist.
@@ -90,6 +90,7 @@ These methods read and write a single parameter's value without the caller havin
 **Save methods:** Store a value into a parameter, creating the page or the object if not present. This is used to save an application parameter and it works also the first time when the specific parameter is not available. There are a specific method for each value type.
 - `saveValue(const QString& paramName, bool value, const QString& pageName = "Settings")`: This is the method that saves a bool value.
 - `saveValue(const QString& paramName, int value, const QString& pageName = "Settings")`: Same as above, for an int value.
+- `saveValue(const QString& paramName, qsizetype value, const QString& pageName = "Settings")`: Same as above, for a qsizetype value (for example a file size, a list index or a container count). The value is stored as a 64 bit integer (`qlonglong`) and written to the configuration file without loss of precision, also beyond the int range.
 - `saveValue(const QString& paramName, double value, const QString& pageName = "Settings")`: Same as above, for a double value.
 - `saveValue(const QString& paramName, const QString& value, const QString& pageName = "Settings")`: Same as above, for a QString value.
 - `saveValue(const QString& paramName, const QStringList& value, const QString& pageName = "Settings")`: Same as above, for a QStringList value.
@@ -97,22 +98,18 @@ These methods read and write a single parameter's value without the caller havin
 - `saveValue(const QString& paramName, const QByteArray& value, const QString& pageName = "Settings")`: Same as above, for a QByteArray value. This is used for the Window's geometry of a UI dialog.
 - `saveValue(const QString& paramName, const QJsonObject& value, const QString& pageName = "Settings")`: Same as above, for a QJsonObject value. The object is stored as-is inside the parameter's `QVariant`. This means `toJsonValues()` (and so `ConfigFile`) write it out as a real nested JSON object in the configuration file.
 
+> **Note:** pass string values as `QString`, not as a bare string literal. `saveValue("Theme", "dark")` does not call the QString overload: a `const char*` converts to `bool` with a standard conversion, which the compiler prefers to the user defined conversion to `QString`, so `true` is saved. Write `saveValue("Theme", QString("dark"))` or `saveValue("Theme", QStringLiteral("dark"))`.
+
 **Restore methods:** Recover a parameter from a specific page and value, automatically using the defaultValue if the parameter is not present.
 - `restoreAsBool(const QString& paramName, bool defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a bool.
 - `restoreAsInt(const QString& paramName, int defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as an int.
+- `restoreAsQSizeType(const QString& paramName, qsizetype defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a qsizetype. It also reads values saved as int. Use it instead of `restoreAsInt()` for values that can exceed the int range: `restoreAsInt()` silently truncates them.
 - `restoreAsDouble(const QString& paramName, double defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a double.
 - `restoreAsString(const QString& paramName, const QString& defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QString.
 - `restoreAsStringList(const QString& paramName, const QStringList& defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QStringList.
 - `restoreAsVariant(const QString& paramName, const QVariant& defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QVariant.
 - `restoreAsByteArray(const QString& paramName, const QByteArray defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QByteArray. This is used to restore the UI Windows geometry.
 - `restoreAsJson(const QString& paramName, const QJsonObject defaultValue, const QString& pageName = "Settings")`: Returns the parameter's value as a QJsonObject, starting from `QVariantMap` reloaded from file and converts it into a `QJsonObject`. Returns `defaultValue` if the page or the parameter is missing (like every other `restoreAsX`), and when the stored value isn't convertible into a JSON *object* (e.g. it's a plain string, number, or array).
-
-## Recent Files methods
-A small helper layer built on top of `saveValue()`/`restoreAsStringList()`, dedicated to maintaining a most-recently-used file list in a single QStringList parameter.
-
-- `restoreRecentFiles(const QStringList defaultValue = {}, const QString& paramName = "RecentFiles", const QString& pageName = "Settings")`: Returns the stored recent-files list, or `defaultValue` if the page or the parameter does not exist.
-- `clearRecentFiles(const QString& paramName = "RecentFiles", const QString& pageName = "Settings")`: Empties the recent-files list, if the parameter exists.
-- `addRecentFile(QString filePath, int max = 10, const QString& paramName = "RecentFiles", const QString& pageName = "Settings")`: Adds `filePath` to the front of the recent-files list, creating the page and/or the parameter if needed. An existing occurrence of the same path is removed first (so it moves to the front instead of being duplicated), and the list is then truncated to at most `max` entries. Returns false if `filePath` is empty or the page could not be created.
 
 ## Iterator methods
 - `begin()`: Returns an iterator to the beginning of the pages.

@@ -38,8 +38,6 @@ qt_add_executable(${PROJECT_NAME}
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    recentfilesmanager.cpp
-    recentfilesmanager.h
     foldercombobox.cpp
     foldercombobox.h
     frmsavedataset.cpp

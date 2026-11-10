@@ -2,3 +2,4 @@
 // Include this to get all QtNoid::UiCommon functionality
 
 #include "core.h"  // IWYU pragma: export
+#include "recentfiles.h"  // IWYU pragma: export

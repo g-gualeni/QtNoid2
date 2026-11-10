@@ -23,6 +23,7 @@ This is **QtNoid2**, because it is the second iteration of the project, and  the
 * **[QtNoidUiCommon](QtNoidUiCommon/doc/QtNoidUiCommon.md)**:
     This library is a collection of functionality that each desktop application should use. Main classes are:
     * [**Core**](QtNoidUiCommon/doc/QtNoidUiCommonCore.md): save and restore the content of UI widgets (for example a combo box) to and from a `QJsonObject`.
+    * [**RecentFiles**](QtNoidUiCommon/doc/QtNoidUiCommonRecentFiles.md): most recently used file list with a `QMenu` kept in sync.
 
 * ***More modules are coming soon.***
 

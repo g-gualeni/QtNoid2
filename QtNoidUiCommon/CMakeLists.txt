@@ -36,6 +36,7 @@ set(HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # =============================================================================
 set(SOURCES
     ${SOURCES_DIR}/core.cpp
+    ${SOURCES_DIR}/recentfiles.cpp
 )
 
 # File header
@@ -43,6 +44,7 @@ set(HEADERS
     ${HEADERS_DIR}/${PROJECT_NAME}/${PROJECT_NAME}  # Header convenienza
     ${HEADERS_DIR}/${PROJECT_NAME}/global.h
     ${HEADERS_DIR}/${PROJECT_NAME}/core.h
+    ${HEADERS_DIR}/${PROJECT_NAME}/recentfiles.h
 )
 
 
@@ -144,5 +146,6 @@ endif()
 set(PROJECT_DOCS
     doc/QtNoidUiCommon.md
     doc/QtNoidUiCommonCore.md
+    doc/QtNoidUiCommonRecentFiles.md
 )
 add_custom_target(${PROJECT_NAME}Docs SOURCES ${PROJECT_DOCS})

@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "recentfilesmanager.h"
 #include "frmsavedataset.h"
 #include "frmnewdataset.h"
 #include "frmmanageprojectresources.h"
@@ -40,20 +39,16 @@ MainWindow::MainWindow(QWidget* parent)
     customizeUI_initDevelopment();
 
     initAppConfigFile();
-    //------------------------
-    // Recent files management
-    m_recentFilesManager = new recentFilesManager(ui->actionRecent_Files, this);
-    connect(m_recentFilesManager, &recentFilesManager::fileSelected, this, [this](const QString& absoluteYamlFilePath){
-        setSingleFilePath(absoluteYamlFilePath);
-        setCurrentSourceWidget(ui->tabSingleFile);
-    });
-    connect(m_recentFilesManager, &recentFilesManager::listCleared, this, [this](){
-        appConfig->clearRecentFiles();
-    });
-
-
     restoreFromAppConfig();
 
+    m_recentFiles.setAction(ui->actionRecent_Files);
+    connect(&m_recentFiles, &QtNoid::UiCommon::RecentFiles::fileSelected, this, [&](const QString& filePath){
+        if(!confirmDiscardYaml()) {
+            return;
+        }
+        setSingleFilePath(filePath);
+        setCurrentSourceWidget(ui->tabSingleFile);
+    });
 
     connect(ui->txtYAML->document(), &QTextDocument::modificationChanged, [&](){
         //qDebug() << "QTextDocument::modificationChanged: " << changed;
@@ -71,6 +66,9 @@ MainWindow::MainWindow(QWidget* parent)
     // Connect double-click signal from folder comboBox
     connect(ui->txtCollectionFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
     connect(ui->txtCollectionFolder, &FolderComboBox::currentTextChanged, this, [&](const QString& folder){
+        if(!confirmDiscardYaml()) {
+            return;
+        }
         updateUI_scanTestCollectionFolder(collectionFolderPath());
         updateUI_progressBar();
         updateUI_txtCurrentFile();
@@ -85,6 +83,9 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->txtCurrentFile, &QComboBox::currentIndexChanged, this, [&](int index){
         // QString folder = ui->txtCollectionFolder->currentText();
         // QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
+        if(!confirmDiscardYaml()) {
+            return;
+        }
         m_yamlTestCollectionListCurrent = index;
         updateUI_progressBar();
         updateUI_txtCurrentFile();
@@ -116,7 +117,7 @@ MainWindow::~MainWindow()
     appConfig->saveValue("yamlTestCollectionListCurrent", m_yamlTestCollectionListCurrent, pageName);
     appConfig->saveValue("sourceMode", ui->tabWidgetSource->currentWidget()->objectName(), pageName);
     appConfig->saveValue("singleFilePath", ui->txtSingleFile->text(), pageName);
-
+    appConfig->saveValue("recentFiles", m_recentFiles.files(), pageName);
     delete ui;
 }
 
@@ -127,8 +128,9 @@ void MainWindow::restoreFromAppConfig()
     restoreGeometry(appConfig->restoreAsByteArray("geometry", saveGeometry(), pageName));
     ui->splitter->restoreState(appConfig->restoreAsByteArray("splitter", ui->splitter->saveState(), pageName));
 
-    // Load singl file collection
+    // Load single file collection
     ui->txtSingleFile->setText(appConfig->restoreAsString("singleFilePath", {}, pageName));
+    m_recentFiles.setFiles(appConfig->restoreAsStringList("recentFiles", {}, pageName));
 
     // Load last collection configuration
     auto comboJ = appConfig->restoreAsJson("collectionFolderList", {}, pageName);
@@ -169,6 +171,10 @@ void MainWindow::customizeUI()
     ui->cmdNext->setIconSize({32,32});
     ui->cmdNext->setText("");
     ui->txtDescription->clear();
+
+    ui->tabWidgetSource->installEventFilter(this);
+    ui->tabWidgetSource->tabBar()->installEventFilter(this);
+
 
 }
 
@@ -255,8 +261,7 @@ void MainWindow::on_cmdConvertToYAML_clicked()
 
 void MainWindow::updateUI_recentFiles(QString fileName)
 {
-    appConfig->addRecentFile(fileName);
-    m_recentFilesManager->updateRecentFilesMenu(appConfig->restoreRecentFiles());
+    m_recentFiles.addFile(fileName);
 }
 
 
@@ -331,6 +336,10 @@ void MainWindow::updateUI_tabInputTitle()
 
 void MainWindow::on_actionLoadYAML_triggered()
 {
+    // qDebug()<< __func__;
+    if(!confirmDiscardYaml()) {
+        return;
+    }
     fileOpenSingleFile();
 }
 
@@ -577,7 +586,12 @@ void MainWindow::updateUI_convertYamlToJson()
 
 void MainWindow::onFolderComboBoxDoubleClicked()
 {
-    qDebug() << Q_FUNC_INFO;
+    // qDebug() << Q_FUNC_INFO;
+    if(!confirmDiscardYaml()) {
+        return;
+    }
+    // Prevent additional request
+    ui->txtYAML->document()->setModified(false);
 
     QString folderPath = collectionFolderPath();
     folderPath = QFileDialog::getExistingDirectory(this, tr("Select the main folder"), folderPath);
@@ -591,6 +605,10 @@ void MainWindow::onFolderComboBoxDoubleClicked()
 
 void MainWindow::onPreviousTest()
 {
+    if(!confirmDiscardYaml()) {
+        return;
+    }
+
     auto current = m_yamlTestCollectionListCurrent;
     setYamlTestCollectionListCurrent(--current);
 
@@ -607,6 +625,10 @@ void MainWindow::onPreviousTest()
 
 void MainWindow::onNextTest()
 {
+    if(!confirmDiscardYaml()) {
+        return;
+    }
+
     auto current = m_yamlTestCollectionListCurrent;
     setYamlTestCollectionListCurrent(++current);
 
@@ -715,6 +737,7 @@ void MainWindow::onCmdSaveTestDataset()
     }
 }
 
+
 void MainWindow::initAppConfigFile()
 {
     QString appConfigFile = appConfig->fileName();
@@ -724,8 +747,8 @@ void MainWindow::initAppConfigFile()
     QFile newFile("://resources/JsonYamlToJsonTestSuite.json");
     newFile.copy(appConfigFile);
     QFile::setPermissions(appConfigFile, QFile::ReadOwner | QFile::WriteOwner);
-    appConfig->load();
-    // qDebug() << Q_FUNC_INFO << "appConfigFile: " << appConfigFile;
+    auto res = appConfig->load();
+    qDebug() << Q_FUNC_INFO << "appConfigFile: " << appConfigFile << "res: " << res;
 }
 
 
@@ -940,34 +963,55 @@ void MainWindow::setCurrentSourceWidget(QWidget* widget)
     else {
         ui->tabWidgetSource->setCurrentWidget(ui->tabSingleFile);
     }
+
+
 }
 
-bool MainWindow::maybeSaveYaml()
+bool MainWindow::isSourceChangeRequest(QObject *watched, QEvent *event) const
+{
+    if (watched == ui->tabWidgetSource && event->type() == QEvent::KeyPress) {
+        auto *key = static_cast<QKeyEvent*>(event);
+        const bool ctrl = key->modifiers() & Qt::ControlModifier;
+        return ctrl && (key->key() == Qt::Key_Tab    || key->key() == Qt::Key_Backtab ||
+                        key->key() == Qt::Key_PageUp || key->key() == Qt::Key_PageDown);
+    }
+
+    QTabBar *bar = ui->tabWidgetSource->tabBar();
+    if (watched == bar) {
+        switch (event->type()) {
+        case QEvent::MouseButtonPress: {
+            auto *mouse = static_cast<QMouseEvent*>(event);
+            const int index = bar->tabAt(mouse->position().toPoint());
+            return mouse->button() == Qt::LeftButton && index >= 0 && index != bar->currentIndex();
+        }
+        case QEvent::Wheel:
+        case QEvent::KeyPress:
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
+bool MainWindow::confirmDiscardYaml()
 {
     if (!ui->txtYAML->document()->isModified())
         return true;
 
-    const QString fileName = singleFilePath();
     const auto answer = QMessageBox::warning(this, tr("YAML modified"),
-                                             tr("The YAML has been modified:\n%1\n\nDo you want to save the changes?")
-                                                 .arg(QDir::toNativeSeparators(fileName)),
-                                             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-                                             QMessageBox::Save);
-
-    switch (answer) {
-    case QMessageBox::Save:
-        on_cmdSaveSingleFile_clicked();
-        return true;
-    case QMessageBox::Discard:
-        return true;
-    default:
-        return false;                           // Cancel o Esc
-    }
+                                             tr("The YAML has been modified.\nChanging source will discard the changes.\n\nContinue?"),
+                                             QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    return answer == QMessageBox::Yes;
 }
 
 
 void MainWindow::on_cmdBrowseSingleFile_clicked()
 {
+    if(!confirmDiscardYaml()) {
+        return;
+    }
+
     fileOpenSingleFile();
 }
 
@@ -1002,5 +1046,12 @@ void MainWindow::on_cmdSaveSingleFile_clicked()
     const QString bytes = QtNoid::Common::Scale::autoUpToExaByte(FI.size());
     updateUI_statusBar(tr("Saved %1 - %2").arg(QDir::toNativeSeparators(fileName), bytes));
 
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (isSourceChangeRequest(watched, event) && !confirmDiscardYaml())
+        return true;                              // evento scartato: il tab non cambia
+    return QMainWindow::eventFilter(watched, event);
 }
 

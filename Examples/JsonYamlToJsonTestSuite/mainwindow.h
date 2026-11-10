@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "recentfilesmanager.h"
+#include <QtNoidUiCommon/recentfiles.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -43,11 +43,13 @@ private slots:
 private:
     Ui::MainWindow* ui;
     QShortcut* m_screenshotShortcut;
-    recentFilesManager* m_recentFilesManager;
+    QtNoid::UiCommon::RecentFiles m_recentFiles;
+
     QStringList m_yamlTestCollectionList;
     qsizetype m_yamlTestCollectionListCurrent = 0;
 
 protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void setCollectionFolderPath(const QString& path);
     QString collectionFolderPath() const;
     void setSingleFilePath(const QString& path);
@@ -55,17 +57,16 @@ protected:
     QString yamlFullPathFromCollectionList();
     QString yamlStatusBarMsgFromCollectionList();
     void setCurrentSourceWidget(QWidget* widget);
-    bool maybeSaveYaml();
-
 
 private:
+    bool isSourceChangeRequest(QObject *watched, QEvent *event) const;
+    bool confirmDiscardYaml();
     void customizeUI();
     void customizeUI_initDevelopment();
     void tabWidgetSourceUiUpdate();
     void fileOpenSingleFile();
 
     void setYamlTestCollectionListCurrent(qsizetype newYamlTestCollectionListCurrent);
-
 
     //---- OLD to review
     bool generateTestDataFromResource(const QString& dataPrefix);

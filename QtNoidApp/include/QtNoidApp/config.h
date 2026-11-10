@@ -10,7 +10,6 @@
 #include <QProperty>
 
 
-class QComboBox;
 namespace QtNoid {
 namespace App {
 
@@ -197,10 +196,6 @@ public:
 
     QJsonObject restoreAsJson(const QString& paramName, const QJsonObject defaultValue, const QString& pageName = "Settings") const;
     bool saveValue(const QString& paramName, const QJsonObject& value, const QString& pageName = "Settings");
-
-    QStringList restoreRecentFiles(const QStringList defaultValue = {}, const QString& paramName="RecentFiles", const QString& pageName = "Settings") const;
-    void clearRecentFiles(const QString& paramName="RecentFiles", const QString& pageName = "Settings");
-    bool addRecentFile(QString filePath, int max = 10, const QString& paramName = "RecentFiles", const QString& pageName = "Settings");
 
 
     // ===== ITERATOR METHODS =====

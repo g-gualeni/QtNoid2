@@ -187,10 +187,13 @@ Passa a QtNoidJson - Yaml2Json
 		- [x] ParamtersPage
 		- [x] Config
 		- [x] Non vedo il meccanismo con il contatore delle modifiche
-		- [ ] saveValue (qsizetype)  / restoreAsQSizeType()
+		- [x] saveValue (qsizetype)  / restoreAsQSizeType()
 			- [x] Implementazione
-			- [ ] sistemare i test per la coppia
-			- [ ] sistemare la documentazione per la coppia
+			- [x] sistemare i test per la coppia
+			- [x] sistemare la documentazione per la coppia
+		- [x] eliminare `restoreRecentFiles()`
+		- [x] eliminare `clearRecentFiles()`
+		- [x] eliminare `addRecentFile()`
 	
 	- [x] Classe **`QtNoid::App::ConfigFile`**
 		- [x] class **ConfigFile** as an extension of Config
@@ -239,6 +242,17 @@ Passa a QtNoidJson - Yaml2Json
 		- [x] Documentare `restoreComboBoxTextItems()` 
 		- [x] Documentare `saveComboBoxTextItems()` 
 		* [x] `restoreComboBoxTextItems()` clean for duplicated items
+	* [x] classe **`QtNoid::UiCommon::RecentFiles`** 
+		* [x] Creo progetto
+		* [x] Creto test
+		* [x] Creo pagina documentazione
+		* [x] Costruttore che parte da una QMainWindow
+		* [x] Inserisce il menù RecentFiles
+		* [x] Poi legge la lista da un json
+		* [x] Scrive la lista in un json
+		* [x] emette un signal quando un elemento viene selezionato 
+		* [x] aggiorna la lista quando viene inserito un nuovo file, che diventa il primo della lista e poi controlla che il file non fosse già presente e controlla che la lunghezza della lista sia di ... 10 elementi
+		* [x] inserire setter/getter per numero di elementi della lista
 
 - [ ]  Libreria **`QtNoidJson`**
 	- [x] Rimuovere Txt2Json
@@ -257,12 +271,9 @@ Passa a QtNoidJson - Yaml2Json
 finire implementation Yaml2Json library 
 Finire
 void TestQtNoidJsonYaml2Json::testMixedStructures()
-* [ ] Examples ancora in sviluppo
-	* [ ] JsonTxt2JsonBasicUsage
-	* [ ] JsonYamlToJsonTestSuite
 - [ ] Esempio **QtNoid::Json::Yaml2Json JsonYamlToJsonTestSuite**
-	- [ ] Sistemare save / restore dei parametri iniziali
-	- [ ] Inserire Tab per selezionale modalità file o collection
+	- [x] Sistemare save / restore dei parametri iniziali
+	- [x] Inserire Tab per selezionale modalità file o collection
 		- [x] Crea il tab
 		- [x] Salva / recupera la configurazione
 		- [x] Attiva il salvataggio del file singolo
@@ -270,7 +281,7 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 		- [x] Sincronizza contenuto pannelli con contenuto tab source
 		- [x] sistemare l'attivazione del file usato l'ultima volta
 		- [x] Mostrare il tab di errore se la conversione è fallita o il tab JSON se ha successo
-	- [ ] Sistemare la gestione della libreria di test
+	- [x] Sistemare la gestione della libreria di test
 		- [x] Gestire il caricamento in fase di startup
 		- [x] Quando clicco su collection carico il test selezionato
 		- [x] Mostrare expected error se il file è presente nel test
@@ -281,25 +292,26 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 		- [x] yamlStatusBarMsgFromCollectionList sbaglia il calcolo
 		- [x] C'è un problema con il marker del file modificato `[*] [*]`
 		- [x] Gestire il salvataggio del file yaml usando saveAsTextFile(...)
+		- [x] Gestire il caso del YAML modificato, con un pop-up per fare save delle modifiche
+			- [x] Per il cambio tab
+			- [x] per il caso file-openYaml
+			- [x] per il caso doppi click sulla cartella
+			- [x] per il caso prev / next
+			- [x] per la selezione di un file dalla lista dei files
+			- [x] per la selezione di un recent file
+	- [x] Usare la nuova classe QtNoid::UiCommon::RecentFiles
 
 		
-		- [ ] Gestire il caso del YAML modificato, con un pop-up per fare save delle modifiche
-			- [ ] maybeSaveYaml
-
-		- [ ] Mostrare un messaggio se il file atteso e quello caricato non sono gli stessi, usando confronto tra modelli json
-		
-		- [ ] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
-	
-		- [ ] Controllare tutta la gestione recent files e vedere se la posso mettere in libreria
-
-
-		- [ ] 
-	- [ ] 
+	- [ ] Mostrare un messaggio se il file atteso e quello caricato non sono gli stessi, usando confronto tra modelli json
+				
+	- [ ] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
+	- [ ] Testare i metodi development per gestire il file di configurazione
 	- [ ] Devo anche creare un file esempio e metterlo nelle risorse
-	- [ ] 
-
-* Sistemare i campi nella finestra di dialogo principale
- - Creare il dataset per i numeri
+	- [ ] Migliorare estrazione risorse mettendo magari una dialog per mostrare i progressi
+ 
+* Creare il dataset per i numeri
+* Rinominare il dataset QtNoid e farlo a 3 livelli
+* 
  - Aggiornare anche qrc: 
 	 - creo un nuovo file e faccio in modo di inserirlo dentro alle risorse in modo che basta ricompilare e il nuovo file è presente
 - Aggiungere override (magari chiedere conferma se la cartella esiste) per la creazione di un dataset locale. Al momento fallisce e basta
