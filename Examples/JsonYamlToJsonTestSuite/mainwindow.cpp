@@ -117,7 +117,7 @@ MainWindow::~MainWindow()
     appConfig->saveValue("yamlTestCollectionListCurrent", m_yamlTestCollectionListCurrent, pageName);
     appConfig->saveValue("sourceMode", ui->tabWidgetSource->currentWidget()->objectName(), pageName);
     appConfig->saveValue("singleFilePath", ui->txtSingleFile->text(), pageName);
-    appConfig->saveValue("recentFiles", m_recentFiles.files(), pageName);
+    appConfig->saveValue("recentSingleFiles", m_recentFiles.files(), pageName);
     delete ui;
 }
 
@@ -130,7 +130,7 @@ void MainWindow::restoreFromAppConfig()
 
     // Load single file collection
     ui->txtSingleFile->setText(appConfig->restoreAsString("singleFilePath", {}, pageName));
-    m_recentFiles.setFiles(appConfig->restoreAsStringList("recentFiles", {}, pageName));
+    m_recentFiles.setFiles(appConfig->restoreAsStringList("recentSingleFiles", {}, pageName));
 
     // Load last collection configuration
     auto comboJ = appConfig->restoreAsJson("collectionFolderList", {}, pageName);
@@ -181,16 +181,15 @@ void MainWindow::customizeUI()
 void MainWindow::customizeUI_initDevelopment()
 {
     // qDebug() << __func__;
+    QMenu* developmentMenu = ui->menuDevelopment;
 #ifdef QT_NO_DEBUG
     // Hide the menù Development when in release
-    QMenu* dev = ui->menuDevelopment;
-    dev->menuAction()->setVisible(false);
+    developmentMenu->menuAction()->setVisible(false);
     return;
 #else
-    auto developmentMenu = ui->menuDevelopment;
     developmentMenu->addSeparator();
-    QtNoid::App::Development::saveConfigToProject(developmentMenu, SOURCE_FILES_PATH);
-    QtNoid::App::Development::initConfigFromResources(developmentMenu, ":/");
+    QtNoid::App::Development::createSaveConfigToProjectMenuAction(developmentMenu, SOURCE_FILES_PATH);
+    QtNoid::App::Development::createInitConfigFromResourcesMenuAction(developmentMenu, ":/");
 
     // Update the configuration if the config file is reloaded.
     connect(appConfig, &QtNoid::App::ConfigFile::fileLoaded, this, [&](const QString& fName){

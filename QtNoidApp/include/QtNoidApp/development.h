@@ -25,8 +25,8 @@ public:
                                                  QString destinationFileOrPath = {}, bool saveToClipboard = true,
                                                  bool openDestinationPath = true);
 
-    static QAction* saveConfigToProject(QMenu* developmentMenu, const QString& projectFolder);
-    static QAction* initConfigFromResources(QMenu* developmentMenu, const QString& resFileOrPrefix);
+    static QAction* createSaveConfigToProjectMenuAction(QMenu* developmentMenu, const QString& projectFolder);
+    static QAction* createInitConfigFromResourcesMenuAction(QMenu* developmentMenu, const QString& resFileOrPrefix);
 
 private:
     static QString screenshotFileName(QWidget* parent, const QString& destinationFileOrPath);

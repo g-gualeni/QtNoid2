@@ -227,15 +227,20 @@ Passa a QtNoidJson - Yaml2Json
 		- [x] initFullDialogGrabShortcut() - codice
 		- [x] initFullDialogGrabShortcut() - test
 		- [x] initFullDialogGrabShortcut() - documentazione
-		- [ ] saveConfigToProject() -> Copy current configuration file into resources 
+		- [x] saveConfigToProject() -> Copy current configuration file into resources 
 	        - [x] Method implementation
-		    - [ ] Method test
-			- [ ] Method doc
-		 - [ ] initConfigFromResources -> init application config file from resources
+	        - [x] `createSaveConfigToProjectMenuAction`: rinominato metodo per creare menu che salva il file di configurazione nelle risorse del progetto. Sistemati anche alcuni malfunzionamenti
 			 - [x] Method implementation
-			 - [ ] Aggiornamento implementazione
-	         - [ ] Method test
-             - [ ] Method doc     
+			 - [x] Aggiornamento implementazione
+	         - [x] Method test
+             - [x] Method doc  
+		 - [x] initConfigFromResources -> init application config file from resources
+			 - [ ] rinominata in `createInitConfigFromResourcesMenuAction()`
+			 - [ ] Controllo / Aggiornamento implementazione
+			 - [ ] Controllo dei test
+			 - [ ] Controllo documentazione
+			 - [ ] Rivedere il salvatagio usando QSaveFile e provare il file prima di cancellare il vecchio. Potrei anche mostrare un pop-up per segnalare che tutto è andato bene o che c'è stato un errore
+			 - [ ] 
 
 - [ ] Libreria **`QtNoidUiCommon`**
 	- [x] classe **`QtNoid::UiCommon::Core`** 
@@ -300,12 +305,28 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 			- [x] per la selezione di un file dalla lista dei files
 			- [x] per la selezione di un recent file
 	- [x] Usare la nuova classe QtNoid::UiCommon::RecentFiles
+	- [x] `createSaveConfigToProjectMenuAction`: rinominato metodo per creare menu che salva il file di configurazione nelle risorse del progetto. Sistemati anche alcuni malfunzionamenti
+	- [ ] createInitConfigFromResourcesMenuAction: controllo generale della funzione che altro non è che initConfigFromResources rinominata
+	
 
-		
+
+==🔴Chi scrive questo oggetto???==
+ ==🔴"Settings": {==
+                    ==🔴"parameters": [==
+                        ==🔴{==
+                            ==🔴"RecentFiles": [==
+                                ==🔴"TestData/Test2.yaml",==
+                                ==🔴"TestData/TestEmpty.yaml"==
+                            ==🔴]==
+                        ==🔴}==
+                    ==🔴]==
+
+- initConfigFromResources
+
 	- [ ] Mostrare un messaggio se il file atteso e quello caricato non sono gli stessi, usando confronto tra modelli json
 				
 	- [ ] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
-	- [ ] Testare i metodi development per gestire il file di configurazione
+
 	- [ ] Devo anche creare un file esempio e metterlo nelle risorse
 	- [ ] Migliorare estrazione risorse mettendo magari una dialog per mostrare i progressi
  

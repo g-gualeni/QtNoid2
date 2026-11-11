@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QSysInfo>
+#include <QMenu>
 
 class TestQtNoidAppDevelopment : public QObject
 {
@@ -22,8 +23,16 @@ private slots:
     void cleanup();
     void testInitFullDialogGrabShortcut();
     void testInitFullDialogGrabShortcut_withFileName();
+    void testInitFullDialogGrabShortcut_withMissingDestinationFolder();
     void testInitFullDialogGrabShortcut_withNullParent();
     void testScreenshotFileName();
+
+    void testCreateSaveConfigToProjectMenuAction();
+    void testCreateSaveConfigToProjectMenuAction_withNullMenu();
+    void testCreateSaveConfigToProjectMenuAction_withEmptyProjectFolder();
+    void testCreateSaveConfigToProjectMenuAction_withNoQrcFile();
+    void testCreateSaveConfigToProjectMenuAction_withNoMatchingConfigFile();
+    void testCreateSaveConfigToProjectMenuAction_withNoMenuParent();
 
 private:
     void initMainDialog(QMainWindow* frm, const QString& caption);
@@ -136,6 +145,37 @@ void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withFileName()
 }
 
 
+void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withMissingDestinationFolder()
+{
+    // destinationFileOrPath names a folder that does not exist yet.
+    // initFullDialogGrabShortcut() currently has no QDir::mkpath() step
+    // (unlike resolveAndPrepareFilePath()/saveAsTextFile()), so this is
+    // expected to FAIL until that folder-creation step is added.
+    QMainWindow frm;
+    initMainDialog(&frm, __func__);
+
+    QDir dir(QDir::currentPath() + "/" + __func__ + "_missingFolder");
+    dir.removeRecursively();
+    QVERIFY2(!dir.exists(), "Precondition failed: destination folder should not exist yet");
+
+    QShortcut* shortcut = Development::initFullDialogGrabShortcut(&frm, {},
+                                                                   dir.absolutePath(),
+                                                                   false,  // Save to clipboard
+                                                                   false); // Open destination path
+    QVERIFY(shortcut != nullptr);
+
+    // fire the shortcut
+    shortcut->activated();
+    QTest::qWait(100);
+
+    QVERIFY2(dir.exists(), "Destination folder should have been created automatically");
+
+    QStringList filters{{"*.png"}};
+    QStringList files = dir.entryList(filters, QDir::Files);
+    QVERIFY2(files.count() > 0, "Screenshot file should have been saved inside the newly created folder");
+}
+
+
 void TestQtNoidAppDevelopment::testInitFullDialogGrabShortcut_withNullParent()
 {
     // A null parent must not crash: initFullDialogGrabShortcut() must bail
@@ -177,6 +217,128 @@ void TestQtNoidAppDevelopment::testScreenshotFileName()
     //    (absolute), the window/title is ignored entirely.
     QString filePath = QDir::tempPath() + "/myCustomShot.png";
     QCOMPARE(Development::screenshotFileName(&mainWin, filePath), QFileInfo(filePath).absoluteFilePath());
+}
+
+
+void TestQtNoidAppDevelopment::testCreateSaveConfigToProjectMenuAction()
+{
+    // Project layout: a .qrc file next to the "old" copy of the config file
+    // that createSaveConfigToProjectMenuAction() is supposed to refresh.
+    QDir projectDir(QDir::currentPath() + "/" + __func__ + "_project");
+    projectDir.removeRecursively();
+    QVERIFY(projectDir.mkpath(projectDir.absoluteFilePath("resources")));
+
+    QFile qrcFile(projectDir.absoluteFilePath("resources/app.qrc"));
+    QVERIFY(qrcFile.open(QIODevice::WriteOnly));
+    qrcFile.close();
+
+    QString configFileName = "myAppConfig.json";
+    QFile oldProjectConfig(projectDir.absoluteFilePath("resources/" + configFileName));
+    QVERIFY(oldProjectConfig.open(QIODevice::WriteOnly | QIODevice::Text));
+    oldProjectConfig.write("{\"old\":\"content\"}");
+    oldProjectConfig.close();
+
+    // Point the live appConfig at a controlled file, with different content,
+    // that should end up copied over the project's resource copy.
+    QString originalFileName = appConfig->fileName();
+    QString liveConfigPath = projectDir.absoluteFilePath(configFileName);
+    appConfig->setFileName(liveConfigPath);
+    QFile liveConfig(liveConfigPath);
+    QVERIFY(liveConfig.open(QIODevice::WriteOnly | QIODevice::Text));
+    liveConfig.write("{\"new\":\"content\"}");
+    liveConfig.close();
+
+    QWidget menuParent;
+    QMenu menu(&menuParent);
+
+    QAction* action = Development::createSaveConfigToProjectMenuAction(&menu, projectDir.absolutePath());
+
+    QVERIFY(action != nullptr);
+    QVERIFY(menu.actions().contains(action));
+    QVERIFY2(!action->statusTip().isEmpty(), "The action should have a status tip");
+
+    action->trigger();
+    QTest::qWait(50);
+
+    QFile updatedProjectConfig(projectDir.absoluteFilePath("resources/" + configFileName));
+    QVERIFY(updatedProjectConfig.open(QIODevice::ReadOnly | QIODevice::Text));
+    QCOMPARE(updatedProjectConfig.readAll(), QByteArray("{\"new\":\"content\"}"));
+
+    appConfig->setFileName(originalFileName);
+}
+
+void TestQtNoidAppDevelopment::testCreateSaveConfigToProjectMenuAction_withNullMenu()
+{
+    QAction* action = Development::createSaveConfigToProjectMenuAction(nullptr, "some/path");
+    QCOMPARE(action, nullptr);
+}
+
+void TestQtNoidAppDevelopment::testCreateSaveConfigToProjectMenuAction_withEmptyProjectFolder()
+{
+    QMenu menu;
+    QAction* action = Development::createSaveConfigToProjectMenuAction(&menu, QString());
+    QCOMPARE(action, nullptr);
+}
+
+void TestQtNoidAppDevelopment::testCreateSaveConfigToProjectMenuAction_withNoQrcFile()
+{
+    QDir projectDir(QDir::currentPath() + "/" + __func__ + "_project");
+    projectDir.removeRecursively();
+    QVERIFY(projectDir.mkpath(projectDir.absolutePath()));
+
+    QMenu menu;
+    QAction* action = Development::createSaveConfigToProjectMenuAction(&menu, projectDir.absolutePath());
+
+    QCOMPARE(action, nullptr);
+    // No dead action must be left attached to the menu.
+    QCOMPARE(menu.actions().count(), 0);
+}
+
+void TestQtNoidAppDevelopment::testCreateSaveConfigToProjectMenuAction_withNoMatchingConfigFile()
+{
+    QDir projectDir(QDir::currentPath() + "/" + __func__ + "_project");
+    projectDir.removeRecursively();
+    QVERIFY(projectDir.mkpath(projectDir.absolutePath()));
+
+    // A .qrc exists, but nothing next to it matches appConfig's file name/suffix.
+    QFile qrcFile(projectDir.absoluteFilePath("app.qrc"));
+    QVERIFY(qrcFile.open(QIODevice::WriteOnly));
+    qrcFile.close();
+
+    QMenu menu;
+    QAction* action = Development::createSaveConfigToProjectMenuAction(&menu, projectDir.absolutePath());
+
+    QCOMPARE(action, nullptr);
+    QCOMPARE(menu.actions().count(), 0);
+}
+
+void TestQtNoidAppDevelopment::testCreateSaveConfigToProjectMenuAction_withNoMenuParent()
+{
+    QDir projectDir(QDir::currentPath() + "/" + __func__ + "_project");
+    projectDir.removeRecursively();
+    QVERIFY(projectDir.mkpath(projectDir.absolutePath()));
+
+    QFile qrcFile(projectDir.absoluteFilePath("app.qrc"));
+    QVERIFY(qrcFile.open(QIODevice::WriteOnly));
+    qrcFile.close();
+
+    QString configFileName = "myAppConfig.json";
+    QFile projectConfig(projectDir.absoluteFilePath(configFileName));
+    QVERIFY(projectConfig.open(QIODevice::WriteOnly | QIODevice::Text));
+    projectConfig.close();
+
+    QString originalFileName = appConfig->fileName();
+    appConfig->setFileName(projectDir.absoluteFilePath(configFileName));
+
+    // A QMenu with no parent - the config file is found, but there is no
+    // QObject to parent the new QAction/connection to, so it must bail out.
+    QMenu menu;
+    QAction* action = Development::createSaveConfigToProjectMenuAction(&menu, projectDir.absolutePath());
+
+    QCOMPARE(action, nullptr);
+    QCOMPARE(menu.actions().count(), 0);
+
+    appConfig->setFileName(originalFileName);
 }
 
 

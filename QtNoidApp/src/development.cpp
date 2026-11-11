@@ -56,7 +56,10 @@ QShortcut* Development::initFullDialogGrabShortcut(QWidget* parent, const QStrin
 
         QString finalFilePath = screenshotFileName(parent, destinationFileOrPath);
         finalFilePath = QtNoid::Common::File::autoNaming(finalFilePath);
-        bool res = screenshot.save(finalFilePath);
+        bool res = QDir().mkpath(QFileInfo(finalFilePath).absolutePath());
+        if(res) {
+            res = screenshot.save(finalFilePath);
+        }
 
         if(saveToClipboard) {
             QClipboard* clipboard = QApplication::clipboard();
@@ -74,31 +77,33 @@ QShortcut* Development::initFullDialogGrabShortcut(QWidget* parent, const QStrin
 
 
 
-QAction* Development::saveConfigToProject(QMenu* developmentMenu, const QString& projectFolder)
+QAction* Development::createSaveConfigToProjectMenuAction(QMenu* developmentMenu, const QString& projectFolder)
 {
     if(developmentMenu == nullptr) {
         return {};
     }
-
-    auto parent = developmentMenu->parent();
-    if(parent == nullptr) {
+    if(projectFolder.isEmpty()) {
         return {};
     }
 
-    QAction* action = developmentMenu->addAction(parent->tr("Save Config To Project"));
+    // Look for qt resource file / resource folder
+    const QStringList& resourcesList = Common::File::listPathRecursively(projectFolder, {".qrc"});
+    if(resourcesList.isEmpty()) {
+        return {};
+    }
+    const QString& resourceFolder = QFileInfo(resourcesList.first()).absolutePath();
 
+    // Look for the file to replace
     QFileInfo FI(appConfig->fileName());
     QString configFile = FI.fileName();
-    Common::File QtNoidFile;
-    auto list = QtNoidFile.listPathRecursively(projectFolder, QStringList(FI.suffix()));
+    const QStringList&  list =  Common::File::listPathRecursively(resourceFolder, {("." + FI.suffix())});
     // qDebug() << __func__ << list.count();
 
     // Is the file present? => get the full path
     QString projectFile;
-    for(auto it = list.constBegin(); it < list.constEnd(); ++it)
-    {
-        if(it->endsWith(configFile)) {
-            projectFile = *it;
+    for(const QString& currentFile : list){
+        if(currentFile.endsWith(configFile)) {
+            projectFile = currentFile;
             break;
         }
     }
@@ -107,21 +112,36 @@ QAction* Development::saveConfigToProject(QMenu* developmentMenu, const QString&
         return {};
     }
 
+    auto parent = developmentMenu->parent();
+    if(parent == nullptr) {
+        return {};
+    }
+
     QDir dir(projectFolder);
     auto msg = QString(parent->tr("Copy %1 configuration file to %2")).arg(configFile, dir.relativeFilePath(projectFile));
-    action->setStatusTip(msg);
 
+    QAction* action = developmentMenu->addAction(parent->tr("Copy ConfigFile To Project Resources"));
+    action->setStatusTip(msg);
     parent->connect(action, &QAction::triggered, [FI, projectFile](){
         QFile newFile(FI.absoluteFilePath());
-        QFile::remove(projectFile);
-        auto res = newFile.copy(projectFile);
-        qDebug() << "saveConfigToProject" << projectFile << "DONE";
+        bool removeRes = QFile::remove(projectFile);
+        if(!removeRes) {
+            qDebug() << "createSaveConfigToProjectMenuAction FAILED to remove file:" << projectFile;
+            return;
+        }
+        bool copyRes = newFile.copy(projectFile);
+        if(copyRes) {
+            qDebug() << "createSaveConfigToProjectMenuAction - file" << projectFile << "replaced";
+        }
+        else {
+            qDebug() << "createSaveConfigToProjectMenuAction FAILED with file:" << projectFile;
+        }
     });
 
     return action;
 }
 
-QAction* Development::initConfigFromResources(QMenu* developmentMenu, const QString& resFileOrPrefix)
+QAction* Development::createInitConfigFromResourcesMenuAction(QMenu* developmentMenu, const QString& resFileOrPrefix)
 {
     if(developmentMenu == nullptr) {
         return {};
@@ -133,7 +153,7 @@ QAction* Development::initConfigFromResources(QMenu* developmentMenu, const QStr
 
     }
 
-    QAction* action = developmentMenu->addAction(parent->tr("Init Config From Resources"));
+    QAction* action = developmentMenu->addAction(parent->tr("Init ConfigFile From Resources"));
     QFileInfo FI(appConfig->fileName());
 
     auto msg = QString(parent->tr("Rewrite %1 configuration file using the model from the resources")).arg(FI.fileName());
@@ -161,8 +181,13 @@ QAction* Development::initConfigFromResources(QMenu* developmentMenu, const QStr
             return;
         }
         QFile::setPermissions(appConfigFile, QFile::ReadOwner | QFile::WriteOwner);
-        appConfig->load();
-        qDebug() << "initConfigFromResources" << resConfigFile << "DONE";
+        res = appConfig->load();
+        if(res) {
+            qDebug() << "initConfigFromResources" << resConfigFile << "DONE";
+        }
+        else {
+            qDebug() << "initConfigFromResources FAILED with file:" << resConfigFile;
+        }
     });
 
     return action;

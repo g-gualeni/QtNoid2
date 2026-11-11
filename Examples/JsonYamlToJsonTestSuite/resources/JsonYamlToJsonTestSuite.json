@@ -5,27 +5,33 @@
                 "MainWindow": {
                     "parameters": [
                         {
-                            "geometry": "AdnQywADAAAAAAKjAAABCgAABUkAAAMkAAACowAAASkAAAVJAAADJAAAAAAAAAAAB4AAAAKjAAABKQAABUkAAAMk"
+                            "geometry": "AdnQywADAAAAAAL7AAAA5AAABbUAAAL+AAAC+wAAAQMAAAW1AAAC/gAAAAAAAAAAB4AAAAL7AAABAwAABbUAAAL+"
                         },
                         {
-                            "splitter": "AAAA/wAAAAEAAAADAAAAhQAAAUMAAADDAf////8BAAAAAQA="
-                        },
-                        {
-                            "CollectionFolderList": {
-                                "currentText": "",
-                                "items": [
-                                ]
-                            }
-                        },
-                        {
-                            "yamlTestCollectionListCurrent": -1
+                            "splitter": "AAAA/wAAAAEAAAADAAAAhQAAAIUAAACFAf////8BAAAAAQA="
                         },
                         {
                             "collectionFolderList": {
-                                "currentText": "",
+                                "currentText": "TestData/yaml-test-suite/data-2022-01-17",
                                 "items": [
+                                    "TestData/yaml-test-suite/data-2022-01-17",
+                                    "TestData/Txt2Json-test-suite/QtNoid-2.2.0"
                                 ]
                             }
+                        },
+                        {
+                            "yamlTestCollectionListCurrent": 1
+                        },
+                        {
+                            "sourceMode": "tabCollection"
+                        },
+                        {
+                            "singleFilePath": "D:/TestModel/pippo.yaml"
+                        },
+                        {
+                            "recentSingleFiles": [
+                                "D:/TestModel/pippo.yaml"
+                            ]
                         }
                     ]
                 }
