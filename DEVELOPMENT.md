@@ -229,19 +229,17 @@ Passa a QtNoidJson - Yaml2Json
 		- [x] initFullDialogGrabShortcut() - documentazione
 		- [x] saveConfigToProject() -> Copy current configuration file into resources 
 	        - [x] Method implementation
-	        - [x] `createSaveConfigToProjectMenuAction`: rinominato metodo per creare menu che salva il file di configurazione nelle risorse del progetto. Sistemati anche alcuni malfunzionamenti
+	        - [x] `createSaveCurrentConfigToProjectMenuAction`: rinominato metodo per creare menu che salva il file di configurazione nelle risorse del progetto. Sistemati anche alcuni malfunzionamenti
 			 - [x] Method implementation
 			 - [x] Aggiornamento implementazione
 	         - [x] Method test
              - [x] Method doc  
 		 - [x] initConfigFromResources -> init application config file from resources
-			 - [ ] rinominata in `createInitConfigFromResourcesMenuAction()`
-			 - [ ] Controllo / Aggiornamento implementazione
-			 - [ ] Controllo dei test
-			 - [ ] Controllo documentazione
-			 - [ ] Rivedere il salvatagio usando QSaveFile e provare il file prima di cancellare il vecchio. Potrei anche mostrare un pop-up per segnalare che tutto è andato bene o che c'è stato un errore
-			 - [ ] 
-
+			 - [x] rinominata in `createInitConfigFromResourcesMenuAction()`
+			 - [x] Controllo / Aggiornamento implementazione
+			 - [x] Controllo dei test
+			 - [x] Controllo documentazione
+			 - [x] Rivedere il salvatagio usando QSaveFile e provare il file prima di cancellare il vecchio. Potrei anche mostrare un pop-up per segnalare che tutto è andato bene o che c'è stato un errore
 - [ ] Libreria **`QtNoidUiCommon`**
 	- [x] classe **`QtNoid::UiCommon::Core`** 
 		- [x] Documentare `restoreComboBoxTextItems()` 
@@ -268,6 +266,9 @@ Passa a QtNoidJson - Yaml2Json
 	- [ ] Provare a compilare su macOS
 	- [ ] ==🟡Come faccio a rendere esplicita la dipendenza da rapidyaml?==
 	- [ ] Non mi piace dipendere da GitHub per compilare, meglio qualcosa di statico
+	- [ ] Form Creazione nuovi test case
+	- [ ] Aggiornare gli usecase usando 2 livelli
+	- [ ] 
 
 
  

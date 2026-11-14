@@ -90,6 +90,7 @@ private:
     void onCreateNewTest();
     void initAppConfigFile();
     void restoreFromAppConfig();
+    void saveToAppConfig();
 
 };
 #endif // MAINWINDOW_H

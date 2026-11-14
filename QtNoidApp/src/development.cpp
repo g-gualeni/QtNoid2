@@ -15,6 +15,9 @@
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QSaveFile>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 namespace QtNoid {
 namespace App {
@@ -77,7 +80,7 @@ QShortcut* Development::initFullDialogGrabShortcut(QWidget* parent, const QStrin
 
 
 
-QAction* Development::createSaveConfigToProjectMenuAction(QMenu* developmentMenu, const QString& projectFolder)
+QAction* Development::createSaveCurrentConfigToProjectMenuAction(QMenu* developmentMenu, const QString& projectFolder)
 {
     if(developmentMenu == nullptr) {
         return {};
@@ -103,8 +106,10 @@ QAction* Development::createSaveConfigToProjectMenuAction(QMenu* developmentMenu
     QString projectFile;
     for(const QString& currentFile : list){
         if(currentFile.endsWith(configFile)) {
-            projectFile = currentFile;
-            break;
+            if(QFileInfo(currentFile).fileName() == configFile) {
+                projectFile = currentFile;
+                break;
+            }
         }
     }
     if(projectFile.isEmpty()) {
@@ -112,29 +117,21 @@ QAction* Development::createSaveConfigToProjectMenuAction(QMenu* developmentMenu
         return {};
     }
 
-    auto parent = developmentMenu->parent();
-    if(parent == nullptr) {
-        return {};
-    }
-
     QDir dir(projectFolder);
-    auto msg = QString(parent->tr("Copy %1 configuration file to %2")).arg(configFile, dir.relativeFilePath(projectFile));
+    auto msg = QString(tr("Copy Current App Configuration file to %2")).arg(dir.relativeFilePath(projectFile));
 
-    QAction* action = developmentMenu->addAction(parent->tr("Copy ConfigFile To Project Resources"));
+    QAction* action = developmentMenu->addAction(tr("Save appConfig To Project Resources"));
     action->setStatusTip(msg);
-    parent->connect(action, &QAction::triggered, [FI, projectFile](){
-        QFile newFile(FI.absoluteFilePath());
-        bool removeRes = QFile::remove(projectFile);
-        if(!removeRes) {
-            qDebug() << "createSaveConfigToProjectMenuAction FAILED to remove file:" << projectFile;
+
+    QObject::connect(action, &QAction::triggered, [projectFile](){
+        const QByteArray newContent = QJsonDocument(appConfig->toJsonValues()).toJson();
+        QSaveFile out(projectFile);
+        if (!out.open(QIODevice::WriteOnly) || out.write(newContent) != newContent.size() || !out.commit()) {
+            qDebug() << "createSaveCurrentConfigToProjectMenuAction FAILED and cannot write:" << projectFile << out.errorString();
             return;
         }
-        bool copyRes = newFile.copy(projectFile);
-        if(copyRes) {
-            qDebug() << "createSaveConfigToProjectMenuAction - file" << projectFile << "replaced";
-        }
         else {
-            qDebug() << "createSaveConfigToProjectMenuAction FAILED with file:" << projectFile;
+            qDebug() << "createSaveCurrentConfigToProjectMenuAction - file" << projectFile << "replaced";
         }
     });
 
@@ -147,46 +144,46 @@ QAction* Development::createInitConfigFromResourcesMenuAction(QMenu* development
         return {};
     }
 
-    auto parent = developmentMenu->parent();
-    if(parent == nullptr) {
-        return {};
-
-    }
-
-    QAction* action = developmentMenu->addAction(parent->tr("Init ConfigFile From Resources"));
+    QAction* action = developmentMenu->addAction(tr("Init ConfigFile From Resources"));
     QFileInfo FI(appConfig->fileName());
 
-    auto msg = QString(parent->tr("Rewrite %1 configuration file using the model from the resources")).arg(FI.fileName());
+    auto msg = QString(tr("Rewrite %1 configuration file using the model from the resources")).arg(FI.fileName());
     action->setStatusTip(msg);
 
-    QFileInfo resFile(resFileOrPrefix);
-    if(resFile.suffix().isEmpty()) {
-        // We suppose it is a prefix
-        resFile.setFile(resFileOrPrefix + "/" + FI.fileName());
+    QString resConfigFile = resFileOrPrefix;
+    if (QFileInfo(resFileOrPrefix).isDir()) {
+        resConfigFile = QDir(resFileOrPrefix).filePath(FI.fileName());
     }
 
-    QString appConfigFile = FI.absoluteFilePath();
-    QString resConfigFile = resFile.filePath();
-
-    parent->connect(action, &QAction::triggered, [appConfigFile, resConfigFile](){
+    QObject::connect(action, &QAction::triggered, [resConfigFile](){
         if (!QFile::exists(resConfigFile)) {
-            qDebug() << "initConfigFromResources: " << resConfigFile << "not found - check set(CMAKE_AUTORCC ON)";
+            qDebug() << "createInitConfigFromResourcesMenuAction: " << resConfigFile << "not found - check set(CMAKE_AUTORCC ON)";
             return;
         }
-        QFile::remove(appConfigFile);
-        QFile newFile(resConfigFile);        
-        auto res = newFile.copy(appConfigFile);
-        if(!res) {
-            qDebug() << "initConfigFromResources Error copying file" << resConfigFile << "to: " << appConfigFile;
+
+        // Read new content
+        QFile resFile(resConfigFile);
+        if (!resFile.open(QIODevice::ReadOnly)) {
+            qDebug() << "createInitConfigFromResourcesMenuAction: " << resConfigFile
+                     << "Cannot open"  << resFile.errorString();;
             return;
         }
-        QFile::setPermissions(appConfigFile, QFile::ReadOwner | QFile::WriteOwner);
-        res = appConfig->load();
-        if(res) {
-            qDebug() << "initConfigFromResources" << resConfigFile << "DONE";
+        const QByteArray newContent = resFile.readAll();
+
+        // Write New Content
+        QString appConfigFile = appConfig->fileName();
+        QSaveFile out(appConfigFile);
+        if (!out.open(QIODevice::WriteOnly) || out.write(newContent) != newContent.size() || !out.commit()) {
+            qDebug() << "createInitConfigFromResourcesMenuAction: cannot write" << appConfigFile << out.errorString();
+            return;
+        }
+
+        if(appConfig->load()) {
+            qDebug() << "createInitConfigFromResourcesMenuAction" << resConfigFile << "DONE";
         }
         else {
-            qDebug() << "initConfigFromResources FAILED with file:" << resConfigFile;
+            qDebug() << "createInitConfigFromResourcesMenuAction FAILED with file:" << resConfigFile
+                << "- the JSON root must be:" << appConfig->name();
         }
     });
 

@@ -5,6 +5,8 @@
 #include "global.h"
 
 #include <QString>
+#include <QCoreApplication>   // per Q_DECLARE_TR_FUNCTIONS
+
 
 class QWidget;
 class QShortcut;
@@ -20,12 +22,14 @@ namespace App {
 
 class QTNOID_APP_EXPORT Development
 {
+    Q_DECLARE_TR_FUNCTIONS(QtNoid::App::Development)
+
 public:
     static QShortcut* initFullDialogGrabShortcut(QWidget* parent, const QString& keySequence = "Ctrl+Shift+S",
                                                  QString destinationFileOrPath = {}, bool saveToClipboard = true,
                                                  bool openDestinationPath = true);
 
-    static QAction* createSaveConfigToProjectMenuAction(QMenu* developmentMenu, const QString& projectFolder);
+    static QAction* createSaveCurrentConfigToProjectMenuAction(QMenu* developmentMenu, const QString& projectFolder);
     static QAction* createInitConfigFromResourcesMenuAction(QMenu* developmentMenu, const QString& resFileOrPrefix);
 
 private:

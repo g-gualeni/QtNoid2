@@ -17,28 +17,33 @@ The design prioritizes ease of integration through automation, though this appro
 	* **Returns**: a pointer to the configured `QShortcut`, owned by `parent` and destroyed together with it; or `nullptr` if `parent` is `nullptr`.
 
 
-- `QAction *createSaveConfigToProjectMenuAction(QMenu *developmentMenu, const QString &projectFolder)`:
-  Adds a "Copy ConfigFile To Project Resources" action to `developmentMenu` that, when triggered, overwrites the project's own resource copy of the config file (the one baked into the app via a `.qrc`) with the current live `appConfig` file - so the next build ships whatever configuration the app is currently running with. The action is only added once everything it needs has actually been found; if anything is missing, the method returns `nullptr` and `developmentMenu` is left untouched (no dead/disabled action is ever attached).
+- `QAction *createSaveCurrentConfigToProjectMenuAction(QMenu *developmentMenu, const QString &projectFolder)`:
+  Adds a "Copy ConfigFile To Project Resources" action to `developmentMenu` that, when triggered, overwrites the project's own resource copy of the config file (the one baked into the app via a `.qrc`) with `appConfig`'s current, live content - so the next build ships that configuration. The content is serialized directly from memory with `appConfig->toJsonValues()`: there is no need to call `appConfig->save()` or to close the application first, the file always reflects the values as they are right now. The resource copy is written with `QSaveFile`, so a failed write leaves the project's existing file untouched. The action is only added once everything it needs has actually been found; if anything is missing, the method returns `nullptr` and `developmentMenu` is left untouched (no dead/disabled action is ever attached).
   To locate the file to overwrite, it first searches `projectFolder` recursively for a `.qrc` file - the resources are assumed to live in that same folder - then, inside that folder, for a file whose name matches `appConfig->fileName()` and whose extension matches it too. If more than one `.qrc` is found, the first one is used.
 	* **Parameters**:
-		* **developmentMenu**: the root menu on the dialog where the new `QAction` will be attached. Must have a non-null `parent()` (the action's connection is parented to it); returns `nullptr` otherwise.
+		* **developmentMenu**: the root menu on the dialog where the new `QAction` will be attached. The menu does not need a parent.
 		* **projectFolder**: the absolute path of the project folder as it is captured from CMake. The simplest way to get this information in the code is to use a compiler variable such as:  SOURCE_FILES_PATH. Insert this in CMakeLists.txt
 		  target_compile_definitions(${PROJECT_NAME}
 				PRIVATE
 			        SOURCE_FILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}"
 			)
-	* **Returns**: a pointer to the configured `QAction`, already added to `developmentMenu`; or `nullptr` if `developmentMenu` is `nullptr`, `projectFolder` is empty, no `.qrc` file is found under `projectFolder`, no file matching the current config's name/suffix is found next to it, or `developmentMenu`'s `parent()` is `nullptr`.
+	* **Returns**: a pointer to the configured `QAction`, already added to `developmentMenu`; or `nullptr` if `developmentMenu` is `nullptr`, `projectFolder` is empty, no `.qrc` file is found under `projectFolder`, or no file matching the current config's name/suffix is found next to it.
 
 
-- `QAction *initConfigFromResources(QMenu *developmentMenu, const QString &resFileOrPrefix)`:
-   Parameters:
-   - **developmentMenu**: this is the root menu on the dialog where the new QAction will be attached
-   - **resFileOrPrefix**: this is the configuration file name as saved in the resources or just the 
-   prefix, suche as :/resources since the fileName can be gathered via the appConfig global variable.
+- `QAction *createInitConfigFromResourcesMenuAction(QMenu *developmentMenu, const QString &resFileOrPrefix)`:
+  Adds an "Init ConfigFile From Resources" action to `developmentMenu` that, when triggered, replaces the application's configuration file (`appConfig->fileName()`) with the model saved in the Qt resources, and reloads it with `appConfig->load()`. It is the counterpart of `createSaveCurrentConfigToProjectMenuAction()`: use it to go back to the configuration shipped with the application.
+  When the action is triggered:
+  1. the resource file is checked: if it does not exist, nothing is changed (usually the `.qrc` is not compiled: check `set(CMAKE_AUTORCC ON)` in CMakeLists.txt);
+  2. its content replaces the configuration file. The file is written with `QSaveFile`, so it is never missing: if the write fails, the original file is left untouched;
+  3. `appConfig->load()` reloads the configuration and emits `fileLoaded()`, or `fileLoadError()` if the content is not valid.
 
+  The file in the resources is supposed to be the correct one: its JSON root key must be the name of the configuration (`appConfig->name()`), otherwise `load()` fails. In that case the configuration in memory is not changed, and the file written on disk is replaced again with it by the next `appConfig->save()`, for example when the application is closed. Fix the file in the resources, for example with `createSaveCurrentConfigToProjectMenuAction()`.
 
-
-
+  The result of every step is printed with `qDebug()`, since this is a development API.
+	* **Parameters**:
+		* **developmentMenu**: the root menu on the dialog where the new `QAction` will be attached. The menu does not need a parent.
+		* **resFileOrPrefix**: the configuration file in the resources (for example `":/resources/MyApp.json"`), or only the resource folder that contains it (for example `":/"` or `":/resources"`). A folder is recognized with `QFileInfo::isDir()`, which works with the resources too; in that case the file name is the one of `appConfig->fileName()`. The resource path is resolved when the action is created, while `appConfig->fileName()` is read when the action is triggered.
+	* **Returns**: a pointer to the configured `QAction`, already added to `developmentMenu`; or `nullptr` if `developmentMenu` is `nullptr`.
 
 [⬆ Back to QtNoidApp](QtNoidApp.md)
 [← Back to README](../../README.md)

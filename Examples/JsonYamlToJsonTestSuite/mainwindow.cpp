@@ -108,6 +108,12 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
+    saveToAppConfig();
+    delete ui;
+}
+
+void MainWindow::saveToAppConfig()
+{
     const QString pageName = QtNoid::App::Core::groupNameFromObjectOrClass(this);
     appConfig->setName(windowTitle());
     appConfig->saveValue("geometry", saveGeometry(), pageName);
@@ -118,8 +124,8 @@ MainWindow::~MainWindow()
     appConfig->saveValue("sourceMode", ui->tabWidgetSource->currentWidget()->objectName(), pageName);
     appConfig->saveValue("singleFilePath", ui->txtSingleFile->text(), pageName);
     appConfig->saveValue("recentSingleFiles", m_recentFiles.files(), pageName);
-    delete ui;
 }
+
 
 void MainWindow::restoreFromAppConfig()
 {
@@ -145,6 +151,7 @@ void MainWindow::restoreFromAppConfig()
     }
     tabWidgetSourceUiUpdate();
 }
+
 
 
 
@@ -187,13 +194,14 @@ void MainWindow::customizeUI_initDevelopment()
     developmentMenu->menuAction()->setVisible(false);
     return;
 #else
+    connect(developmentMenu, &QMenu::aboutToShow, this, &MainWindow::saveToAppConfig);
     developmentMenu->addSeparator();
-    QtNoid::App::Development::createSaveConfigToProjectMenuAction(developmentMenu, SOURCE_FILES_PATH);
     QtNoid::App::Development::createInitConfigFromResourcesMenuAction(developmentMenu, ":/");
+    QtNoid::App::Development::createSaveCurrentConfigToProjectMenuAction(developmentMenu, SOURCE_FILES_PATH);
 
     // Update the configuration if the config file is reloaded.
     connect(appConfig, &QtNoid::App::ConfigFile::fileLoaded, this, [&](const QString& fName){
-        qDebug() << "File Loaded" << Q_FUNC_INFO;
+        // qDebug() << "File Loaded" << Q_FUNC_INFO;
         restoreFromAppConfig();
     });
 

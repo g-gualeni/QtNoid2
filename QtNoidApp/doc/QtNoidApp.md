@@ -13,7 +13,7 @@ This Library contains:
 
 - [**ConfigGlobal**](QtNoidAppConfigGlobal.md): this is a singleton class that create a unique instance of ConfigFile, available as **appConfig** that can be used to save and restore application configuration.
 
-- [**Development**](QtNoidAppDevelopment.md): this is a collection of methods that help creating an application and are not intended to be customer facing. API like `saveConfigToProject()` that saves config file into the development project resources, or `initFullDialogGrabShortcut()` that creates a `QShortcut` (Ctrl+Shift+S) to save the application screen in the application or bundle folder.
+- [**Development**](QtNoidAppDevelopment.md): this is a collection of methods that help creating an application and are not intended to be customer facing. API like `createSaveConfigToProjectMenuAction()` that saves config file into the development project resources, `createInitConfigFromResourcesMenuAction()` that restores it from the resources, or `initFullDialogGrabShortcut()` that creates a `QShortcut` (Ctrl+Shift+S) to save the application screen in the application or bundle folder.
 
 ## CMake
 ```

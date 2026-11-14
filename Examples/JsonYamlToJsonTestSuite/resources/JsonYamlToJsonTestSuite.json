@@ -5,32 +5,36 @@
                 "MainWindow": {
                     "parameters": [
                         {
-                            "geometry": "AdnQywADAAAAAAL7AAAA5AAABbUAAAL+AAAC+wAAAQMAAAW1AAAC/gAAAAAAAAAAB4AAAAL7AAABAwAABbUAAAL+"
+                            "geometry": "AdnQywADAAAAAAIDAAAAdwAABaoAAALcAAACAwAAAJYAAAWqAAAC3AAAAAAAAAAAB4AAAAIDAAAAlgAABaoAAALc"
                         },
                         {
-                            "splitter": "AAAA/wAAAAEAAAADAAAAhQAAAIUAAACFAf////8BAAAAAQA="
+                            "splitter": "AAAA/wAAAAEAAAADAAAAhQAAAUMAAADDAf////8BAAAAAQA="
                         },
                         {
-                            "collectionFolderList": {
-                                "currentText": "TestData/yaml-test-suite/data-2022-01-17",
+                            "CollectionFolderList": {
+                                "currentText": "",
                                 "items": [
-                                    "TestData/yaml-test-suite/data-2022-01-17",
-                                    "TestData/Txt2Json-test-suite/QtNoid-2.2.0"
                                 ]
                             }
                         },
                         {
-                            "yamlTestCollectionListCurrent": 1
+                            "yamlTestCollectionListCurrent": 0
                         },
                         {
-                            "sourceMode": "tabCollection"
+                            "collectionFolderList": {
+                                "currentText": "",
+                                "items": [
+                                ]
+                            }
                         },
                         {
-                            "singleFilePath": "D:/TestModel/pippo.yaml"
+                            "sourceMode": "tabSingleFile"
+                        },
+                        {
+                            "singleFilePath": ""
                         },
                         {
                             "recentSingleFiles": [
-                                "D:/TestModel/pippo.yaml"
                             ]
                         }
                     ]
