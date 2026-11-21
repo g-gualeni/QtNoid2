@@ -1,5 +1,7 @@
 #include "foldercombobox.h"
+#include <QDesktopServices>
 #include <QEvent>
+#include <QFileInfo>
 #include <QMenu>
 #include <QMouseEvent>
 
@@ -42,11 +44,16 @@ bool FolderComboBox::event(QEvent* event)
 void FolderComboBox::contextMenuEvent(QContextMenuEvent* event)
 {
     QMenu menu;
-    QAction* resetAction = menu.addAction("Reset");
+    QAction* openOsAction = menu.addAction(tr("Open folder in File Explorer"));
+    QAction* resetAction = menu.addAction(tr("Reset Recent List"));
     QAction* selected = menu.exec(event->globalPos());
 
     if (selected == resetAction) {
         clear();
         setCurrentIndex(-1);
+    }
+    else if(selected == openOsAction) {
+        // qDebug() << Q_FUNC_INFO << currentText();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(currentText()).absoluteFilePath()));
     }
 }

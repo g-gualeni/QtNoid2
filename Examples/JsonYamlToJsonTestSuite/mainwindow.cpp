@@ -81,8 +81,6 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
     connect(ui->txtCurrentFile, &QComboBox::currentIndexChanged, this, [&](int index){
-        // QString folder = ui->txtCollectionFolder->currentText();
-        // QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
         if(!confirmDiscardYaml()) {
             return;
         }
@@ -181,8 +179,6 @@ void MainWindow::customizeUI()
 
     ui->tabWidgetSource->installEventFilter(this);
     ui->tabWidgetSource->tabBar()->installEventFilter(this);
-
-
 }
 
 void MainWindow::customizeUI_initDevelopment()
@@ -206,8 +202,6 @@ void MainWindow::customizeUI_initDevelopment()
     });
 
 #endif
-
-
 }
 
 
@@ -245,7 +239,6 @@ void MainWindow::fileOpenSingleFile()
 
     setSingleFilePath(fileName);
     setCurrentSourceWidget(ui->tabSingleFile);
-
 }
 
 
@@ -486,10 +479,54 @@ void MainWindow::setYamlTestCollectionListCurrent(qsizetype newYamlTestCollectio
     }
 }
 
+QString MainWindow::collectionFolderRefine(const QString &path) const
+{
+    // qDebug() << __func__ << path;
+
+    QDir dir;
+    QFileInfo FI(path);
+    if(FI.isFile()) {
+        // We need to move backward
+        dir.setPath(FI.absolutePath());
+        dir.cdUp();
+        QStringList entries = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
+        return dir.absolutePath();
+    }
+    else if(FI.isDir()) {
+        dir.setPath(path);
+        bool hasNoSubfolders = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot).isEmpty();
+        if(hasNoSubfolders){
+            // We need to move upward since this is the last folder before files
+            dir.cdUp();
+        }
+        else {
+            // We need to move downward
+            while(true) {
+                const QStringList entries = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
+                if (entries.count() > 1) {
+                    // We get multiple folders, let's stop
+                    break;
+                }
+                dir.setPath(dir.absoluteFilePath(entries.first()));
+                if(!dir.exists()){
+                    // It's an error
+                    qDebug() << Q_FUNC_INFO << "dir:" << dir.absolutePath();
+                    break;
+                }
+            }
+        }
+
+
+        return dir.absolutePath();
+    }
+    // This is an error
+    return {};
+}
+
 
 void MainWindow::updateUI_loadYamlFile(const QString& yamlFilePath)
 {
-    qDebug() << __func__ << yamlFilePath;
+    // qDebug() << __func__ << yamlFilePath;
 
     const QSignalBlocker blocker(ui->txtYAML->document());   // si sblocca a fine blocco
 
@@ -602,9 +639,12 @@ void MainWindow::onFolderComboBoxDoubleClicked()
 
     QString folderPath = collectionFolderPath();
     folderPath = QFileDialog::getExistingDirectory(this, tr("Select the main folder"), folderPath);
+    // folderPath = QFileDialog::getOpenFileName(this, tr("Select One File in the collection"), folderPath);
 
     if (folderPath.isEmpty())
         return;
+
+    folderPath = collectionFolderRefine(folderPath);
 
     setCollectionFolderPath(folderPath);
 }
@@ -1007,7 +1047,7 @@ bool MainWindow::confirmDiscardYaml()
         return true;
 
     const auto answer = QMessageBox::warning(this, tr("YAML modified"),
-                                             tr("The YAML has been modified.\nChanging source will discard the changes.\n\nContinue?"),
+                                             tr("The YAML Input has been modified.\nChanging source will discard the changes.\n\nContinue?"),
                                              QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     return answer == QMessageBox::Yes;
 }

@@ -1,7 +1,7 @@
 # Class: RecentFiles
 This class, derived from `QObject`, manages the list of the most recently used files of an application and keeps a **Recent Files** submenu in sync with it. The most recent file is always the first one: adding a file that is already in the list moves it to the front instead of duplicating it, and the list never grows beyond `maxCount()`.
 
-The class does not save the list: to save and restore it use `files()` and `setFiles()`, with any storage you like (see the [Example](#example)).
+The class does not save the list: to save and restore it use `files()` and `setFiles()`, with any storage you like (see the [Examples](#Examples)).
 
 ## The "Recent Files" submenu
 The submenu is always created by the class. There are two ways to place it:

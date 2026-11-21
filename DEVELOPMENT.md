@@ -26,6 +26,7 @@
 * QtNoidCommon
 * QtNoidApp
 * QtNoidUiCommon
+* QtNoidJson
 
 
 
@@ -38,9 +39,9 @@ Passa a QtNoidJson - Yaml2Json
 - [x] Revisione QtNoid::App::Parameter
 - [x] Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile
 
-- [ ] Esempio **QtNoid Core Basic Usage**
+- [ ] Esempio **QtNoid Core Basic Usage** [QtNoidCoreBasicUsage](Examples/CoreBasicUsage/doc/QtNoidCoreBasicUsage.md)
 	- [ ] Aggiornare screenshot macOS
-- [ ] Esempio **QtNoid::Common Basic Usage**
+- [ ] Esempio **QtNoid::Common Basic Usage**  
 	- [x] Dialog review with testing for relative and absolute path
 	- [x] Form Geometry stored in JSON
 	- [x] Recent folder list stored
@@ -48,7 +49,9 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] Screenshot Win11
 	- [x] Inserire save restore combo box
 	- [ ] Aggiornare screenshot macOS
-- [ ] Esempio **QtNoid Common Text Basic Usage**
+
+- [ ] Esempio **QtNoid Common Text Basic Usage
+	[QtNoidCommonTextBasicUsage](Examples/CommonTextBasicUsage/doc/QtNoidCommonTextBasicUsage.md)**
 	- [x] Creare esempio per QtNoid::Common::Text Basic Usage
 	- [x] `tokenize()`
 	- [x] `convertToCamelCase()`
@@ -56,7 +59,8 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] Inserire Screenshot Win11
 	- [x] Aggiornare Doc
 	- [ ] Inserire screenshot macOS
-- [ ] Esempio **QtNoid App Core Basic Usage** 
+
+- [ ] Esempio **QtNoid App Core Basic Usage**  [QtNoidAppCoreBasicUsage](Examples/AppCoreBasicUsage/doc/QtNoidAppCoreBasicUsage.md)
 	- [x] update to support the new `appExeOrAppBundleDirPath()` API
 	- [x] Aggiornare UI
 	- [x] Update labels using bold 
@@ -64,8 +68,7 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] Aggiornare Doc
 	- [ ] Aggiornare screenshot macOS
 
-
-- [ ] Esempio **QtNoid App Parameter Basic Usage**
+- [ ] Esempio **QtNoid App Parameter Basic Usage [QtNoidAppParameterBasicUsage](Examples/AppParameterBasicUsage/doc/QtNoidAppParameterBasicUsage.md)**
 	- [x] Fare in modo che la modifica al preset salvi la configurazione nel json
 	- [x] Modificare la funzione updateStatusBar() per gestire messaggio e value
 	- [x] Log rivisto per renderlo più intelleggibile
@@ -76,12 +79,15 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] rendere automatica generazione del JSON usando un nuovo evento della classe Parameter che mi notifica quando qualcosa cambia.
 	- [x] Aggiornare Doc
 	- [x] Aggiornare screenshot macOS
-- [ ] Esempio **QtNoid App ParametersPage Basic Usage**
+
+- [ ] Esempio **QtNoid App ParametersPage Basic Usage 
+    [QtNoidAppParametersPageBasicUsage](Examples/AppParametersPageBasicUsage/doc/QtNoidAppParametersPageBasicUsage.md)
 	- [x] Aggiornare UI
 	- [x] Aggiornare documentazione
 	- [x] Aggiornare screenshot Win11
 	- [ ] Aggiornare screenshot macOS
-- [ ] Esempio **QtNoid App ParametersPage Benchmark**
+
+- [ ] Esempio **QtNoid App ParametersPage Benchmark** [QtNoidAppParametersPageBenchmark](Examples/AppParametersPageBenchmark/doc/QtNoidAppParametersPageBenchmark.md)
 	- [x] Aggiornare UI
 	- [x] Scrivere la documentazione
 	- [x] Screenshot Win11
@@ -240,6 +246,7 @@ Passa a QtNoidJson - Yaml2Json
 			 - [x] Controllo dei test
 			 - [x] Controllo documentazione
 			 - [x] Rivedere il salvatagio usando QSaveFile e provare il file prima di cancellare il vecchio. Potrei anche mostrare un pop-up per segnalare che tutto è andato bene o che c'è stato un errore
+
 - [ ] Libreria **`QtNoidUiCommon`**
 	- [x] classe **`QtNoid::UiCommon::Core`** 
 		- [x] Documentare `restoreComboBoxTextItems()` 
@@ -274,9 +281,6 @@ Passa a QtNoidJson - Yaml2Json
  
 
 # QtNoidJson-DEV
-finire implementation Yaml2Json library 
-Finire
-void TestQtNoidJsonYaml2Json::testMixedStructures()
 - [ ] Esempio **QtNoid::Json::Yaml2Json JsonYamlToJsonTestSuite**
 	- [x] Sistemare save / restore dei parametri iniziali
 	- [x] Inserire Tab per selezionale modalità file o collection
@@ -307,26 +311,16 @@ void TestQtNoidJsonYaml2Json::testMixedStructures()
 			- [x] per la selezione di un recent file
 	- [x] Usare la nuova classe QtNoid::UiCommon::RecentFiles
 	- [x] `createSaveConfigToProjectMenuAction`: rinominato metodo per creare menu che salva il file di configurazione nelle risorse del progetto. Sistemati anche alcuni malfunzionamenti
-	- [ ] createInitConfigFromResourcesMenuAction: controllo generale della funzione che altro non è che initConfigFromResources rinominata
-	
+	- [x] createInitConfigFromResourcesMenuAction: controllo generale della funzione che altro non è che initConfigFromResources rinominata
+	- [x] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
+	- [ ] Segnala che il test va salvato se modifico uno dei campi (descrizione, Input, Expected, )
+	- [ ] Sistemare il salvataggio dei dati in modo da salvare tutti gli elementi della collezione. Se il file errore è vuoto, cancellare il file. Descrivere le operazioni da fare nella finestra di dialogo.
 
-
-==🔴Chi scrive questo oggetto???==
- ==🔴"Settings": {==
-                    ==🔴"parameters": [==
-                        ==🔴{==
-                            ==🔴"RecentFiles": [==
-                                ==🔴"TestData/Test2.yaml",==
-                                ==🔴"TestData/TestEmpty.yaml"==
-                            ==🔴]==
-                        ==🔴}==
-                    ==🔴]==
-
-- initConfigFromResources
+	- [ ] Spostare i ... alla fine della selezione cartella con la collection
+	- [ ] Creare un oggetto fileComboBox con menu per aprire la posizione del file nel file system.
 
 	- [ ] Mostrare un messaggio se il file atteso e quello caricato non sono gli stessi, usando confronto tra modelli json
 				
-	- [ ] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
 
 	- [ ] Devo anche creare un file esempio e metterlo nelle risorse
 	- [ ] Migliorare estrazione risorse mettendo magari una dialog per mostrare i progressi

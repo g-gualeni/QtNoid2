@@ -68,6 +68,8 @@ private:
 
     void setYamlTestCollectionListCurrent(qsizetype newYamlTestCollectionListCurrent);
 
+    QString collectionFolderRefine(const QString& path) const;
+
     //---- OLD to review
     bool generateTestDataFromResource(const QString& dataPrefix);
     void updateUI_loadYamlFile(const QString& yamlFilePath);
