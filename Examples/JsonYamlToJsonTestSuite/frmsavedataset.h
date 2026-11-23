@@ -19,23 +19,24 @@ public:
     void setDatasetFolder(const QString& datasetFolder);
     QString datasetFolder() const;
 
+
     bool saveDescription() const;
+    void setSaveDescription(bool value);
     bool saveInputYAML() const;
+    void setSaveInputYAML(bool value);
     bool saveExpectedJSON() const;
+    void setSaveExpectedJSON(bool value);
     bool saveExpectedTokens() const;
-    bool saveErrorEmptyFile() const;
+    void setSaveExpectedTokens(bool value);
+    bool saveErrorFile() const;
+    void setSaveErrorFile(bool value);
 
 private slots:
     void on_cmdBrowseCollection_clicked();
     void on_cmdBrowseDestination_clicked();
 
 private:
-    void updateUI_dataSetFolder();
-
-private:
     Ui::frmSaveDataset* ui;
-    QString m_baseFolderPath;
-    QString m_filePath;
 };
 
 #endif // FRMSAVEDATASET_H

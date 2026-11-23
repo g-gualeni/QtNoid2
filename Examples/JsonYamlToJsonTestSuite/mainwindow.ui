@@ -160,7 +160,7 @@
         <item row="2" column="0" colspan="6">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="lblDescription">
             <property name="text">
              <string>Description</string>
             </property>

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Save Dataset</string>
+   <string>Save Test Dataset</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -19,7 +19,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="lblDestinationFolder_2">
        <property name="text">
-        <string>Collection Folder:</string>
+        <string>Select Collection Folder:</string>
        </property>
       </widget>
      </item>
@@ -40,7 +40,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="lblDestinationFolder">
        <property name="text">
-        <string>Dataset Folder:</string>
+        <string>Select Dataset Folder:</string>
        </property>
       </widget>
      </item>
@@ -103,7 +103,7 @@
    <item>
     <widget class="QCheckBox" name="chkSaveErrorEmptyFile">
      <property name="text">
-      <string>Save &quot;error&quot; file even if empty</string>
+      <string>Save &quot;error&quot; file / Delete if Error Page is empty</string>
      </property>
      <property name="checked">
       <bool>true</bool>

@@ -22,11 +22,7 @@ void frmSaveDataset::setCollectionFolder(const QString& collectionFolder)
 
 QString frmSaveDataset::collectionFolder() const
 {
-    auto current = ui->txtCollectionFolder->text();
-    if(!current.isEmpty()) {
-        current = QtNoid::App::Core::appExeOrAppBundleDirPath() +"/" + current;
-    }
-    return current;
+    return ui->txtCollectionFolder->text();
 }
 
 
@@ -49,19 +45,26 @@ void frmSaveDataset::on_cmdBrowseCollection_clicked()
         currentFolder
         );
 
-
     if (currentFolder.isEmpty()) {
         return;
     }
 
-    currentFolder = QDir(QtNoid::App::Core::appExeOrAppBundleDirPath()).relativeFilePath(currentFolder);
+    QDir appPath = QDir(QtNoid::App::Core::appExeOrAppBundleDirPath());
+    QString relative = appPath.relativeFilePath(currentFolder);
+    bool isDescendant = !QDir::isAbsolutePath(relative) && !relative.startsWith("..");
+    if(isDescendant) {
+        currentFolder = relative;
+    }
     ui->txtCollectionFolder->setText(currentFolder);
 }
 
 
 void frmSaveDataset::on_cmdBrowseDestination_clicked()
 {
-    QString currentFolder = collectionFolder() + "/" + datasetFolder();
+    static QDir collectionFolderDir(collectionFolder());
+    QString currentFolder = collectionFolderDir.filePath(datasetFolder());
+    // qDebug() << Q_FUNC_INFO << currentFolder;
+
     currentFolder = QFileDialog::getExistingDirectory(
         this,
         tr("Select Dataset Folder"),
@@ -71,23 +74,8 @@ void frmSaveDataset::on_cmdBrowseDestination_clicked()
     if (currentFolder.isEmpty()) {
         return;
     }
-    currentFolder = QDir(collectionFolder()).relativeFilePath(currentFolder);
+    currentFolder = collectionFolderDir.relativeFilePath(currentFolder);
     ui->txtDatasetFolder->setText(currentFolder);
-}
-
-
-void frmSaveDataset::updateUI_dataSetFolder()
-{
-    if(m_baseFolderPath.isEmpty())
-        return;
-    if(m_filePath.isEmpty())
-        return;
-
-    QDir dir(m_baseFolderPath);
-    QFileInfo FI(m_filePath);
-    auto destinationFolder = dir.relativeFilePath(FI.absolutePath());
-    ui->txtDatasetFolder->setText(destinationFolder);
-
 }
 
 
@@ -96,9 +84,19 @@ bool frmSaveDataset::saveDescription() const
     return ui->chkSaveDescription->isChecked();
 }
 
+void frmSaveDataset::setSaveDescription(bool value)
+{
+    ui->chkSaveDescription->setChecked(value);
+}
+
 bool frmSaveDataset::saveInputYAML() const
 {
     return ui->chkSaveInputYAML->isChecked();
+}
+
+void frmSaveDataset::setSaveInputYAML(bool value)
+{
+    ui->chkSaveInputYAML->setChecked(value);
 }
 
 bool frmSaveDataset::saveExpectedJSON() const
@@ -106,14 +104,30 @@ bool frmSaveDataset::saveExpectedJSON() const
     return ui->chkSaveExpectedJSON->isChecked();
 }
 
+void frmSaveDataset::setSaveExpectedJSON(bool value)
+{
+    ui->chkSaveExpectedJSON->setChecked(value);
+}
+
 bool frmSaveDataset::saveExpectedTokens() const
 {
     return ui->chkSaveExpectedTokens->isChecked();
 }
 
-bool frmSaveDataset::saveErrorEmptyFile() const
+void frmSaveDataset::setSaveExpectedTokens(bool value)
+{
+    ui->chkSaveExpectedTokens->setChecked(value);
+}
+
+bool frmSaveDataset::saveErrorFile() const
 {
     return ui->chkSaveErrorEmptyFile->isChecked();
+}
+
+void frmSaveDataset::setSaveErrorFile(bool value)
+{
+    ui->chkSaveErrorEmptyFile->setChecked(value);
+
 }
 
 

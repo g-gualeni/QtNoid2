@@ -60,21 +60,17 @@ protected:
 
 private:
     bool isSourceChangeRequest(QObject *watched, QEvent *event) const;
-    bool confirmDiscardYaml();
+    bool confirmDiscardTestDatasetChanges();
     void customizeUI();
     void customizeUI_initDevelopment();
     void tabWidgetSourceUiUpdate();
     void fileOpenSingleFile();
-
     void setYamlTestCollectionListCurrent(qsizetype newYamlTestCollectionListCurrent);
-
     QString collectionFolderRefine(const QString& path) const;
+    void saveTestDataset();
 
-    //---- OLD to review
-    bool generateTestDataFromResource(const QString& dataPrefix);
     void updateUI_loadYamlFile(const QString& yamlFilePath);
     void updateUI_loadExpectedFiles(const QString& yamlFilePath);
-
     void updateUI_convertYamlToJson();
     void updateUI_recentFiles(QString fileName);
     void updateUI_scanTestCollectionFolder(const QString& folder);
@@ -83,7 +79,15 @@ private:
     void updateUI_txtCurrentFile();
     void updateUI_statusBar(const QString& msg = {});
     void updateUI_tabInputTitle();
+    void updateUI_descriptionLabel();
+    void updateUI_tabExpectedJsonTitle();
+    void updateUI_tabExpectedErrorTitle();
+    void updateUI_tabExpectedTokensTitle();
 
+
+
+    //---- OLD to review
+    bool generateTestDataFromResource(const QString& dataPrefix);
 
     void onFolderComboBoxDoubleClicked();
     void onPreviousTest();

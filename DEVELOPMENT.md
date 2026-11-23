@@ -313,8 +313,14 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] `createSaveConfigToProjectMenuAction`: rinominato metodo per creare menu che salva il file di configurazione nelle risorse del progetto. Sistemati anche alcuni malfunzionamenti
 	- [x] createInitConfigFromResourcesMenuAction: controllo generale della funzione che altro non è che initConfigFromResources rinominata
 	- [x] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
-	- [ ] Segnala che il test va salvato se modifico uno dei campi (descrizione, Input, Expected, )
+	- [x] Segnala che il test va salvato se modifico uno dei campi (descrizione, Input, Expected, )
 	- [ ] Sistemare il salvataggio dei dati in modo da salvare tutti gli elementi della collezione. Se il file errore è vuoto, cancellare il file. Descrivere le operazioni da fare nella finestra di dialogo.
+		- [ ] Finire di testare il comando che salva un dataset
+		- [ ] creare il menu anche (attivo solo se sono su collection?)
+		- [ ] Aggiornare flag testo modificato
+		- [ ] Se creo un nuovo dataset, devo caricarlo nella form principale
+		- [ ] Salvare config form per il salvataggio
+
 
 	- [ ] Spostare i ... alla fine della selezione cartella con la collection
 	- [ ] Creare un oggetto fileComboBox con menu per aprire la posizione del file nel file system.
@@ -357,6 +363,7 @@ Passa a QtNoidJson - Yaml2Json
 - [x] Ctrl+S to save
 - [x] Ctrl+J to convert to Json
 - [x] Create new Dataset command and dialog
+
 - [ ] Add automation to init new folder and description
 - [ ] Create a resource manager to copy files into resouces end generate list
      - [ ] File Copy to prject folder
