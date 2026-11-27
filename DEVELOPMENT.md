@@ -329,7 +329,14 @@ Passa a QtNoidJson - Yaml2Json
 		- [x] Inserire pulsante select all
 	- [x] "D:/TestPoste/Nuova cartella" come mai non va? Mancava il caso del path assoluto
 	- [ ] Comando per creare un nuovo dataset
-		- [ ] 
+		- [x] Creare struttura per New, e per SaveAs
+		- [x] Implementare New per singolo YAML
+		- [x] Implementare SaveAs per singolo YAML
+		- [ ] Form per creare un nuovo dataset
+			- [ ] Implementare selezione root folder
+			- [ ] Implementare selezione testFoldel 
+			- [ ] Possibilità di inserire a mano test folder
+			- [ ] Aggiornamento main con il nuovo test
 
 
 	

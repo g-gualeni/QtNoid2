@@ -24,14 +24,12 @@
 
 
 
-
-
-
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);    
+    ui->setupUi(this);
+
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
     setWindowTitle("QtNoid::Json::YamlToJson Test Suite");
 
@@ -60,12 +58,6 @@ MainWindow::MainWindow(QWidget* parent)
     updateUI_txtCurrentFile();
     updateUI_cmdPrevNext();
 
-    connect(ui->cmdBrowseFolder, &QToolButton::clicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
-    connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextTest);
-    connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousTest);
-    connect(ui->cmdSaveTestDataset, &QPushButton::clicked, this, &MainWindow::onCmdSaveTestDataset);
-    connect(ui->cmdNewTestDataset, &QPushButton::clicked, this, &MainWindow::onCreateNewTest);
-    connect(ui->actionCreate_New_Test, &QAction::triggered, this, &MainWindow::onCreateNewTest);
 
 }
 
@@ -85,9 +77,23 @@ void MainWindow::saveToAppConfig()
     appConfig->saveValue("collectionFolderList", comboJ, pageName);
     appConfig->saveValue("yamlTestCollectionListCurrent", m_yamlTestCollectionListCurrent, pageName);
     appConfig->saveValue("sourceMode", ui->tabWidgetSource->currentWidget()->objectName(), pageName);
-    appConfig->saveValue("singleFilePath", ui->txtSingleFile->text(), pageName);
+    appConfig->saveValue("singleFilePath", ui->txtSingleFilePath->text(), pageName);
     appConfig->saveValue("recentSingleFiles", m_recentFiles.files(), pageName);
 }
+
+void MainWindow::createNewFile()
+{
+    qDebug() << __func__;
+    if(!confirmDiscardTestDatasetChanges()) {
+        return;
+    }
+    ui->txtSingleFilePath->clear();
+    ui->txtYAML->clear();
+    ui->txtYAML->document()->setModified(false);
+    updateUI_tabInputYamlTitle();
+    ui->txtJsonOutput->clear();
+}
+
 
 
 void MainWindow::restoreFromAppConfig()
@@ -98,7 +104,7 @@ void MainWindow::restoreFromAppConfig()
     ui->splitter->restoreState(appConfig->restoreAsByteArray("splitter", ui->splitter->saveState(), pageName));
 
     // Load single file collection
-    ui->txtSingleFile->setText(appConfig->restoreAsString("singleFilePath", {}, pageName));
+    ui->txtSingleFilePath->setText(appConfig->restoreAsString("singleFilePath", {}, pageName));
     m_recentFiles.setFiles(appConfig->restoreAsStringList("recentSingleFiles", {}, pageName));
 
     // Load last collection configuration
@@ -122,29 +128,53 @@ void MainWindow::customizeUI()
 {
     // ui->cmdPrevious->setText("\u2B05");
     // ui->cmdNext->setText("\u27a1\ufe0f"); // ➡️
-    auto save_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
+    const QIcon  save_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
     ui->cmdSaveTestDataset->setIcon(save_icon);
     ui->cmdSaveTestDataset->setIconSize({16,16});
+    connect(ui->cmdSaveTestDataset, &QPushButton::clicked, this, &MainWindow::saveTestDataset);
     ui->cmdSaveSingleFile->setIcon(save_icon);
     ui->cmdSaveSingleFile->setIconSize({16,16});
+    connect(ui->cmdSaveSingleFile, &QPushButton::clicked, this, [&](){
+        if(ui->txtSingleFilePath->text().isEmpty()) saveAsSingleFile();
+        else saveSingleFile();
+    });
 
-    auto new_icon = style()->standardIcon(QStyle::SP_FileIcon);
-    ui->cmdNewTestDataset->setIcon(new_icon);
+    const QIcon newFile_icon = style()->standardIcon(QStyle::SP_FileIcon);
+    ui->cmdNewTestDataset->setIcon(newFile_icon);
     ui->cmdNewTestDataset->setIconSize({16,16});
+    connect(ui->cmdNewTestDataset, &QToolButton::clicked, this, &MainWindow::createNewTestDataset);
+    ui->cmdCreateNewFile->setIcon(newFile_icon);
+    ui->cmdCreateNewFile->setIconSize({16,16});
+    connect(ui->cmdCreateNewFile, &QToolButton::clicked, this, &MainWindow::createNewFile);
 
-    auto iconArrowLeft = style()->standardIcon(QStyle::SP_ArrowLeft);
+    const QIcon  iconArrowLeft = style()->standardIcon(QStyle::SP_ArrowLeft);
     ui->cmdPrevious->setIcon(iconArrowLeft);
     ui->cmdPrevious->setIconSize({32,32});
     ui->cmdPrevious->setText("");
-    auto iconArrowRight = style()->standardIcon(QStyle::SP_ArrowRight);
+    connect(ui->cmdPrevious, &QPushButton::clicked, this, &MainWindow::onPreviousTest);
+
+    const QIcon  iconArrowRight = style()->standardIcon(QStyle::SP_ArrowRight);
     ui->cmdNext->setIcon(iconArrowRight);
     ui->cmdNext->setIconSize({32,32});
     ui->cmdNext->setText("");
-    ui->txtDescription->clear();
+    connect(ui->cmdNext, &QPushButton::clicked, this, &MainWindow::onNextTest);
+
+
+    ui->cmdBrowseSingleFile->setText("...");
+    connect(ui->cmdBrowseSingleFile, &QPushButton::clicked, this, [&](){
+        if(!confirmDiscardTestDatasetChanges()) return;
+        fileOpenSingleFile();
+    });
+
+    ui->cmdBrowseFolder->setText("...");
+    connect(ui->cmdBrowseFolder, &QToolButton::clicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
+
+    connect(ui->cmdConvertToJson, &QPushButton::clicked, this, &MainWindow::updateUI_convertYamlToJson);
 
     ui->tabWidgetSource->installEventFilter(this);
     ui->tabWidgetSource->tabBar()->installEventFilter(this);
 
+    ui->txtDescription->clear();
     connect(ui->txtDescription, &QLineEdit::textEdited, this, [&](){
         updateUI_descriptionLabel();
     });
@@ -161,16 +191,6 @@ void MainWindow::customizeUI()
     connect(ui->txtTokensExpected->document(), &QTextDocument::modificationChanged, this, [&](){
         updateUI_tabExpectedTokensTitle();
     });
-
-    connect(ui->actionSave_Dataset, &QAction::triggered, this, [&](){
-        if(ui->tabWidgetSource->currentWidget() == ui->tabSingleFile) {
-            saveSingleFile();
-        }
-        else {
-            saveTestDataset();
-        }
-    });
-
 
     // Connect double-click signal from folder comboBox
     connect(ui->txtCollectionFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
@@ -204,6 +224,26 @@ void MainWindow::customizeUI()
         updateUI_statusBar(yamlStatusBarMsgFromCollectionList());
     });
 
+    // QAction
+    connect(ui->actionConvert_To_Json, &QAction::triggered, this, &MainWindow::updateUI_convertYamlToJson);
+    connect(ui->actionSave_As, &QAction::triggered, this, &MainWindow::saveAsSingleFile);
+
+    connect(ui->actionSave_Dataset, &QAction::triggered, this, [&](){
+        if(ui->tabWidgetSource->currentWidget() == ui->tabSingleFile) {
+            if(ui->txtSingleFilePath->text().isEmpty()) {
+                saveAsSingleFile();
+            }
+            else saveSingleFile();
+        }
+        else saveTestDataset();
+    });
+
+    connect(ui->actionNew_File_Dataset, &QAction::triggered, this, [&](){
+        if(ui->tabWidgetSource->currentWidget() == ui->tabSingleFile) {
+            createNewFile();
+        }
+        else createNewTestDataset();
+    });
 
 }
 
@@ -265,15 +305,6 @@ void MainWindow::fileOpenSingleFile()
 
     setSingleFilePath(fileName);
     setCurrentSourceWidget(ui->tabSingleFile);
-}
-
-
-
-
-
-void MainWindow::on_cmdConvertToJson_clicked()
-{
-    updateUI_convertYamlToJson();
 }
 
 
@@ -532,11 +563,6 @@ void MainWindow::on_actionManageProjectResources_triggered()
     appConfig->saveValue("LastPrefix", dialog.projectResPrefix(), pageName);
 }
 
-void MainWindow::on_actionConvert_To_Json_triggered()
-{
-    updateUI_convertYamlToJson();
-}
-
 
 void MainWindow::setYamlTestCollectionListCurrent(qsizetype newYamlTestCollectionListCurrent)
 {
@@ -769,6 +795,7 @@ void MainWindow::saveTestDataset()
 
 }
 
+
 void MainWindow::saveTestDataset_updateCurrentSelectedFile(const QString &collectionFolder,
                                                            const QString &datasetFolder)
 {
@@ -829,6 +856,23 @@ void MainWindow::saveSingleFile()
     const QString bytes = QtNoid::Common::Scale::autoUpToExaByte(FI.size());
     updateUI_statusBar(tr("Saved %1 - %2").arg(QDir::toNativeSeparators(fileName), bytes));
 
+}
+
+void MainWindow::saveAsSingleFile()
+{    
+    qDebug() << __func__;
+    const QString currentPath = singleFilePath();
+
+    const QString fileName = QFileDialog::getSaveFileName(this,
+                                 tr("Save as YAML File"),
+                                 currentPath,
+                                 tr("YAML Files (*.yml *.yaml);;All Files (*)"));
+                                 \
+    if (fileName.isEmpty())
+        return;
+
+    setSingleFilePath(fileName);
+    saveSingleFile();
 }
 
 
@@ -926,6 +970,13 @@ void MainWindow::updateUI_loadExpectedFiles(const QString& yamlFilePath)
 void MainWindow::updateUI_convertYamlToJson()
 {
     QString yamlText = ui->txtYAML->toPlainText();
+
+    if(yamlText.isEmpty()) {
+        ui->txtJsonOutput->clear();
+        ui->txtErrorOutput->clear();
+        return;
+    }
+
     auto converter = QtNoid::Json::Yaml2Json(yamlText, this);
     ui->txtJsonOutput->setPlainText(converter.jsonAsString());
     ui->txtErrorOutput->setPlainText(converter.errorString());
@@ -999,11 +1050,6 @@ void MainWindow::onNextTest()
     updateUI_convertYamlToJson();
 }
 
-void MainWindow::onCmdSaveTestDataset()
-{
-    saveTestDataset();
-}
-
 
 void MainWindow::initAppConfigFile()
 {
@@ -1022,8 +1068,12 @@ void MainWindow::initAppConfigFile()
 
 
 
-void MainWindow::onCreateNewTest()
+void MainWindow::createNewTestDataset()
 {
+    if(!confirmDiscardTestDatasetChanges()) {
+        return;
+    }
+
     qDebug() << __func__ << "DA FINIRE";
 
     frmNewDataset dialog(this);
@@ -1173,16 +1223,16 @@ void MainWindow::setSingleFilePath(const QString& path)
 
     bool inside = QDir::isRelativePath(rel) && !rel.startsWith("../") && rel != "..";
     if(inside) {
-        ui->txtSingleFile->setText(rel);
+        ui->txtSingleFilePath->setText(rel);
     }
     else {
-        ui->txtSingleFile->setText(path);
+        ui->txtSingleFilePath->setText(path);
     }
 }
 
 QString MainWindow::singleFilePath() const
 {
-    return ui->txtSingleFile->text();
+    return ui->txtSingleFilePath->text();
 }
 
 QString MainWindow::yamlFullPathFromCollectionList()
@@ -1280,24 +1330,11 @@ bool MainWindow::confirmDiscardTestDatasetChanges()
 }
 
 
-void MainWindow::on_cmdBrowseSingleFile_clicked()
-{
-    if(!confirmDiscardTestDatasetChanges()) {
-        return;
-    }
-
-    fileOpenSingleFile();
-}
-
-
-void MainWindow::on_cmdSaveSingleFile_clicked()
-{
-    saveSingleFile();
-}
-
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
     if (isSourceChangeRequest(watched, event) && !confirmDiscardTestDatasetChanges())
         return true;                              // evento scartato: il tab non cambia
     return QMainWindow::eventFilter(watched, event);
 }
+
+

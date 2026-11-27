@@ -11,8 +11,10 @@ frmNewDataset::frmNewDataset(QWidget* parent)
     ui->setupUi(this);
 
     connect(ui->cmdBrowseRootFolder, &QToolButton::clicked, this, &frmNewDataset::onCmdBrowseRootFolder);
+    connect(ui->txtRootFolder, &FolderComboBox::doubleClicked, this, &frmNewDataset::onCmdBrowseRootFolder);
     connect(ui->cmdBrowseDatasetFolder, &QToolButton::clicked, this, &frmNewDataset::onCmdBrowseDatasetFolder);
-    connect(ui->txtDatasetFolder, &QLineEdit::textChanged, this, &frmNewDataset::onTxtDatasetTextChanged);
+    connect(ui->txtDatasetFolder, &FolderComboBox::doubleClicked, this, &frmNewDataset::onCmdBrowseDatasetFolder);
+    // connect(ui->txtDatasetFolder, &QComboBox::currentIndexChanged, this, &frmNewDataset::onTxtDatasetTextChanged);
 
 }
 
@@ -26,11 +28,11 @@ void frmNewDataset::setRootFolder(const QString& rootFolder)
 {
     QDir dir(QtNoid::App::Core::appExeOrAppBundleDirPath());
     auto relativeRootFolder = dir.relativeFilePath(rootFolder);
-    ui->txtRootFolder->setText(relativeRootFolder);
+    // ui->txtRootFolder->setText(relativeRootFolder);
 }
 QString frmNewDataset::rootFolder() const
 {
-    auto res =  QtNoid::App::Core::appExeOrAppBundleDirPath() + QDir::separator() + ui->txtRootFolder->text();
+    auto res =  QtNoid::App::Core::appExeOrAppBundleDirPath() + QDir::separator(); // ui->txtRootFolder->text();
     return QDir::cleanPath(res);
 }
 
@@ -57,17 +59,17 @@ void frmNewDataset::setYamlInput(const QString& yaml)
 
 QString frmNewDataset::datasetFolder() const
 {
-    return ui->txtDatasetFolder->text();
+    // return ui->txtDatasetFolder->text();
 }
 void frmNewDataset::setDatasetFolder(const QString& datasetFolder)
 {
-    ui->txtDatasetFolder->setText(datasetFolder);
+    // ui->txtDatasetFolder->setText(datasetFolder);
 }
 
 
 void frmNewDataset::onCmdBrowseRootFolder()
 {
-    // qDebug() << __func__;
+    qDebug() << __func__;
     QString rootFolderPath = QFileDialog::getExistingDirectory(
         this,
         tr("Select Destination Folder"),
@@ -83,7 +85,7 @@ void frmNewDataset::onCmdBrowseRootFolder()
 
 void frmNewDataset::onCmdBrowseDatasetFolder()
 {
-    // qDebug() << __func__;
+    qDebug() << __func__;
     QString currentFolder = rootFolder() + QDir::separator() + datasetFolder();
     // qDebug() << __func__ << currentFolder;
 

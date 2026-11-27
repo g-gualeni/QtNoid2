@@ -24,20 +24,14 @@ private slots:
     void onFolderComboBoxDoubleClicked();
     void onPreviousTest();
     void onNextTest();
-    void onCmdSaveTestDataset();
 
-
-    void on_cmdConvertToJson_clicked();
     void on_cmdConvertToYAML_clicked();
     void on_actionLoadYAML_triggered();
     void on_actionTestSuite_2022_01_17_triggered();
     void on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered();
     void on_actionTestDataFolder_triggered();
     void on_actionManageProjectResources_triggered();
-    void on_actionConvert_To_Json_triggered();
     void on_actionOpen_JsonYamlToJsonTestSuite_md_triggered();
-    void on_cmdBrowseSingleFile_clicked();
-    void on_cmdSaveSingleFile_clicked();
 
 private:
     Ui::MainWindow* ui;
@@ -69,6 +63,7 @@ private:
     void saveTestDataset();
     void saveTestDataset_updateCurrentSelectedFile(const QString& collectionFolder, const QString& datasetFolder);
     void saveSingleFile();
+    void saveAsSingleFile();
 
     void updateUI_loadYamlFile(const QString& yamlFilePath);
     void updateUI_loadExpectedFiles(const QString& yamlFilePath);
@@ -87,10 +82,12 @@ private:
 
     bool generateTestDataFromResource(const QString& dataPrefix);
 
-    void onCreateNewTest();
+    void createNewTestDataset();
     void initAppConfigFile();
     void restoreFromAppConfig();
     void saveToAppConfig();
+    void createNewFile();
+
 
 };
 #endif // MAINWINDOW_H

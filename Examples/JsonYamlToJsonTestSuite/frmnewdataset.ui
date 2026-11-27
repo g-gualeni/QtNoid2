@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayout" columnstretch="0,100,0">
      <item row="4" column="0" colspan="3">
       <widget class="QPlainTextEdit" name="txtYamlInput"/>
      </item>
@@ -54,24 +54,10 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="txtRootFolder">
-       <property name="placeholderText">
-        <string>Enter folder name...</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="0">
       <widget class="QLabel" name="lblDestinationFolder_2">
        <property name="text">
-        <string>Dataset Folder:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="txtDatasetFolder">
-       <property name="placeholderText">
-        <string>Enter folder name...</string>
+        <string>Test Folder:</string>
        </property>
       </widget>
      </item>
@@ -81,6 +67,12 @@
         <string>...</string>
        </property>
       </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="FolderComboBox" name="txtRootFolder"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="FolderComboBox" name="txtDatasetFolder"/>
      </item>
     </layout>
    </item>
@@ -96,6 +88,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FolderComboBox</class>
+   <extends>QComboBox</extends>
+   <header>foldercombobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
