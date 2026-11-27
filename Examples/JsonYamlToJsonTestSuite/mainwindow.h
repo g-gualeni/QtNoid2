@@ -20,10 +20,13 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-
-
-
 private slots:
+    void onFolderComboBoxDoubleClicked();
+    void onPreviousTest();
+    void onNextTest();
+    void onCmdSaveTestDataset();
+
+
     void on_cmdConvertToJson_clicked();
     void on_cmdConvertToYAML_clicked();
     void on_actionLoadYAML_triggered();
@@ -32,12 +35,8 @@ private slots:
     void on_actionTestDataFolder_triggered();
     void on_actionManageProjectResources_triggered();
     void on_actionConvert_To_Json_triggered();
-    void on_actionSave_Dataset_triggered();
-
     void on_actionOpen_JsonYamlToJsonTestSuite_md_triggered();
-
     void on_cmdBrowseSingleFile_clicked();
-
     void on_cmdSaveSingleFile_clicked();
 
 private:
@@ -68,6 +67,8 @@ private:
     void setYamlTestCollectionListCurrent(qsizetype newYamlTestCollectionListCurrent);
     QString collectionFolderRefine(const QString& path) const;
     void saveTestDataset();
+    void saveTestDataset_updateCurrentSelectedFile(const QString& collectionFolder, const QString& datasetFolder);
+    void saveSingleFile();
 
     void updateUI_loadYamlFile(const QString& yamlFilePath);
     void updateUI_loadExpectedFiles(const QString& yamlFilePath);
@@ -78,21 +79,14 @@ private:
     void updateUI_cmdPrevNext();
     void updateUI_txtCurrentFile();
     void updateUI_statusBar(const QString& msg = {});
-    void updateUI_tabInputTitle();
+    void updateUI_tabInputYamlTitle();
     void updateUI_descriptionLabel();
     void updateUI_tabExpectedJsonTitle();
     void updateUI_tabExpectedErrorTitle();
     void updateUI_tabExpectedTokensTitle();
 
-
-
-    //---- OLD to review
     bool generateTestDataFromResource(const QString& dataPrefix);
 
-    void onFolderComboBoxDoubleClicked();
-    void onPreviousTest();
-    void onNextTest();
-    void onCmdSaveTestDataset();
     void onCreateNewTest();
     void initAppConfigFile();
     void restoreFromAppConfig();

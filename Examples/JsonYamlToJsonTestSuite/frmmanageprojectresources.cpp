@@ -170,8 +170,11 @@ void frmManageProjectResources::loadDestinationFileList()
         return;
     }
 
-    auto prefix = projectResPrefix();
-    auto shortedPrexis = prefix.sliced(1); // Remove /
+    const QString prefix = projectResPrefix();
+    QString shortedPrexis = prefix;
+    if(!prefix.isEmpty()) {
+        shortedPrexis = prefix.sliced(1); // Remove /
+    }
     QXmlStreamReader xml(&file);
     bool inTargetPrefix = false;
 

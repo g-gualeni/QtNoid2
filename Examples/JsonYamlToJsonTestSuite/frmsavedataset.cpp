@@ -1,17 +1,32 @@
 #include "frmsavedataset.h"
 #include "ui_frmsavedataset.h"
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QtNoidApp/QtNoidApp>
+
+void frmSaveDataset::updateUi_cmdSelectAll()
+{
+    if(chkAllSelected()) {
+        ui->cmdSelectAll->setText("Unselect All");
+    }
+    else {
+        ui->cmdSelectAll->setText("Select All");
+    }
+}
 
 frmSaveDataset::frmSaveDataset(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::frmSaveDataset)
 {
     ui->setupUi(this);
+    updateUi_cmdSelectAll();
+    connect(ui->cmdSelectAll, &QToolButton::clicked, this, &frmSaveDataset::onCmdSelectAllClicked);
+    restoreFromAppConfig();
 }
 
 frmSaveDataset::~frmSaveDataset()
 {
+    saveToAppConfig();
     delete ui;
 }
 
@@ -37,7 +52,7 @@ QString frmSaveDataset::datasetFolder() const
 }
 
 void frmSaveDataset::on_cmdBrowseCollection_clicked()
-{
+{    
     QString currentFolder = collectionFolder();
     currentFolder = QFileDialog::getExistingDirectory(
         this,
@@ -61,8 +76,10 @@ void frmSaveDataset::on_cmdBrowseCollection_clicked()
 
 void frmSaveDataset::on_cmdBrowseDestination_clicked()
 {
-    static QDir collectionFolderDir(collectionFolder());
-    QString currentFolder = collectionFolderDir.filePath(datasetFolder());
+    QDir collectionFolderDir(QtNoid::App::Core::appExeOrAppBundleDirPath());
+    collectionFolderDir.setPath(collectionFolderDir.absoluteFilePath(collectionFolder()));
+
+    QString currentFolder = collectionFolderDir.absoluteFilePath(datasetFolder());
     // qDebug() << Q_FUNC_INFO << currentFolder;
 
     currentFolder = QFileDialog::getExistingDirectory(
@@ -74,8 +91,40 @@ void frmSaveDataset::on_cmdBrowseDestination_clicked()
     if (currentFolder.isEmpty()) {
         return;
     }
-    currentFolder = collectionFolderDir.relativeFilePath(currentFolder);
-    ui->txtDatasetFolder->setText(currentFolder);
+
+    // QDir::isAbsolutePath()
+
+
+    /// CONTROLLA CHE SIA UN FIGLIO
+
+    auto datasetPath = collectionFolderDir.relativeFilePath(currentFolder);
+    if(!currentFolder.isEmpty()
+        && datasetPath != "."
+        && datasetPath != ".."
+        && !datasetPath.startsWith("../")
+        && QDir::isRelativePath(datasetPath))
+    {
+        ui->txtDatasetFolder->setText(datasetPath);
+        return;
+    }
+
+    // Invalid path selected
+    QMessageBox::critical(this, tr("Dataset Folder"),
+                          tr("%1\nIs not a valid path")
+                              .arg(currentFolder));
+
+}
+
+void frmSaveDataset::saveToAppConfig()
+{
+    const QString pageName = QtNoid::App::Core::groupNameFromObjectOrClass(this);
+    appConfig->saveValue("geometry", saveGeometry(), pageName);
+}
+
+void frmSaveDataset::restoreFromAppConfig()
+{
+    const QString pageName = QtNoid::App::Core::groupNameFromObjectOrClass(this);
+    restoreGeometry(appConfig->restoreAsByteArray("geometry", saveGeometry(), pageName));
 }
 
 
@@ -97,6 +146,7 @@ bool frmSaveDataset::saveInputYAML() const
 void frmSaveDataset::setSaveInputYAML(bool value)
 {
     ui->chkSaveInputYAML->setChecked(value);
+    updateUi_cmdSelectAll();
 }
 
 bool frmSaveDataset::saveExpectedJSON() const
@@ -107,16 +157,18 @@ bool frmSaveDataset::saveExpectedJSON() const
 void frmSaveDataset::setSaveExpectedJSON(bool value)
 {
     ui->chkSaveExpectedJSON->setChecked(value);
+    updateUi_cmdSelectAll();
 }
 
 bool frmSaveDataset::saveExpectedTokens() const
 {
-    return ui->chkSaveExpectedTokens->isChecked();
+    return ui->chkSaveExpectedTokens->isChecked();    
 }
 
 void frmSaveDataset::setSaveExpectedTokens(bool value)
 {
     ui->chkSaveExpectedTokens->setChecked(value);
+    updateUi_cmdSelectAll();
 }
 
 bool frmSaveDataset::saveErrorFile() const
@@ -127,7 +179,31 @@ bool frmSaveDataset::saveErrorFile() const
 void frmSaveDataset::setSaveErrorFile(bool value)
 {
     ui->chkSaveErrorEmptyFile->setChecked(value);
-
+    updateUi_cmdSelectAll();
 }
 
+bool frmSaveDataset::chkAllSelected()
+{
+    bool allSelected = ui->chkSaveDescription->isChecked();
+    allSelected &= ui->chkSaveErrorEmptyFile->isChecked();
+    allSelected &= ui->chkSaveExpectedJSON->isChecked();
+    allSelected &= ui->chkSaveInputYAML->isChecked();
+    allSelected &= ui->chkSaveExpectedTokens->isChecked();
+
+    qDebug() << __func__ << "allSelected" << allSelected;
+    // qDebug() << __func__ << "chkSaveDescription" << ui->chkSaveDescription->isChecked();;
+
+    return allSelected;
+}
+
+void frmSaveDataset::onCmdSelectAllClicked()
+{
+    bool newStatus = !chkAllSelected();
+    ui->chkSaveDescription->setChecked(newStatus);
+    ui->chkSaveErrorEmptyFile->setChecked(newStatus);
+    ui->chkSaveExpectedJSON->setChecked(newStatus);
+    ui->chkSaveInputYAML->setChecked(newStatus);
+    ui->chkSaveExpectedTokens->setChecked(newStatus);
+    updateUi_cmdSelectAll();
+}
 

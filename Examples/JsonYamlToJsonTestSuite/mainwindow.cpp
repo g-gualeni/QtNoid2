@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    ui->setupUi(this);    
     m_screenshotShortcut = QtNoid::App::Development::initFullDialogGrabShortcut(this);
     setWindowTitle("QtNoid::Json::YamlToJson Test Suite");
 
@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
 
-    connect(ui->tabWidgetSource, &QTabWidget::currentChanged, [&](){
+    connect(ui->tabWidgetSource, &QTabWidget::currentChanged, this, [&](){
         tabWidgetSourceUiUpdate();
     });
 
@@ -148,9 +148,9 @@ void MainWindow::customizeUI()
     connect(ui->txtDescription, &QLineEdit::textEdited, this, [&](){
         updateUI_descriptionLabel();
     });
-    connect(ui->txtYAML->document(), &QTextDocument::modificationChanged, [&](){
+    connect(ui->txtYAML->document(), &QTextDocument::modificationChanged, this, [&](){
         //qDebug() << "QTextDocument::modificationChanged: " << changed;
-        updateUI_tabInputTitle();
+        updateUI_tabInputYamlTitle();
     });
     connect(ui->txtJsonExpected->document(), &QTextDocument::modificationChanged, this, [&](){
         updateUI_tabExpectedJsonTitle();
@@ -161,6 +161,16 @@ void MainWindow::customizeUI()
     connect(ui->txtTokensExpected->document(), &QTextDocument::modificationChanged, this, [&](){
         updateUI_tabExpectedTokensTitle();
     });
+
+    connect(ui->actionSave_Dataset, &QAction::triggered, this, [&](){
+        if(ui->tabWidgetSource->currentWidget() == ui->tabSingleFile) {
+            saveSingleFile();
+        }
+        else {
+            saveTestDataset();
+        }
+    });
+
 
     // Connect double-click signal from folder comboBox
     connect(ui->txtCollectionFolder, &FolderComboBox::doubleClicked, this, &MainWindow::onFolderComboBoxDoubleClicked);
@@ -269,8 +279,9 @@ void MainWindow::on_cmdConvertToJson_clicked()
 
 void MainWindow::on_cmdConvertToYAML_clicked()
 {
-    QString jsonText = ui->txtJsonOutput->toPlainText();
-    QJsonDocument doc = QJsonDocument::fromJson(jsonText.toUtf8());
+    // TODO
+    // QString jsonText = ui->txtJsonOutput->toPlainText();
+    // QJsonDocument doc = QJsonDocument::fromJson(jsonText.toUtf8());
     // QString yamlText = QtNoid::Json::Yaml2Json::jsonToYaml(doc.object());
     // ui->txtYAML->setPlainText(yamlText);
 }
@@ -335,7 +346,7 @@ void MainWindow::updateUI_statusBar(const QString& msg)
     ui->statusbar->clearMessage();
 }
 
-void MainWindow::updateUI_tabInputTitle()
+void MainWindow::updateUI_tabInputYamlTitle()
 {
     bool changed = ui->txtYAML->document()->isModified();
     QString current = ui->tabWidgetInput->tabText(0);
@@ -428,7 +439,7 @@ void MainWindow::on_actionTestSuite_2022_01_17_triggered()
 void MainWindow::on_actionTxt2JsonTestSuite_QtNoid_2_2_0_triggered()
 {
     // :/TestData/Txt2Json-test-suite/QtNoid-2.2.0/Array-001/===
-    if(generateTestDataFromResource("://TestData/Txt2Json-test-suite/QtNoid-2.2.0/"))
+    if(generateTestDataFromResource(":/TestData/Txt2Json-test-suite/QtNoid-2.2.0/"))
     {
         QMessageBox::information(this, "Txt2Json Test Suite QtNoid_2_2_0",
                                  tr("Test data generated successfully!"));
@@ -492,7 +503,7 @@ bool MainWindow::generateTestDataFromResource(const QString& dataPrefix)
 
 void MainWindow::on_actionTestDataFolder_triggered()
 {
-    QString appPath = QtNoid::App::Core::appExeOrAppBundleDirPath() ;
+    const QString appPath = QtNoid::App::Core::appExeOrAppBundleDirPath();
 
     auto res = QDesktopServices::openUrl(QUrl::fromLocalFile(appPath + "/TestData"));
     if(res) return;
@@ -526,10 +537,6 @@ void MainWindow::on_actionConvert_To_Json_triggered()
     updateUI_convertYamlToJson();
 }
 
-void MainWindow::on_actionSave_Dataset_triggered()
-{
-    onCmdSaveTestDataset();
-}
 
 void MainWindow::setYamlTestCollectionListCurrent(qsizetype newYamlTestCollectionListCurrent)
 {
@@ -557,7 +564,6 @@ QString MainWindow::collectionFolderRefine(const QString &path) const
         // We need to move backward
         dir.setPath(FI.absolutePath());
         dir.cdUp();
-        QStringList entries = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
         return dir.absolutePath();
     }
     else if(FI.isDir()) {
@@ -571,6 +577,10 @@ QString MainWindow::collectionFolderRefine(const QString &path) const
             // We need to move downward
             while(true) {
                 const QStringList entries = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
+                if (entries.isEmpty()) {
+                    // We get NO folders, let's stop
+                    break;
+                }
                 if (entries.count() > 1) {
                     // We get multiple folders, let's stop
                     break;
@@ -613,10 +623,11 @@ void MainWindow::saveTestDataset()
     }
 
     // Create the collection folder if needed
+
     auto collectionFolder = dialog.collectionFolder();
     if(!QDir::isAbsolutePath(collectionFolder)) {
-        static QDir outFolderDir(QtNoid::App::Core::appExeOrAppBundleDirPath());
-        collectionFolder = outFolderDir.relativeFilePath(collectionFolder);
+        const QDir outFolderDir(QtNoid::App::Core::appExeOrAppBundleDirPath());
+        collectionFolder = outFolderDir.absoluteFilePath(collectionFolder);
     }
     QString outFolderPath(QDir::cleanPath(collectionFolder + QDir::separator() + dialog.datasetFolder()) + "/");
 
@@ -643,6 +654,8 @@ void MainWindow::saveTestDataset()
             qDebug() << __func__ << "Error saving" << descriptionFile.fileName() << descriptionFile.errorString();
             break;
         }
+        ui->txtDescription->setModified(false);
+        updateUI_descriptionLabel();
     } while(false);
 
 
@@ -664,6 +677,8 @@ void MainWindow::saveTestDataset()
             qDebug() << __func__ << "Error saving" << yamlFile.fileName() << yamlFile.errorString();
             break;
         }
+        ui->txtYAML->document()->setModified(false);
+        updateUI_tabInputYamlTitle();
     } while(false);
 
 
@@ -685,6 +700,8 @@ void MainWindow::saveTestDataset()
             qDebug() << __func__ << "Error saving" << jsonFile.fileName() << jsonFile.errorString();
             break;
         }
+        ui->txtJsonExpected->document()->setModified(false);
+        updateUI_tabExpectedJsonTitle();
     } while(false);
 
     // Update or save Expected TOKENS
@@ -706,6 +723,8 @@ void MainWindow::saveTestDataset()
             qDebug() << __func__ << "Error saving" << tokensFile.fileName() << tokensFile.errorString();
             break;
         }
+        ui->txtTokensExpected->document()->setModified(false);
+        updateUI_tabExpectedTokensTitle();
     } while(false);
 
     do {
@@ -716,23 +735,100 @@ void MainWindow::saveTestDataset()
         if(inErrors.isEmpty()){
             // Delete the file if exists
             QFile errorFile(outFolderPath + "error");
-            auto res = errorFile.remove();
-            break;
+            if(errorFile.exists() && !errorFile.remove()){
+                qDebug() << __func__ << "Error removing" << errorFile.fileName() << errorFile.errorString();
+                break;
+            }
         }
-
-        QSaveFile errorFile(outFolderPath + "error");
-        if (!errorFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            qDebug() << __func__ << "Error Opening" << errorFile.fileName() << errorFile.errorString();
-            break;
+        else {
+            QSaveFile errorFile(outFolderPath + "error");
+            if (!errorFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                qDebug() << __func__ << "Error Opening" << errorFile.fileName() << errorFile.errorString();
+                break;
+            }
+            QTextStream out(&errorFile);
+            out << inErrors;
+            out.flush();
+            if(!errorFile.commit()){
+                qDebug() << __func__ << "Error saving" << errorFile.fileName() << errorFile.errorString();
+                break;
+            }
         }
-        QTextStream out(&errorFile);
-        out << inErrors;
-        out.flush();
-        if(!errorFile.commit()){
-            qDebug() << __func__ << "Error saving" << errorFile.fileName() << errorFile.errorString();
-            break;
-        }
+        ui->txtErrorExpected->document()->setModified(false);
+        updateUI_tabExpectedErrorTitle();
     } while(false);
+
+    // Did the user changed the folder or the test set?
+    // Let's reload the dataset
+    bool folderChanged = ui->txtCollectionFolder->currentText() !=  dialog.collectionFolder();
+    folderChanged |= yamlFilePath !=  dialog.datasetFolder();
+    // qDebug() << Q_FUNC_INFO << "folderChanged" << folderChanged;
+    if(folderChanged) {
+        saveTestDataset_updateCurrentSelectedFile(dialog.collectionFolder(), dialog.datasetFolder());
+    }
+
+}
+
+void MainWindow::saveTestDataset_updateCurrentSelectedFile(const QString &collectionFolder,
+                                                           const QString &datasetFolder)
+{
+    // qDebug() << Q_FUNC_INFO << collectionFolder;
+    setCollectionFolderPath(collectionFolder);
+    updateUI_scanTestCollectionFolder(collectionFolderPath());
+
+    // Now let's search the index of the current file using the dataset folder
+    const QString target = QDir::cleanPath(datasetFolder);
+    auto it = std::find_if(m_yamlTestCollectionList.cbegin(), m_yamlTestCollectionList.cend(),
+                           [&](const QString& path) {
+                               const QString folder = QDir::cleanPath(QFileInfo(path).path());
+                               return folder == target || folder.endsWith('/' + target);
+                           });
+
+    if (it == m_yamlTestCollectionList.cend()) {
+        // Dataset Folder not found
+        return;
+    }
+    qsizetype index = std::distance(m_yamlTestCollectionList.cbegin(), it);
+    // qDebug() << Q_FUNC_INFO << "index:" << index << "target:" << target;
+    m_yamlTestCollectionListCurrent = index;
+    updateUI_txtCurrentFile();
+    updateUI_progressBar();
+    updateUI_cmdPrevNext();
+    const QString yamlFilePath = yamlFullPathFromCollectionList();
+    updateUI_loadYamlFile(yamlFilePath);
+    updateUI_loadExpectedFiles(yamlFilePath);
+    updateUI_convertYamlToJson();
+    updateUI_statusBar(yamlStatusBarMsgFromCollectionList());
+}
+
+void MainWindow::saveSingleFile()
+{
+    const QString yaml = ui->txtYAML->toPlainText();
+    // qDebug() << __func__<< yaml.size();
+
+    const QString fileName = singleFilePath();
+    if(QFileInfo::exists(fileName)) {
+        const auto answer = QMessageBox::warning(this, tr("Save YAML File"),
+                                                 tr("%1 already exists.\nDo you want to overwrite it?")
+                                                     .arg(QDir::toNativeSeparators(fileName)),
+                                                 QMessageBox::Yes | QMessageBox::No,
+                                                 QMessageBox::No);
+        if (answer != QMessageBox::Yes)
+            return;
+    }
+
+    const QString savedFile = QtNoid::Common::File::saveAsTextFile(yaml, fileName);
+    if(savedFile.isEmpty()){
+        QMessageBox::warning(this, tr("Save YAML File"),
+                             tr("Cannot open %1:\n%2").arg(QDir::toNativeSeparators(fileName)));
+        return;
+    }
+
+    ui->txtYAML->document()->setModified(false);
+    QFileInfo FI(savedFile);
+    const QString bytes = QtNoid::Common::Scale::autoUpToExaByte(FI.size());
+    updateUI_statusBar(tr("Saved %1 - %2").arg(QDir::toNativeSeparators(fileName), bytes));
+
 }
 
 
@@ -753,7 +849,7 @@ void MainWindow::updateUI_loadYamlFile(const QString& yamlFilePath)
         ui->txtYAML->clear();
     }
     ui->txtYAML->document()->setModified(false);
-    updateUI_tabInputTitle();      // signals blocked - title need manual update
+    updateUI_tabInputYamlTitle();      // signals blocked - title need manual update
     return;
 }
 
@@ -805,8 +901,7 @@ void MainWindow::updateUI_loadExpectedFiles(const QString& yamlFilePath)
     tooltipPath = baseDir.relativeFilePath(errorFilePath);
     QFile errorFile(errorFilePath);
     ui->txtErrorExpected->setToolTip(tooltipPath);
-    if (errorFile.exists() &&  errorFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream errorIn(&errorFile);
+    if (errorFile.exists() &&  errorFile.open(QIODevice::ReadOnly | QIODevice::Text)) {        
         QString errorContent = errorFile.readAll();
         errorFile.close();
         if(errorContent.isEmpty()){
@@ -932,7 +1027,7 @@ void MainWindow::onCreateNewTest()
     qDebug() << __func__ << "DA FINIRE";
 
     frmNewDataset dialog(this);
-    QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
+    const QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
     auto rootFolder = collectionFolderPath();
     dialog.setRootFolder(rootFolder);
     if(dialog.exec() == 0) {
@@ -957,7 +1052,7 @@ void MainWindow::onCreateNewTest()
 
     // Create the new in.yaml file
     auto datasetFolder = dialog.rootFolder() + QDir::separator() + dialog.datasetFolder();
-    QDir().mkdir(datasetFolder);
+    QDir().mkpath(datasetFolder);
     // qDebug() << __func__ << datasetFolder <<  "accepted";
 
     QFile yamlFile(datasetFolder + "/in.yaml");
@@ -1026,11 +1121,7 @@ void MainWindow::on_actionOpen_JsonYamlToJsonTestSuite_md_triggered()
     browser->setOpenLinks(false);
 
     dialog.exec();
-
     appConfig->saveValue("geometry", dialog.saveGeometry(), "MdViewer");
-
-    dialog.saveGeometry();
-
 }
 
 void MainWindow::setCollectionFolderPath(const QString& path)
@@ -1045,7 +1136,7 @@ void MainWindow::setCollectionFolderPath(const QString& path)
     }
 
     // Remove root
-    QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
+    const QString root = QtNoid::App::Core::appExeOrAppBundleDirPath();
     auto folderPath = QDir(root).relativeFilePath(path);
 
     // Add the folder to the comboBox if it's not already there
@@ -1061,19 +1152,23 @@ void MainWindow::setCollectionFolderPath(const QString& path)
 
 QString MainWindow::collectionFolderPath() const
 {
-    auto relPath = ui->txtCollectionFolder->currentText();
-    if(relPath.isEmpty()) {
+    auto collectionPath = ui->txtCollectionFolder->currentText();
+    if(collectionPath.isEmpty()) {
         return {};
     }
-    auto resPath = QDir::cleanPath(QtNoid::App::Core::appExeOrAppBundleDirPath() +
-                                   QDir::separator() + relPath);
+    if(QDir::isAbsolutePath(collectionPath)) {
+        return collectionPath;
+    }
+
+    const QString resPath = QDir::cleanPath(QtNoid::App::Core::appExeOrAppBundleDirPath() +
+                                   QDir::separator() + collectionPath);
 
     return resPath;
 }
 
 void MainWindow::setSingleFilePath(const QString& path)
 {
-    QDir base(QtNoid::App::Core::appExeOrAppBundleDirPath());
+    const QDir base(QtNoid::App::Core::appExeOrAppBundleDirPath());
     QString rel = base.relativeFilePath(path);
 
     bool inside = QDir::isRelativePath(rel) && !rel.startsWith("../") && rel != "..";
@@ -1197,34 +1292,7 @@ void MainWindow::on_cmdBrowseSingleFile_clicked()
 
 void MainWindow::on_cmdSaveSingleFile_clicked()
 {
-    const QString yaml = ui->txtYAML->toPlainText();
-    qDebug() << __func__<< yaml.size();
-
-    const QString fileName = singleFilePath();
-
-    if(QFileInfo::exists(fileName)) {
-        const auto answer = QMessageBox::warning(this, tr("Save YAML File"),
-                                                 tr("%1 already exists.\nDo you want to overwrite it?")
-                                                     .arg(QDir::toNativeSeparators(fileName)),
-                                                 QMessageBox::Yes | QMessageBox::No,
-                                                 QMessageBox::No);
-        if (answer != QMessageBox::Yes)
-            return;
-    }
-
-    const QString savedFile = QtNoid::Common::File::saveAsTextFile(yaml, fileName);
-    if(savedFile.isEmpty()){
-        QMessageBox::warning(this, tr("Save YAML File"),
-                             tr("Cannot open %1:\n%2").arg(QDir::toNativeSeparators(fileName)));
-        return;
-    }
-
-    ui->txtYAML->document()->setModified(false);
-
-    QFileInfo FI(savedFile);
-    const QString bytes = QtNoid::Common::Scale::autoUpToExaByte(FI.size());
-    updateUI_statusBar(tr("Saved %1 - %2").arg(QDir::toNativeSeparators(fileName), bytes));
-
+    saveSingleFile();
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
@@ -1233,4 +1301,3 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         return true;                              // evento scartato: il tab non cambia
     return QMainWindow::eventFilter(watched, event);
 }
-

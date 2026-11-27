@@ -34,6 +34,15 @@ public:
 private slots:
     void on_cmdBrowseCollection_clicked();
     void on_cmdBrowseDestination_clicked();
+    void onCmdSelectAllClicked();
+
+protected:
+    void saveToAppConfig();
+    void restoreFromAppConfig();
+    bool chkAllSelected();
+    void updateUi_cmdSelectAll();
+
+
 
 private:
     Ui::frmSaveDataset* ui;

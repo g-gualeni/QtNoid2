@@ -39,7 +39,8 @@ Passa a QtNoidJson - Yaml2Json
 - [x] Revisione QtNoid::App::Parameter
 - [x] Rinominare la classe ParameterList in ParametersPage per renderla più comprensibile
 
-- [ ] Esempio **QtNoid Core Basic Usage** [QtNoidCoreBasicUsage](Examples/CoreBasicUsage/doc/QtNoidCoreBasicUsage.md)
+- [ ] Esempio **QtNoid Core Basic Usage** 
+	**[QtNoidCoreBasicUsage](Examples/CoreBasicUsage/doc/QtNoidCoreBasicUsage.md)**
 	- [ ] Aggiornare screenshot macOS
 - [ ] Esempio **QtNoid::Common Basic Usage**  
 	- [x] Dialog review with testing for relative and absolute path
@@ -314,20 +315,27 @@ Passa a QtNoidJson - Yaml2Json
 	- [x] createInitConfigFromResourcesMenuAction: controllo generale della funzione che altro non è che initConfigFromResources rinominata
 	- [x] Migliorare il calcolo della cartella base della libreria rendendola invariante rispetto alla selezione. (la prima cartella che ne contiene più di una, oppure una cartella sopra i singoli file)
 	- [x] Segnala che il test va salvato se modifico uno dei campi (descrizione, Input, Expected, )
-	- [ ] Sistemare il salvataggio dei dati in modo da salvare tutti gli elementi della collezione. Se il file errore è vuoto, cancellare il file. Descrivere le operazioni da fare nella finestra di dialogo.
-		- [ ] Finire di testare il comando che salva un dataset
-		- [ ] creare il menu anche (attivo solo se sono su collection?)
-		- [ ] Aggiornare flag testo modificato
-		- [ ] Se creo un nuovo dataset, devo caricarlo nella form principale
-		- [ ] Salvare config form per il salvataggio
+	- [x] Sistemare il salvataggio dei dati in modo da salvare tutti gli elementi della collezione. Se il file errore è vuoto, cancellare il file. Descrivere le operazioni da fare nella finestra di dialogo.
+		- [x] Finire di testare il comando che salva un dataset
+		- [x] creare il menu e ctrl+s che funziona a seconda del source selezionato
+		- [x] Aggiornare flag testo modificato per tutti i campi
+		- [x] Se creo un nuovo dataset, devo caricarlo nella form principale
+		- [x] Salvare config form per il salvataggio
+	- [x] Spostare i ... alla fine della selezione cartella con la collection
+	- [x] Sistemare i tooltip dei pulsanti che salvano file singolo o collezione
+	- [x] Controllo generale per cercare errori
+	- [x] Save Test Dataset
+		- [x] Gestire il caso in cui in Save Test Dataset viene selezionata una cartella che non è figlia del percorso base. Va messo un errore.
+		- [x] Inserire pulsante select all
+	- [x] "D:/TestPoste/Nuova cartella" come mai non va? Mancava il caso del path assoluto
+	- [ ] Comando per creare un nuovo dataset
+		- [ ] 
 
 
-	- [ ] Spostare i ... alla fine della selezione cartella con la collection
+	
 	- [ ] Creare un oggetto fileComboBox con menu per aprire la posizione del file nel file system.
 
 	- [ ] Mostrare un messaggio se il file atteso e quello caricato non sono gli stessi, usando confronto tra modelli json
-				
-
 	- [ ] Devo anche creare un file esempio e metterlo nelle risorse
 	- [ ] Migliorare estrazione risorse mettendo magari una dialog per mostrare i progressi
  

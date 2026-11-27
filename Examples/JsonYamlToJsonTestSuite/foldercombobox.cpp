@@ -1,9 +1,11 @@
 #include "foldercombobox.h"
 #include <QDesktopServices>
+#include <QDir>
 #include <QEvent>
 #include <QFileInfo>
 #include <QMenu>
 #include <QMouseEvent>
+#include "QtNoidApp/QtNoidApp"
 
 FolderComboBox::FolderComboBox(QWidget* parent)
     : QComboBox(parent)
@@ -20,8 +22,8 @@ bool FolderComboBox::event(QEvent* event)
             // qDebug() << __func__ << event;
             // qDebug() << "Click sul pulsante dropdown!";
             showPopup();
+            return true;
         }
-        return true;
     }
     else if (event->type() == QEvent::MouseButtonDblClick) {
         // qDebug() << __func__ << event;
@@ -54,6 +56,7 @@ void FolderComboBox::contextMenuEvent(QContextMenuEvent* event)
     }
     else if(selected == openOsAction) {
         // qDebug() << Q_FUNC_INFO << currentText();
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(currentText()).absoluteFilePath()));
+        QDir dir(QtNoid::App::Core::appExeOrAppBundleDirPath());
+        QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absoluteFilePath(currentText())));
     }
 }

@@ -55,7 +55,7 @@
         <item>
          <widget class="QToolButton" name="cmdSaveSingleFile">
           <property name="toolTip">
-           <string>Browse YAML File</string>
+           <string>Save YAML File</string>
           </property>
           <property name="text">
            <string>...</string>
@@ -68,10 +68,7 @@
        <attribute name="title">
         <string>Collection</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,100,100,0,0" columnminimumwidth="0,0,0,0,0,0">
-        <item row="0" column="3">
-         <widget class="QComboBox" name="txtCurrentFile"/>
-        </item>
+       <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,100,0,100,0,0" columnminimumwidth="0,0,0,0,0,0,0">
         <item row="0" column="2">
          <widget class="FolderComboBox" name="txtCollectionFolder">
           <property name="toolTip">
@@ -79,24 +76,7 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="4">
-         <widget class="QToolButton" name="cmdBrowseFolder">
-          <property name="toolTip">
-           <string>Browse Folder</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Collection Folder</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" rowspan="2">
+        <item row="0" column="0" rowspan="3">
          <widget class="QPushButton" name="cmdPrevious">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -123,7 +103,10 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="5" rowspan="2">
+        <item row="0" column="4">
+         <widget class="QComboBox" name="txtCurrentFile"/>
+        </item>
+        <item row="0" column="6" rowspan="3">
          <widget class="QPushButton" name="cmdNext">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -150,14 +133,14 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1" colspan="4">
+        <item row="2" column="1" colspan="5">
          <widget class="QProgressBar" name="cboCollectionProgress">
           <property name="value">
            <number>24</number>
           </property>
          </widget>
         </item>
-        <item row="2" column="0" colspan="6">
+        <item row="3" column="0" colspan="7">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QLabel" name="lblDescription">
@@ -185,12 +168,32 @@
           </item>
           <item>
            <widget class="QToolButton" name="cmdNewTestDataset">
+            <property name="toolTip">
+             <string>Save Current Test</string>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
            </widget>
           </item>
          </layout>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Collection Folder</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QToolButton" name="cmdBrowseFolder">
+          <property name="toolTip">
+           <string>Browse for Collection Folder</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -409,20 +412,14 @@
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>648</width>
-     <height>22</height>
-    </rect>
-   </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
     <addaction name="actionLoadYAML"/>
     <addaction name="actionRecent_Files"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_Dataset"/>
    </widget>
    <widget class="QMenu" name="menuTest">
     <property name="title">
@@ -437,7 +434,6 @@
     </widget>
     <addaction name="menuGenerateTestData"/>
     <addaction name="actionTestDataFolder"/>
-    <addaction name="actionSave_Dataset"/>
     <addaction name="actionCreate_New_Test"/>
     <addaction name="actionConvert_To_Json"/>
    </widget>
@@ -520,7 +516,10 @@
   </action>
   <action name="actionSave_Dataset">
    <property name="text">
-    <string>Save Dataset</string>
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save Current Yaml / or Dataset</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -529,6 +528,11 @@
   <action name="actionOpen_JsonYamlToJsonTestSuite_md">
    <property name="text">
     <string>Open JsonYamlToJsonTestSuite.md</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
    </property>
   </action>
  </widget>
